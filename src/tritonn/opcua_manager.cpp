@@ -1,0 +1,601 @@
+///=================================================================================================
+//===
+//=== opcua_manager.cpp
+//===
+//=== Copyright (c) 2020 by RangeSoft.
+//=== All rights reserved.
+//===
+//=== Litvinov "VeduN" Vitaliy O.
+//===
+//=================================================================================================
+//===
+//=== Основной класс-нить для работы с OPC UA
+//===
+//=================================================================================================
+
+
+
+#include <string.h>
+#include "tritonn_version.h"
+#include "tickcount.h"
+#include "stringex.h"
+#include "opcua_manager.h"
+#include "log_manager.h"
+#include "data_manager.h"
+#include "data_variable.h"
+
+
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+extern const char *logCategoryNames[7];
+extern const char *logLevelNames[6];
+extern void OPCServer_log(void *context, UA_LogLevel level, UA_LogCategory category, const char *msg, va_list args);
+
+//const char *logLevelNames[6] = {"trace", "debug", "info", "warn", "error", "fatal"};
+UDINT       log2Mask[6]      = {   LM_I,    LM_I,   LM_I,   LM_W,    LM_A,    LM_A};
+
+const UA_Logger OPCServer_Logger = {OPCServer_log, NULL, UA_Log_Stdout_clear};
+
+
+void OPCServer_log(void *context, UA_LogLevel level, UA_LogCategory category, const char *msg, va_list args)
+{
+	/* Assume that context is casted to UA_LogLevel */
+	/* TODO we may later change this to a struct with bitfields to filter on category */
+	if(context != NULL && (UA_LogLevel)(uintptr_t)context > level)
+	{
+		return;
+	}
+
+	string logmsg  = String_vaformat(msg, args);
+	string logtext = String_format("OPC UA [%s/%s]" ANSI_COLOR_RESET " %s", logLevelNames[level], logCategoryNames[category], logmsg.c_str());
+
+	rLogManager::Instance().Add(log2Mask[level], __FILENAME__, __LINE__, logtext.c_str());
+}
+
+
+//TODO Нужно переделать на SimpleFile
+UA_ByteString UA_loadFile(const char *const path)
+{
+	UA_ByteString fileContents = UA_STRING_NULL;
+
+	/* Open the file */
+	FILE *fp = fopen(path, "rb");
+	if(!fp)
+	{
+		errno = 0; /* We read errno also from the tcp layer... */
+		return fileContents;
+	}
+
+	/* Get the file length, allocate the data and read */
+	fseek(fp, 0, SEEK_END);
+	fileContents.length = (size_t)ftell(fp);
+	fileContents.data   = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
+	if(fileContents.data)
+	{
+		fseek(fp, 0, SEEK_SET);
+		size_t read = fread(fileContents.data, sizeof(UA_Byte), fileContents.length, fp);
+		if(read != fileContents.length)
+		{
+			UA_ByteString_clear(&fileContents);
+		}
+	}
+	else
+	{
+		fileContents.length = 0;
+	}
+	fclose(fp);
+
+	return fileContents;
+}
+
+
+UA_StatusCode readCurrentTime(UA_Server */*server*/, const UA_NodeId */*sessionId*/, void */*sessionContext*/, const UA_NodeId *nodeId, void *nodeContext,
+										UA_Boolean /*sourceTimeStamp*/, const UA_NumericRange */*range*/, UA_DataValue *dataValue)
+{
+	rOPCUAManager *opcua = (rOPCUAManager *)nodeContext;
+
+	if(nullptr == opcua) return UA_STATUSCODE_BADINTERNALERROR;
+
+	return opcua->GetNodeValue(nodeId, dataValue);
+}
+
+
+
+UA_StatusCode writeCurrentTime(UA_Server */*server*/, const UA_NodeId */*sessionId*/, void */*sessionContext*/, const UA_NodeId *nodeId, void *nodeContext,
+										 const UA_NumericRange *range, const UA_DataValue *dataValue)
+{
+	UNUSED(range);
+
+	rOPCUAManager* opcua = (rOPCUAManager *)nodeContext;
+
+	if (!opcua) {
+		return UA_STATUSCODE_BADINTERNALERROR;
+	}
+
+	 return opcua->SetNodeValue(nodeId, dataValue);
+}
+
+
+
+
+rOPCVarLink::rOPCVarLink(const rSnapshotItem *item, UA_NodeId *node, const UA_DataType *type)
+{
+	Item   = item;
+	UAType = type;
+
+	UA_NodeId_copy(node, &Node);
+	memset(Value, 0, sizeof(Value));
+}
+
+
+
+const string rOPCUAManager::Lang     = "en-EN";
+const string rOPCUAManager::RootName = "tritonn";
+
+
+
+//TODO Вынести создания Сервера в отдельную процедуру!!!
+rOPCUAManager::rOPCUAManager()
+{
+	RTTI      = "rOPCUAManager";
+	OPCServer = nullptr;
+
+	memset(&Logins, 0, sizeof(Logins));
+	LoginsCount    = 0;
+	LoginAnonymous = 0;
+
+	OPCCertificate = UA_loadFile("./cert/tritonn_cert.der");
+	OPCPrivateKey  = UA_loadFile("./cert/tritonn_key.der");
+
+	UA_ServerConfig_setDefaultWithSecurityPolicies(&OPCServerConf, 4840, &OPCCertificate, &OPCPrivateKey, nullptr, 0, nullptr, 0, nullptr, 0);
+
+	OPCServerConf.logger = OPCServer_Logger;
+	UA_ServerConfig_setCustomHostname(&OPCServerConf, UA_STRING_STATIC("0.0.0.0"));
+	//TODO Нужно указать корректный адрес "/tritonn", через Endpoint или discovery?
+
+	// Исправляем UA_BuildInfo
+	UA_BuildInfo_clear(&OPCServerConf.buildInfo);
+	OPCServerConf.buildInfo.productUri       = UA_STRING_ALLOC("http://tritonn.ozna.ru");
+	OPCServerConf.buildInfo.manufacturerName = UA_STRING_ALLOC("tritonn");
+	OPCServerConf.buildInfo.productName      = UA_STRING_ALLOC("Tritonn OPC UA Server");
+	OPCServerConf.buildInfo.softwareVersion  = UA_STRING_ALLOC(TRITONN_VERSION);
+	OPCServerConf.buildInfo.buildNumber      = UA_STRING_ALLOC(TRITONN_COMPILE_DATE " " TRITONN_COMPILE_TIME);
+	OPCServerConf.buildInfo.buildDate        = (uint64_t(TRITONN_COMPILE_UNIX) * UA_DATETIME_SEC) + UA_DATETIME_UNIX_EPOCH;
+
+	UA_ApplicationDescription_clear(&OPCServerConf.applicationDescription);
+	OPCServerConf.applicationDescription.applicationUri  = UA_STRING_ALLOC("urn:tritonn.server.application");
+	OPCServerConf.applicationDescription.productUri      = UA_STRING_ALLOC("urn:tritonn.application");
+	OPCServerConf.applicationDescription.applicationName = UA_LOCALIZEDTEXT_ALLOC("en", "Tritonn Application");
+	OPCServerConf.applicationDescription.applicationType = UA_APPLICATIONTYPE_SERVER;
+}
+
+
+rOPCUAManager::~rOPCUAManager()
+{
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+//-------------------------------------------------------------------------------------------------
+//
+
+
+//-------------------------------------------------------------------------------------------------
+//
+
+
+//-------------------------------------------------------------------------------------------------
+//
+
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rOPCUAManager::Proccesing()
+{
+	UDINT      thread_status = 0;
+	UA_Boolean waitInternal  = false;
+	rTickCount tick;
+
+	tick.Reset();
+
+	while(true)
+	{
+		// Обработка команд нити
+		thread_status = rThreadClass::Proccesing();
+		if(!THREAD_IS_WORK(thread_status))
+		{
+			return thread_status;
+		}
+
+
+		if(tick.GetCount() >= 500)
+		{
+			rLocker lock(Mutex); lock.Nop();
+
+			Snapshot.ResetAssign();
+
+			rDataManager::Instance().Get(Snapshot);
+			tick.Reset();
+		}
+
+		UA_UInt16 timeout = UA_Server_run_iterate(OPCServer, waitInternal);
+		Delay.Set(timeout);
+
+		rThreadClass::EndProccesing();
+	} // while
+}
+
+
+
+
+//-------------------------------------------------------------------------------------------------
+UDINT rOPCUAManager::StartServer()
+{
+	UA_StatusCode result = TRITONN_RESULT_OK;
+//	rLocker lock(Mutex); lock.Nop();
+
+	if(OPCServer != nullptr)
+	{
+		UA_Server_run_shutdown(OPCServer);
+		UA_Server_delete(OPCServer);
+		OPCServer = nullptr;
+	}
+
+	// Настраиваем уровни доступа
+	OPCServerConf.accessControl.clear(&OPCServerConf.accessControl);
+	UA_StatusCode retval = UA_AccessControl_default(&OPCServerConf, LoginAnonymous, &OPCServerConf.securityPolicies[OPCServerConf.securityPoliciesSize - 1].policyUri, LoginsCount, Logins);
+	if(retval != UA_STATUSCODE_GOOD)
+	{
+		//TODO Event
+		rDataManager::Instance().DoHalt(HALT_REASON_OPC | retval);
+		return retval;
+	}
+
+	//
+	OPCServer = UA_Server_newWithConfig(&OPCServerConf);
+
+
+	AddFolder(RootName);
+
+	rDataManager::Instance().GetAllVariables(Snapshot);
+	result = AddAllVariables();
+
+	if(result != TRITONN_RESULT_OK)
+	{
+		rDataManager::Instance().DoHalt(HALT_REASON_OPC | retval);
+		return retval;
+	}
+
+	// Запускаем OPC сервер
+	result = UA_Server_run_startup(OPCServer);
+	if(result != UA_STATUSCODE_GOOD)
+	{
+		UA_Server_run_shutdown(OPCServer);
+		UA_Server_delete(OPCServer);
+		OPCServer = nullptr;
+
+		rDataManager::Instance().DoHalt(HALT_REASON_OPC | result);
+
+		return retval;
+	}
+
+	rThreadClass::Run(300);
+
+	return TRITONN_RESULT_OK;
+}
+
+
+rThreadClass *rOPCUAManager::GetThreadClass()
+{
+	return (rThreadClass *)this;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rOPCUAManager::AddAllVariables()
+{
+	UDINT result = TRITONN_RESULT_OK;
+
+	for(UDINT ii = 0; ii < Snapshot.Size(); ++ii)
+	{
+		result = AddVariable(Snapshot[ii]);
+
+		if(TRITONN_RESULT_OK != result) return result;
+	}
+
+	return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rOPCUAManager::AddVariable(const rSnapshotItem *ssitem)
+{
+	string path       = "";
+	string parentpath = "";
+	string name       = "";
+	DINT   pos        = -1;
+	UDINT  result     = TRITONN_RESULT_OK;
+
+	if(nullptr == ssitem)
+	{
+		return OPCUA_ERROR_VARNF;
+	}
+
+	const rVariable   *var      = ssitem->GetVariable();
+	const UA_DataType *datatype = nullptr;
+
+	if(nullptr == var)
+	{
+		return OPCUA_ERROR_VARNF;
+	}
+
+	path = RootName + "." + var->Name;
+	name = var->Name;
+	pos  = path.rfind('.');
+
+	if(pos > 0)
+	{
+		parentpath = path.substr(0, pos);
+		name       = path.substr(pos + 1);
+
+		result = AddFolder(parentpath);
+
+		if(result != TRITONN_RESULT_OK) return result;
+	}
+
+	datatype = GetTypeUA(var);
+	if(nullptr == datatype)
+	{
+		return OPCUA_ERROR_BADVARTYPE;
+	}
+
+	UA_VariableAttributes attr     = UA_VariableAttributes_default;
+	UA_NodeId             NodeId   = UA_NODEID_STRING(1, (char *)path.c_str());
+	UA_NodeId             ParentId = UA_NODEID_STRING(1, (char *)parentpath.c_str());
+	UA_QualifiedName      QualName = UA_QUALIFIEDNAME(1, (char *)name.c_str());
+	UA_NodeId             TypeId   = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE);
+	UA_NodeId             ReferId  = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+	UA_DataSource         datasrc;
+
+	OPCVarLink.push_back(rOPCVarLink(ssitem, &NodeId, datatype));
+
+//	UA_Variant_setScalar(&attr.value, OPCVarLink.back().Value, datatype);
+	attr.description = UA_LOCALIZEDTEXT((char *)Lang.c_str(), (char *)name.c_str());
+	attr.displayName = UA_LOCALIZEDTEXT((char *)Lang.c_str(), (char *)name.c_str());
+//	attr.dataType    = datatype->typeId;
+	attr.accessLevel = UA_ACCESSLEVELMASK_READ;
+
+	if(!(var->Flags & VARF_READONLY))
+	{
+		attr.accessLevel |= UA_ACCESSLEVELMASK_WRITE;
+	}
+
+	// Add the variable node to the information model
+	/*
+	UA_Server_addVariableNode(OPCServer,
+		NodeId,                                           // Уникальный Id тега/папки
+		ParentId,                                         // Родительский узел
+		UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+		QualName,
+		UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE),
+		attr,
+		NULL, NULL);
+	*/
+	datasrc.read  = readCurrentTime;
+	datasrc.write = writeCurrentTime;
+	result        = UA_Server_addDataSourceVariableNode(OPCServer, NodeId, ParentId, ReferId, QualName, TypeId, attr, datasrc, this, NULL);
+
+	return result;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rOPCUAManager::AddFolder(const string &path)
+{
+	string    parentpath  = "";
+	string    name        = path;
+	DINT      pos         = -1;
+	UDINT     result      = TRITONN_RESULT_OK;
+	UA_NodeId ParentId    = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+	void     *NodeContext = nullptr;
+
+	// Проверяем, существует ли уже такой узел
+	result = UA_Server_getNodeContext(OPCServer, UA_NODEID_STRING(1, (char *)path.c_str()), &NodeContext);
+	if(TRITONN_RESULT_OK == result)
+	{
+		return result;
+	}
+
+	pos = path.rfind('.');
+
+	if(pos > 0)
+	{
+		parentpath = path.substr(0, pos);
+		name       = path.substr(pos + 1);
+		ParentId   = UA_NODEID_STRING(1, (char *)parentpath.c_str());
+		result     = AddFolder(parentpath);
+
+		if(result != TRITONN_RESULT_OK) return result;
+	}
+
+
+	UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+	attr.description = UA_LOCALIZEDTEXT((char *)Lang.c_str(), (char *)name.c_str());
+	attr.displayName = UA_LOCALIZEDTEXT((char *)Lang.c_str(), (char *)name.c_str());
+	result = UA_Server_addObjectNode(OPCServer,
+		UA_NODEID_STRING(1, (char *)path.c_str()),           // Уникальный Id тега/папки
+		ParentId,                                            // Родительский узел
+		UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),            // Указатель на тип узла?
+		UA_QUALIFIEDNAME(1, (char *)name.c_str()),           // Имя узла (NodeId)
+		UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE),       // Тип узла
+		attr,                                                // Атрибуты узла
+		this,                                                // UserData
+		NULL);
+
+	return result;
+}
+
+
+const UA_DataType *rOPCUAManager::GetTypeUA(const rVariable *var)
+{
+	if(nullptr == var) return nullptr;
+
+	switch(var->Type)
+	{
+		case TYPE_SINT:  return &UA_TYPES[UA_TYPES_SBYTE];
+		case TYPE_USINT: return &UA_TYPES[UA_TYPES_BYTE];
+		case TYPE_INT:   return &UA_TYPES[UA_TYPES_INT16];
+		case TYPE_UINT:  return &UA_TYPES[UA_TYPES_UINT16];
+		case TYPE_DINT:  return &UA_TYPES[UA_TYPES_INT32];
+		case TYPE_UDINT: return &UA_TYPES[UA_TYPES_UINT32];
+		case TYPE_REAL:  return &UA_TYPES[UA_TYPES_FLOAT];
+		case TYPE_LREAL: return &UA_TYPES[UA_TYPES_DOUBLE];
+		case TYPE_STRID: return &UA_TYPES[UA_TYPES_UINT32];
+
+		default: return nullptr;
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------
+UDINT rOPCUAManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
+{
+	tinyxml2::XMLElement *xml_properties = nullptr;
+	UDINT                 err          = 0;
+
+	rInterface::LoadFromXML(xml_root, cfg);
+
+	Alias = "comms.opcua";
+
+	if(nullptr == xml_root) return TRITONN_RESULT_OK;
+
+	xml_properties = xml_root->FirstChildElement(CFGNAME_PROPERTIES);
+
+	if(nullptr != xml_properties)
+	{
+		LoginAnonymous = rDataConfig::GetTextUDINT(xml_properties->FirstChildElement(CFGNAME_ANONYMOUS), 1, err);
+	}
+
+	// Считываем пользователей
+	tinyxml2::XMLElement *xml_security_root = cfg.GetRootSecurity();
+	tinyxml2::XMLElement *xml_opcua         = nullptr;
+
+	if(nullptr == xml_security_root)
+	{
+		return DATACFGERR_OPCUA_USER_NF;
+	}
+
+	xml_opcua = xml_security_root->FirstChildElement(CFGNAME_OPCUA);
+
+	if(nullptr == xml_opcua)
+	{
+		return DATACFGERR_OPCUA_USER_NF;
+	}
+
+	LoginsCount = 0;
+	for(tinyxml2::XMLElement *xml_user = xml_opcua->FirstChildElement(CFGNAME_USER); xml_user != nullptr; xml_user = xml_user->NextSiblingElement(CFGNAME_USER))
+	{
+		string login    = rDataConfig::GetTextString(xml_user->FirstChildElement(CFGNAME_LOGIN)   , "", err);
+		string password = rDataConfig::GetTextString(xml_user->FirstChildElement(CFGNAME_PASSWORD), "", err);
+
+		if("" == login || "" == password)
+		{
+			return DATACFGERR_OPCUA_BAD_USER;
+		}
+
+		Logins[LoginsCount].username = UA_STRING_ALLOC(login.c_str());
+		Logins[LoginsCount].password = UA_STRING_ALLOC(password.c_str());
+		++LoginsCount;
+
+		if(LoginsCount >= 4)
+		{
+			break;
+		}
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rOPCUAManager::GetNodeValue(const UA_NodeId *node, UA_DataValue *dataValue)
+{
+	for(UDINT ii = 0; ii < OPCVarLink.size(); ++ii)
+	{
+		rOPCVarLink *link = &OPCVarLink[ii];
+
+		if(UA_NodeId_equal(&link->Node, node))
+		{
+			rLocker lock(Mutex); lock.Nop();
+
+			link->Item->GetBuffer(link->Value);
+			UA_Variant_setScalarCopy(&dataValue->value, link->Value, link->UAType);
+			dataValue->hasValue = true;
+
+			return UA_STATUSCODE_GOOD;
+		}
+	}
+
+	return UA_STATUSCODE_BADINTERNALERROR;
+}
+
+
+
+UDINT rOPCUAManager::SetNodeValue(const UA_NodeId *node, const UA_DataValue *dataValue)
+{
+	for(UDINT ii = 0; ii < OPCVarLink.size(); ++ii)
+	{
+		rOPCVarLink *link = &OPCVarLink[ii];
+
+		if(UA_NodeId_equal(&link->Node, node))
+		{
+			if(dataValue->hasValue && UA_Variant_isScalar(&dataValue->value) && dataValue->value.type == link->UAType && dataValue->value.data)
+			{
+				rSnapshot ss;
+				rLocker lock(Mutex); lock.Nop();
+
+				ss.Add(link->Item->GetVariable()->Name, dataValue->value.data);
+				ss.SetAccess(ACCESS_MASK_ADMIN);
+
+				rDataManager::Instance().Set(ss);
+
+				if(ss[0]->GetStatus() != SS_STATUS_WRITED) return UA_STATUSCODE_BADNOTWRITABLE;
+
+				return UA_STATUSCODE_GOOD;
+			}
+		}
+	}
+
+	return UA_STATUSCODE_BADINTERNALERROR;
+}
+
+
+UDINT rOPCUAManager::GenerateVars(vector<rVariable *> &list)
+{
+	UNUSED(list);
+	return TRITONN_RESULT_OK;
+}
+
+
+UDINT rOPCUAManager::CheckVars(rDataConfig &cfg)
+{
+	UNUSED(cfg);
+	return TRITONN_RESULT_OK;
+}
+
+

@@ -1,0 +1,319 @@
+﻿//=================================================================================================
+//===
+//=== text_class.cpp
+//===
+//=== Copyright (c) 2019 by RangeSoft.
+//=== All rights reserved.
+//===
+//=== Litvinov "VeduN" Vitaliy O.
+//===
+//=================================================================================================
+//===
+//=== Базовый класс обработки строк
+//===
+//=================================================================================================
+
+#include "text_class.h"
+#include "log_manager.h"
+#include "data_config.h"
+#include "text_id.h"
+
+
+
+const UDINT TEXTLANG_SETUP_USED = 0x00000001;
+
+
+rTextClass::rTextClass()
+{
+	ErrorID   = 0;
+	ErrorLine = 0;
+	CurLang   = nullptr;
+
+	Langs.clear();
+}
+
+
+
+rTextClass::~rTextClass()
+{
+	for(UDINT ii = 0; ii < Langs.size(); ++ii)
+	{
+		delete Langs[ii];
+	}
+	Langs.clear();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+// Загрузка из основного файла
+UDINT rTextClass::LoadSystem(const string& filename)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement *root = nullptr;
+
+	if(tinyxml2::XML_SUCCESS != doc.LoadFile(filename.c_str()))
+	{
+		ErrorID   = doc.ErrorID();
+		ErrorLine = 0;
+
+		return ErrorID;
+	}
+
+	root = doc.FirstChildElement(CFGNAME_STRINGS);
+	if(nullptr == root)
+	{
+		ErrorID   = doc.ErrorID();
+		ErrorLine = 0;
+
+		return ErrorID;
+	}
+
+
+	// Загружаем языки
+	for(tinyxml2::XMLElement *lang = root->FirstChildElement(CFGNAME_LANG); lang != nullptr; lang = lang->NextSiblingElement(CFGNAME_LANG))
+	{
+		if(tinyxml2::XML_SUCCESS != LoadLang(lang, true))
+		{
+			return ErrorID;
+		}
+	}
+
+	return tinyxml2::XML_SUCCESS;
+}
+
+
+
+// Загрузка дополнительных строк
+UDINT rTextClass::Load(tinyxml2::XMLElement *root)
+{
+	if(nullptr == root)
+	{
+		ErrorID   = DATACFGERR_LANG_STRUCT;
+		ErrorLine = 0;
+
+		return ErrorID;
+	}
+
+	// Загружаем языки
+	for(tinyxml2::XMLElement *lang = root->FirstChildElement(CFGNAME_LANG); lang != nullptr; lang = lang->NextSiblingElement(CFGNAME_LANG))
+	{
+		if(tinyxml2::XML_SUCCESS != LoadLang(lang, false))
+		{
+			return ErrorID;
+		}
+	}
+/*
+	// Устанавливаем язык по умолчанию
+	string deflang = root->Attribute(CFGNAME_DEFAULT);
+
+	if(!SetCurLang(deflang))
+	{
+		ErrorID   = DATACFGERR_LANG_DEFAULT;
+		ErrorLine = root->GetLineNum();
+
+		return ErrorID;
+	}
+*/
+	DeleteUnused();
+
+	return tinyxml2::XML_SUCCESS;
+}
+
+
+
+UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create)
+{
+	rTextLang *lang   = nullptr;
+	string     langID = "";
+
+	if(nullptr == root)
+	{
+		ErrorID   = DATACFGERR_LANG_STRUCT;
+		ErrorLine = 0;
+
+		return ErrorID;
+	}
+
+	langID = String_tolower(root->Attribute(CFGNAME_VALUE));
+	lang   = GetLangPtr(langID);
+	if(lang == nullptr)
+	{
+		if(create)
+		{
+			lang        = new rTextLang();
+			lang->Name  = langID;
+			lang->Setup = 0;
+
+			Langs.push_back(lang);
+		}
+		else
+		{
+			ErrorID   = DATACFGERR_LANG_UNKNOW;
+			ErrorLine = root->GetLineNum();
+
+			return ErrorID;
+		}
+	}
+	else
+	{
+		lang->Setup |= TEXTLANG_SETUP_USED;
+	}
+
+	// Загружаем строки
+	for(tinyxml2::XMLElement *item = root->FirstChildElement(CFGNAME_STR); item != nullptr; item = item->NextSiblingElement(CFGNAME_STR))
+	{
+		UDINT  id    = rDataConfig::GetAttributeUDINT(item, CFGNAME_ID, SID_UNKNOW);
+		CCHPTR ptext = item->GetText();
+		string text  = (nullptr == ptext) ? "" : ptext;
+
+		if(SID_UNKNOW == id)
+		{
+			ErrorID   = DATACFGERR_LANG_ID;
+			ErrorLine = item->GetLineNum();
+
+			return ErrorID;
+		}
+
+		// Проверка на сопадение ID
+		if(nullptr != GetPtr(id, lang))
+		{
+			ErrorID   = DATACFGERR_LANG_DUPID;
+			ErrorLine = item->GetLineNum();
+
+			return ErrorID;
+		}
+
+		// Добавляем элемент
+		lang->Texts.push_back(rTextItem(id, text));
+	}
+
+	return tinyxml2::XML_SUCCESS;
+}
+
+
+
+UDINT rTextClass::DeleteUnused()
+{
+	UDINT result = 0;
+
+	for(UDINT ii = 0; ii < Langs.size(); ++ii)
+	{
+		if(!(Langs[ii]->Setup & TEXTLANG_SETUP_USED))
+		{
+			TRACEI(LM_TEXT, "Delete unused lang: '%s'", Langs[ii]->Name.c_str());
+			delete Langs[ii];
+			Langs.erase(Langs.begin() + ii);
+			--ii;
+			++result;
+		}
+	}
+
+	return result;
+}
+
+
+//
+rTextLang *rTextClass::GetLangPtr(const string &name)
+{
+	string lowname = String_tolower(name);
+
+	for(UDINT ii = 0; ii < Langs.size(); ++ii)
+	{
+		if(lowname == Langs[ii]->Name) return Langs[ii];
+	}
+
+	return nullptr;
+}
+
+
+//
+string rTextClass::GetCurLang()
+{
+	if(nullptr == CurLang) return "";
+	return CurLang->Name;
+}
+
+
+UDINT rTextClass::SetCurLang(const string &lang)
+{
+	rTextLang *plang = GetLangPtr(lang);
+
+	if(nullptr == plang) return 0;
+
+	CurLang = plang;
+
+	return 1;
+}
+
+
+// Получение ссылки на строку в текущем языке
+const string *rTextClass::GetPtr(UDINT id)
+{
+	return GetPtr(id, GetCurLang());
+}
+
+
+// Получение ссылки на строку, с указанием имени языка
+const string *rTextClass::GetPtr(UDINT id, const string &lang)
+{
+	return GetPtr(id, GetLangPtr(lang));
+}
+
+
+//
+const string *rTextClass::GetPtr(UDINT id, rTextLang *lang)
+{
+	if(nullptr == lang) return nullptr;
+
+	for(UDINT ii = 0;  ii < lang->Texts.size(); ++ii)
+	{
+		if(lang->Texts[ii].ID == id) return &lang->Texts[ii].Text;
+	}
+
+	return nullptr;
+}
+
+
+//
+UDINT rTextClass::Get(UDINT id, string &text)
+{
+	return Get(id, GetCurLang(), text);
+}
+
+
+
+//
+UDINT rTextClass::Get(UDINT id, const string &lang, string &text)
+{
+	const string *result = GetPtr(id, lang);
+
+	if(nullptr == result) return 1;
+
+	text = *result;
+
+	return 0;
+}
+
+
+UDINT rTextClass::GetListLang(vector<string> &list)
+{
+	for(UDINT ii = 0; ii < Langs.size(); ++ii)
+	{
+		list.push_back(Langs[ii]->Name);
+	}
+	return 0;
+}
+
+
+UDINT rTextClass::GetListSID (const string &lang, vector<rTextItem> &list)
+{
+	rTextLang *langptr = GetLangPtr(lang);
+
+	if(nullptr == langptr) return 1;
+
+	for(UDINT ii = 0; ii < langptr->Texts.size(); ++ii)
+	{
+		list.push_back(langptr->Texts[ii]);
+	}
+	return 0;
+}

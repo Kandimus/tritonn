@@ -1,0 +1,279 @@
+//=================================================================================================
+//===
+//=== data_stream.cpp
+//===
+//=== Copyright (c) 2019 by RangeSoft.
+//=== All rights reserved.
+//===
+//=== Litvinov "VeduN" Vitaliy O.
+//===
+//=================================================================================================
+//===
+//=== Класс измерительной линии
+//===
+//=================================================================================================
+
+#include <vector>
+#include <limits>
+#include <string.h>
+#include "tinyxml2.h"
+#include "event_eid.h"
+#include "text_id.h"
+#include "event_manager.h"
+#include "precision.h"
+#include "data_manager.h"
+#include "data_config.h"
+#include "data_variable.h"
+#include "data_stream.h"
+#include "data_station.h"
+
+using std::vector;
+
+/*
+const UDINT FI_BAD_COUNT     = 0x10000000;
+const LREAL FI_BAD_SPLINE    = -1.0;
+
+const UDINT FI_LE_STATUSPATH = 0x00000001;
+const UDINT FI_LE_SIM_AUTO   = 0x00000002;
+const UDINT FI_LE_SIM_MANUAL = 0x00000004;
+const UDINT FI_LE_SIM_OFF    = 0x00000008;
+const UDINT FI_LE_SIM_LAST   = 0x00000010;
+const UDINT FI_LE_CODE_FAULT = 0x00000020;
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+rStation::rStation() : Setup(0)
+{
+	LockErr    = 0;
+	Product    = PRODUCT_PETROLEUM;
+	UnitVolume = U_m3;
+	UnitMass   = U_t;
+
+	Stream.clear();
+
+	InitLink(LINK_SETUP_INOUTPUT, Temp        , U_C       , SID_TEMPERATURE      , CFGNAME_TEMP         , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Pres        , U_MPa     , SID_PRESSURE         , CFGNAME_PRES         , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Dens        , U_kg_m3   , SID_DENSITY          , CFGNAME_DENSITY      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowMass    , UnitMass  , SID_FLOWRATE_MASS    , CFGNAME_FLOWRATEMASS , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume  , UnitVolume, SID_FLOWRATE_VOLUME  , CFGNAME_FLOWRATEVOL  , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume15, UnitVolume, SID_FLOWRATE_VOLUME15, CFGNAME_FLOWRATEVOL15, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume20, UnitVolume, SID_FLOWRATE_VOLUME20, CFGNAME_FLOWRATEVOL20, LINK_SHADOW_NONE);
+}
+
+
+rStation::~rStation()
+{
+	Stream.clear();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rStation::InitLimitEvent(rLink &link)
+{
+	link.Limit.EventChangeAMin  = ReinitEvent(EID_STATION_NEW_AMIN)  << link.Descr << link.Unit;
+	link.Limit.EventChangeWMin  = ReinitEvent(EID_STATION_NEW_WMIN)  << link.Descr << link.Unit;
+	link.Limit.EventChangeWMax  = ReinitEvent(EID_STATION_NEW_WMAX)  << link.Descr << link.Unit;
+	link.Limit.EventChangeAMax  = ReinitEvent(EID_STATION_NEW_AMAX)  << link.Descr << link.Unit;
+	link.Limit.EventChangeHyst  = ReinitEvent(EID_STATION_NEW_HYST)  << link.Descr << link.Unit;
+	link.Limit.EventChangeSetup = ReinitEvent(EID_STATION_NEW_SETUP) << link.Descr << link.Unit;
+	link.Limit.EventAMin        = ReinitEvent(EID_STATION_AMIN)      << link.Descr << link.Unit;
+	link.Limit.EventWMin        = ReinitEvent(EID_STATION_WMIN)      << link.Descr << link.Unit;
+	link.Limit.EventWMax        = ReinitEvent(EID_STATION_WMAX)      << link.Descr << link.Unit;
+	link.Limit.EventAMax        = ReinitEvent(EID_STATION_AMAX)      << link.Descr << link.Unit;
+	link.Limit.EventNan         = ReinitEvent(EID_STATION_NAN)       << link.Descr << link.Unit;
+	link.Limit.EventNormal      = ReinitEvent(EID_STATION_NORMAL)    << link.Descr << link.Unit;
+
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rStation::GetFault(void)
+{
+	return 1;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rStation::Calculate()
+{
+	rStream      *str = nullptr;
+	UDINT         err = 0;
+
+	if(rSource::Calculate()) return 0;
+
+	// Сброс значений расхода
+	FlowMass.Value     = 0.0;
+	FlowVolume.Value   = 0.0;
+	FlowVolume15.Value = 0.0;
+	FlowVolume20.Value = 0.0;
+
+	// Расчет весов по линиям и нарастающих
+	for(UDINT ii = 0; ii < Stream.size(); ++ii)
+	{
+		str = Stream[ii];
+
+		str->Calculate();
+
+		if(str->Maintenance) continue; // Линия в ремонте (не в учете)
+
+		// Расход
+		FlowMass.Value     += str->FlowMass.Value;
+		FlowVolume.Value   += str->FlowVolume.Value;
+		FlowVolume15.Value += str->FlowVolume15.Value;
+		FlowVolume20.Value += str->FlowVolume20.Value;
+
+		Total.Inc.Count     = 0;
+		Total.Inc.Mass     += str->Total.Inc.Mass;
+		Total.Inc.Volume   += str->Total.Inc.Volume;
+		Total.Inc.Volume15 += str->Total.Inc.Volume15;
+		Total.Inc.Volume20 += str->Total.Inc.Volume20;
+
+		UDINT check = Total.Calculate(UnitMass, UnitVolume);
+		if(check & TOTAL_MAX_MASS    ) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_MASS)    );
+		if(check & TOTAL_MAX_VOLUME  ) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME)  );
+		if(check & TOTAL_MAX_VOLUME15) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME15));
+		if(check & TOTAL_MAX_VOLUME20) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME20));
+	}
+
+	// Расчет параметров станции
+	err = 0;
+
+	for(UDINT ii = 0; ii < Stream.size(); ++ii)
+	{
+		str = Stream[ii];
+
+		if(str->Maintenance) continue;
+
+		if(nullptr == Temp.Source) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(CFGNAME_TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(nullptr == Pres.Source) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(CFGNAME_PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(nullptr == Dens.Source) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(CFGNAME_DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+	}
+
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rStation::GetUnitFlowVolume()
+{
+	switch(UnitVolume)
+	{
+		case U_m3   : return U_m3_h;
+		case U_liter: return U_ltr_h;
+		default     : return U_UNDEF;
+	}
+}
+
+UDINT rStation::GetUnitFlowMass()
+{
+	switch(UnitMass)
+	{
+		case U_t : return U_t_h;
+		case U_kg: return U_kg_h;
+		default  : return U_UNDEF;
+	}
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+const rTotal *rStation::GetTotal(void)
+{
+	return &Total;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rStation::GenerateVars(vector<rVariable *> &list)
+{
+	rSource::GenerateVars(list);
+
+	// Внутренние переменные
+	list.push_back(new rVariable(Alias + ".Product"               , TYPE_UDINT, VARF_RS_L, &Product               , U_DIMLESS , ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".Setup"                 , TYPE_UINT , VARF_RS_L, &Setup.Value           , U_DIMLESS , ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".total.present.volume"  , TYPE_LREAL, VARF_R___, &Total.Present.Volume  , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.present.volume15", TYPE_LREAL, VARF_R___, &Total.Present.Volume15, UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.present.volume20", TYPE_LREAL, VARF_R___, &Total.Present.Volume20, UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.present.mass"    , TYPE_LREAL, VARF_R___, &Total.Present.Mass    , UnitMass  , 0));
+	list.push_back(new rVariable(Alias + ".total.inc.volume"      , TYPE_LREAL, VARF_RSH_, &Total.Inc.Volume      , UnitVolume, ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".total.inc.volume15"    , TYPE_LREAL, VARF_RSH_, &Total.Inc.Volume15    , UnitVolume, ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".total.inc.volume20"    , TYPE_LREAL, VARF_RSH_, &Total.Inc.Volume20    , UnitVolume, ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".total.inc.mass"        , TYPE_LREAL, VARF_RSH_, &Total.Inc.Mass        , UnitMass  , ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".total.raw.volume"      , TYPE_LREAL, VARF_RSH_, &Total.Raw.Volume      , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.raw.volume15"    , TYPE_LREAL, VARF_RSH_, &Total.Raw.Volume15    , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.raw.volume20"    , TYPE_LREAL, VARF_RSH_, &Total.Raw.Volume20    , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.raw.mass"        , TYPE_LREAL, VARF_RSH_, &Total.Raw.Mass        , UnitMass  , 0));
+	list.push_back(new rVariable(Alias + ".total.past.volume"     , TYPE_LREAL, VARF_RSH_, &Total.Past.Volume     , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.past.volume15"   , TYPE_LREAL, VARF_RSH_, &Total.Past.Volume15   , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.past.volume20"   , TYPE_LREAL, VARF_RSH_, &Total.Past.Volume20   , UnitVolume, 0));
+	list.push_back(new rVariable(Alias + ".total.past.mass"       , TYPE_LREAL, VARF_RSH_, &Total.Past.Mass       , UnitMass  , 0));
+
+	list.push_back(new rVariable(Alias + ".fault"                 , TYPE_UDINT, VARF_R___, &Fault                 , U_DIMLESS , 0));
+
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rStation::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+{
+	string defProduct = rDataConfig::GetFlagNameByValue(rDataConfig::STNProductValues, PRODUCT_PETROLEUM);
+	string strProduct = (element->Attribute(CFGNAME_PRODUCT)) ? element->Attribute(CFGNAME_PRODUCT)  : defProduct;
+	UDINT  err = 0;
+
+	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return 1;
+
+	tinyxml2::XMLElement *temp = element->FirstChildElement(CFGNAME_TEMP);
+	tinyxml2::XMLElement *pres = element->FirstChildElement(CFGNAME_PRES);
+	tinyxml2::XMLElement *dens = element->FirstChildElement(CFGNAME_DENSITY);
+
+	Product   = (TYPE_PRODUCT)rDataConfig::GetFlagFromStr(rDataConfig::STNProductValues , strProduct , err);
+	if(err) return DATACFGERR_STATION;
+
+	Setup.Init(0);
+
+	// Параметры ниже могут отсутствовать в конфигурации, в этом случае они будут вычисляться как средневзвешанные
+	if(temp) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement(CFGNAME_LINK), Temp)) return cfg.ErrorID;
+	if(pres) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement(CFGNAME_LINK), Pres)) return cfg.ErrorID;
+	if(dens) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement(CFGNAME_LINK), Dens)) return cfg.ErrorID;
+
+	ReinitLimitEvents();
+
+	return tinyxml2::XML_SUCCESS;
+}
+
+
+
+UDINT rStation::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+{
+	Temp.Limit.Setup.Init(0);
+	Pres.Limit.Setup.Init(0);
+	Dens.Limit.Setup.Init(0);
+	FlowMass.Limit.Setup.Init(0);
+	FlowVolume.Limit.Setup.Init(0);
+	FlowVolume15.Limit.Setup.Init(0);
+	FlowVolume20.Limit.Setup.Init(0);
+
+	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+}
+
+
+
+
+

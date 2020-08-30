@@ -1,0 +1,92 @@
+cmake_minimum_required(VERSION 3.5)
+
+#-march=armv7-a -mcpu=cortex-a5
+
+set(CMAKE_INSTALL_PREFIX "~/tritonn")
+
+set(TARGET tritonn)
+set(TOOLCHAIN_ENABLE 0)
+
+project(${TARGET} LANGUAGES CXX C)
+
+add_definitions(-DLOG_APP_NAME=\"${TARGET}\")
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+include_directories(src/shared)
+include_directories(src/tritonn)
+include_directories(src/open62541)
+
+file(GLOB_RECURSE src_shared      src/shared/*.cpp src/shared/*.h src/shared/*.c)
+file(GLOB_RECURSE src_tritonn     src/tritonn/*.cpp src/tritonn/*.h src/tritonn/*.c)
+file(GLOB_RECURSE src_open62541   src/open62541/*.cpp src/open62541/*.h src/open62541/*.c)
+
+message(STATUS "System name: ${CMAKE_SYSTEM_NAME}")
+if(NOT DEFINED ${TOOLCHAIN_ENABLE})
+	message(STATUS "Toolchain: none")
+else()
+	message(STATUS "Toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+endif()
+
+#if(NOT CMAKE_SYSTEM_NAME STREQUAL "Yocto")
+
+#endif()
+add_executable(${TARGET} ${src_open62541} ${src_shared} ${src_tritonn} )
+
+#target_compile_options(${TARGET} PRIVATE -std=c++11 -Wall -Wfloat-conversion)
+target_compile_options(${TARGET} PRIVATE -Wall -Wfloat-conversion)
+
+# Библиотеки PThread и OpenSSL
+#set(THREADS_PREFER_PTHREAD_FLAG ON)
+#find_package(Threads REQUIRED)
+#target_link_libraries(${TARGET} PRIVATE Threads::Threads)
+
+#find_package(OpenSSL REQUIRED)
+##target_link_libraries(${TARGET} PRIVATE libssl.so libcrypto.so)
+
+#if( OpenSSL_FOUND )
+#    include_directories(${OPENSSL_INCLUDE_DIRS})
+#    message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+#else()
+#    message(FATAL_ERROR "OpenSLL not found.")
+#endif()
+
+#target_link_libraries(${TARGET} ${OpenSSL_LIBRARIES})
+target_link_libraries(${TARGET} PRIVATE crypto ssl)
+target_link_libraries(${TARGET} PRIVATE pthread)
+
+install(TARGETS ${TARGET} DESTINATION ~/tritonn/)
+
+# Определение типа хоста, установка необходимых флагов компиляции
+message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+	set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
+	set(CMAKE_C_FLAGS -m32)
+	set(CMAKE_CXX_FLAGS -m32)
+	set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
+	set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+else()
+	message(STATUS "Library: STATIC")
+#	set_target_properties(${TARGET} PROPERTIES LINK_SEARCH_START_STATIC 1)
+#	set_target_properties(${TARGET} PROPERTIES LINK_SEARCH_END_STATIC 1)
+endif()
+set(CMAKE_CXX_FLAGS -lstdc++)
+set(CMAKE_C_FLAGS -std=c99)
+
+
+if(NOT DEFINED TOOLCHAIN_ENABLE)
+	# Генерация исходного кода
+	add_custom_target(run_verinc ALL
+		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/verinc  -M 0 -m 17 -p 0 -i -F ${CMAKE_CURRENT_SOURCE_DIR}/src/tritonn/build.incver -a \"\" -P TRITONN > ${CMAKE_CURRENT_SOURCE_DIR}/src/tritonn/tritonn_version.h
+		BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/src/tritonn/tritonn_version.h & sleep 1s
+		COMMENT "Generating build version")
+	add_dependencies(${TARGET} run_verinc)
+endif()
+
+message(STATUS "TOOLCHAIN_ENABLE ${TOOLCHAIN_ENABLE}")
+message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
+message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")
+
+

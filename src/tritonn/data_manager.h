@@ -1,0 +1,105 @@
+﻿//=================================================================================================
+//===
+//=== data_manager.h
+//===
+//=== Copyright (c) 2019 by RangeSoft.
+//=== All rights reserved.
+//===
+//=== Litvinov "VeduN" Vitaliy O.
+//===
+//=================================================================================================
+//===
+//=== Основной класс-нить для обработки данных
+//===
+//=================================================================================================
+
+#pragma once
+
+#include <vector>
+#include "safity.h"
+#include "thread_class.h"
+#include "data_config.h"
+#include "data_snapshot.h"
+#include "data_sysvar.h"
+
+using std::vector;
+
+
+class rInterface;
+
+
+
+//-------------------------------------------------------------------------------------------------
+//
+class rDataManager : public rThreadClass
+{
+public:
+	virtual ~rDataManager();
+
+// Singleton
+private:
+	rDataManager();
+	rDataManager(const rDataManager &);
+	rDataManager& operator=(rDataManager &);
+
+public:
+	static rDataManager &Instance();
+
+// Методы
+public:
+	// Работа с данными
+	UDINT    Get(rSnapshot &snapshot);
+	UDINT    Set(rSnapshot &snapshot);
+	UDINT    GetAllVariables(rSnapshot &snapshot);
+
+	// Текущий статус и работа со статусами
+	void     SetLiveStatus(USINT status/*, UDINT haltreason*/);
+	USINT    GetLiveStatus();
+
+	void     GetVersion(rVersion &ver) const;
+	void     GetConfigInfo(rConfigInfo &conf) const;
+	void     GetState(rState &st);
+	void     GetTime(struct tm &sdt);
+
+	// Перезагрузка
+	void     DoHalt(UDINT reason);
+	UDINT    Restart(USINT restart, const string &filename);
+
+	// Конфигурация
+	UDINT    LoadConfig();
+	UDINT    SaveKernel();
+	const rConfigInfo *GetConfName() const;
+
+	// Работа с языками
+	UDINT    SetLang(const string &lang);
+
+	UDINT    StartInterfaces();
+
+protected:
+	virtual UDINT Proccesing();
+
+	UDINT DeleteWebFiles();
+	UDINT CreateWebLang();
+
+	UDINT CreateConfigHaltEvent(rDataConfig &cfg);
+
+
+private:
+	rSafityValue<USINT>  Live;     // Текущий статус жизни процесса
+	rSafityValue<USINT>  Halt;     // Флаг, перехода в HALT режим
+	rDataConfig          Config;   // Конфигурация, связки объектов
+//	string              ConfName;
+
+	rSystemVariable      SysVar;     // Системные переменные
+	vector<rSource *>    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
+	vector<rInterface *> ListInterface;
+	vector<rReport *>    ListReport; // Список отчетов
+	vector<string>       ListLang;
+
+	int LoadEEPROM();
+	int SaveEEPROM();
+
+};
+
+
+
