@@ -1,2 +1,3 @@
 build-yocto
 cmake_install.cmake
+CMakeLists.txt.user

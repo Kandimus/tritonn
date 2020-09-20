@@ -248,6 +248,8 @@ UDINT rThreadMaster::CalcSysInfo(rCPUState &cpu_start)
 	CurSysInfo.CPUUsage  = usage;
 
 	SysInfo.push_back(CurSysInfo);
+
+    return 0;
 }
 
 
@@ -317,6 +319,7 @@ UDINT rThreadMaster::CalcThreadTimeInfo(rThreadInfo *ti)
 	ti->TimeInfo.push_back(new rThreadTimeInfo(worktime, idletime));
 
 	//printf("%s : work avr %u us, avr max %u us, max %u us\n", ti->Class->GetRTTI(), ti->TimeAvr.WorkAverage, ti->TimeAvr.WorkAvgMax, ti->TimeAvr.WorkMax);
+    return 0;
 }
 
 
