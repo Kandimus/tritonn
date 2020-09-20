@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 	// Менеджер сообщений
 	rEventManager::Instance().LoadText(FILE_SYSTEMEVENT); // Системные события
 	rEventManager::Instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
-	rEventManager::Instance().Run(50);
+	rEventManager::Instance().Run(100);
 
 
 	rThreadMaster::Instance().Add(&rEventManager::Instance(), TMF_NONE, "system.events");
@@ -94,14 +94,14 @@ int main(int argc, char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
 	rDataManager::Instance().LoadConfig();
-	rDataManager::Instance().Run(100);
+	rDataManager::Instance().Run(500);
 
 	rThreadMaster::Instance().Add(&rDataManager::Instance(), TMF_NONE, "system.data");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Терминал
-	rTermManager::Instance().Run(250);
+	rTermManager::Instance().Run(500);
 	rTermManager::Instance().StartServer("0.0.0.0", TCP_PORT_TERM);
 
 	rThreadMaster::Instance().Add(&rTermManager::Instance(), TMF_NONE, "system.config");
