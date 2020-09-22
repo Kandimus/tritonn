@@ -19,7 +19,7 @@
 #include <vector>
 #include <netinet/in.h>
 #include "tcp_client.h"
-#include "thread_class.h"
+#include "../shared/thread_class.h"
 
 using std::string;
 using std::vector;
