@@ -1,7 +1,6 @@
+project(${PROJECT_NAME_PREFIX}open62541)
 
-add_library(open62541 open62541.h open62541.c)
+add_library(${PROJECT_NAME} open62541.h open62541.c)
 
-target_link_libraries(open62541 PRIVATE crypto ssl)
-target_link_libraries(open62541 PRIVATE pthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC crypto ssl pthread)
 
-#target_include_directories(open62541 ".")
