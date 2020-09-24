@@ -68,21 +68,19 @@ rModbusTCPSlaveManager::~rModbusTCPSlaveManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rModbusTCPSlaveManager::Proccesing()
+rThreadStatus rModbusTCPSlaveManager::Proccesing()
 {
-	UDINT thread_status = 0;
-
 	if(LoadStandartModbus())
 	{
 		CloseServer();
 		Close();
-		return -1;
+		return rThreadStatus::UNDEF;
 	}
 
 	while(1)
 	{
 		// Обработка команд нити
-		thread_status = rTCPClass::Proccesing();
+		rThreadStatus thread_status = rTCPClass::Proccesing();
 		if(!THREAD_IS_WORK(thread_status))
 		{
 			return thread_status;
@@ -110,7 +108,7 @@ UDINT rModbusTCPSlaveManager::Proccesing()
 		rThreadClass::EndProccesing();
 	}
 
-	return 0;
+	return rThreadStatus::UNDEF;
 }
 
 

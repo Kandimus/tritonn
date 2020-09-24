@@ -20,6 +20,18 @@
 #include "safity.h"
 #include "thread_time.h"
 
+#define THREAD_IS_WORK(x)       (((x) == rThreadStatus::RUNNING) || ((x) == rThreadStatus::PAUSED))
+
+// Статусы нити
+enum class rThreadStatus : UDINT
+{
+	UNDEF = 0,
+	CLOSED,
+	RUNNING,
+	PAUSED,
+	FINISHED
+};
+
 
 class rLocker
 {
@@ -55,12 +67,12 @@ public:
 	rThreadClass(int isrecursive);
 	virtual ~rThreadClass();
 
-	DINT Run(UDINT delay);              // Запуск класса-нити
-	int  GetStatus();                   // Получение статуса
-	int  Close();                       // Закрытие нити
-	int  Restore();                     // Продолжение работы после команды pause
-	pthread_t *GetThread();
-	const char *GetRTTI();
+	DINT          Run(UDINT delay);              // Запуск класса-нити
+	rThreadStatus GetStatus();                   // Получение статуса
+	int           Close();                       // Закрытие нити
+	int           Restore();                     // Продолжение работы после команды pause
+	pthread_t*    GetThread();
+	const char*   GetRTTI();
 
 	 UDINT GetTimeInfo(std::vector<rThreadTimeInfo> &arr);
 
@@ -68,7 +80,8 @@ public:
 	rSafityValue<UDINT> Delay;          // Задержка после каждого цикла
 
 protected:
-	virtual UDINT Proccesing();         // Обработчик нити
+	virtual rThreadStatus Proccesing();         // Обработчик нити
+
 	int  Lock();
 	int  Unlock();
 	void Fault();                       // Принудительное закрытие нити, в обход процедуры Proccesing
@@ -83,7 +96,7 @@ protected:
 
 private:
 	pthread_mutex_t     MutexTime;       //
-	rSafityValue<UDINT> Status;          // Статус
+	rSafityValue<rThreadStatus> Status;          // Статус
 	rSafityValue<UDINT> Command;	     // Команда
 	pthread_t           Thread;          // Указатель на нить
 	UDINT               LastTick;        // Временное хранения метки времени

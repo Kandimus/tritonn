@@ -60,9 +60,9 @@ public:
 
 // Наследование от rTCPClass
 protected:
-	virtual UDINT       Proccesing(void);
-	virtual rClientTCP *NewClient (SOCKET socket, sockaddr_in *addr);
-	virtual UDINT       ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
+	virtual rThreadStatus Proccesing(void);
+	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
+	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 
 // Наследование от rInterface
 public:

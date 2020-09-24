@@ -46,16 +46,18 @@
 
 
 
-rSnapshotItem::rSnapshotItem(const rSnapshotItem &snapshot)
+rSnapshotItem::rSnapshotItem(const rSnapshotItem& snapshot)
 {
 	*this = snapshot;
 }
 
 rSnapshotItem::rSnapshotItem(const string &name)
 {
-	if(FindVariable(name)) return;
+	if (FindVariable(name)) {
+		return;
+	}
 
-	Status   = SS_STATUS_NOTASSIGN;
+	Status = SS_STATUS_NOTASSIGN;
 	ClearData();
 }
 
@@ -74,8 +76,7 @@ rSnapshotItem::rSnapshotItem(const string &name, const string &val)
 
 	Status = SS_STATUS_ASSIGN;
 
-	try
-	{
+	try {
 		// Проверка на 16-тиричное число
 		if(val.size() >= 3)
 		{
@@ -265,42 +266,58 @@ rSnapshot::rSnapshot(UDINT access)
 
 rSnapshot::~rSnapshot()
 {
-	for(UDINT ii = 0; ii < List.size(); ++ii) delete List[ii];
-	List.clear();
+	for (auto& item : m_list) {
+		delete item;
+	}
+
+	m_list.clear();
 	Access = 0;
 }
 
 
-const rVariable *rSnapshot::Add(const rSnapshotItem &snapshot        ) { List.push_back(new rSnapshotItem(snapshot )); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name                   ) { List.push_back(new rSnapshotItem(name     )); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, SINT          val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, USINT         val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, INT           val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, UINT          val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, DINT          val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, UDINT         val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, REAL          val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, LREAL         val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, STRID         val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, const string &val) { List.push_back(new rSnapshotItem(name, val)); return List.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, void         *buf) { List.push_back(new rSnapshotItem(name, buf)); return List.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const rSnapshotItem &snapshot        ) { m_list.push_back(new rSnapshotItem(snapshot )); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name                   ) { m_list.push_back(new rSnapshotItem(name     )); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, SINT          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, USINT         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, INT           val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, UINT          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, DINT          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, UDINT         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, REAL          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, LREAL         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, STRID         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, const string &val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
+const rVariable *rSnapshot::Add(const string &name, void         *buf) { m_list.push_back(new rSnapshotItem(name, buf)); return m_list.back()->GetVariable(); }
 
 
 rSnapshotItem *rSnapshot::operator[](const UDINT index)
 {
-	if(index >= List.size()) return nullptr;
+	if(index >= m_list.size()) return nullptr;
 
-	return List[index];
+	return m_list[index];
 }
 
-rSnapshotItem *rSnapshot::Back() const
+rSnapshotItem* rSnapshot::operator()(const std::string& name)
 {
-	return List.back();
+	for (auto& item : m_list) {
+		if (item->GetVariable()) {
+			if (item->GetVariable()->Name == name) {
+				return item;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+rSnapshotItem* rSnapshot::Back() const
+{
+	 return m_list.back();
 }
 
 UDINT rSnapshot::Size() const
 {
-	return List.size();
+	 return m_list.size();
 }
 
 UDINT rSnapshot::GetAccess() const
@@ -316,9 +333,9 @@ void rSnapshot::SetAccess(UDINT access)
 
 void rSnapshot::ResetAssign()
 {
-	for(UDINT ii = 0; ii< List.size(); ++ii)
+	 for(auto &list : m_list)
 	{
-		List[ii]->ResetAssign();
+		list->ResetAssign();
 	}
 }
 
@@ -327,11 +344,13 @@ void rSnapshot::ResetAssign()
 //
 void rSnapshot::Clear()
 {
-	for(UDINT ii = 0; ii< List.size(); ++ii)
-	{
-		if(List[ii]) delete List[ii];
+	for (auto &item : m_list) {
+		if (item) {
+			delete item;
+		}
 
-		List[ii] = nullptr;
+		item = nullptr;
 	}
-	List.clear();
+
+	m_list.clear();
 }

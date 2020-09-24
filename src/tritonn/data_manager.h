@@ -76,7 +76,7 @@ public:
 	UDINT    StartInterfaces();
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 	UDINT DeleteWebFiles();
 	UDINT CreateWebLang();

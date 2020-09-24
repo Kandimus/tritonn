@@ -27,9 +27,9 @@ using std::vector;
 struct rThreadInfo
 {
 	UDINT          Flags;
-	UDINT          Status;
-	pthread_t     *Thread;
-	rThreadClass  *Class;
+	rThreadStatus  Status;
+	pthread_t*     Thread;
+	rThreadClass*  Class;
 	rThreadTimeAvr TimeAvr;
 	UDINT          Counter;
 	UDINT          CntAvrMax;
@@ -92,7 +92,7 @@ public:
 	rArguments *GetArg();
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 	void  CloseAll();
 

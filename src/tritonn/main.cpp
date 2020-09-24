@@ -43,8 +43,13 @@ int main(int argc, char **argv)
 	}
 
 	// Разбираем командную строку
+	rLogManager::m_logAppName = "tritonn";
 	rThreadMaster::Instance().ParseArgs(argc, argv);
 	rThreadMaster::Instance().Run(1000);
+
+#ifdef TRITONN_TEST
+	SimpleTest::Instance().Args(argc, argv);
+#endif
 
 	// Таблицы конвертации единиц измерения
 	rUnits::Init();
@@ -60,9 +65,8 @@ int main(int argc, char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Менеджер логирования
 	rLogManager::Instance().Enable.Set(true); //TODO Может эти флаги вынести в аргументы?
-//#ifdef DEBUG
-	rLogManager::Instance().Terminal.Set(true);
-//#endif
+	rLogManager::Instance().Terminal.Set(rThreadMaster::Instance().GetArg()->TerminalOut);
+
 	TRACEERROR("------------------------------------------");
 	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
 	rLogManager::Instance().StartServer();
@@ -116,6 +120,10 @@ int main(int argc, char **argv)
 
 	rDataManager::Instance().StartInterfaces();
 
+#ifdef TRITONN_TEST
+	rTritonnTest::Instance().Run(0);
+#endif
+
 /*
 	//TODO Пока запускаем Модбас в ручную, после нужно этот код перенести в DataManager
 	rModbusTCPSlaveManager::Instance().Run(300);
@@ -145,7 +153,13 @@ int main(int argc, char **argv)
 
 	while(1)
 	{
-		if(rThreadMaster::Instance().GetStatus() == TCS_CLOSED)
+#ifdef TRITONN_TEST
+		if (rTritonnTest::Instance().GetStatus() == rThreadStatus::FINISHED) {
+			rThreadMaster::Instance().Close();
+			break;
+		}
+#endif
+		if(rThreadMaster::Instance().GetStatus() == rThreadStatus::CLOSED)
 		{
 			TRACEW(LM_SYSTEM, "Closing...");
 			break;

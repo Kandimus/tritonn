@@ -80,14 +80,14 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 		info->Status = info->Class->GetStatus();
 
-		if(info->Status == TCS_CLOSED)
+		if(info->Status == rThreadStatus::CLOSED)
 		{
 			TRACEERROR("Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
 			return 1;
 		}
 	}
-	while(info->Status != TCS_RUNNING);
+	while(info->Status != rThreadStatus::RUNNING);
 
 	return TRITONN_RESULT_OK;
 }
@@ -153,9 +153,8 @@ void rThreadMaster::CloseAll()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rThreadMaster::Proccesing()
+rThreadStatus rThreadMaster::Proccesing()
 {
-	UDINT      thread_status = 0;
 	rCPUState  cpu_start;
 	rTickCount savetimer;
 	rTickCount *notruntimer = new rTickCount(); // Таймер, для нитей, которые запускаются через TMF_NOTRUN
@@ -168,7 +167,7 @@ UDINT rThreadMaster::Proccesing()
 		GetCPUState(cpu_start);
 
 		// Обработка команд нити
-		thread_status = rThreadClass::Proccesing();
+		rThreadStatus thread_status = rThreadClass::Proccesing();
 		if(!THREAD_IS_WORK(thread_status))
 		{
 			CloseAll();

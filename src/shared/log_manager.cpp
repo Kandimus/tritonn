@@ -21,6 +21,7 @@
 #include "log_client.h"
 #include "log_manager.h"
 
+std::string rLogManager::m_logAppName = "logapp";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -38,7 +39,7 @@ rLogManager::rLogManager()
 	Terminal.Set(false);
 	Enable.Set(false);     //TODO В штатном режиме можно после полной инициализации выключать
 
-	openlog(LOG_APP_NAME, LOG_NDELAY/* | LOG_PERROR*/, LOG_LOCAL0);
+    openlog(m_logAppName.c_str(), LOG_NDELAY/* | LOG_PERROR*/, LOG_LOCAL0);
 }
 
 
@@ -170,10 +171,10 @@ void rLogManager::PrintToTerminal(rPacketLog *packet)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLogManager::Proccesing()
+rThreadStatus rLogManager::Proccesing()
 {
 	UDINT packetsize    = LENGTH_PACKET_LOG;
-	UDINT thread_status = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
 	UDINT clientCount   = 0;
 
 	list<rPacketLog> sendlist;
@@ -224,7 +225,7 @@ UDINT rLogManager::Proccesing()
 		rThreadClass::EndProccesing();
 	}
 
-	return 0;
+	return rThreadStatus::UNDEF;
 }
 
 

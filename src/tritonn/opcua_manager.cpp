@@ -201,9 +201,8 @@ rOPCUAManager::~rOPCUAManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rOPCUAManager::Proccesing()
+rThreadStatus rOPCUAManager::Proccesing()
 {
-	UDINT      thread_status = 0;
 	UA_Boolean waitInternal  = false;
 	rTickCount tick;
 
@@ -212,7 +211,7 @@ UDINT rOPCUAManager::Proccesing()
 	while(true)
 	{
 		// Обработка команд нити
-		thread_status = rThreadClass::Proccesing();
+		rThreadStatus thread_status = rThreadClass::Proccesing();
 		if(!THREAD_IS_WORK(thread_status))
 		{
 			return thread_status;

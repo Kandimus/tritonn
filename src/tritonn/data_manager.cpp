@@ -538,10 +538,10 @@ UDINT rDataManager::SaveKernel()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataManager::Proccesing()
+rThreadStatus rDataManager::Proccesing()
 {
-	UDINT    thread_status = 0;
-	UDINT    ii            = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	UDINT ii = 0;
 
 	while(true)
 	{

@@ -44,7 +44,7 @@ public:
 	UDINT AddWhiteIP(string ip);
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 	
 	virtual UDINT CheckWhiteIP(UDINT ip);
 

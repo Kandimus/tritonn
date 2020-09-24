@@ -149,9 +149,9 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 
 
 //
-UDINT rTCPClientClass::Proccesing()
+rThreadStatus rTCPClientClass::Proccesing()
 {
-	UDINT   thread_status = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
 	UDINT   flagerr       = false;
 	UDINT   setup         = Setup.Get();
 	SOCKET  socket        = SOCKET_ERROR;
@@ -169,7 +169,7 @@ UDINT rTCPClientClass::Proccesing()
 
 	if(!Connected.Get())
 	{
-		return TCS_RUNNING;
+		return rThreadStatus::RUNNING;
 	}
 
 	{
@@ -184,7 +184,7 @@ UDINT rTCPClientClass::Proccesing()
 		{
 			// Команда на паузу, подождем перед реконнектом
 			rThreadClass::Pause.Set(ReconnetTime.Get());
-			return TCS_RUNNING;
+			return rThreadStatus::RUNNING;
 		}
 	}
 
@@ -243,7 +243,7 @@ UDINT rTCPClientClass::Proccesing()
 	}
 
 	Unlock();
-	return TCS_RUNNING;
+	return rThreadStatus::RUNNING;
 }
 
 

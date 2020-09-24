@@ -46,7 +46,7 @@ public:
 
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 	UDINT ReadFromServer(void);
 
