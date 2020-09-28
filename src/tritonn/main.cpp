@@ -14,14 +14,16 @@
 #include "users.h"
 #include "units.h"
 
+#ifdef TRITONN_TEST
+	#include "test_thread.h"
+	#include "simpletest.h"
+#endif
 
-#include "modbustcpslave_manager.h"
+//#include "modbustcpslave_manager.h"
 #include "hash.h"
+//#include "opcua_manager.h"
 
-
-#include "opcua_manager.h"
-
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	rEvent event;
 
@@ -42,14 +44,22 @@ int main(int argc, char **argv)
 		SimpleFileSave("./users.uncrypt.xml", uncrypt);
 	}
 
-	// Разбираем командную строку
 	rLogManager::m_logAppName = "tritonn";
+
+	// Разбираем командную строку
+#ifdef TRITONN_TEST
+	rSimpleTest::Instance().Args(argc, argv);
+
+	rThreadMaster::Instance().GetArg()->ForceConf   = "test.xml";
+	rThreadMaster::Instance().GetArg()->ForceRun    = true;
+	rThreadMaster::Instance().GetArg()->TerminalOut = false;
+	rThreadMaster::Instance().GetArg()->logMask     = 0;
+#else
 	rThreadMaster::Instance().ParseArgs(argc, argv);
+#endif
+
 	rThreadMaster::Instance().Run(1000);
 
-#ifdef TRITONN_TEST
-	SimpleTest::Instance().Args(argc, argv);
-#endif
 
 	// Таблицы конвертации единиц измерения
 	rUnits::Init();
@@ -65,6 +75,7 @@ int main(int argc, char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Менеджер логирования
 	rLogManager::Instance().Enable.Set(true); //TODO Может эти флаги вынести в аргументы?
+	rLogManager::Instance().SetLogMask(rThreadMaster::Instance().GetArg()->logMask);
 	rLogManager::Instance().Terminal.Set(rThreadMaster::Instance().GetArg()->TerminalOut);
 
 	TRACEERROR("------------------------------------------");
@@ -90,9 +101,7 @@ int main(int argc, char **argv)
 	rEventManager::Instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
 	rEventManager::Instance().Run(100);
 
-
 	rThreadMaster::Instance().Add(&rEventManager::Instance(), TMF_NONE, "system.events");
-
 
 
 	//----------------------------------------------------------------------------------------------
@@ -121,26 +130,8 @@ int main(int argc, char **argv)
 	rDataManager::Instance().StartInterfaces();
 
 #ifdef TRITONN_TEST
-	rTritonnTest::Instance().Run(0);
+	rTestThread::Instance().Run(0);
 #endif
-
-/*
-	//TODO Пока запускаем Модбас в ручную, после нужно этот код перенести в DataManager
-	rModbusTCPSlaveManager::Instance().Run(300);
-	rModbusTCPSlaveManager::Instance().StartServer("0.0.0.0", 1000+TCP_PORT_MODBUS);
-	Info_TestMBTCP.Thread = rModbusTCPSlaveManager::Instance().GetThread();
-	do
-	{
-		Info_TestMBTCP.Status = rModbusTCPSlaveManager::Instance().GetStatus();
-
-		if(Info_TestMBTCP.Status == TCS_CLOSED)
-		{
-			TRACEERROR("Can't run ModbusTCP-manager.");
-			exit(0);
-		}
-	}
-	while(Info_TestMBTCP.Status != TCS_RUNNING);
-*/
 
 	//
 	// Событие о запуске
@@ -154,7 +145,7 @@ int main(int argc, char **argv)
 	while(1)
 	{
 #ifdef TRITONN_TEST
-		if (rTritonnTest::Instance().GetStatus() == rThreadStatus::FINISHED) {
+		if (rTestThread::Instance().GetStatus() == rThreadStatus::FINISHED) {
 			rThreadMaster::Instance().Close();
 			break;
 		}

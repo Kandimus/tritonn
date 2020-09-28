@@ -24,8 +24,8 @@
 
 using std::string;
 
-#ifdef SOURCE_PATH
-	#define __FILENAME__            (__FILE__ + (std::string(SOURCE_PATH).size() - 6))
+#ifdef TRITONN_SOURCE_PATH
+	#define __FILENAME__            (&__FILE__[(std::string(TRITONN_SOURCE_PATH).size())])
 #else
 	#define __FILENAME__            (__FILE__)
 #endif

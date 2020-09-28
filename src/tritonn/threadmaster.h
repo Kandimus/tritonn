@@ -70,17 +70,7 @@ struct rCPUState
 //
 class rThreadMaster : public rThreadClass
 {
-public:
-	virtual ~rThreadMaster();
-
-// Singleton
-private:
-	rThreadMaster();
-	rThreadMaster(const rThreadMaster &);
-	rThreadMaster& operator=(rThreadMaster &);
-
-public:
-	static rThreadMaster &Instance();
+	SINGLETON(rThreadMaster)
 
 // Методы
 public:
@@ -88,7 +78,7 @@ public:
 	UDINT Add(rThreadClass* thread, UDINT flags, const string& alias);
 
 	// Командная строка
-	UDINT       ParseArgs(int argc, char **argv);
+	UDINT       ParseArgs(int argc, const char** argv);
 	rArguments *GetArg();
 
 protected:

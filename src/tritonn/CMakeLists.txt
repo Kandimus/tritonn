@@ -7,6 +7,14 @@ file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h)
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_c} ${files_h})
 
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_SOURCE_DIR}/bin/conf/test_sikn.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/conf)
+install(FILES ${CMAKE_SOURCE_DIR}/bin/modbus.xml ${CMAKE_SOURCE_DIR}/bin/systemevent.xml DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_SOURCE_DIR}/bin/systemevent.xml DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_SOURCE_DIR}/bin/systemtext.xml DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tritonn")
+
 add_lib(shared)
 add_lib(open62541)
 

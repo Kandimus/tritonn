@@ -7,6 +7,7 @@ set(PROJECT_NAME_PREFIX TT_)
 
 option(TRITONN_TESTS "Make tests" ON)
 
+#
 if(NOT DEFINED TRITONN_VER_MAJOR)
 	set(TRITONN_VER_MAJOR 0)
 	message(AUTHOR_WARNING "Set major version: ${TRITONN_VER_MAJOR}")
@@ -17,17 +18,23 @@ if(NOT DEFINED TRITONN_VER_MINOR)
 	message(AUTHOR_WARNING "Set minor version: ${TRITONN_VER_MINOR}")
 endif()
 
+#
+add_compile_definitions(TRITONN_SOURCE_PATH="${CMAKE_SOURCE_DIR}/src/")
+
+#
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+#
 include(UsefulMacros)
 
-set(CMAKE_INSTALL_PREFIX "~/tritonn")
-
+#
 set(CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -m32 -Wall -Wfloat-conversion")
 set(CMAKE_C_FLAGS "-std=c99 -m32")
 set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
 
+#
 add_subdirectory(src)
 
 

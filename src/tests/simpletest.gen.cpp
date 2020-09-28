@@ -14,6 +14,6 @@ void handlerSimpleTest(int a)
 
 rSimpleTest::rSimpleTest(void)
 {
-	m_tests.push_back(new rItemType("AnalogInput", "testing analog input. IO simulate", &SimpleTest_Descr_AnalogInput));
-	m_tests.push_back(new rItemType("Analog2", "testing analog signals 2222", &SimpleTest_Descr_Analog2));
+	m_tests.push_back(new rItemType("AnalogInput", "testing analog input. IO simulate", &SimpleTest_AnalogInput));
+	m_tests.push_back(new rItemType("Analog2", "testing analog signals 2222", &SimpleTest_Analog2));
 }

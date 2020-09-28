@@ -22,11 +22,8 @@
 #include "data_snapshot.h"
 #include "data_sysvar.h"
 
-using std::vector;
-
 
 class rInterface;
-
 
 
 //-------------------------------------------------------------------------------------------------
@@ -83,6 +80,8 @@ protected:
 
 	UDINT CreateConfigHaltEvent(rDataConfig &cfg);
 
+	UDINT getConfFile(std::string& conf);
+
 
 private:
 	rSafityValue<USINT>  Live;     // Текущий статус жизни процесса
@@ -90,11 +89,11 @@ private:
 	rDataConfig          Config;   // Конфигурация, связки объектов
 //	string              ConfName;
 
-	rSystemVariable      SysVar;     // Системные переменные
-	vector<rSource *>    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
-	vector<rInterface *> ListInterface;
-	vector<rReport *>    ListReport; // Список отчетов
-	vector<string>       ListLang;
+	rSystemVariable           SysVar;     // Системные переменные
+	std::vector<rSource* >    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
+	std::vector<rInterface* > ListInterface;
+	std::vector<rReport* >    ListReport; // Список отчетов
+	std::vector<string>       ListLang;
 
 	int LoadEEPROM();
 	int SaveEEPROM();

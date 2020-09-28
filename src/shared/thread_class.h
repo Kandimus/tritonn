@@ -22,6 +22,16 @@
 
 #define THREAD_IS_WORK(x)       (((x) == rThreadStatus::RUNNING) || ((x) == rThreadStatus::PAUSED))
 
+#define SINGLETON(singletonclass) \
+	public: \
+		virtual ~singletonclass(); \
+		static singletonclass& Instance() { static singletonclass Singleton; return Singleton; } \
+	private: \
+		singletonclass(); \
+		singletonclass(const singletonclass&); \
+		singletonclass& operator=(singletonclass&); \
+
+
 // Статусы нити
 enum class rThreadStatus : UDINT
 {
@@ -92,7 +102,7 @@ protected:
 	UDINT               LogMask = LM_SYSTEM;      // Маска для логирования. Для удобства
 	pthread_mutex_t     Mutex;                    // Защитный мьютекс внутренних данных
 
-	 std::vector<rThreadTimeInfo *> TimeInfo;
+	std::vector<rThreadTimeInfo *> TimeInfo;
 
 private:
 	pthread_mutex_t     MutexTime;       //

@@ -38,7 +38,7 @@
 										case TYPE_INT  : return x(*(INT   *)Data);\
 										case TYPE_UDINT: return x(*(UDINT *)Data);\
 										case TYPE_DINT : return x(*(DINT  *)Data);\
-										case TYPE_REAL : return x(*(REAL  *)Data);\
+										case TYPE_REAL : return static_cast<x>(*(REAL  *)Data);\
 										case TYPE_LREAL: return x(*(LREAL *)Data);\
 										case TYPE_STRID: return x(*(STRID *)Data);\
 										default: Status = SS_STATUS_NOTASSIGN; return x(0);}}catch(...){Status = SS_STATUS_NOTASSIGN; return x(0);}}

@@ -76,7 +76,7 @@ UDINT rLogManager::Add(UDINT mask, const char *filename, UDINT lineno, const cha
 	// Если установлен флаг LM_LOG, то это логирование от менеджера логирования xD
 	// в этом случае писать в порт безсмысленно, т.к. ошибка именно в порту, по этому выдаем на экран принудительно
 	// Сообщения PANIC тоже печатаем всегда.
-	terminal = Terminal.Get() | (mask & LM_LOG) | (level & LM_P);
+	terminal = Terminal.Get() || (mask & (LM_LOG | LM_P));
 	
 	// Создаем сообщение
 	rPacketLog  packet(mask, lineno, filename);
@@ -126,7 +126,7 @@ UDINT rLogManager::Add(UDINT mask, const char *filename, UDINT lineno, const cha
 
 void rLogManager::OutErr(const char *filename, UDINT lineno, const char *format, ...)
 {
-	rPacketLog packet(LM_A, lineno, filename);
+	rPacketLog packet(LM_P, lineno, filename);
 	
 	va_list(args);
 	va_start(args, format);
@@ -135,7 +135,7 @@ void rLogManager::OutErr(const char *filename, UDINT lineno, const char *format,
 
 	syslog(LOG_ALERT, "%s", packet.Text);
 
-	if(rLogManager::Instance().Terminal.Get())
+//	if(rLogManager::Instance().Terminal.Get())
 	{
 		PrintToTerminal(&packet);
 	}

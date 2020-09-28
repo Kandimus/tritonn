@@ -30,7 +30,6 @@ rInterface::rInterface()
 
 rInterface::~rInterface()
 {
-printf("~rInterface()");
 }
 
 

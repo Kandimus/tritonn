@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <string>
 #include "types.h"
 
 struct rVersion
@@ -60,6 +61,8 @@ struct rArguments
 {
 	USINT ForceRun;
 	USINT TerminalOut;
+	std::string ForceConf;
+	UDINT logMask;
 };
 
 
