@@ -74,7 +74,7 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 		info->Status = info->Class->GetStatus();
 
-		if(info->Status == rThreadStatus::CLOSED)
+		if(info->Status == rThreadStatus::FINISHED)
 		{
 			TRACEERROR("Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
@@ -138,11 +138,10 @@ rArguments *rThreadMaster::GetArg()
 //
 void rThreadMaster::CloseAll()
 {
-	for(UDINT ii = 0; ii < List.size(); ++ii)
-	{
+	for (DINT ii = List.size() - 1; ii >= 0; --ii) {
 		string name = List[ii]->Class->GetRTTI();
 
-		List[ii]->Class->Close();
+		List[ii]->Class->Finish();
 		pthread_join(*List[ii]->Thread, NULL);
 
 		if((List[ii]->Flags & TMF_DELETE) && List[ii]->Class)
@@ -157,7 +156,7 @@ void rThreadMaster::CloseAll()
 
 	List.clear();
 
-	Close();
+	Finish();
 }
 
 
@@ -182,7 +181,8 @@ rThreadStatus rThreadMaster::Proccesing()
 		if(!THREAD_IS_WORK(thread_status))
 		{
 			CloseAll();
-			return thread_status;
+			Closed();
+			return rThreadStatus::CLOSED;
 		}
 
 		// Следим за всеми потоками

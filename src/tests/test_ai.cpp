@@ -22,7 +22,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		rDataManager::Instance().Get(get_ss);
 
 		S_REQUIRE(get_ss("io.ai01.present.value") != nullptr)
-		S_CHECK(std::abs(get_ss("io.ai01.present.value")->GetValueLREAL() - testvalue) < std::numeric_limits<LREAL>::epsilon());
+		S_CHECK(S_DBL_EQ(get_ss("io.ai01.present.value")->GetValueLREAL(), testvalue));
 	}
 
 	S_SECTION("test scales & limits (hihi, hi, lo, lolo)") {
@@ -35,23 +35,31 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		set_ss.Add("io.ai01.present.lo"  , 20.0);
 		set_ss.Add("io.ai01.present.hi"  , 40.0);
 		set_ss.Add("io.ai01.present.hihi", 60.0);
-		set_ss.Add("io.ai01.keypad", -11.0);
-		set_ss.Add("io.ai01.mode"  , AI_MODE_MKEYPAD);
+		set_ss.Add("io.ai01.keypad"      , -11.0);
+		set_ss.Add("io.ai01.mode"        , AI_MODE_MKEYPAD);
 		rDataManager::Instance().Set(set_ss);
-
 		mSleep(600);
 
 		get_ss.Add("io.ai01.present.status");
-		get_ss.Add("io.ai01.present.value");
 		get_ss.Add("io.ai01.status");
 		rDataManager::Instance().Get(get_ss);
 
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
-		S_REQUIRE(get_ss("io.ai01.present.value") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.value")->GetValueUINT() == LIMIT_STATUS_AMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == AI_STATUS_MIN);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMIN);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() & AI_STATUS_MIN);
+
+		set_ss.Clear();
+		set_ss.Add("io.ai01.keypad", -5.0);
+		rDataManager::Instance().Set(set_ss);
+		mSleep(600);
+
+		rDataManager::Instance().Get(get_ss);
+		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
+		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
+		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMIN);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == 0);
+		printf("get_ss(\"io.ai01.status\")->GetValueUINT() %u\n", get_ss("io.ai01.status")->GetValueUINT());
 	}
 
 	// Set mode

@@ -129,10 +129,6 @@ int main(int argc, const char **argv)
 
 	rDataManager::Instance().StartInterfaces();
 
-#ifdef TRITONN_TEST
-	rTestThread::Instance().Run(0);
-#endif
-
 	//
 	// Событие о запуске
 	event.Reinit(EID_SYSTEM_RUNNING);
@@ -142,21 +138,27 @@ int main(int argc, const char **argv)
 	rEventManager::Instance().Add(event);
 	
 
+#ifdef TRITONN_TEST
+	rThreadStatus oldteststatus = rThreadStatus::UNDEF;
+	rTestThread::Instance().Run(0);
+#endif
+
 	while(1)
 	{
 #ifdef TRITONN_TEST
-		if (rTestThread::Instance().GetStatus() == rThreadStatus::FINISHED) {
-			rThreadMaster::Instance().Close();
-			break;
+		rThreadStatus teststatus = rTestThread::Instance().GetStatus();
+		if (oldteststatus != rThreadStatus::FINISHED && teststatus == rThreadStatus::FINISHED) {
+			rThreadMaster::Instance().Finish();
+			mSleep(1000);
 		}
+		oldteststatus = teststatus;
 #endif
-		if(rThreadMaster::Instance().GetStatus() == rThreadStatus::CLOSED)
-		{
+
+		if (rThreadMaster::Instance().GetStatus() == rThreadStatus::CLOSED) {
 			TRACEW(LM_SYSTEM, "Closing...");
 			break;
 		}
 	}
-	
 
 	rVariable::DeleteVariables();
 			

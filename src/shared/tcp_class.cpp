@@ -203,7 +203,7 @@ rThreadStatus rTCPClass::Proccesing()
 	if(!THREAD_IS_WORK(thread_status))
 	{
 		Destroy();
-		return rThreadStatus::CLOSED;
+		return thread_status;
 	}
 
 	Lock();
@@ -220,7 +220,8 @@ rThreadStatus rTCPClass::Proccesing()
 	{
 		Destroy();
 		Unlock();
-		return rThreadStatus::CLOSED;
+		Finish();
+		return rThreadStatus::FINISHED;
 	}
 	
 	// очищаем

@@ -36,12 +36,22 @@
 enum class rThreadStatus : UDINT
 {
 	UNDEF = 0,
-	CLOSED,
+	FINISHED,
 	RUNNING,
 	PAUSED,
-	FINISHED
+	ABORTED,
+	CLOSED,
 };
 
+
+// Команды нити
+enum class rThreadCommand : UDINT
+{
+	NONE = 0,
+	FINISH,
+	RESTORE,
+	ABORT,
+};
 
 class rLocker
 {
@@ -79,7 +89,7 @@ public:
 
 	DINT          Run(UDINT delay);              // Запуск класса-нити
 	rThreadStatus GetStatus();                   // Получение статуса
-	int           Close();                       // Закрытие нити
+	void          Finish();                      // Закрытие нити со статусом FINISH
 	int           Restore();                     // Продолжение работы после команды pause
 	pthread_t*    GetThread();
 	const char*   GetRTTI();
@@ -92,9 +102,10 @@ public:
 protected:
 	virtual rThreadStatus Proccesing();         // Обработчик нити
 
+	void Closed();
 	int  Lock();
 	int  Unlock();
-	void Fault();                       // Принудительное закрытие нити, в обход процедуры Proccesing
+	void Fault();                       // Принудительное закрытие нити, в обход процедуры Proccesing, с выставлением флага ABORTED
 
 	void EndProccesing();               //
 
@@ -102,17 +113,15 @@ protected:
 	UDINT               LogMask = LM_SYSTEM;      // Маска для логирования. Для удобства
 	pthread_mutex_t     Mutex;                    // Защитный мьютекс внутренних данных
 
-	std::vector<rThreadTimeInfo *> TimeInfo;
+	std::vector<rThreadTimeInfo* > TimeInfo;
 
 private:
-	pthread_mutex_t     MutexTime;       //
-	rSafityValue<rThreadStatus> Status;          // Статус
-	rSafityValue<UDINT> Command;	     // Команда
-	pthread_t           Thread;          // Указатель на нить
-	UDINT               LastTick;        // Временное хранения метки времени
+	pthread_mutex_t MutexTime;                    //
+	pthread_t       Thread;                       // Указатель на нить
+	UDINT           LastTick;                     // Временное хранения метки времени
+	rSafityValue<rThreadStatus>  Status;          // Статус
+	rSafityValue<rThreadCommand> Command;	       // Команда
 
-	//TODO Нужно добавить статистику использования, скорость выполения и т.д. И организовать rThreadManager
-
-	 static void *ThreadFunc(void *);    // Функция "обманка" для запуска нити
+	static void *ThreadFunc(void *);    // Функция "обманка" для запуска нити
 };
 

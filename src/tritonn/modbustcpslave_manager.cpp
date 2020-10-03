@@ -73,8 +73,9 @@ rThreadStatus rModbusTCPSlaveManager::Proccesing()
 	if(LoadStandartModbus())
 	{
 		CloseServer();
-		Close();
-		return rThreadStatus::UNDEF;
+		Finish();
+		//TODO Нужно вызвать HALT
+		return rThreadStatus::FINISHED;
 	}
 
 	while(1)

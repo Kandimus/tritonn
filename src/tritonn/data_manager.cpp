@@ -241,7 +241,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 		case LIVE_STARTING:
 		case LIVE_RUNNING:
 		case LIVE_HALT:
-			rThreadMaster::Instance().Close();
+			rThreadMaster::Instance().Finish();
 			return 0;
 
 		case LIVE_REBOOT_COLD:
@@ -250,12 +250,12 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 				TRACEW(LM_SYSTEM, "Set new conf file: '%s'", filename.c_str());
 				SimpleFileSave(FILE_CONF, filename);
 			}
-			rThreadMaster::Instance().Close();
+			rThreadMaster::Instance().Finish();
 			return 0;
 
 		default:
 			TRACEA(LM_SYSTEM, "Unknow live status");
-			rThreadMaster::Instance().Close();
+			rThreadMaster::Instance().Finish();
 			return 2;
 	}
 }
@@ -505,8 +505,7 @@ rThreadStatus rDataManager::Proccesing()
 	{
 		// Обработка команд нити
 		thread_status = rThreadClass::Proccesing();
-		if(!THREAD_IS_WORK(thread_status))
-		{
+		if (!THREAD_IS_WORK(thread_status)) {
 			return thread_status;
 		}
 

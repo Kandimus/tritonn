@@ -17,13 +17,11 @@
 #include "thread_class.h"
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
 
-rThreadClass::rThreadClass() : Status(rThreadStatus::UNDEF)
+rThreadClass::rThreadClass() : Status(rThreadStatus::UNDEF), Command(rThreadCommand::NONE)
 {
 	LogMask = 0;
 
@@ -32,7 +30,7 @@ rThreadClass::rThreadClass() : Status(rThreadStatus::UNDEF)
 }
 
 
-rThreadClass::rThreadClass(int isrecursive) : Status(rThreadStatus::UNDEF)
+rThreadClass::rThreadClass(int isrecursive) : Status(rThreadStatus::UNDEF), Command(rThreadCommand::NONE)
 {
 	LogMask = 0;
 
@@ -57,7 +55,7 @@ rThreadClass::~rThreadClass()
 {
 	rThreadStatus status = Status.Get();
 
-	if (!(status == rThreadStatus::CLOSED || status == rThreadStatus::UNDEF)) {
+	if (status == rThreadStatus::PAUSED || status == rThreadStatus::RUNNING) {
 		pthread_cancel(Thread);
 	}
 
@@ -75,30 +73,39 @@ DINT rThreadClass::Run(UDINT delay)
 	return pthread_create(&Thread, NULL, ThreadFunc, this);
 }
 
+
 rThreadStatus rThreadClass::GetStatus()
 {
 	return Status.Get();
 }
 
 
-int rThreadClass::Close()
+void rThreadClass::Finish()
 {
-	return Command.Set(TCC_CLOSE);
+	Command.Set(rThreadCommand::FINISH);
+}
+
+
+void rThreadClass::Closed()
+{
+	if (Status.Get() == rThreadStatus::FINISHED) {
+		Status.Set(rThreadStatus::CLOSED);
+	}
 }
 
 
 //
 void rThreadClass::Fault()
 {
-	Status.Set(rThreadStatus::CLOSED);
+	Status.Set(rThreadStatus::ABORTED);
 	pthread_exit(NULL);
 }
 
+
 int rThreadClass::Restore()
 {
-	return Command.Set(TCC_RESTORE);
+	return Command.Set(rThreadCommand::RESTORE);
 }
-
 
 
 int rThreadClass::Lock()
@@ -127,7 +134,7 @@ const char *rThreadClass::GetRTTI()
 
 rThreadStatus rThreadClass::Proccesing()
 {
-	int   command = 0;
+	rThreadCommand command = rThreadCommand::NONE;
 	int   pause   = 0;
 	UDINT delay   = 0;
 
@@ -139,24 +146,23 @@ rThreadStatus rThreadClass::Proccesing()
 		delay   = Delay.Get();
 
 		// Сбрасываем команду и паузу
-		Command.Set(0);
+		Command.Set(rThreadCommand::NONE);
 		Pause.Set(0);
 
 		// Разбираем команды
 		switch(command)
 		{
-			case TCC_CLOSE:   Status.Set(rThreadStatus::CLOSED);  return rThreadStatus::CLOSED;
-			case TCC_RESTORE: Status.Set(rThreadStatus::RUNNING); return rThreadStatus::RUNNING;
+			case rThreadCommand::FINISH:  Status.Set(rThreadStatus::FINISHED); return rThreadStatus::FINISHED;
+			case rThreadCommand::RESTORE: Status.Set(rThreadStatus::RUNNING);  return rThreadStatus::RUNNING;
+			default: ;
 		}
 
 		// Если была команда паузы
-		if(pause)
-		{
+		if (pause) {
 			Status.Set(rThreadStatus::PAUSED);
 
-			// Если это бесконечная пауза, то ждем команды TCC_RESTORE или TCC_CLOSE
-			if(pause == -1)
-			{
+			// Если это бесконечная пауза, то ждем команды RESTORE или FINISH
+			if (pause == -1) {
 				continue;
 			}
 
@@ -228,10 +234,6 @@ void *rThreadClass::ThreadFunc(void *attr)
 {
 	rThreadStatus result = ((rThreadClass *)attr)->Proccesing();
 
-	((rThreadClass *)attr)->Status.Set(rThreadStatus::CLOSED);
-
 	return (void *)result;
 }
-
-
 

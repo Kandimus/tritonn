@@ -35,11 +35,6 @@ using std::string;
 // Константы для управления потоками
 const UDINT THREAD_FAULT        = -1;
 
-// Команды нити
-const UDINT TCC_NONE            = 0;
-const UDINT TCC_CLOSE           = 1;
-const UDINT TCC_RESTORE         = 2;
-
 
 //-------------------------------------------------------------------------------------------------
 // Константы сокетов
