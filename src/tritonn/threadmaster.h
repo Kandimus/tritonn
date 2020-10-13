@@ -27,9 +27,9 @@ using std::vector;
 struct rThreadInfo
 {
 	UDINT          Flags;
-	UDINT          Status;
-	pthread_t     *Thread;
-	rThreadClass  *Class;
+	rThreadStatus  Status;
+	pthread_t*     Thread;
+	rThreadClass*  Class;
 	rThreadTimeAvr TimeAvr;
 	UDINT          Counter;
 	UDINT          CntAvrMax;
@@ -70,17 +70,7 @@ struct rCPUState
 //
 class rThreadMaster : public rThreadClass
 {
-public:
-	virtual ~rThreadMaster();
-
-// Singleton
-private:
-	rThreadMaster();
-	rThreadMaster(const rThreadMaster &);
-	rThreadMaster& operator=(rThreadMaster &);
-
-public:
-	static rThreadMaster &Instance();
+	SINGLETON(rThreadMaster)
 
 // Методы
 public:
@@ -88,11 +78,11 @@ public:
 	UDINT Add(rThreadClass* thread, UDINT flags, const string& alias);
 
 	// Командная строка
-	UDINT       ParseArgs(int argc, char **argv);
+	UDINT       ParseArgs(int argc, const char** argv);
 	rArguments *GetArg();
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 	void  CloseAll();
 

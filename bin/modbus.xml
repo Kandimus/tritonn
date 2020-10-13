@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modbus kernel="0.17" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./modbus.xsd">
+	<item addr="0">system.version.major</item>
+	<item addr="1">system.version.minor</item>
+	<item addr="2">system.version.patch</item>
+	<item addr="3">system.version.status</item>
+	<item addr="4">system.version.build</item>
+	<item addr="6">system.version.crc</item>
+	<item addr="8">system.state.alarm</item>
+	<item addr="10">system.state.live</item>
+	<item addr="11">system.state.rebootreason</item>
+	<item addr="12">system.datetime.present.sec</item>
+	<item addr="13">system.datetime.present.min</item>
+	<item addr="14">system.datetime.present.hour</item>
+	<item addr="15">system.datetime.present.day</item>
+	<item addr="16">system.datetime.present.month</item>
+	<item addr="17">system.datetime.present.year</item>
+	<item addr="18">system.datetime.set.sec</item>
+	<item addr="19">system.datetime.set.min</item>
+	<item addr="20">system.datetime.set.hour</item>
+	<item addr="21">system.datetime.set.day</item>
+	<item addr="22">system.datetime.set.month</item>
+	<item addr="23">system.datetime.set.year</item>
+	<item addr="24">system.datetime.set.accept</item>
+</modbus>

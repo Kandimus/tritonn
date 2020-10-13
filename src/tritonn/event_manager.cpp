@@ -403,10 +403,10 @@ UDINT rEventManager::SaveEEPROM(int /*pos*/, rEvent &/*event*/)
 
 
 
-UDINT rEventManager::Proccesing()
+rThreadStatus rEventManager::Proccesing()
 {
 	// Возможно именно тут нужно записывать потихоньку данные в EEPROM, а если скорость будет нормальной, то эта нить не нужна.
-	UDINT thread_status = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
 
 	while(1)
 	{
@@ -420,7 +420,7 @@ UDINT rEventManager::Proccesing()
 		rThreadClass::EndProccesing();
 	}
 
-	return 0;
+	return rThreadStatus::UNDEF;
 }
 
 

@@ -24,8 +24,8 @@
 
 using std::string;
 
-#ifdef SOURCE_PATH
-	#define __FILENAME__            (__FILE__ + (std::string(SOURCE_PATH).size() - 6))
+#ifdef TRITONN_SOURCE_PATH
+	#define __FILENAME__            (&__FILE__[(std::string(TRITONN_SOURCE_PATH).size())])
 #else
 	#define __FILENAME__            (__FILE__)
 #endif
@@ -34,19 +34,6 @@ using std::string;
 //-------------------------------------------------------------------------------------------------
 // Константы для управления потоками
 const UDINT THREAD_FAULT        = -1;
-
-// Статусы нити
-const UDINT TCS_UNDEF           = 0;
-const UDINT TCS_CLOSED          = 1;
-const UDINT TCS_RUNNING         = 2;
-const UDINT TCS_PAUSED          = 3;
-
-// Команды нити
-const UDINT TCC_NONE            = 0;
-const UDINT TCC_CLOSE           = 1;
-const UDINT TCC_RESTORE         = 2;
-
-#define THREAD_IS_WORK(x)       (((x) == TCS_RUNNING) || ((x) == TCS_PAUSED))
 
 
 //-------------------------------------------------------------------------------------------------

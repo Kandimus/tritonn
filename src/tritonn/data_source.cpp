@@ -122,7 +122,7 @@ STRID rSource::GetValueUnit(const string &name, UDINT &err)
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
 		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTPUT) << Descr);
 
-		return std::numeric_limits<LREAL>::quiet_NaN();
+		return 0xFFFFFFFF;
 	}
 
 	return link->Unit;

@@ -20,29 +20,23 @@
 #include "data_variable.h"
 #include "threadmaster.h"
 #include "log_manager.h"
+#include "stringex.h"
 #include "simplefile.h"
 #include "units.h"
 
 
 rThreadMaster::rThreadMaster()
 {
-	RTTI         = "rThreadMaster";
-	Arg.ForceRun = 0;
+	RTTI          = "rThreadMaster";
+	Arg.ForceRun  = false;
+	Arg.ForceConf = "";
+	Arg.ForceRun  = false;
+	Arg.logMask   = LM_ALL;
 }
 
 
 rThreadMaster::~rThreadMaster()
 {
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
-rThreadMaster &rThreadMaster::Instance()
-{
-	static rThreadMaster Singleton;
-
-	return Singleton;
 }
 
 
@@ -80,14 +74,14 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 		info->Status = info->Class->GetStatus();
 
-		if(info->Status == TCS_CLOSED)
+		if(info->Status == rThreadStatus::FINISHED)
 		{
 			TRACEERROR("Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
 			return 1;
 		}
 	}
-	while(info->Status != TCS_RUNNING);
+	while(info->Status != rThreadStatus::RUNNING);
 
 	return TRITONN_RESULT_OK;
 }
@@ -95,11 +89,12 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 //-------------------------------------------------------------------------------------------------
 // Запись данных в менеджер данных
-UDINT rThreadMaster::ParseArgs(int argc, char **argv)
+UDINT rThreadMaster::ParseArgs(int argc, const char** argv)
 {
 	for(int ii = 1; ii < argc; ++ii)
 	{
-		string arg = string(argv[ii]);
+		std::string arg = std::string(argv[ii]);
+		std::string arg2 = ii + 1 < argc ? argv[ii + 1] : "";
 
 		if (arg == "--forcerun" || arg == "-f") {
 			Arg.ForceRun = 1;
@@ -111,12 +106,28 @@ UDINT rThreadMaster::ParseArgs(int argc, char **argv)
 			rLogManager::Instance().Terminal.Set(Arg.TerminalOut);
 			continue;
 		}
+
+		if (arg == "--config" || arg == "-c") {
+			Arg.ForceConf = arg2;
+			++ii;
+			continue;
+		}
+
+		if (arg == "--log" || arg == "-l") {
+			if(!String_IsValidHex(arg2.c_str(), Arg.logMask)) {
+				Arg.logMask = LM_ALL;
+			}
+			++ii;
+			continue;
+		}
 	}
 
 	return 0;
 }
 
 
+//-------------------------------------------------------------------------------------------------
+//
 rArguments *rThreadMaster::GetArg()
 {
 	return &Arg;
@@ -127,11 +138,10 @@ rArguments *rThreadMaster::GetArg()
 //
 void rThreadMaster::CloseAll()
 {
-	for(UDINT ii = 0; ii < List.size(); ++ii)
-	{
+	for (DINT ii = List.size() - 1; ii >= 0; --ii) {
 		string name = List[ii]->Class->GetRTTI();
 
-		List[ii]->Class->Close();
+		List[ii]->Class->Finish();
 		pthread_join(*List[ii]->Thread, NULL);
 
 		if((List[ii]->Flags & TMF_DELETE) && List[ii]->Class)
@@ -146,16 +156,15 @@ void rThreadMaster::CloseAll()
 
 	List.clear();
 
-	Close();
+	Finish();
 }
 
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rThreadMaster::Proccesing()
+rThreadStatus rThreadMaster::Proccesing()
 {
-	UDINT      thread_status = 0;
 	rCPUState  cpu_start;
 	rTickCount savetimer;
 	rTickCount *notruntimer = new rTickCount(); // Таймер, для нитей, которые запускаются через TMF_NOTRUN
@@ -168,11 +177,12 @@ UDINT rThreadMaster::Proccesing()
 		GetCPUState(cpu_start);
 
 		// Обработка команд нити
-		thread_status = rThreadClass::Proccesing();
+		rThreadStatus thread_status = rThreadClass::Proccesing();
 		if(!THREAD_IS_WORK(thread_status))
 		{
 			CloseAll();
-			return thread_status;
+			Closed();
+			return rThreadStatus::CLOSED;
 		}
 
 		// Следим за всеми потоками

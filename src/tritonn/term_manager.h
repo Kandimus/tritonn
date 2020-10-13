@@ -38,9 +38,9 @@ public:
 	static rTermManager &Instance();
 
 protected:
-	virtual UDINT       Proccesing(void);
-	virtual rClientTCP *NewClient (SOCKET socket, sockaddr_in *addr);
-	virtual UDINT       ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
+	virtual rThreadStatus Proccesing(void);
+	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
+	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 
 	UDINT PacketLogin(rTermClient *client, rPacketLoginData *packet);
 	UDINT PacketSet  (rTermClient *client, rPacketSetData *packet);

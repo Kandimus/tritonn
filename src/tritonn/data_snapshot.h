@@ -96,6 +96,7 @@ public:
 	const rVariable *Add(const string &name, void *buf);
 
 	rSnapshotItem *operator[](const UDINT index);
+	 rSnapshotItem *operator()(const std::string& name);
 	rSnapshotItem *Back() const;
 
 	UDINT Size() const;
@@ -106,7 +107,7 @@ public:
 	void  Clear();
 
 protected:
-	vector<rSnapshotItem *> List;
+	 vector<rSnapshotItem *> m_list;
 //	UDINT                   Result;
 	UDINT                   Access;
 };

@@ -1,0 +1,16 @@
+#C  - Country (2 chars)
+#CN - Common Name
+#L  - Locality (city)
+#ST - State (or province)
+#O  - Organization (for example, company)
+#OU - Organizational Unit
+
+#Единственное обязательное значение, которое нужно указать при создании сертификата, - common name (CN), и оно должно совпадать с именем хоста.
+
+openssl req -config tritonn.cnf -new -nodes -x509 -sha256 -newkey rsa:2048 -keyout localhost.key -days 3654 -subj "/C=RU/O=OZNA/CN=tritonn/emailAddress=tritonn@ozna.ru" -out localhost.crt
+openssl x509 -in localhost.crt -outform der -out tritonn_cert.der
+openssl rsa -inform PEM -in localhost.key -outform DER -out tritonn_key.der
+
+rm localhost.key
+rm localhost.crt
+

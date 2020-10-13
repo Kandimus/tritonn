@@ -47,15 +47,17 @@ public:
 	UDINT SetAddCalback(Fn_LogAddCallback fn);
 
 protected:
-	virtual UDINT       Proccesing(void);
-	virtual rClientTCP *NewClient (SOCKET socket, sockaddr_in *addr);
-	virtual UDINT       ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
+	virtual rThreadStatus Proccesing(void);
+	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
+	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 	
 	static  void        PrintToTerminal(rPacketLog *packet);
 
 public:
 	rSafityValue<UDINT>  Terminal;  // Включение/выключение дублирования сообщений на консоль
 	rSafityValue<UDINT>  Enable;    // Включение/выключение логирования
+
+    static std::string   m_logAppName;
 //	rSafityValue<UDINT>  MaxLogs;   // Длина буффера сообщений //TODO Нужно ли?
 
 private:

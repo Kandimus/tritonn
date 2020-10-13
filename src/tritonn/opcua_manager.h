@@ -63,7 +63,7 @@ public:
 	UDINT SetNodeValue(const UA_NodeId *node, const UA_DataValue *dataValue);
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 private:
 	UA_Server               *OPCServer;

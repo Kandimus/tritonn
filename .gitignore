@@ -1,3 +1,4 @@
-build-yocto
 cmake_install.cmake
 CMakeLists.txt.user
+src/tritonn/tritonn_version.h
+src/tritonn/build.incver

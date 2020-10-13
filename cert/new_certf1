@@ -1,0 +1,8 @@
+
+openssl req -config open62541.cnf -new -nodes -x509 -sha256 -newkey rsa:2048 -keyout localhost.key -days 365 -subj "/C=DE/O=open62541/CN=open62541Server@localhost" -out localhost.crt
+openssl x509 -in localhost.crt -outform der -out open62541_cert.der
+openssl rsa -inform PEM -in localhost.key -outform DER -out open62541_key.der
+
+rm localhost.key
+rm localhost.crt
+

@@ -186,9 +186,8 @@ void rTCPClass::Destroy()
 // Обработка сетевых подключений
 // !!! Внимание !!!
 // !!! Общее время работы нити будет складываться из времени задержки нити и времени задержки Select_*
-UDINT rTCPClass::Proccesing()
+rThreadStatus rTCPClass::Proccesing()
 {
-	UDINT       thread_status = 0;
 	SOCKET      SockAccept;
 	sockaddr_in SinAccept;
 	socklen_t   SinSize;  
@@ -200,11 +199,11 @@ UDINT rTCPClass::Proccesing()
 	SinSize = sizeof(SinAccept);
 	
 	// Обработка команд нити
-	thread_status = rThreadClass::Proccesing();
+	rThreadStatus thread_status = rThreadClass::Proccesing();
 	if(!THREAD_IS_WORK(thread_status))
 	{
 		Destroy();
-		return TCS_CLOSED;
+		return thread_status;
 	}
 
 	Lock();
@@ -213,7 +212,7 @@ UDINT rTCPClass::Proccesing()
 	if(!Started)
 	{
 		Unlock();
-		return TCS_RUNNING;
+		return rThreadStatus::RUNNING;
 	}
 
 
@@ -221,7 +220,8 @@ UDINT rTCPClass::Proccesing()
 	{
 		Destroy();
 		Unlock();
-		return TCS_CLOSED;
+		Finish();
+		return rThreadStatus::FINISHED;
 	}
 	
 	// очищаем
@@ -332,7 +332,7 @@ UDINT rTCPClass::Proccesing()
 	} // for
 
 	Unlock();
-	return TCS_RUNNING;
+	return rThreadStatus::RUNNING;
 }
 
 

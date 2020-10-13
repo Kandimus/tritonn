@@ -56,7 +56,7 @@ public:
 
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 
 private:

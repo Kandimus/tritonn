@@ -241,7 +241,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 		case LIVE_STARTING:
 		case LIVE_RUNNING:
 		case LIVE_HALT:
-			rThreadMaster::Instance().Close();
+			rThreadMaster::Instance().Finish();
 			return 0;
 
 		case LIVE_REBOOT_COLD:
@@ -250,12 +250,12 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 				TRACEW(LM_SYSTEM, "Set new conf file: '%s'", filename.c_str());
 				SimpleFileSave(FILE_CONF, filename);
 			}
-			rThreadMaster::Instance().Close();
+			rThreadMaster::Instance().Finish();
 			return 0;
 
 		default:
 			TRACEA(LM_SYSTEM, "Unknow live status");
-			rThreadMaster::Instance().Close();
+			rThreadMaster::Instance().Finish();
 			return 2;
 	}
 }
@@ -312,58 +312,16 @@ UDINT rDataManager::LoadConfig()
 
 	//TODO Нужно очистить директорию ftp
 
-	//--------------------------------------------
-	// Проверяем на cold/warm/debug старт
-	result = SimpleFileLoad(FILE_RESTART, text);
-	if(TRITONN_RESULT_OK == result)
-	{
-		if(!rThreadMaster::Instance().GetArg()->ForceRun)
-		{
-			if("cold" == text)
-			{
-				SetLiveStatus(LIVE_REBOOT_COLD);
-
-				// Загружаем список конфигураций
-				rListConfig::Load();
-
-				TRACEI(LM_SYSTEM, "Cold restart!");
-				//TODO Нужно выложить в web все языковые файлы
-			}
-			if("debug" == text)
-			{
-				//TODO Доделать
-				SetLiveStatus(LIVE_REBOOT_COLD);
-
-				// Загружаем список конфигураций
-				rListConfig::Load();
-			}
-		}
-		else
-		{
-			TRACEI(LM_SYSTEM, "Forced run!");
-		}
-
-		// удаляем файл
-		SimpleFileDelete(FILE_RESTART);
+	result = getConfFile(conf);
+	if(result != TRITONN_RESULT_OK) {
+		return result;
 	}
 
 	// Если это не cold-start, то загружаем конфигурацию
-	if(LIVE_STARTING == GetLiveStatus())
-	{
-		result = SimpleFileLoad(FILE_CONF, conf);
-		if(TRITONN_RESULT_OK != result)
-		{
-			rEventManager::Instance().AddEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
-
-			DoHalt(HALT_REASON_CONFIGFILE | result);
-
-			TRACEERROR("Can't load file '%s'. Error ID: %i", FILE_CONF.c_str(), result);
-
-			return result;
-		}
+	if(LIVE_STARTING == GetLiveStatus()) {
 
 		//TODO проверить на валидность hash
-		TRACEI(LM_SYSTEM | LM_I, String_format("Load config file '%s'", conf.c_str()).c_str());
+		TRACEI(LM_SYSTEM | LM_I, "Load config file '%s'", conf.c_str());
 		result = Config.LoadFile(conf, SysVar, ListSource, ListInterface, ListReport);
 		if(TRITONN_RESULT_OK != result)
 		{
@@ -398,7 +356,7 @@ UDINT rDataManager::LoadConfig()
 	}
 
 	rVariable::Sort();
-printf("6\n");
+
 	//--------------------------------------------
 	//NOTE только в процессе разработки
 	if(LIVE_STARTING == GetLiveStatus())
@@ -538,17 +496,16 @@ UDINT rDataManager::SaveKernel()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataManager::Proccesing()
+rThreadStatus rDataManager::Proccesing()
 {
-	UDINT    thread_status = 0;
-	UDINT    ii            = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	UDINT ii = 0;
 
 	while(true)
 	{
 		// Обработка команд нити
 		thread_status = rThreadClass::Proccesing();
-		if(!THREAD_IS_WORK(thread_status))
-		{
+		if (!THREAD_IS_WORK(thread_status)) {
 			return thread_status;
 		}
 
@@ -631,6 +588,60 @@ UDINT rDataManager::StartInterfaces()
 {
 	for (auto interface : ListInterface) {
 		interface->StartServer();
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+
+UDINT rDataManager::getConfFile(std::string& conf)
+{
+	std::string text;
+	UDINT result = TRITONN_RESULT_OK;
+
+	if (!rThreadMaster::Instance().GetArg()->ForceRun) {
+
+		// Проверяем на cold/warm/debug старт
+		result = SimpleFileLoad(FILE_RESTART, text);
+		if (TRITONN_RESULT_OK == result) {
+			if ("cold" == text) {
+				SetLiveStatus(LIVE_REBOOT_COLD);
+
+				// Загружаем список конфигураций
+				rListConfig::Load();
+
+				TRACEI(LM_SYSTEM, "Cold restart!");
+				//TODO Нужно выложить в web все языковые файлы
+			}
+			if ("debug" == text) {
+				//TODO Доделать
+				SetLiveStatus(LIVE_REBOOT_COLD);
+
+				// Загружаем список конфигураций
+				rListConfig::Load();
+			}
+		}
+	} else {
+		TRACEI(LM_SYSTEM, "Forced run!");
+	}
+
+	// удаляем файл
+	SimpleFileDelete(FILE_RESTART);
+
+	if (rThreadMaster::Instance().GetArg()->ForceConf.size()) {
+		conf = rThreadMaster::Instance().GetArg()->ForceConf;
+		return TRITONN_RESULT_OK;
+	}
+
+	result = SimpleFileLoad(FILE_CONF, conf);
+	if(TRITONN_RESULT_OK != result) {
+		rEventManager::Instance().AddEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
+
+		DoHalt(HALT_REASON_CONFIGFILE | result);
+
+		TRACEERROR("Can't load file '%s'. Error ID: %i", FILE_CONF.c_str(), result);
+
+		return result;
 	}
 
 	return TRITONN_RESULT_OK;

@@ -131,10 +131,10 @@ rJSONManager &rJSONManager::Instance()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rJSONManager::Proccesing()
+rThreadStatus rJSONManager::Proccesing()
 {
-	UDINT thread_status = 0;
-	UDINT curtime       = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	UDINT curtime = 0;
 
 	while(1)
 	{
@@ -166,7 +166,7 @@ UDINT rJSONManager::Proccesing()
 		rThreadClass::EndProccesing();
 	}
 
-	return 0;
+	return rThreadStatus::UNDEF;
 }
 
 
