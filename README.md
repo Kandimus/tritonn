@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# tritonn
-||||||| merged common ancestors
-=======
 # tritonn
 
 ## Get ##
@@ -34,4 +30,3 @@ Run config ./conf/*filename*
 >--log *hex*
 
 Set log mask as *hex*
->>>>>>> Core-5
