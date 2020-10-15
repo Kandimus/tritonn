@@ -86,6 +86,7 @@ rAI::rAI() : rSource(), KeypadValue(0.0), Setup(0)
 	Setup         = AI_SETUP_OFF;
 	Mode          = AI_MODE_PHIS;
 	Code          = AI_CODE_FAULT;
+	Status        = rAIStatus::UNDEF;
 
 	// Все элементы LastCode приравниваем к -1
 	memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
@@ -160,7 +161,7 @@ UDINT rAI::Calculate()
 		PhValue.Value = std::numeric_limits<LREAL>::quiet_NaN();
 		Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
 		Mode          = AI_MODE_PHIS;
-		Status        = AI_STATUS_UNDEF;
+		Status        = rAIStatus::UNDEF;
 
 		memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
 		return 0;
@@ -202,9 +203,9 @@ UDINT rAI::Calculate()
 			// UsedCode 32 битное, а Code 16 битное, это сделано для нормального усредения кода ацп ниже.
 			UsedCode = Code;
 
-			if(AI_STATUS_FAULT == Status)
+			if(rAIStatus::FAULT == Status)
 			{
-				Status = 0;
+				Status = rAIStatus::UNDEF;
 			}
 
 			
@@ -230,9 +231,8 @@ UDINT rAI::Calculate()
 		{
 			// Для тока 0 мА = 0, 24 мА = 65535
 			// Для значения min = 10923, max = 54613
-				
 			PhValue.Value = Scale.Min.Value + (Range / (double(Scale.Code_20mA) - double(Scale.Code_4mA))) * (double(UsedCode) - double(Scale.Code_4mA));
-			Current.Value = (24.0  / 65535.0) * double(UsedCode);
+			Current.Value = (24.0 / 65535.0) * double(UsedCode);
 		}
 		else
 		{
@@ -248,7 +248,7 @@ UDINT rAI::Calculate()
 					Mode = AI_MODE_LASTGOOD;
 				}
 
-				Status = AI_STATUS_FAULT; // выставляем флаг ошибки
+				Status = rAIStatus::FAULT; // выставляем флаг ошибки
 			}
 
 			SetFault();
@@ -345,33 +345,33 @@ UDINT rAI::Calculate()
 	// ПРЕДЕЛЬНЫЕ ЗНАЧЕНИЯ
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	if(Status != AI_STATUS_FAULT)
+	if(Status != rAIStatus::FAULT)
 	{
 		// Если значение больше чем инж. максимум
 		// ИЛИ
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
-		if((Value.Value > Scale.Max.Value) || ((Value.Value >= Scale.Max.Value/* - Limit.Hysteresis.Value*/) && (AI_STATUS_MAX & oldStatus)))
+		if(Value.Value > Scale.Max.Value)
 		{
-			if(!(oldStatus & AI_STATUS_MAX))
+			if(oldStatus != rAIStatus::MAX)
 			{
 				rEventManager::Instance().Add(ReinitEvent(EID_AI_MAX) << Value.Unit << Value.Value << Scale.Max.Value);
 			}
 
-			Status = AI_STATUS_MAX;
+			Status = rAIStatus::MAX;
 		}
 		// Инженерный минимум
-		else if((Value.Value < Scale.Min.Value) || ((Value.Value < Scale.Min.Value) && (AI_STATUS_MIN & oldStatus)))
+		else if(Value.Value < Scale.Min.Value)
 		{
-			if(!(oldStatus & AI_STATUS_MIN))
+			if(oldStatus != rAIStatus::MIN)
 			{
 				rEventManager::Instance().Add(ReinitEvent(EID_AI_MIN) << Value.Unit << Value.Value << Scale.Min.Value);
 			}
 
-			Status = AI_STATUS_MIN;
+			Status = rAIStatus::MIN;
 		}
 		else
 		{
-			Status = 0;
+			Status = rAIStatus::NORMAL;
 		}
 	}
 
@@ -386,7 +386,7 @@ UDINT rAI::Calculate()
 	// Сохраняем последнее "хорошее" значение и массив последних "хороших" кодов АЦП
 	// Получается, что если сигнал у нас в ручной симуляции, то "хорошие" значения мы не сохраняем... Хорошо это или плохо?
 	//TODO Нужно еще проверять выход за инженерные пределы!
-	if(Status != AI_STATUS_FAULT && Mode == AI_MODE_PHIS && UsedCode != AI_CODE_FAULT)
+	if(Status != rAIStatus::FAULT && Mode == AI_MODE_PHIS && UsedCode != AI_CODE_FAULT)
 	{
 		LastGood = Value.Value;
 		
@@ -414,6 +414,7 @@ UDINT rAI::SetFault()
 	Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
 	Current.Value = std::numeric_limits<LREAL>::quiet_NaN();
 	UsedCode      = AI_CODE_FAULT;
+	Status        = rAIStatus::FAULT;
 	Fault         = 1;
 
 	return Fault;

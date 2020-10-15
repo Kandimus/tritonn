@@ -20,6 +20,18 @@
 #include "compared_values.h"
 #include "data_link.h"
 
+// Статусы аналогового сигнала
+enum class rAIStatus : UINT
+{
+	UNDEF  = 0x0000,     // Статуст не определен
+	OFF    = 0x0001,     // Канал выключен
+	NORMAL = 0x0010,     // Показания канала в норме
+	MIN    = 0x0020,     // Значение ниже инженерного минимума
+	MAX    = 0x0040,     // Значение выше инженерного максимума
+	FAULT  = 0x0100,     // Ошибка. Выход из строя канала или модуля
+};
+
+
 
 struct rAIScale
 {
@@ -75,7 +87,7 @@ public:
 	rAIScale  Scale;                   // Инженерные пределы токового сигала
 	UINT      Mode;                    // Режим работы
 	rCmpUINT  Setup;                   // Настройка сигнала
-	UDINT     Status;                  //
+	rAIStatus Status;                  //
 //	STRID     Unit;                    // Номер строки, которая будет использоваться в качесте единиц измерения
 	UDINT     Security;                // 
 	UINT      Spline[MAX_AI_SPLINE];   // Массив последних 4 "хороших" кодов АЦП, для сглаживания
