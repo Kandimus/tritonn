@@ -17,20 +17,21 @@
 
 #include "def.h"
 
+class rIOBaseChannel;
 
 class rIOBaseModule
 {
 public:
-	// 0x FF FF FF FF
-
 	enum class Type : UINT
 	{
 		UNDEF  = 0x0000,     //
 		AI6    = 0x0001,     //
 	};
 
-	rIOBaseModule();
-	virtual ~rIOBaseModule();
+	rIOBaseModule() {}
+	virtual ~rIOBaseModule() {}
+
+	virtual rIOBaseChannel* getChannel(USINT channel) = 0;
 
 	Type  getType()         { return m_type; }
 	UINT  getNodeID()       { return m_nodeID; }

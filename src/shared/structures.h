@@ -59,10 +59,11 @@ struct rState
 
 struct rArguments
 {
-	USINT ForceRun;
-	USINT TerminalOut;
-	std::string ForceConf;
-	UDINT logMask;
+	USINT       m_forceRun    = false;
+	USINT       m_terminalOut = true;
+	USINT       m_simulateIO  = 0;
+	std::string m_forceConf   = "";
+	UDINT       m_logMask     = 0xFFFFFFFF;
 };
 
 

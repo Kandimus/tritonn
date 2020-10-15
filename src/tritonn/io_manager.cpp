@@ -13,8 +13,6 @@
 //===
 //=================================================================================================
 
-#pragma once
-
 #include "io_basechannel.h"
 #include "io_manager.h"
 
@@ -27,3 +25,22 @@ rIOBaseChannel* rIOManager::getChannel(USINT module, USINT channel)
 	return m_modules[module]->getChannel(channel);
 }
 
+
+rThreadStatus rIOManager::Proccesing()
+{
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	UDINT ii = 0;
+
+	while(true)
+	{
+		// Обработка команд нити
+		thread_status = rThreadClass::Proccesing();
+		if (!THREAD_IS_WORK(thread_status)) {
+			return thread_status;
+		}
+
+//		if (m_isSimulate) {
+
+//		}
+	}
+}

@@ -50,10 +50,11 @@ int main(int argc, const char **argv)
 #ifdef TRITONN_TEST
 	rSimpleTest::Instance().Args(argc, argv);
 
-	rThreadMaster::Instance().GetArg()->ForceConf   = "test.xml";
-	rThreadMaster::Instance().GetArg()->ForceRun    = true;
-	rThreadMaster::Instance().GetArg()->TerminalOut = false;
-	rThreadMaster::Instance().GetArg()->logMask     = 0;
+	rThreadMaster::Instance().GetArg()->m_forceConf   = "test.xml";
+	rThreadMaster::Instance().GetArg()->m_forceRun    = true;
+	rThreadMaster::Instance().GetArg()->m_terminalOut = false;
+	rThreadMaster::Instance().GetArg()->m_logMask     = 0;
+	rThreadMaster::Instance().GetArg()->m_simulateIO  = true;
 #else
 	rThreadMaster::Instance().ParseArgs(argc, argv);
 #endif
@@ -75,8 +76,8 @@ int main(int argc, const char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Менеджер логирования
 	rLogManager::Instance().Enable.Set(true); //TODO Может эти флаги вынести в аргументы?
-	rLogManager::Instance().SetLogMask(rThreadMaster::Instance().GetArg()->logMask);
-	rLogManager::Instance().Terminal.Set(rThreadMaster::Instance().GetArg()->TerminalOut);
+	rLogManager::Instance().SetLogMask(rThreadMaster::Instance().GetArg()->m_logMask);
+	rLogManager::Instance().Terminal.Set(rThreadMaster::Instance().GetArg()->m_terminalOut);
 
 	TRACEERROR("------------------------------------------");
 	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);

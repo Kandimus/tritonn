@@ -17,7 +17,10 @@
 
 #include <vector>
 #include "safity.h"
+#include "tinyxml2.h"
+#include "data_variable.h"
 #include "thread_class.h"
+#include "io_basemodule.h"
 
 class rDataConfig;
 class rIOBaseChannel;
@@ -29,7 +32,6 @@ class rIOManager : public rThreadClass
 	SINGLETON(rIOManager)
 
 public:
-		USINT setSimulateMode(USINT issim) { USINT result = m_isSimulate.Get(); m_isSimulate.Set(issim); return result; }
 
 // Методы
 public:
@@ -43,7 +45,6 @@ protected:
 	virtual rThreadStatus Proccesing();
 
 private:
-	rSafityValue<USINT> m_isSimulate;
 	std::vector<rIOBaseModule* > m_modules; //
 };
 

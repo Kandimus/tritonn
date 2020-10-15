@@ -30,14 +30,18 @@ class rIOAI6 : public rIOBaseModule
 friend class rIOManager;
 
 public:
+
+	enum {
+		CHANNEL_COUNT = 6
+	};
+
 	rIOAI6();
 	virtual ~rIOAI6();
-
-	const USINT m_channelMax = 6;
 	
 	// Виртуальные функции от rBaseModule
 public:
 	virtual UDINT processing(USINT issim);
+	virtual rIOBaseChannel* getChannel(USINT channel);
 
 public:
 	UINT getADC(USINT id);
@@ -46,7 +50,7 @@ public:
 	USINT getState(USINT id);
 
 private:
-	rIOAIChannel m_ai[m_channelMax];
+	rIOAIChannel m_ai[CHANNEL_COUNT];
 };
 
 

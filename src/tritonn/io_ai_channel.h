@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "def.h"
 #include "io_basechannel.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,15 +40,20 @@ public:
 		Random,
 	};
 
+	rIOAIChannel() {};
+	virtual ~rIOAIChannel() {}
+
 	UINT    m_ADC          = 0;
 	REAL    m_current      = 0;
-	Type    m_type         = 0;
+	Type    m_type         = Type::mA_0_20;
 	USINT   m_actionRedLED = 0;
 	USINT   m_state        = 0;
 	USINT   m_stateRedLED  = 0;
 
 	UINT    m_simMax       = 65535;
 	UINT    m_simMin       = 0;
+	UINT    m_simValue     = 0;
+	UINT    m_simSpeed     = 1;
 
 public:
 	virtual UDINT simulate();

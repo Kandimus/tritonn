@@ -1,6 +1,7 @@
 #include <limits>
 #include <cmath>
 #include "simpletest.h"
+#include "data_ai.h"
 #include "data_manager.h"
 #include "simpletest.h"
 
@@ -47,7 +48,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() & AI_STATUS_MIN);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() & static_cast<UINT>(rAI::Status::MIN));
 
 		// LOLO
 		set_ss.Clear();
@@ -59,7 +60,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == rAIStatus::NORMAL);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// LO
 		set_ss.Clear();
@@ -71,7 +72,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_WMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == rAIStatus::NORMAL);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// NORMAL
 		set_ss.Clear();
@@ -83,7 +84,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_NORMAL);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == rAIStatus::NORMAL);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// HI
 		set_ss.Clear();
@@ -95,7 +96,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_WMAX);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == rAIStatus::NORMAL);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// HIHI
 		set_ss.Clear();
@@ -107,7 +108,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMAX);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == rAIStatus::NORMAL);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// MAX
 		set_ss.Clear();
@@ -119,7 +120,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMAX);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == rAIStatus::MAX);
+		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::MAX));
 	}
 
 	S_SECTION("test limits current (hihi, lolo)") {

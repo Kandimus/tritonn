@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== io_basechannel.h
+//=== io_basemodule.cpp
 //===
 //=== Copyright (c) 2019 by RangeSoft.
 //=== All rights reserved.
@@ -9,27 +9,15 @@
 //===
 //=================================================================================================
 //===
-//=== Базовый класс канала
+//=== Основной класс-нить для получения данных с модулей ввода-вывода
 //===
 //=================================================================================================
 
-#pragma once
+#include "io_basemodule.h"
 
-#include "def.h"
-
-class rIOBaseChannel
+UDINT rIOBaseModule::processing(USINT issim)
 {
-public:
-
-	rIOBaseChannel() {}
-	virtual ~rIOBaseChannel() {}
-
-protected:
-	virtual UDINT simulate() = 0;
-
-protected:
-	USINT m_simType = 0;
-};
-
-
+	UNUSED(issim);
+	return TRITONN_RESULT_OK;
+}
 

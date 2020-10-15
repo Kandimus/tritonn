@@ -599,7 +599,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	std::string text;
 	UDINT result = TRITONN_RESULT_OK;
 
-	if (!rThreadMaster::Instance().GetArg()->ForceRun) {
+	if (!rThreadMaster::Instance().GetArg()->m_forceRun) {
 
 		// Проверяем на cold/warm/debug старт
 		result = SimpleFileLoad(FILE_RESTART, text);
@@ -628,8 +628,8 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	// удаляем файл
 	SimpleFileDelete(FILE_RESTART);
 
-	if (rThreadMaster::Instance().GetArg()->ForceConf.size()) {
-		conf = rThreadMaster::Instance().GetArg()->ForceConf;
+	if (rThreadMaster::Instance().GetArg()->m_forceConf.size()) {
+		conf = rThreadMaster::Instance().GetArg()->m_forceConf;
 		return TRITONN_RESULT_OK;
 	}
 

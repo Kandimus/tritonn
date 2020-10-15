@@ -13,8 +13,7 @@
 //===
 //=================================================================================================
 
-#pragma once
-
+#include <math.h>
 #include "io_ai_channel.h"
 
 
@@ -58,10 +57,12 @@ UDINT rIOAIChannel::simulate()
 		}
 
 		case SimType::Random: {
-			LREAL tmp = m_simMin + static_cast<LREAL>(m_simMax - m_simMin) * (rand() / static_cast<LREAL>RAND_MAX);
+			LREAL tmp = m_simMin + static_cast<LREAL>(m_simMax - m_simMin) * (rand() / static_cast<LREAL>(RAND_MAX));
 			m_ADC = static_cast<UINT>(tmp);
 			return TRITONN_RESULT_OK;
 		}
 	}
+
+	return TRITONN_RESULT_OK;
 }
 

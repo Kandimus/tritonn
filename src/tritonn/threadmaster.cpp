@@ -28,10 +28,11 @@
 rThreadMaster::rThreadMaster()
 {
 	RTTI          = "rThreadMaster";
-	Arg.ForceRun  = false;
-	Arg.ForceConf = "";
-	Arg.ForceRun  = false;
-	Arg.logMask   = LM_ALL;
+	Arg.m_forceRun  = false;
+	Arg.m_forceConf = "";
+	Arg.m_forceRun  = false;
+	Arg.m_logMask   = LM_ALL;
+	Arg.m_simulateIO = false;
 }
 
 
@@ -97,25 +98,24 @@ UDINT rThreadMaster::ParseArgs(int argc, const char** argv)
 		std::string arg2 = ii + 1 < argc ? argv[ii + 1] : "";
 
 		if (arg == "--forcerun" || arg == "-f") {
-			Arg.ForceRun = 1;
+			Arg.m_forceRun = 1;
 			continue;
 		}
 
 		if (arg == "--terminal" || arg == "-t") {
-			Arg.TerminalOut = 1;
-			rLogManager::Instance().Terminal.Set(Arg.TerminalOut);
+			Arg.m_terminalOut = 1;
 			continue;
 		}
 
 		if (arg == "--config" || arg == "-c") {
-			Arg.ForceConf = arg2;
+			Arg.m_forceConf = arg2;
 			++ii;
 			continue;
 		}
 
 		if (arg == "--log" || arg == "-l") {
-			if(!String_IsValidHex(arg2.c_str(), Arg.logMask)) {
-				Arg.logMask = LM_ALL;
+			if(!String_IsValidHex(arg2.c_str(), Arg.m_logMask)) {
+				Arg.m_logMask = LM_ALL;
 			}
 			++ii;
 			continue;
