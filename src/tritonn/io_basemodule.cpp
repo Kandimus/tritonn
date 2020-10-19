@@ -15,6 +15,8 @@
 
 #include "io_basemodule.h"
 
+std::string rIOBaseModule::m_name = "BaseModule";
+
 UDINT rIOBaseModule::processing(USINT issim)
 {
 	UNUSED(issim);

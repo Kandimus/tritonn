@@ -18,16 +18,14 @@
 #include <cmath>
 #include <string.h>
 #include "tinyxml2.h"
-//#include "data_selector.h"
 #include "event_eid.h"
 #include "text_id.h"
 #include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
 #include "data_variable.h"
+#include "xml_util.h"
 #include "data_ai.h"
-
-using std::vector;
 
 
 /*
@@ -82,6 +80,21 @@ rAIScale::rAIScale()
 //
 rAI::rAI() : rSource(), KeypadValue(0.0), Setup(0)
 {
+	if (m_flagsMode.empty()) {
+		m_flagsMode
+				.add("PHIS"  , AI_MODE_PHIS)
+				.add("KEYPAD", AI_MODE_MKEYPAD);
+	}
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"      , AI_SETUP_OFF)
+				.add("NOBUFFER" , AI_SETUP_NOBUFFER)
+				.add("VIRTUAL"  , AI_SETUP_VIRTUAL)
+				.add("NOICE"    , AI_SETUP_NOICE)
+				.add("KEYPAD"   , AI_SETUP_ERR_KEYPAD)
+				.add("LASTGOOD" , AI_SETUP_ERR_LASTGOOD);
+	}
+
 	LockErr  = 0;
 	Setup    = AI_SETUP_OFF;
 	Mode     = AI_MODE_PHIS;
@@ -92,9 +105,9 @@ rAI::rAI() : rSource(), KeypadValue(0.0), Setup(0)
 	memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(LINK_SETUP_OUTPUT, Value  , U_any, SID_PRESENT , CFGNAME_PRESENT , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, PhValue, U_any, SID_PHYSICAL, CFGNAME_PHYSICAL, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Current, U_mA , SID_CURRENT , CFGNAME_CURRENT , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, Value  , U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, PhValue, U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, Current, U_mA , SID_CURRENT , XmlName::CURRENT , LINK_SHADOW_NONE);
 
 //	Limit.Setup.Init(LIMIT_SETUP_AMAX | LIMIT_SETUP_WMAX | LIMIT_SETUP_WMIN | LIMIT_SETUP_AMIN);
 }
@@ -272,7 +285,7 @@ UDINT rAI::Calculate()
 		LockErr |= AI_LE_SIM_MANUAL;
 		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
 		
-		rEventManager::Instance().Add(ReinitEvent(EID_AI_SIM_MANUAL));
+		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_MANUAL));
 	}
 	
 	if(Mode == AI_MODE_AKEYPAD && !(LockErr & AI_LE_SIM_AUTO))
@@ -280,7 +293,7 @@ UDINT rAI::Calculate()
 		LockErr |= AI_LE_SIM_AUTO;
 		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_MANUAL | AI_LE_SIM_LAST);
 		
-		rEventManager::Instance().Add(ReinitEvent(EID_AI_SIM_AUTO));
+		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_AUTO));
 	}
 	
 	if(Mode == AI_MODE_LASTGOOD && !(LockErr & AI_LE_SIM_LAST))
@@ -288,7 +301,7 @@ UDINT rAI::Calculate()
 		LockErr |= AI_LE_SIM_LAST;
 		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_MANUAL);
 		
-		rEventManager::Instance().Add(ReinitEvent(EID_AI_SIM_LAST));
+		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_LAST));
 	}
 	
 	if(Mode == AI_MODE_PHIS && !(LockErr & AI_LE_SIM_OFF))
@@ -296,7 +309,7 @@ UDINT rAI::Calculate()
 		LockErr |= AI_LE_SIM_OFF;
 		LockErr &= ~(AI_LE_SIM_MANUAL | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
 		
-		rEventManager::Instance().Add(ReinitEvent(EID_AI_SIM_OFF));
+		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_OFF));
 	}
 	
 	
@@ -354,7 +367,7 @@ UDINT rAI::Calculate()
 		{
 			if(oldStatus != rAI::Status::MAX)
 			{
-				rEventManager::Instance().Add(ReinitEvent(EID_AI_MAX) << Value.Unit << Value.Value << Scale.Max.Value);
+				rEventManager::instance().Add(ReinitEvent(EID_AI_MAX) << Value.Unit << Value.Value << Scale.Max.Value);
 			}
 
 			m_status = rAI::Status::MAX;
@@ -364,7 +377,7 @@ UDINT rAI::Calculate()
 		{
 			if(oldStatus != rAI::Status::MIN)
 			{
-				rEventManager::Instance().Add(ReinitEvent(EID_AI_MIN) << Value.Unit << Value.Value << Scale.Min.Value);
+				rEventManager::instance().Add(ReinitEvent(EID_AI_MIN) << Value.Unit << Value.Value << Scale.Min.Value);
 			}
 
 			m_status = rAI::Status::MIN;
@@ -460,32 +473,32 @@ UDINT rAI::GenerateVars(vector<rVariable *> &list)
 //
 UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
-	string defMode  = rDataConfig::GetFlagNameByValue(rDataConfig::AIModeFlags , AI_MODE_PHIS);
-	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::AISetupFlags, AI_SETUP_OFF);
-	string strMode  = (element->Attribute(CFGNAME_MODE) ) ? element->Attribute(CFGNAME_MODE)  : defMode.c_str();
-	string strSetup = (element->Attribute(CFGNAME_SETUP)) ? element->Attribute(CFGNAME_SETUP) : defSetup.c_str();
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (AI_MODE_PHIS));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(AI_SETUP_OFF));
 	UDINT  err      = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_AI;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, cfg)) {
+		return DATACFGERR_AI;
+	}
 
 //	tinyxml2::XMLElement *module     = element->FirstChildElement("module");
-	tinyxml2::XMLElement *limits = element->FirstChildElement(CFGNAME_LIMITS); // Limits считываем только для проверки
-	tinyxml2::XMLElement *unit   = element->FirstChildElement(CFGNAME_UNIT);
-	tinyxml2::XMLElement *scale  = element->FirstChildElement(CFGNAME_SCALE);
+	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
+	tinyxml2::XMLElement *unit   = element->FirstChildElement(XmlName::UNIT);
+	tinyxml2::XMLElement *scale  = element->FirstChildElement(XmlName::SCALE);
 
 	if(nullptr == limits || nullptr == unit || nullptr == scale)
 	{
 		return DATACFGERR_AI;
 	}
 
-	Mode  =    rDataConfig::GetFlagFromStr(rDataConfig::AIModeFlags , strMode , err);
-	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::AISetupFlags, strSetup, err));
+	Mode  =    m_flagsMode.getValue (strMode , err);
+	Setup.Init(m_flagsSetup.getValue(strSetup, err));
 
-	KeypadValue.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_KEYPAD), 0.0, err));
-	Scale.Min.Init  (rDataConfig::GetTextLREAL(scale->FirstChildElement  (CFGNAME_MIN)   , 0.0, err));
-	Scale.Max.Init  (rDataConfig::GetTextLREAL(scale->FirstChildElement  (CFGNAME_MAX)   , 0.0, err));
+	KeypadValue.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD), 0.0, err));
+	Scale.Min.Init  (XmlUtils::getTextLREAL(scale->FirstChildElement  (XmlName::MIN)   , 0.0, err));
+	Scale.Max.Init  (XmlUtils::getTextLREAL(scale->FirstChildElement  (XmlName::MAX)   , 0.0, err));
 
-	STRID Unit = rDataConfig::GetTextUDINT(element->FirstChildElement  (CFGNAME_UNIT)   , U_any, err);
+	STRID Unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, err);
 
 	if(err)
 	{

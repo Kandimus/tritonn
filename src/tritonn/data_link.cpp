@@ -20,6 +20,7 @@
 #include "data_variable.h"
 #include "log_manager.h"
 #include "data_link.h"
+#include "xml_util.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,7 +164,7 @@ UDINT rLink::GenerateVars(vector<rVariable *> &list)
 
 	if(nullptr == Owner)
 	{
-		TRACEERROR("The link '%s' has no owner.", Alias);
+		TRACEERROR("The link '%s' has no owner.", Alias.c_str());
 		return 0;
 	}
 
@@ -200,7 +201,7 @@ UDINT rLink::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
 	string *curstr = &Alias;
 
-	FullTag = (element->Attribute(CFGNAME_ALIAS) ) ? element->Attribute(CFGNAME_ALIAS)  : "";
+	FullTag = XmlUtils::getAttributeString(element, XmlName::ALIAS, "");
 
 	if(FullTag.empty()) return DATACFGERR_LINK;
 
@@ -223,21 +224,17 @@ UDINT rLink::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	}
 
 	// Загружаем пределы
-	tinyxml2::XMLElement *limits = element->FirstChildElement(CFGNAME_LIMITS);
+	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS);
 
-	if(limits)
-	{
-		if(tinyxml2::XML_SUCCESS != Limit.LoadFromXML(limits, cfg))
-		{
+	if (limits) {
+		if (tinyxml2::XML_SUCCESS != Limit.LoadFromXML(limits, cfg)) {
 			return DATACFGERR_AI;
 		}
-	}
-	else
-	{
+	} else {
 		Limit.Setup.Init(LIMIT_SETUP_OFF);
 	}
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

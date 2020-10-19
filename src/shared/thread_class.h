@@ -25,7 +25,7 @@
 #define SINGLETON(singletonclass) \
 	public: \
 		virtual ~singletonclass(); \
-		static singletonclass& Instance() { static singletonclass Singleton; return Singleton; } \
+		static singletonclass& instance() { static singletonclass Singleton; return Singleton; } \
 	private: \
 		singletonclass(); \
 		singletonclass(const singletonclass&); \

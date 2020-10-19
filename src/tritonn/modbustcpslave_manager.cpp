@@ -19,6 +19,7 @@
 #include "stringex.h"
 #include "hash.h"
 #include "log_manager.h"
+#include "xml_util.h"
 #include "data_manager.h"
 #include "data_variable.h"
 #include "data_snapshot.h"
@@ -493,13 +494,13 @@ tinyxml2::XMLElement *rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement *el
 
 	if(nullptr == xml_modbus) return nullptr;
 
-	xml_blocks = xml_modbus->FirstChildElement(CFGNAME_DATAMAP);
+	xml_blocks = xml_modbus->FirstChildElement(XmlName::DATAMAP);
 
 	if(nullptr == xml_blocks) return nullptr;
 
-	for(tinyxml2::XMLElement *xml_item = xml_blocks->FirstChildElement(CFGNAME_DATABLOCK); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(CFGNAME_DATABLOCK))
+	for(tinyxml2::XMLElement *xml_item = xml_blocks->FirstChildElement(XmlName::DATABLOCK); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(XmlName::DATABLOCK))
 	{
-		const char *item_name = xml_item->Attribute(CFGNAME_NAME);
+		const char *item_name = xml_item->Attribute(XmlName::NAME);
 
 		if(nullptr == item_name) continue;
 
@@ -519,16 +520,16 @@ UDINT rModbusTCPSlaveManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 	rInterface::LoadFromXML(xml_root, cfg);
 
 	Alias    = "comms.modbus." + Alias;
-	port     = rDataConfig::GetAttributeUDINT (xml_root, CFGNAME_PORT    , TCP_PORT_MODBUS);
+	port     = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
 	ip       = "0.0.0.0";
-	Name     = rDataConfig::GetAttributeString(xml_root, CFGNAME_NAME    , "");
-	SlaveID  = rDataConfig::GetAttributeUDINT (xml_root, CFGNAME_ID      , 0);
-	Security = rDataConfig::GetAttributeUDINT (xml_root, CFGNAME_SECURITY, 0);
-	MaxError = rDataConfig::GetAttributeUDINT (xml_root, CFGNAME_COUNTERR, 3);
+	Name     = XmlUtils::getAttributeString(xml_root, XmlName::NAME    , "");
+	SlaveID  = XmlUtils::getAttributeUDINT (xml_root, XmlName::ID      , 0);
+	Security = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY, 0);
+	MaxError = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNTERR, 3);
 
-	tinyxml2::XMLElement *xml_adrmap = xml_root->FirstChildElement(CFGNAME_ADDRESSMAP);
-	tinyxml2::XMLElement *xml_swap   = xml_root->FirstChildElement(CFGNAME_SWAP);
-	tinyxml2::XMLElement *xml_wlist  = xml_root->FirstChildElement(CFGNAME_WHITELIST);
+	tinyxml2::XMLElement *xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
+	tinyxml2::XMLElement *xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
+	tinyxml2::XMLElement *xml_wlist  = xml_root->FirstChildElement(XmlName::WHITELIST);
 
 	if(nullptr == xml_adrmap)
 	{
@@ -542,15 +543,15 @@ UDINT rModbusTCPSlaveManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 	{
 		UDINT err = 0;
 
-		Swap.Byte  = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(CFGNAME_BYTE ), Swap.Byte , err);
-		Swap.Word  = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(CFGNAME_WORD ), Swap.Word , err);
-		Swap.DWord = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(CFGNAME_DWORD), Swap.DWord, err);
+		Swap.Byte  = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(XmlName::BYTE ), Swap.Byte , err);
+		Swap.Word  = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(XmlName::WORD ), Swap.Word , err);
+		Swap.DWord = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(XmlName::DWORD), Swap.DWord, err);
 	}
 
 	// Загружаем список "белых" адрессов
 	if(nullptr != xml_wlist)
 	{
-		for(tinyxml2::XMLElement *xml_item = xml_wlist->FirstChildElement(CFGNAME_IP); nullptr != xml_item; xml_item = xml_item->NextSiblingElement(CFGNAME_IP))
+		for(tinyxml2::XMLElement *xml_item = xml_wlist->FirstChildElement(XmlName::IP); nullptr != xml_item; xml_item = xml_item->NextSiblingElement(XmlName::IP))
 		{
 			if(xml_item->GetText())
 			{
@@ -566,12 +567,12 @@ UDINT rModbusTCPSlaveManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 
 
 	// Перебираем указанные блоки
-	for(tinyxml2::XMLElement *xml_item = xml_adrmap->FirstChildElement(CFGNAME_ADDRESSBLOCK); nullptr != xml_item; xml_item = xml_item->NextSiblingElement(CFGNAME_ADDRESSBLOCK))
+	for(tinyxml2::XMLElement *xml_item = xml_adrmap->FirstChildElement(XmlName::ADDRESSBLOCK); nullptr != xml_item; xml_item = xml_item->NextSiblingElement(XmlName::ADDRESSBLOCK))
 	{
 		// Считываем блок модбаса
 		UDINT  err       = 0;
-		UDINT  address   = rDataConfig::GetAttributeUDINT(xml_item, CFGNAME_BEGIN, 0xFFFFFFFF);
-		string blockname = rDataConfig::GetTextString    (xml_item, "", err);
+		UDINT  address   = XmlUtils::getAttributeUDINT(xml_item, XmlName::BEGIN, 0xFFFFFFFF);
+		string blockname = XmlUtils::getTextString    (xml_item, "", err);
 
 		if(address > 0x0000FFFF)
 		{
@@ -597,13 +598,13 @@ UDINT rModbusTCPSlaveManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 		}
 
 		//
-		for(tinyxml2::XMLElement *xml_var = xml_block->FirstChildElement(CFGNAME_VARIABLE); xml_var != nullptr; xml_var = xml_var->NextSiblingElement(CFGNAME_VARIABLE))
+		for(tinyxml2::XMLElement *xml_var = xml_block->FirstChildElement(XmlName::VARIABLE); xml_var != nullptr; xml_var = xml_var->NextSiblingElement(XmlName::VARIABLE))
 		{
 			rTempLink tlink;
 
 			err           = 0;
 			tlink.Address = address;
-			tlink.VarName = rDataConfig::GetTextString(xml_var, "", err);
+			tlink.VarName = XmlUtils::getTextString(xml_var, "", err);
 			tlink.LineNum = xml_var->GetLineNum();
 			address       = 0;
 

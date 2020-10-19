@@ -14,6 +14,7 @@
 //=================================================================================================
 
 #include "precision.h"
+#include "xml_util.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -68,13 +69,13 @@ UDINT rPrecision::Load(tinyxml2::XMLElement *element)
 {
 	UDINT err = 0;
 
-	if(nullptr == element) return tinyxml2::XML_SUCCESS;
+	if(nullptr == element) return TRITONN_RESULT_OK;
 
-	DefPrec = rDataConfig::GetAttributeUSINT(element, CFGNAME_DEFAULT, DefPrec);
+	DefPrec = XmlUtils::getAttributeUSINT(element, XmlName::DEFAULT, DefPrec);
 
-	for(tinyxml2::XMLElement *prec = element->FirstChildElement(CFGNAME_UNIT); prec != nullptr; prec = prec->NextSiblingElement(CFGNAME_UNIT))
+	for(tinyxml2::XMLElement *prec = element->FirstChildElement(XmlName::UNIT); prec != nullptr; prec = prec->NextSiblingElement(XmlName::UNIT))
 	{
-		UDINT id  = rDataConfig::GetAttributeUDINT(prec, CFGNAME_ID, MAX_UNITS_COUNT);
+		UDINT id  = rDataConfig::GetAttributeUDINT(prec, XmlName::ID, MAX_UNITS_COUNT);
 		USINT val = rDataConfig::GetTextUSINT(prec, DefPrec, err);
 
 		if(id >= MAX_UNITS_COUNT || err) return DATACFGERR_PREC_ID;

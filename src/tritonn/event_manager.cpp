@@ -42,13 +42,6 @@ rEventManager::~rEventManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-rEventManager &rEventManager::Instance()
-{
-	static rEventManager Singleton;
-
-	return Singleton;
-}
-
 
 
 //-------------------------------------------------------------------------------------------------
@@ -455,7 +448,7 @@ void Event_ID(UDINT eid, UDINT id)
 	rEvent event(eid);
 	event.AddUDINT(id);
 	
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 }
 
 
@@ -465,7 +458,7 @@ void Event_ID_UINT(UDINT eid, UDINT id, UINT val)
 	event.AddUDINT(id);
 	event.AddUINT(val);
 	
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 }
 
 
@@ -475,7 +468,7 @@ void Event_ID_UDINT(UDINT eid, UDINT id, UDINT val)
 	event.AddUDINT(id);
 	event.AddUDINT(val);
 
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 }
 
 
@@ -486,5 +479,5 @@ void Event_ID_UINT_UINT(UDINT eid, UDINT id, UINT val1, UINT val2)
 	event.AddUINT(val1);
 	event.AddUINT(val2);
 	
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 }

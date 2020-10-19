@@ -199,7 +199,7 @@ void rDataManager::DoHalt(UDINT reason)
 	Halt.Set(true);
 	Live.Set(LIVE_HALT);
 
-	rEventManager::Instance().AddEventUDINT(EID_SYSTEM_HALT, reason);
+	rEventManager::instance().AddEventUDINT(EID_SYSTEM_HALT, reason);
 
 	SimpleFileSave(FILE_RESTART, "cold");
 }
@@ -215,13 +215,13 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	{
 		case RESTART_WARM:
 			TRACEI(LM_SYSTEM, "Command Warm-restart");
-			rEventManager::Instance().AddEvent(EID_SYSTEM_RESTART_WARM);
+			rEventManager::instance().AddEvent(EID_SYSTEM_RESTART_WARM);
 			break;
 
 		case RESTART_COLD:
 			TRACEI(LM_SYSTEM, "Command Cold-restart");
 			SimpleFileSave(FILE_RESTART, "cold");
-			rEventManager::Instance().AddEvent(EID_SYSTEM_RESTART_COLD);
+			rEventManager::instance().AddEvent(EID_SYSTEM_RESTART_COLD);
 			break;
 
 		case RESTART_DEBUG:
@@ -231,7 +231,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 
 		default:
 			TRACEI(LM_SYSTEM, "Unkonow command restart");
-			rEventManager::Instance().AddEventUDINT(EID_SYSTEM_RESTART_UNKNOW, restart);
+			rEventManager::instance().AddEventUDINT(EID_SYSTEM_RESTART_UNKNOW, restart);
 			return 1;
 	}
 
@@ -241,7 +241,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 		case LIVE_STARTING:
 		case LIVE_RUNNING:
 		case LIVE_HALT:
-			rThreadMaster::Instance().Finish();
+			rThreadMaster::instance().Finish();
 			return 0;
 
 		case LIVE_REBOOT_COLD:
@@ -250,12 +250,12 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 				TRACEW(LM_SYSTEM, "Set new conf file: '%s'", filename.c_str());
 				SimpleFileSave(FILE_CONF, filename);
 			}
-			rThreadMaster::Instance().Finish();
+			rThreadMaster::instance().Finish();
 			return 0;
 
 		default:
 			TRACEA(LM_SYSTEM, "Unknow live status");
-			rThreadMaster::Instance().Finish();
+			rThreadMaster::instance().Finish();
 			return 2;
 	}
 }
@@ -338,7 +338,7 @@ UDINT rDataManager::LoadConfig()
 	// Добавляем интерфейсы, создаем под них переменные
 	for(auto interface : ListInterface)
 	{
-		rThreadMaster::Instance().Add(interface->GetThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->Alias);
+		rThreadMaster::instance().Add(interface->GetThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->Alias);
 	}
 
 	// Собираем переменные от объектов
@@ -401,7 +401,7 @@ const rConfigInfo *rDataManager::GetConfName() const
 
 UDINT rDataManager::SetLang(const string &lang)
 {
-	rEventManager::Instance().SetCurLang(lang);
+	rEventManager::instance().SetCurLang(lang);
 	rTextManager::Instance().SetCurLang(lang);
 
 	strncpy(SysVar.Lang, lang.c_str(), 8);
@@ -511,7 +511,7 @@ rThreadStatus rDataManager::Proccesing()
 
 		Lock();
 
-		SysVar.State.EventAlarm = rEventManager::Instance().GetAlarm();
+		SysVar.State.EventAlarm = rEventManager::instance().GetAlarm();
 		SysVar.State.Live       = Live.Get();
 
 		GetCurrentTime(SysVar.UnixTime, &SysVar.DateTime);
@@ -574,7 +574,7 @@ UDINT rDataManager::CreateConfigHaltEvent(rDataConfig &cfg)
 
 	event << (HALT_REASON_CONFIGFILE | cfg.ErrorID) << cfg.ErrorLine;
 
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 
 	DoHalt(HALT_REASON_CONFIGFILE | cfg.ErrorID);
 
@@ -599,7 +599,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	std::string text;
 	UDINT result = TRITONN_RESULT_OK;
 
-	if (!rThreadMaster::Instance().GetArg()->m_forceRun) {
+	if (!rThreadMaster::instance().GetArg()->m_forceRun) {
 
 		// Проверяем на cold/warm/debug старт
 		result = SimpleFileLoad(FILE_RESTART, text);
@@ -628,14 +628,14 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	// удаляем файл
 	SimpleFileDelete(FILE_RESTART);
 
-	if (rThreadMaster::Instance().GetArg()->m_forceConf.size()) {
-		conf = rThreadMaster::Instance().GetArg()->m_forceConf;
+	if (rThreadMaster::instance().GetArg()->m_forceConf.size()) {
+		conf = rThreadMaster::instance().GetArg()->m_forceConf;
 		return TRITONN_RESULT_OK;
 	}
 
 	result = SimpleFileLoad(FILE_CONF, conf);
 	if(TRITONN_RESULT_OK != result) {
-		rEventManager::Instance().AddEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
+		rEventManager::instance().AddEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
 
 		DoHalt(HALT_REASON_CONFIGFILE | result);
 

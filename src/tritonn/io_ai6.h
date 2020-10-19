@@ -37,11 +37,15 @@ public:
 
 	rIOAI6();
 	virtual ~rIOAI6();
+
+public:
+	static std::string m_name;
 	
 	// Виртуальные функции от rBaseModule
 public:
 	virtual UDINT processing(USINT issim);
 	virtual rIOBaseChannel* getChannel(USINT channel);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
 
 public:
 	UINT getADC(USINT id);

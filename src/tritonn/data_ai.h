@@ -15,7 +15,7 @@
 
 #pragma once
 
-//#include "io.h"
+#include "bits_array.h"
 #include "data_source.h"
 #include "compared_values.h"
 #include "data_link.h"
@@ -92,6 +92,11 @@ public:
 	UDINT       Security;                //
 	UINT        Spline[MAX_AI_SPLINE];   // Массив последних 4 "хороших" кодов АЦП, для сглаживания
 	LREAL       LastGood;                // Последнее "хорошее" значение
+
+private:
+	rBitsArray m_flagsMode;
+	rBitsArray m_flagsSetup;
+
 };
 
 

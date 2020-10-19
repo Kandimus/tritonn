@@ -30,9 +30,9 @@ typedef rEvent    rEventArray[MAX_EVENT];
 //
 class rEventManager : public rThreadClass
 {
-public:
-	virtual ~rEventManager();
+	SINGLETON(rEventManager)
 
+public:
 	UDINT LoadText(const string& filename);
 	UDINT SetCurLang(const string &lang);
 
@@ -44,16 +44,6 @@ public:
 	UDINT Confirm()  { return Alarm.Set(0); } //TODO Будем ли реализовывать подтверждение каждого события?
 	
 	UDINT Get(rEventArray &arr);
-
-// Singleton
-private:
-	rEventManager();
-	rEventManager(const rEventManager &);
-	rEventManager& operator=(rEventManager &);
-
-public:
-	static rEventManager &Instance();
-
 
 protected:
 	virtual rThreadStatus Proccesing();

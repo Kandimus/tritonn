@@ -17,6 +17,7 @@
 #include "log_manager.h"
 #include "data_config.h"
 #include "text_id.h"
+#include "xml_util.h"
 
 
 
@@ -59,7 +60,7 @@ UDINT rTextClass::LoadSystem(const string& filename)
 		return ErrorID;
 	}
 
-	root = doc.FirstChildElement(CFGNAME_STRINGS);
+	root = doc.FirstChildElement(XmlName::STRINGS);
 	if(nullptr == root)
 	{
 		ErrorID   = doc.ErrorID();
@@ -70,7 +71,7 @@ UDINT rTextClass::LoadSystem(const string& filename)
 
 
 	// Загружаем языки
-	for(tinyxml2::XMLElement *lang = root->FirstChildElement(CFGNAME_LANG); lang != nullptr; lang = lang->NextSiblingElement(CFGNAME_LANG))
+	for(tinyxml2::XMLElement *lang = root->FirstChildElement(XmlName::LANG); lang != nullptr; lang = lang->NextSiblingElement(XmlName::LANG))
 	{
 		if(tinyxml2::XML_SUCCESS != LoadLang(lang, true))
 		{
@@ -95,7 +96,7 @@ UDINT rTextClass::Load(tinyxml2::XMLElement *root)
 	}
 
 	// Загружаем языки
-	for(tinyxml2::XMLElement *lang = root->FirstChildElement(CFGNAME_LANG); lang != nullptr; lang = lang->NextSiblingElement(CFGNAME_LANG))
+	for(tinyxml2::XMLElement *lang = root->FirstChildElement(XmlName::LANG); lang != nullptr; lang = lang->NextSiblingElement(XmlName::LANG))
 	{
 		if(tinyxml2::XML_SUCCESS != LoadLang(lang, false))
 		{
@@ -116,16 +117,16 @@ UDINT rTextClass::Load(tinyxml2::XMLElement *root)
 */
 	DeleteUnused();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
 
 UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create)
 {
-	rTextLang *lang   = nullptr;
 	string     langID = "";
 
+	rTextLang *lang   = nullptr;
 	if(nullptr == root)
 	{
 		ErrorID   = DATACFGERR_LANG_STRUCT;
@@ -134,7 +135,7 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create)
 		return ErrorID;
 	}
 
-	langID = String_tolower(root->Attribute(CFGNAME_VALUE));
+	langID = String_tolower(root->Attribute(XmlName::VALUE));
 	lang   = GetLangPtr(langID);
 	if(lang == nullptr)
 	{
@@ -160,9 +161,9 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create)
 	}
 
 	// Загружаем строки
-	for(tinyxml2::XMLElement *item = root->FirstChildElement(CFGNAME_STR); item != nullptr; item = item->NextSiblingElement(CFGNAME_STR))
+	for(tinyxml2::XMLElement *item = root->FirstChildElement(XmlName::STR); item != nullptr; item = item->NextSiblingElement(XmlName::STR))
 	{
-		UDINT  id    = rDataConfig::GetAttributeUDINT(item, CFGNAME_ID, SID_UNKNOW);
+		UDINT  id    = XmlUtils::getAttributeUDINT(item, XmlName::ID, SID_UNKNOW);
 		CCHPTR ptext = item->GetText();
 		string text  = (nullptr == ptext) ? "" : ptext;
 

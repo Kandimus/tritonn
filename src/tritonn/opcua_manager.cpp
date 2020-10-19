@@ -23,6 +23,7 @@
 #include "log_manager.h"
 #include "data_manager.h"
 #include "data_variable.h"
+#include "xml_util.h"
 
 
 #define ANSI_COLOR_RESET   "\x1b[0m"
@@ -482,11 +483,11 @@ UDINT rOPCUAManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cf
 
 	if(nullptr == xml_root) return TRITONN_RESULT_OK;
 
-	xml_properties = xml_root->FirstChildElement(CFGNAME_PROPERTIES);
+	xml_properties = xml_root->FirstChildElement(XmlName::PROPERTIES);
 
 	if(nullptr != xml_properties)
 	{
-		LoginAnonymous = rDataConfig::GetTextUDINT(xml_properties->FirstChildElement(CFGNAME_ANONYMOUS), 1, err);
+		LoginAnonymous = XmlUtils::getTextUDINT(xml_properties->FirstChildElement(XmlName::ANONYMOUS), 1, err);
 	}
 
 	// Считываем пользователей
@@ -498,7 +499,7 @@ UDINT rOPCUAManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cf
 		return DATACFGERR_OPCUA_USER_NF;
 	}
 
-	xml_opcua = xml_security_root->FirstChildElement(CFGNAME_OPCUA);
+	xml_opcua = xml_security_root->FirstChildElement(XmlName::OPCUA);
 
 	if(nullptr == xml_opcua)
 	{
@@ -506,10 +507,10 @@ UDINT rOPCUAManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cf
 	}
 
 	LoginsCount = 0;
-	for(tinyxml2::XMLElement *xml_user = xml_opcua->FirstChildElement(CFGNAME_USER); xml_user != nullptr; xml_user = xml_user->NextSiblingElement(CFGNAME_USER))
+	for(tinyxml2::XMLElement *xml_user = xml_opcua->FirstChildElement(XmlName::USER); xml_user != nullptr; xml_user = xml_user->NextSiblingElement(XmlName::USER))
 	{
-		string login    = rDataConfig::GetTextString(xml_user->FirstChildElement(CFGNAME_LOGIN)   , "", err);
-		string password = rDataConfig::GetTextString(xml_user->FirstChildElement(CFGNAME_PASSWORD), "", err);
+		string login    = XmlUtils::getTextString(xml_user->FirstChildElement(XmlName::LOGIN)   , "", err);
+		string password = XmlUtils::getTextString(xml_user->FirstChildElement(XmlName::PASSWORD), "", err);
 
 		if("" == login || "" == password)
 		{

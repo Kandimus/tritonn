@@ -25,7 +25,7 @@
 #include "data_config.h"
 #include "data_variable.h"
 #include "data_limit.h"
-
+#include "xml_util.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -146,11 +146,11 @@ UDINT rLimit::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &/*cfg*/)
 
 	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::LimitSetupFlags, strSetup, err));
 
-	Hysteresis.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_HYSTER), 0.0, err));
-	AMin.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_LOLO)  , 0.0, err));
-	WMin.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_LO)    , 0.0, err));
-	WMax.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_HI)    , 0.0, err));
-	AMax.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_HIHI)  , 0.0, err));
+	Hysteresis.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::HYSTER), 0.0, err));
+	AMin.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::LOLO)  , 0.0, err));
+	WMin.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::LO)    , 0.0, err));
+	WMax.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::HI)    , 0.0, err));
+	AMax.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::HIHI)  , 0.0, err));
 
 	return tinyxml2::XML_SUCCESS;
 }
@@ -166,7 +166,7 @@ void rLimit::SendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend)
 	if(val) event << *val;
 	if(lim) event << *lim;
 
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 }
 
 

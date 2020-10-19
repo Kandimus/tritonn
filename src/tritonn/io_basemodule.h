@@ -18,6 +18,11 @@
 #include "def.h"
 
 class rIOBaseChannel;
+class rDataConfig;
+
+namespace tinyxml2 {
+class XMLElement;
+}
 
 class rIOBaseModule
 {
@@ -32,6 +37,7 @@ public:
 	virtual ~rIOBaseModule() {}
 
 	virtual rIOBaseChannel* getChannel(USINT channel) = 0;
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg) = 0;
 
 	Type  getType()         { return m_type; }
 	UINT  getNodeID()       { return m_nodeID; }
@@ -44,6 +50,9 @@ public:
 	UINT  getCAN()          { return m_CAN; }
 	UINT  getFirmware()     { return m_firmware; }
 	UINT  getHardware()     { return m_hardware; }
+
+public:
+	static std::string m_name;
 
 protected:
 	virtual UDINT processing(USINT issim);

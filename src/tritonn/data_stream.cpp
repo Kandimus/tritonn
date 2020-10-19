@@ -18,6 +18,7 @@
 #include <string.h>
 #include "event_eid.h"
 #include "text_id.h"
+#include "xml_util.h"
 #include "event_manager.h"
 #include "precision.h"
 #include "data_manager.h"
@@ -43,19 +44,19 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 	Linearization = false;
 //	rTotal   Total;
 
-	InitLink(LINK_SETUP_INPUT   , Counter     , U_imp   , SID_IMPULSE          , CFGNAME_IMPULSE      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INPUT   , Freq        , U_Hz    , SID_FREQUENCY        , CFGNAME_FREQ         , CFGNAME_IMPULSE );
-	InitLink(LINK_SETUP_INOUTPUT, Temp        , U_C     , SID_TEMPERATURE      , CFGNAME_TEMP         , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Pres        , U_MPa   , SID_PRESSURE         , CFGNAME_PRES         , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Dens        , U_kg_m3 , SID_DENSITY          , CFGNAME_DENSITY      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Dens15      , U_kg_m3 , SID_DENSITY15        , CFGNAME_DENSITY15    , CFGNAME_DENSITY );
-	InitLink(LINK_SETUP_INOUTPUT, Dens20      , U_kg_m3 , SID_DENSITY20        , CFGNAME_DENSITY20    , CFGNAME_DENSITY );
-	InitLink(LINK_SETUP_INOUTPUT, B15         , U_1_C   , SID_B15              , CFGNAME_B15          , CFGNAME_DENSITY );
-	InitLink(LINK_SETUP_INOUTPUT, Y15         , U_1_MPa , SID_Y15              , CFGNAME_Y15          , CFGNAME_DENSITY );
-	InitLink(LINK_SETUP_OUTPUT  , FlowMass    , U_t_h   , SID_FLOWRATE_MASS    , CFGNAME_FLOWRATEMASS , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume  , U_m3_h  , SID_FLOWRATE_VOLUME  , CFGNAME_FLOWRATEVOL  , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume15, U_m3_h  , SID_FLOWRATE_VOLUME15, CFGNAME_FLOWRATEVOL15, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume20, U_m3_h  , SID_FLOWRATE_VOLUME20, CFGNAME_FLOWRATEVOL20, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INPUT   , Counter     , U_imp   , SID_IMPULSE          , XmlName::IMPULSE      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INPUT   , Freq        , U_Hz    , SID_FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
+	InitLink(LINK_SETUP_INOUTPUT, Temp        , U_C     , SID_TEMPERATURE      , XmlName::TEMP         , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Pres        , U_MPa   , SID_PRESSURE         , XmlName::PRES         , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Dens        , U_kg_m3 , SID_DENSITY          , XmlName::DENSITY      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Dens15      , U_kg_m3 , SID_DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
+	InitLink(LINK_SETUP_INOUTPUT, Dens20      , U_kg_m3 , SID_DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
+	InitLink(LINK_SETUP_INOUTPUT, B15         , U_1_C   , SID_B15              , XmlName::B15          , XmlName::DENSITY);
+	InitLink(LINK_SETUP_INOUTPUT, Y15         , U_1_MPa , SID_Y15              , XmlName::Y15          , XmlName::DENSITY);
+	InitLink(LINK_SETUP_OUTPUT  , FlowMass    , U_t_h   , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume  , U_m3_h  , SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume15, U_m3_h  , SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume20, U_m3_h  , SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, LINK_SHADOW_NONE);
 }
 
 
@@ -134,7 +135,7 @@ UDINT rStream::Calculate()
 	{
 		Factor   = SetFactor;
 		AcceptKF = 0;
-		rEventManager::Instance().Add(ReinitEvent(EID_STREAM_ACCEPT));
+		rEventManager::instance().Add(ReinitEvent(EID_STREAM_ACCEPT));
 	}
 
 	//-------------------------------------------------------------------------------------------
@@ -146,10 +147,10 @@ UDINT rStream::Calculate()
 	// Увеличим глобальный счетчик
 	UDINT check = CalcTotal();
 
-	if(check & TOTAL_MAX_MASS    ) rEventManager::Instance().Add(ReinitEvent(EID_STREAM_TOTAL_MASS));
-	if(check & TOTAL_MAX_VOLUME  ) rEventManager::Instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME));
-	if(check & TOTAL_MAX_VOLUME15) rEventManager::Instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME15));
-	if(check & TOTAL_MAX_VOLUME20) rEventManager::Instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME20));
+	if(check & TOTAL_MAX_MASS    ) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_MASS));
+	if(check & TOTAL_MAX_VOLUME  ) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME));
+	if(check & TOTAL_MAX_VOLUME15) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME15));
+	if(check & TOTAL_MAX_VOLUME20) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME20));
 
 	// Расчитаем расход исходя из частоты
 	if(FlowMeter == STR_FLOWMETER_CARIOLIS)
@@ -279,19 +280,19 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_STREAM;
 
-	tinyxml2::XMLElement *impulse = element->FirstChildElement(CFGNAME_IMPULSE);
-	tinyxml2::XMLElement *freq    = element->FirstChildElement(CFGNAME_FREQ);
-	tinyxml2::XMLElement *temp    = element->FirstChildElement(CFGNAME_TEMP);
-	tinyxml2::XMLElement *pres    = element->FirstChildElement(CFGNAME_PRES);
-	tinyxml2::XMLElement *dens    = element->FirstChildElement(CFGNAME_DENSITY);
-	tinyxml2::XMLElement *dens15  = element->FirstChildElement(CFGNAME_DENSITY15);
-	tinyxml2::XMLElement *dens20  = element->FirstChildElement(CFGNAME_DENSITY20);
-	tinyxml2::XMLElement *b15     = element->FirstChildElement(CFGNAME_B15);
-	tinyxml2::XMLElement *y15     = element->FirstChildElement(CFGNAME_Y15);
-	tinyxml2::XMLElement *factors = element->FirstChildElement(CFGNAME_FACTORS);
+	tinyxml2::XMLElement *impulse = element->FirstChildElement(XmlName::IMPULSE);
+	tinyxml2::XMLElement *freq    = element->FirstChildElement(XmlName::FREQ);
+	tinyxml2::XMLElement *temp    = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement *pres    = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement *dens    = element->FirstChildElement(XmlName::DENSITY);
+	tinyxml2::XMLElement *dens15  = element->FirstChildElement(XmlName::DENSITY15);
+	tinyxml2::XMLElement *dens20  = element->FirstChildElement(XmlName::DENSITY20);
+	tinyxml2::XMLElement *b15     = element->FirstChildElement(XmlName::B15);
+	tinyxml2::XMLElement *y15     = element->FirstChildElement(XmlName::Y15);
+	tinyxml2::XMLElement *factors = element->FirstChildElement(XmlName::FACTORS);
 
-	Linearization = rDataConfig::GetAttributeUSINT(element, CFGNAME_LINEARIZATION, 0);
-	Maintenance   = rDataConfig::GetAttributeUSINT(element, CFGNAME_MAINTENANCE  , 0);
+	Linearization = XmlUtils::getAttributeUSINT(element, XmlName::LINEARIZATION, 0);
+	Maintenance   = XmlUtils::getAttributeUSINT(element, XmlName::MAINTENANCE  , 0);
 	FlowMeter     = rDataConfig::GetFlagFromStr(rDataConfig::STRFMeterFlags, strFlowMeter, err);
 
 	if(nullptr == impulse || nullptr == temp || nullptr == pres || nullptr == dens || nullptr == factors || err)
@@ -299,34 +300,34 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 		return DATACFGERR_STREAM;
 	}
 
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(impulse->FirstChildElement(CFGNAME_LINK), Counter)) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement   (CFGNAME_LINK), Pres))    return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement   (CFGNAME_LINK), Dens))    return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement   (CFGNAME_LINK), Temp))    return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(impulse->FirstChildElement(XmlName::LINK), Counter)) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement   (XmlName::LINK), Pres))    return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement   (XmlName::LINK), Dens))    return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement   (XmlName::LINK), Temp))    return cfg.ErrorID;
 
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(freq  , Freq  , Counter, CFGNAME_FREQ)     ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens15, Dens15, Dens   , CFGNAME_DENSITY15)) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens20, Dens20, Dens   , CFGNAME_DENSITY20)) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15   , B15   , Dens   , CFGNAME_B15)      ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15   , Y15   , Dens   , CFGNAME_B15)      ) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(freq  , Freq  , Counter, XmlName::FREQ)     ) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens15, Dens15, Dens   , XmlName::DENSITY15)) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens20, Dens20, Dens   , XmlName::DENSITY20)) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15   , B15   , Dens   , XmlName::B15)      ) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15   , Y15   , Dens   , XmlName::B15)      ) return cfg.ErrorID;
 
 	//----------------------------------------------------------------------------------------------
 	// Загрузка факторов
-	tinyxml2::XMLElement *points = factors->FirstChildElement(CFGNAME_POINTS);
+	tinyxml2::XMLElement *points = factors->FirstChildElement(XmlName::POINTS);
 
-	SetFactor.KeypadKF.Init(rDataConfig::GetTextLREAL(factors->FirstChildElement(CFGNAME_KEYPAD_KF), 0.0, err));
-	SetFactor.KeypadMF.Init(rDataConfig::GetTextLREAL(factors->FirstChildElement(CFGNAME_KEYPAD_MF), 0.0, err));
+	SetFactor.KeypadKF.Init(rDataConfig::GetTextLREAL(factors->FirstChildElement(XmlName::KEYPAD_KF), 0.0, err));
+	SetFactor.KeypadMF.Init(rDataConfig::GetTextLREAL(factors->FirstChildElement(XmlName::KEYPAD_MF), 0.0, err));
 
 	if(nullptr != points)
 	{
 		for(UDINT ii = 0; ii < MAX_FACTOR_POINT; ++ii)
 		{
-			tinyxml2::XMLElement *point = factors->FirstChildElement(CFGNAME_POINT);
+			tinyxml2::XMLElement *point = factors->FirstChildElement(XmlName::POINT);
 
 			if(nullptr == point) break;
 
-			SetFactor.Point[ii].Hz.Init(rDataConfig::GetTextLREAL(point->FirstChildElement(CFGNAME_HZ), 0.0, err));
-			SetFactor.Point[ii].Kf.Init(rDataConfig::GetTextLREAL(point->FirstChildElement(CFGNAME_KF), 0.0, err));
+			SetFactor.Point[ii].Hz.Init(rDataConfig::GetTextLREAL(point->FirstChildElement(XmlName::HERTZ), 0.0, err));
+			SetFactor.Point[ii].Kf.Init(rDataConfig::GetTextLREAL(point->FirstChildElement(XmlName::KF   ), 0.0, err));
 		}
 	}
 

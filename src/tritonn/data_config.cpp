@@ -15,6 +15,7 @@
 //=================================================================================================
 
 
+#include "cJSON.h"
 #include "data_config.h"
 #include "event_manager.h"
 #include "text_manager.h"
@@ -25,6 +26,7 @@
 #include "users.h"
 #include "hash.h"
 #include "threadmaster.h"
+#include "io_manager.h"
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_ai.h"
@@ -39,22 +41,15 @@
 #include "modbustcpslave_manager.h"
 #include "opcua_manager.h"
 #include "structures.h"
+#include "xml_util.h"
 
-using namespace tinyxml2;
-
-
-
-vector<rBitFlag> rDataConfig::AIModeFlags;
-vector<rBitFlag> rDataConfig::AISetupFlags;
-vector<rBitFlag> rDataConfig::FISetupFlags;
-vector<rBitFlag> rDataConfig::STNProductValues;
-vector<rBitFlag> rDataConfig::STRFMeterFlags;
-vector<rBitFlag> rDataConfig::SelectorSetupFlags;
-vector<rBitFlag> rDataConfig::SelectorModeFlags;
-vector<rBitFlag> rDataConfig::LimitSetupFlags;
-vector<rBitFlag> rDataConfig::ReportTypeFlags;
-vector<rBitFlag> rDataConfig::ReportPeriodFlags;
-vector<rBitFlag> rDataConfig::VarSetupFlags;
+std::vector<rBitFlag> rDataConfig::STNProductValues;
+std::vector<rBitFlag> rDataConfig::STRFMeterFlags;
+std::vector<rBitFlag> rDataConfig::SelectorSetupFlags;
+std::vector<rBitFlag> rDataConfig::SelectorModeFlags;
+std::vector<rBitFlag> rDataConfig::LimitSetupFlags;
+std::vector<rBitFlag> rDataConfig::ReportTypeFlags;
+std::vector<rBitFlag> rDataConfig::ReportPeriodFlags;
 
 
 rDataConfig::rDataConfig()
@@ -69,10 +64,10 @@ rDataConfig::rDataConfig()
 	CfgJSON_USR     = cJSON_CreateArray();
 	XMLRootSecurity = nullptr;
 
-	cJSON_AddItemToObject(CfgJSON, CFGNAME_VARS , CfgJSON_VAR);
-	cJSON_AddItemToObject(CfgJSON, CFGNAME_IO   , CfgJSON_IO);
-	cJSON_AddItemToObject(CfgJSON, CFGNAME_CALC , CfgJSON_OBJ);
-	cJSON_AddItemToObject(CfgJSON, CFGNAME_USERS, CfgJSON_USR);
+	cJSON_AddItemToObject(CfgJSON, XmlName::VARS , CfgJSON_VAR);
+	cJSON_AddItemToObject(CfgJSON, XmlName::IO   , CfgJSON_IO);
+	cJSON_AddItemToObject(CfgJSON, XmlName::CALC , CfgJSON_OBJ);
+	cJSON_AddItemToObject(CfgJSON, XmlName::USERS, CfgJSON_USR);
 }
 
 
@@ -88,27 +83,11 @@ rDataConfig::~rDataConfig()
 
 void rDataConfig::InitBitFlags()
 {
-	rDataConfig::AIModeFlags.clear();
-	rDataConfig::AIModeFlags.push_back(rBitFlag("PHIS"  , AI_MODE_PHIS));
-	rDataConfig::AIModeFlags.push_back(rBitFlag("KEYPAD", AI_MODE_MKEYPAD));
-
-	rDataConfig::AISetupFlags.clear();
-	rDataConfig::AISetupFlags.push_back(rBitFlag("OFF"      , AI_SETUP_OFF));
-	rDataConfig::AISetupFlags.push_back(rBitFlag("NOBUFFER" , AI_SETUP_NOBUFFER));
-	rDataConfig::AISetupFlags.push_back(rBitFlag("VIRTUAL"  , AI_SETUP_VIRTUAL));
-	rDataConfig::AISetupFlags.push_back(rBitFlag("NOICE"    , AI_SETUP_NOICE));
-	rDataConfig::AISetupFlags.push_back(rBitFlag("KEYPAD"   , AI_SETUP_ERR_KEYPAD));
-	rDataConfig::AISetupFlags.push_back(rBitFlag("LASTGOOD" , AI_SETUP_ERR_LASTGOOD));
-
 	rDataConfig::LimitSetupFlags.push_back(rBitFlag("OFF" , LIMIT_SETUP_OFF));
 	rDataConfig::LimitSetupFlags.push_back(rBitFlag("LOLO", LIMIT_SETUP_AMIN));
 	rDataConfig::LimitSetupFlags.push_back(rBitFlag("LO"  , LIMIT_SETUP_WMIN));
 	rDataConfig::LimitSetupFlags.push_back(rBitFlag("HI"  , LIMIT_SETUP_WMAX));
 	rDataConfig::LimitSetupFlags.push_back(rBitFlag("HIHI", LIMIT_SETUP_AMAX));
-
-	rDataConfig::FISetupFlags.clear();
-	rDataConfig::FISetupFlags.push_back(rBitFlag("OFF"      , FI_SETUP_OFF));
-	rDataConfig::FISetupFlags.push_back(rBitFlag("NOBUFFER" , FI_SETUP_NOBUFFER));
 
 	rDataConfig::STNProductValues.push_back(rBitFlag("PETROLEUM"   , PRODUCT_PETROLEUM));
 	rDataConfig::STNProductValues.push_back(rBitFlag("GAZOLENE"    , PRODUCT_GAZOLENE));
@@ -149,8 +128,6 @@ void rDataConfig::InitBitFlags()
 	rDataConfig::ReportPeriodFlags.push_back(rBitFlag("ANNUAL"   , REPORT_PERIOD_ANNUAL)   );
 	rDataConfig::ReportPeriodFlags.push_back(rBitFlag("5MIN"     , REPORT_PERIOD_5MIN)     );
 	rDataConfig::ReportPeriodFlags.push_back(rBitFlag("15MIN"    , REPORT_PERIOD_15MIN)    );
-
-	rDataConfig::VarSetupFlags.push_back(rBitFlag("CONST"         , VAR_SETUP_CONST));
 }
 
 
@@ -247,19 +224,19 @@ UDINT rDataConfig::GetFlagFromStr(vector<rBitFlag> &arr, const string &str, UDIN
 // Получение данных от менеджера данных
 UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vector<rSource *> &listsrc, vector<rInterface *> &listiface, vector<rReport *> &listrpt)
 {
-	XMLDocument doc;
-	XMLDocument doc_security;
-	XMLElement *root          = nullptr;
-	string      fullname      = DIR_CONF + filename;
-	string      info_devel    = "";
-	string      info_hash     = "";
-	string      info_name     = "";
-	string      info_ver      = "";
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLDocument doc_security;
+	tinyxml2::XMLElement* root = nullptr;
+	std::string fullname      = DIR_CONF + filename;
+	std::string info_devel    = "";
+	std::string info_hash     = "";
+	std::string info_name     = "";
+	std::string info_ver      = "";
 
 	FileName      = filename;
 	Prefix        = "";
 	ErrorLine     = 0;
-	ErrorID       = XML_SUCCESS;
+	ErrorID       = TRITONN_RESULT_OK;
 	SysVar        = &sysvar;
 	ListSource    = &listsrc;
 	ListReport    = &listrpt;
@@ -275,7 +252,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	//TODO Нужно проверить Hasp
 	//TODO Нужно передавать не имя, а указатель на xml_root, так как в rDataManager::LoadConfig мы уже разобрали этот файл
 
-	if(XML_SUCCESS != doc.LoadFile(fullname.c_str()))
+	if(tinyxml2::XML_SUCCESS != doc.LoadFile(fullname.c_str()))
 	{
 		ErrorID   = doc.ErrorID();
 		ErrorLine = 0;
@@ -283,7 +260,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 		return ErrorID;
 	}
 
-	root = doc.FirstChildElement(CFGNAME_TRITONN);
+	root = doc.FirstChildElement(XmlName::TRITONN);
 	if(nullptr == root)
 	{
 		ErrorID   = DATACFGERR_STRUCT;
@@ -292,25 +269,25 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 		return ErrorID;
 	}
 
-	if(tinyxml2::XML_SUCCESS != LoadSecurity(root, doc_security))
+	if(TRITONN_RESULT_OK != LoadSecurity(root, doc_security))
 	{
 		return ErrorID;
 	}
 
-	if(XML_SUCCESS != LoadHardware(root))
+	if(TRITONN_RESULT_OK != LoadHardware(root))
 	{
 		return ErrorID;
 	}
 
-	if(XML_SUCCESS != LoadConfig(root))
+	if(TRITONN_RESULT_OK != LoadConfig(root))
 	{
 		return ErrorID;
 	}
 
 	// Загружаем пользователей
-	if(XML_SUCCESS != LoadUsers(XMLRootSecurity, CfgJSON_USR))
+	if(TRITONN_RESULT_OK != LoadUsers(XMLRootSecurity, CfgJSON_USR))
 	{
-		tinyxml2::XMLElement *xml_root = root->FirstChildElement(CFGNAME_SECURITY);
+		tinyxml2::XMLElement *xml_root = root->FirstChildElement(XmlName::SECURITY);
 
 		ErrorLine = (xml_root == nullptr) ? 0 : xml_root->GetLineNum();
 
@@ -363,7 +340,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 //
 UDINT rDataConfig::LoadSecurity(tinyxml2::XMLElement *root, tinyxml2::XMLDocument &doc_security)
 {
-	XMLElement *xml_crypt = root->FirstChildElement(CFGNAME_SECURITY);
+	tinyxml2::XMLElement* xml_crypt = root->FirstChildElement(XmlName::SECURITY);
 	string      aes_text  = "";
 	string      xml_src   = "";
 
@@ -396,7 +373,7 @@ UDINT rDataConfig::LoadSecurity(tinyxml2::XMLElement *root, tinyxml2::XMLDocumen
 	}
 
 	// Парсим разкодированный блок пользователей
-	XMLRootSecurity = doc_security.FirstChildElement(CFGNAME_SECURITY);
+	XMLRootSecurity = doc_security.FirstChildElement(XmlName::SECURITY);
 	if(nullptr == XMLRootSecurity)
 	{
 		ErrorLine = xml_crypt->GetLineNum();
@@ -413,33 +390,21 @@ UDINT rDataConfig::LoadSecurity(tinyxml2::XMLElement *root, tinyxml2::XMLDocumen
 //
 UDINT rDataConfig::LoadHardware(tinyxml2::XMLElement *root)
 {
-	XMLElement *hardware = root->FirstChildElement(CFGNAME_HARDWARE);
+	tinyxml2::XMLElement *hardware = root->FirstChildElement(XmlName::HARDWARE);
 
-	hardware = hardware;
-/*
 	if(nullptr == hardware)
 	{
-		ErrorStr = "Не найдена секция описания модулей ввода-вывода.";
-		ErrorID  = DATACFGERR_HARDWARE;
+		ErrorID  = DATACFGERR_NOTFOUND_HARDWARE;
 		return ErrorID;
 	}
 
-	for(XMLElement *module = hardware->FirstChildElement(); module != nullptr; module = child->NextSiblingElement())
-	{
-		string mtype(module->Attribute("type", ""));
-		string mver (module->Attribute("ver" , ""));
-
-
-
-	}
-*/
-	return 0;
+	return rIOManager::instance().LoadFromXML(hardware, *this);
 }
 
 
 UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement *root)
 {
-	XMLElement *config = root->FirstChildElement(CFGNAME_CONFIG);
+	tinyxml2::XMLElement *config = root->FirstChildElement(XmlName::CONFIG);
 	cJSON      *jstn   = cJSON_CreateArray();
 
 	if(nullptr == config)
@@ -459,17 +424,17 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement *root)
 
 	// Далее грузим объекты
 	Prefix = "obj";
-	if(tinyxml2::XML_SUCCESS != LoadCalc(config, CfgJSON_OBJ, nullptr))
+	if(TRITONN_RESULT_OK != LoadCalc(config, CfgJSON_OBJ, nullptr))
 	{
 		return ErrorID;
 	}
 
 	Prefix = "vars";
-	if(XML_SUCCESS != LoadVariable(config)) return ErrorID;
+	if(TRITONN_RESULT_OK != LoadVariable(config)) return ErrorID;
 
 	// грузим станции
 	Prefix = "";
-	cJSON_AddItemToObject(CfgJSON, CFGNAME_STATIONS, jstn);
+	cJSON_AddItemToObject(CfgJSON, XmlName::STATIONS, jstn);
 	if(tinyxml2::XML_SUCCESS != LoadStation(config, jstn))
 	{
 		return ErrorID;
@@ -491,24 +456,24 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement *root)
 //
 UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner)
 {
-	XMLElement *xml_io = root->FirstChildElement(CFGNAME_IO);
+	tinyxml2::XMLElement *xml_io = root->FirstChildElement(XmlName::IO);
 	rSource    *source = nullptr;
 	string      name   = "";
 
    // Данного элемента нет в дереве
 	if(nullptr == xml_io)
 	{
-		return XML_SUCCESS;
+		return TRITONN_RESULT_OK;
 	}
 
 	// Разбираем элементы
-	for(XMLElement *obj = xml_io->FirstChildElement(); obj != nullptr; obj = obj->NextSiblingElement())
+	for(tinyxml2::XMLElement *obj = xml_io->FirstChildElement(); obj != nullptr; obj = obj->NextSiblingElement())
 	{
 		name   = obj->Name();
 		source = nullptr;
 
-		if(CFGNAME_AI == name) { if(SysVar->Max.AI >= MAX_IO_AI) return DATACFGERR_MAX_AI; source = new rAI();      source->ID = SysVar->Max.AI++; }
-		if(CFGNAME_FI == name) { if(SysVar->Max.FI >= MAX_IO_FI) return DATACFGERR_MAX_FI; source = new rCounter(); source->ID = SysVar->Max.FI++; }
+		if(XmlName::AI == name) { if(SysVar->Max.AI >= MAX_IO_AI) return DATACFGERR_MAX_AI; source = new rAI();      source->ID = SysVar->Max.AI++; }
+		if(XmlName::FI == name) { if(SysVar->Max.FI >= MAX_IO_FI) return DATACFGERR_MAX_FI; source = new rCounter(); source->ID = SysVar->Max.FI++; }
 
 		if(nullptr == source)
 		{
@@ -530,40 +495,40 @@ UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 
 		cJSON *jsrc = cJSON_CreateObject();
 		cJSON *jitm = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, CFGNAME_ALIAS, cJSON_CreateString(source->Alias.c_str()));
-		cJSON_AddItemToObject(jsrc, CFGNAME_DESC , cJSON_CreateNumber(source->Descr));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->Alias.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->Descr));
 		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
 		cJSON_AddItemToArray(jroot, jitm);
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
 //
 UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner)
 {
-	XMLElement *calc   = root->FirstChildElement(CFGNAME_CALC);
+	tinyxml2::XMLElement* calc = root->FirstChildElement(XmlName::CALC);
 	rSource    *source = nullptr;
 	string      name   = "";
 
 	// Данного элемента нет в дереве
 	if(nullptr == calc)
 	{
-		return XML_SUCCESS;
+		return TRITONN_RESULT_OK;
 	}
 
 	// Разбираем элементы
-	for(XMLElement *obj = calc->FirstChildElement(); obj != nullptr; obj = obj->NextSiblingElement())
+	for(tinyxml2::XMLElement *obj = calc->FirstChildElement(); obj != nullptr; obj = obj->NextSiblingElement())
 	{
 		name   = obj->Name();
 		source = nullptr;
 
-		if(CFGNAME_DENSSOL     == name) { if(SysVar->Max.DensSol     >= MAX_DENSSOL    ) return DATACFGERR_MAX_DENSSOL;  source = new rDensSol();     source->ID = SysVar->Max.DensSol++;     }
-		if(CFGNAME_REDUCEDDENS == name) { if(SysVar->Max.ReducedDens >= MAX_REDUCEDDENS) return DATACFGERR_MAX_RDCDENS;  source = new rReducedDens(); source->ID = SysVar->Max.ReducedDens++; }
-		if(CFGNAME_MSELECTOR   == name) { if(SysVar->Max.Selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = new rSelector();    source->ID = SysVar->Max.Selector++;    }
-		if(CFGNAME_SELECTOR    == name) { if(SysVar->Max.Selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = new rSelector();    source->ID = SysVar->Max.Selector++;    }
-		if(CFGNAME_SAMPLER     == name) continue;
+		if(XmlName::DENSSOL     == name) { if(SysVar->Max.DensSol     >= MAX_DENSSOL    ) return DATACFGERR_MAX_DENSSOL;  source = new rDensSol();     source->ID = SysVar->Max.DensSol++;     }
+		if(XmlName::REDUCEDDENS == name) { if(SysVar->Max.ReducedDens >= MAX_REDUCEDDENS) return DATACFGERR_MAX_RDCDENS;  source = new rReducedDens(); source->ID = SysVar->Max.ReducedDens++; }
+		if(XmlName::MSELECTOR   == name) { if(SysVar->Max.Selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = new rSelector();    source->ID = SysVar->Max.Selector++;    }
+		if(XmlName::SELECTOR    == name) { if(SysVar->Max.Selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = new rSelector();    source->ID = SysVar->Max.Selector++;    }
+		if(XmlName::SAMPLER     == name) continue;
 
 		if(nullptr == source)
 		{
@@ -574,7 +539,7 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement *root, cJSON *jroot, rStation *
 		}
 
 		source->Station = owner;
-		if(tinyxml2::XML_SUCCESS != (ErrorID = source->LoadFromXML(obj, *this)))
+		if(TRITONN_RESULT_OK != (ErrorID = source->LoadFromXML(obj, *this)))
 		{
 			ErrorLine = obj->GetLineNum();
 
@@ -585,13 +550,13 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement *root, cJSON *jroot, rStation *
 
 		cJSON *jitm = cJSON_CreateObject();
 		cJSON *jsrc = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, CFGNAME_ALIAS, cJSON_CreateString(source->Alias.c_str()));
-		cJSON_AddItemToObject(jsrc, CFGNAME_DESC , cJSON_CreateNumber(source->Descr));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->Alias.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->Descr));
 		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
 		cJSON_AddItemToArray(jroot, jitm);
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -599,7 +564,7 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement *root, cJSON *jroot, rStation *
 //
 UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 {
-	XMLElement *stations = root->FirstChildElement(CFGNAME_STATIONS);
+	tinyxml2::XMLElement *stations = root->FirstChildElement(XmlName::STATIONS);
 
 	// Данного элемента нет в дереве
 	if(nullptr == stations)
@@ -611,7 +576,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 	}
 
 	// Разбираем элементы
-	for(XMLElement *stncfg = stations->FirstChildElement(CFGNAME_STATION); stncfg != nullptr; stncfg = stncfg->NextSiblingElement(CFGNAME_STATION))
+	for(tinyxml2::XMLElement *stncfg = stations->FirstChildElement(XmlName::STATION); stncfg != nullptr; stncfg = stncfg->NextSiblingElement(XmlName::STATION))
 	{
 		rStation *stn = nullptr;
 
@@ -639,10 +604,10 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 		cJSON *jstn = cJSON_CreateObject();
 		cJSON *jobj = cJSON_CreateArray();
 		cJSON *jstr = cJSON_CreateArray();
-		cJSON_AddItemToObject(jstn, CFGNAME_ALIAS  , cJSON_CreateString(stn->Alias.c_str()));
-		cJSON_AddItemToObject(jstn, CFGNAME_DESC   , cJSON_CreateNumber(stn->Descr));
-		cJSON_AddItemToObject(jstn, CFGNAME_STREAMS, jstr);
-		cJSON_AddItemToObject(jstn, CFGNAME_CALC   , jobj);
+		cJSON_AddItemToObject(jstn, XmlName::ALIAS  , cJSON_CreateString(stn->Alias.c_str()));
+		cJSON_AddItemToObject(jstn, XmlName::DESC   , cJSON_CreateNumber(stn->Descr));
+		cJSON_AddItemToObject(jstn, XmlName::STREAMS, jstr);
+		cJSON_AddItemToObject(jstn, XmlName::CALC   , jobj);
 		cJSON_AddItemToObject(jitm, stn->RTTI()    , jstn);
 		cJSON_AddItemToArray (jroot, jitm);
 
@@ -661,7 +626,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 		ListSource->push_back(stn);
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -669,7 +634,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 //
 UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner)
 {
-	XMLElement *streams   = root->FirstChildElement(CFGNAME_STREAMS);
+	tinyxml2::XMLElement *streams   = root->FirstChildElement(XmlName::STREAMS);
 	string      oldprefix = Prefix;
 
 	// Данного элемента нет в дереве
@@ -682,7 +647,7 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 	}
 
 	// Разбираем элементы
-	for(XMLElement *strcfg = streams->FirstChildElement(CFGNAME_STREAM); strcfg != nullptr; strcfg = strcfg->NextSiblingElement(CFGNAME_STREAM))
+	for(tinyxml2::XMLElement *strcfg = streams->FirstChildElement(XmlName::STREAM); strcfg != nullptr; strcfg = strcfg->NextSiblingElement(XmlName::STREAM))
 	{
 		rStream *str = nullptr;
 
@@ -710,9 +675,9 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 		cJSON *jitm = cJSON_CreateObject();
 		cJSON *jstr = cJSON_CreateObject();
 		cJSON *jobj = cJSON_CreateArray();
-		cJSON_AddItemToObject(jstr, CFGNAME_ALIAS, cJSON_CreateString(str->Alias.c_str()));
-		cJSON_AddItemToObject(jstr, CFGNAME_DESC , cJSON_CreateNumber(str->Descr));
-		cJSON_AddItemToObject(jstr, CFGNAME_CALC , jobj);
+		cJSON_AddItemToObject(jstr, XmlName::ALIAS, cJSON_CreateString(str->Alias.c_str()));
+		cJSON_AddItemToObject(jstr, XmlName::DESC , cJSON_CreateNumber(str->Descr));
+		cJSON_AddItemToObject(jstr, XmlName::CALC , jobj);
 		cJSON_AddItemToObject(jitm, str->RTTI()  , jstr);
 		cJSON_AddItemToArray (jroot, jitm);
 
@@ -730,7 +695,7 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 		ListSource->push_back(str);
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -738,8 +703,8 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 //
 UDINT rDataConfig::LoadReport(tinyxml2::XMLElement *root)
 {
-	XMLElement *reportsystem = root->FirstChildElement(CFGNAME_REPORTSYSTEM);
-	XMLElement *reports      = nullptr;
+	tinyxml2::XMLElement *reportsystem = root->FirstChildElement(XmlName::REPORTSYSTEM);
+	tinyxml2::XMLElement *reports      = nullptr;
 
 	// Данного элемента нет в дереве
 	if(nullptr == reportsystem)
@@ -747,7 +712,7 @@ UDINT rDataConfig::LoadReport(tinyxml2::XMLElement *root)
 		return tinyxml2::XML_SUCCESS;
 	}
 
-	reports = reportsystem->FirstChildElement(CFGNAME_REPORTS);
+	reports = reportsystem->FirstChildElement(XmlName::REPORTS);
 	if(nullptr == reports)
 	{
 		ErrorLine = root->GetLineNum();
@@ -757,7 +722,7 @@ UDINT rDataConfig::LoadReport(tinyxml2::XMLElement *root)
 	}
 
 	// Разбираем элементы
-	for(XMLElement *rptcfg = reports->FirstChildElement(CFGNAME_REPORT); rptcfg != nullptr; rptcfg = rptcfg->NextSiblingElement(CFGNAME_REPORT))
+	for(tinyxml2::XMLElement *rptcfg = reports->FirstChildElement(XmlName::REPORT); rptcfg != nullptr; rptcfg = rptcfg->NextSiblingElement(XmlName::REPORT))
 	{
 		rReport *rpt = new rReport();
 
@@ -770,7 +735,7 @@ UDINT rDataConfig::LoadReport(tinyxml2::XMLElement *root)
 		}
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -778,17 +743,17 @@ UDINT rDataConfig::LoadReport(tinyxml2::XMLElement *root)
 //
 UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement *root)
 {
-	UDINT                 result    = tinyxml2::XML_SUCCESS;
-	tinyxml2::XMLElement *custom    = root->FirstChildElement(CFGNAME_CUSTOM);
+	UDINT                 result    = TRITONN_RESULT_OK;
+	tinyxml2::XMLElement *custom    = root->FirstChildElement(XmlName::CUSTOM);
 	tinyxml2::XMLElement *userstr   = nullptr;
 	tinyxml2::XMLElement *userevent = nullptr;
 	tinyxml2::XMLElement *precision = nullptr;
 
-	if(nullptr == custom) return XML_SUCCESS;
+	if(nullptr == custom) return TRITONN_RESULT_OK;
 
-	userstr   = custom->FirstChildElement(CFGNAME_STRINGS);
-	userevent = custom->FirstChildElement(CFGNAME_EVENTS);
-	precision = custom->FirstChildElement(CFGNAME_PRECISION);
+	userstr   = custom->FirstChildElement(XmlName::STRINGS);
+	userevent = custom->FirstChildElement(XmlName::EVENTS);
+	precision = custom->FirstChildElement(XmlName::PRECISION);
 
 	//
 	if(nullptr != userstr)
@@ -817,24 +782,23 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement *root)
 	}
 
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 {
-	XMLElement *xml_vars = root->FirstChildElement(CFGNAME_VARIABLES);
+	tinyxml2::XMLElement* xml_vars = root->FirstChildElement(XmlName::VARIABLES);
 	rSource    *source   = nullptr;
 
 	// Данного элемента нет в дереве
-	if(nullptr == xml_vars)
-	{
-		return XML_SUCCESS;
+	if (nullptr == xml_vars) {
+		return TRITONN_RESULT_OK;
 	}
 
 	// Разбираем элементы
-	for(XMLElement *xml_var = xml_vars->FirstChildElement(); xml_var != nullptr; xml_var = xml_var->NextSiblingElement())
+	for(tinyxml2::XMLElement *xml_var = xml_vars->FirstChildElement(); xml_var != nullptr; xml_var = xml_var->NextSiblingElement())
 	{
 		source = new rRVar();
 
@@ -850,22 +814,23 @@ UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 
 		cJSON *jsrc = cJSON_CreateObject();
 //		cJSON *jitm = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, CFGNAME_ALIAS, cJSON_CreateString(source->Alias.c_str()));
-		cJSON_AddItemToObject(jsrc, CFGNAME_DESC , cJSON_CreateNumber(source->Descr));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->Alias.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->Descr));
 //		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
 		cJSON_AddItemToArray(CfgJSON_VAR, /*jitm*/jsrc);
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
 
 UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement *root, cJSON *jroot)
 {
-	XMLElement *xml_users = nullptr;
+	UNUSED(jroot);
+	tinyxml2::XMLElement* xml_users = nullptr;
 
-	xml_users = root->FirstChildElement(CFGNAME_USERS);
+	xml_users = root->FirstChildElement(XmlName::USERS);
 	if(nullptr == xml_users)
 	{
 		ErrorLine = 0;
@@ -875,13 +840,13 @@ UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement *root, cJSON *jroot)
 	}
 
 	// Загружаем пользователей
-	for(XMLElement *xml_user = xml_users->FirstChildElement(CFGNAME_USER); xml_user != nullptr; xml_user = xml_user->NextSiblingElement(CFGNAME_USER))
+	for(tinyxml2::XMLElement* xml_user = xml_users->FirstChildElement(XmlName::USER); xml_user != nullptr; xml_user = xml_user->NextSiblingElement(XmlName::USER))
 	{
-		XMLElement *xml_password = xml_user->FirstChildElement(CFGNAME_PASSWORD);
-		XMLElement *xml_comms    = xml_user->FirstChildElement(CFGNAME_COMMS);
-		XMLElement *xml_right    = xml_user->FirstChildElement(CFGNAME_RIGHTS);
+		tinyxml2::XMLElement *xml_password = xml_user->FirstChildElement(XmlName::PASSWORD);
+		tinyxml2::XMLElement *xml_comms    = xml_user->FirstChildElement(XmlName::COMMS);
+		tinyxml2::XMLElement *xml_right    = xml_user->FirstChildElement(XmlName::RIGHTS);
 
-		if(nullptr == xml_user->Attribute(CFGNAME_NAME) || nullptr == xml_password || nullptr == xml_right || nullptr == xml_comms)
+		if(nullptr == xml_user->Attribute(XmlName::NAME) || nullptr == xml_password || nullptr == xml_right || nullptr == xml_comms)
 		{
 			ErrorLine = 0;
 			ErrorID   = DATACFGERR_USERS_PARSE;
@@ -889,10 +854,10 @@ UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement *root, cJSON *jroot)
 			return ErrorID;
 		}
 
-		XMLElement *xml_intaccess = xml_right->FirstChildElement(CFGNAME_INTERNAL);
-		XMLElement *xml_extaccess = xml_right->FirstChildElement(CFGNAME_EXTERNAL);
-		XMLElement *xml_ilogin    = xml_comms->FirstChildElement(CFGNAME_LOGIN);    // Интерфейс. Логин
-		XMLElement *xml_ipwd      = xml_comms->FirstChildElement(CFGNAME_PASSWORD); // Интерфейс. Пароль
+		tinyxml2::XMLElement *xml_intaccess = xml_right->FirstChildElement(XmlName::INTERNAL);
+		tinyxml2::XMLElement *xml_extaccess = xml_right->FirstChildElement(XmlName::EXTERNAL);
+		tinyxml2::XMLElement *xml_ilogin    = xml_comms->FirstChildElement(XmlName::LOGIN);    // Интерфейс. Логин
+		tinyxml2::XMLElement *xml_ipwd      = xml_comms->FirstChildElement(XmlName::PASSWORD); // Интерфейс. Пароль
 
 		if(nullptr == xml_intaccess || nullptr == xml_extaccess || nullptr == xml_ipwd || nullptr == xml_ilogin)
 		{
@@ -925,7 +890,7 @@ UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement *root, cJSON *jroot)
 			String_ToBuffer(xml_ipwd->GetText(), ipwd_hash, MAX_HASH_SIZE);
 		}
 
-		name = xml_user->Attribute(CFGNAME_NAME);
+		name = xml_user->Attribute(XmlName::NAME);
 
 		// Password
 		String_ToBuffer(xml_password->GetText(), pwd_hash, MAX_HASH_SIZE);
@@ -941,11 +906,11 @@ UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement *root, cJSON *jroot)
 		rUser::Add(name, pwd_hash, intaccess, extaccess, ilogin, ipwd_hash);
 
 		cJSON *jsrc = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, CFGNAME_NAME, cJSON_CreateString(name.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::NAME, cJSON_CreateString(name.c_str()));
 		cJSON_AddItemToArray(CfgJSON_USR, jsrc);
 	}
 
-	return XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -961,7 +926,7 @@ UDINT rDataConfig::LoadComms(tinyxml2::XMLElement *root)
 		return TRITONN_RESULT_OK;
 	}
 
-	xml_comms = root->FirstChildElement(CFGNAME_COMMS);
+	xml_comms = root->FirstChildElement(XmlName::COMMS);
 
 	if(nullptr == xml_comms)
 	{
@@ -994,7 +959,7 @@ UDINT rDataConfig::LoadModbus(tinyxml2::XMLElement *root)
 		return 0;
 	}
 
-	xml_modbus = root->FirstChildElement(CFGNAME_MODBUS);
+	xml_modbus = root->FirstChildElement(XmlName::MODBUS);
 
 	if(nullptr == xml_modbus)
 	{
@@ -1005,7 +970,7 @@ UDINT rDataConfig::LoadModbus(tinyxml2::XMLElement *root)
 	{
 		string name = (xml_item->Name() == nullptr) ? "" : xml_item->Name();
 
-		if(CFGNAME_SLAVETCP == name) { result = LoadModbusTCP(xml_item); }
+		if(XmlName::SLAVETCP == name) { result = LoadModbusTCP(xml_item); }
 
 		if(result != TRITONN_RESULT_OK)
 		{
@@ -1054,7 +1019,7 @@ UDINT rDataConfig::LoadOPCUA(tinyxml2::XMLElement *root)
 		return TRITONN_RESULT_OK;
 	}
 
-	xml_opcua = root->FirstChildElement(CFGNAME_OPCUA);
+	xml_opcua = root->FirstChildElement(XmlName::OPCUA);
 
 	if(nullptr == xml_opcua)
 	{
@@ -1240,7 +1205,7 @@ void rDataConfig::SaveWeb()
 	free(str);
 	if(TRITONN_RESULT_OK != result)
 	{
-		rEventManager::Instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 		TRACEERROR("Can't save json tree");
 
 		rDataManager::Instance().DoHalt(HALT_REASON_WEBFILE | result);
@@ -1273,7 +1238,7 @@ void rDataConfig::SaveWeb()
 		result = SimpleFileSave(String_format("%sapplication/language/%s/custom_lang.php", DIR_WWW.c_str(), langlist[ii].c_str()), text);
 		if(TRITONN_RESULT_OK != result)
 		{
-			rEventManager::Instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 			TRACEERROR("Can't save json tree");
 
 			rDataManager::Instance().DoHalt(HALT_REASON_WEBFILE | result);

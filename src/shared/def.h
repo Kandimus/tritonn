@@ -493,7 +493,7 @@ enum rTritonn_Error
 	FILE_RESULT_EFILE,                      //  41 Прочие ошибки файла (сбой функции stat)
 
 	DATACFGERR_STRUCT         = 100,        // 100
-	DATACFGERR_HARDWARE,                    //
+	DATACFGERR_NOTFOUND_HARDWARE,           //
 	DATACFGERR_CONFIG,                      // 102
 	DATACFGERR_IO,
 	DATACFGERR_UNKNOWIO,                    // 104
@@ -545,6 +545,7 @@ enum rTritonn_Error
 	DATACFGERR_OPCUA_USER_NF,               // 150
 	DATACFGERR_OPCUA_BAD_USER,              //
 	DATACFGERR_OPCUA_VAR_NF,                // 151
+	DATACFGERR_UNKNOWN_MODULE,              //
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,
