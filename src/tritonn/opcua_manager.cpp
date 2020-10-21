@@ -17,6 +17,7 @@
 
 #include <string.h>
 #include "tritonn_version.h"
+#include "locker.h"
 #include "tickcount.h"
 #include "stringex.h"
 #include "opcua_manager.h"

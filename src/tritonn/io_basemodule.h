@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <memory>
 #include "def.h"
 
 class rIOBaseChannel;
@@ -33,12 +34,13 @@ public:
 		AI6    = 0x0001,     //
 	};
 
-	rIOBaseModule() {}
-	virtual ~rIOBaseModule() {}
+	rIOBaseModule();
+	virtual ~rIOBaseModule();
 
-	virtual rIOBaseChannel* getChannel(USINT channel) = 0;
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg) = 0;
-
+	virtual UDINT processing(USINT issim) = 0;
+	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel) = 0;
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
+/*
 	Type  getType()         { return m_type; }
 	UINT  getNodeID()       { return m_nodeID; }
 	UDINT getVendorID()     { return m_vendorID; }
@@ -50,14 +52,10 @@ public:
 	UINT  getCAN()          { return m_CAN; }
 	UINT  getFirmware()     { return m_firmware; }
 	UINT  getHardware()     { return m_hardware; }
-
+*/
 public:
-	static std::string m_name;
+	static std::string m_rtti;
 
-protected:
-	virtual UDINT processing(USINT issim);
-
-protected:
 	Type  m_type;
 	UINT  m_nodeID;
 	UDINT m_vendorID;
@@ -69,6 +67,10 @@ protected:
 	UINT  m_CAN;
 	UINT  m_firmware;
 	UINT  m_hardware;
+
+protected:
+	pthread_mutex_t m_mutex;
+	std::string     m_name;
 };
 
 

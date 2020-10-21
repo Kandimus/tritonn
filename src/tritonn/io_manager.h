@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "safity.h"
 #include "tinyxml2.h"
 #include "data_variable.h"
@@ -39,13 +40,14 @@ public:
 	UDINT GenerateVars(vector<rVariable* > &list);
 	UDINT SaveKernel(FILE* file);
 
-	rIOBaseChannel* getChannel(USINT module, USINT channel);
+	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);
 
 protected:
 	virtual rThreadStatus Proccesing();
 
 private:
 	std::vector<rIOBaseModule* > m_modules; //
+	USINT m_moduleCount;
 };
 
 

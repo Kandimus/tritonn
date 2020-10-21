@@ -44,26 +44,16 @@
 */
 
 
-
-// Поле Status (текущее состояние аналогового входного сигнала)
-#define OFAISTATUS_MASK           0x07      // Маска для получения значения статуса
-#define OFAISTATUS_CLEAR          0xF8      // Маска для очистки статуса (инвертированая маска)
-
-
-/*
-#define MSG_AI_SUCCESS_NEW_MINCODE     (ArEventLogMakeEventID(arEVENTLOG_SEVERITY_SUCCESS, ofMSG_AI, 20))
-#define MSG_AI_SUCCESS_NEW_MAXCODE     (ArEventLogMakeEventID(arEVENTLOG_SEVERITY_SUCCESS, ofMSG_AI, 21))
-*/
-
-
 const DINT  AI_CODE_FAULT    = -1;
 
-const UDINT AI_LE_STATUSPATH = 0x00000001;
 const UDINT AI_LE_SIM_AUTO   = 0x00000002;
 const UDINT AI_LE_SIM_MANUAL = 0x00000004;
 const UDINT AI_LE_SIM_OFF    = 0x00000008;
 const UDINT AI_LE_SIM_LAST   = 0x00000010;
 const UDINT AI_LE_CODE_FAULT = 0x00000020;
+
+rBitsArray rAI::m_flagsMode;
+rBitsArray rAI::m_flagsSetup;
 
 
 rAIScale::rAIScale()
@@ -108,8 +98,6 @@ rAI::rAI() : rSource(), KeypadValue(0.0), Setup(0)
 	InitLink(LINK_SETUP_OUTPUT, Value  , U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
 	InitLink(LINK_SETUP_OUTPUT, PhValue, U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
 	InitLink(LINK_SETUP_OUTPUT, Current, U_mA , SID_CURRENT , XmlName::CURRENT , LINK_SHADOW_NONE);
-
-//	Limit.Setup.Init(LIMIT_SETUP_AMAX | LIMIT_SETUP_WMAX | LIMIT_SETUP_WMIN | LIMIT_SETUP_AMIN);
 }
 
 

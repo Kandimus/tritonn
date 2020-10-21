@@ -16,6 +16,7 @@
 #pragma once
 
 #include "def.h"
+#include "bits_array.h"
 #include "io_basemodule.h"
 #include "io_basechannel.h"
 #include "io_ai_channel.h"
@@ -39,13 +40,13 @@ public:
 	virtual ~rIOAI6();
 
 public:
-	static std::string m_name;
+	static std::string m_rtti;
 	
 	// Виртуальные функции от rBaseModule
 public:
 	virtual UDINT processing(USINT issim);
-	virtual rIOBaseChannel* getChannel(USINT channel);
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
+	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
 
 public:
 	UINT getADC(USINT id);
@@ -54,7 +55,8 @@ public:
 	USINT getState(USINT id);
 
 private:
-	rIOAIChannel m_ai[CHANNEL_COUNT];
+	static rBitsArray m_flagsSetup;
+	rIOAIChannel      m_channel[CHANNEL_COUNT];
 };
 
 

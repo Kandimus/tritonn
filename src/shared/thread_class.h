@@ -53,28 +53,6 @@ enum class rThreadCommand : UDINT
 	ABORT,
 };
 
-class rLocker
-{
-public:
-	rLocker(pthread_mutex_t &m)
-	{
-		mutex = &m;
-		pthread_mutex_lock(mutex);
-	}
-	~rLocker()
-	{
-		pthread_mutex_unlock(mutex);
-	}
-
-	void Nop() {;}
-
-private:
-	pthread_mutex_t *mutex;
-};
-
-
-
-
 
 class rLogManager;
 

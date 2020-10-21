@@ -2,11 +2,9 @@
 <tritonn cfgver="1.0" kernel="0.17" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
           xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./tritonn.xsd">
 	<hardware>
-		<module ver="1.0" type="AI6"/>
-		<module ver="1.0" type="FI4"/>
-		<module ver="1.0" type="FI4"/>
-		<module ver="1.0" type="AI6"/>
-		<module ver="1.0" type="AI6"/>
+		<module ver="1.0" name="ai6_1" type="AI6">
+		  <channel number="0" setup="NOICE | SMOOTH" />
+		</module>
 	</hardware>
 	<config>
 	  <settings>

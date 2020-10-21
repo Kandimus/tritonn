@@ -13,15 +13,26 @@
 //===
 //=================================================================================================
 
+#include "locker.h"
 #include "io_ai6.h"
 #include "data_config.h"
 #include "tinyxml2.h"
+#include "xml_util.h"
 
-std::string rIOAI6::m_name = "ai6";
+std::string rIOAI6::m_rtti = "ai6";
+rBitsArray  rIOAI6::m_flagsSetup;
 
 rIOAI6::rIOAI6()
 {
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"      , rIOAIChannel::Setup::OFF)
+				.add("SMOOTH"   , rIOAIChannel::Setup::SMOOTH)
+				.add("NOICE"    , rIOAIChannel::Setup::NOICE);
+	}
 
+	m_channel[0].m_simSpeed = 1111;
+	m_channel[0].m_simType  = rIOAIChannel::SimType::Linear;
 }
 
 
@@ -35,7 +46,7 @@ UDINT rIOAI6::processing(USINT issim)
 {
 	if (issim) {
 		for(auto ii = 0; ii < CHANNEL_COUNT; ++ii) {
-			m_ai[ii].simulate();
+			m_channel[ii].simulate();
 		}
 
 		return TRITONN_RESULT_OK;
@@ -45,44 +56,47 @@ UDINT rIOAI6::processing(USINT issim)
 }
 
 
-rIOBaseChannel* rIOAI6::getChannel(USINT channel)
+std::unique_ptr<rIOBaseChannel> rIOAI6::getChannel(USINT num)
 {
-	if (channel < CHANNEL_COUNT) {
+	if (num < CHANNEL_COUNT) {
 		return nullptr;
 	}
 
-	return &m_ai[channel];
+	rLocker lock(m_mutex); UNUSED(lock);
+
+	std::unique_ptr<rIOBaseChannel> module_ptr(new rIOAIChannel(m_channel[num]));
+
+	return module_ptr;
 }
 
 
-UDINT rIOAI6::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rIOAI6::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 {
-/*	for (tinyxml2::XMLElement *channel_xml = element->FirstChildElement(CFGNAME_CHANNEL); channel_xml != nullptr; channel_xml = channel_xml->NextSiblingElement(CFGNAME_MODULE)) {
-		string type = rDataConfig::GetAttributeString(module_xml, CFGNAME_TYPE, "");
+	UDINT result = rIOBaseModule::loadFromXML(element, cfg);
 
-		if (type == "") {
-			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
-			cfg.ErrorLine = module_xml->GetLineNum();
-			return cfg.ErrorID;
-		}
-
-		type = String_tolower(type);
-		if (type == rIOAI6::m_name) {
-			rIOAI6 *ioai6 = new rIOAI6();
-
-			cfg.ErrorID = ioai6->LoadFromXML(module_xml, cfg);
-
-			if (cfg.ErrorID != TRITONN_RESULT_OK) {
-				return cfg.ErrorID;
-			}
-		} else {
-			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
-			cfg.ErrorLine = module_xml->GetLineNum();
-			return cfg.ErrorID;
-		}
-
-
+	if (result != TRITONN_RESULT_OK) {
+		return result;
 	}
-*/
+
+	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
+		UDINT       err      = 0;
+		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
+		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
+
+		if (number >= CHANNEL_COUNT) {
+			cfg.ErrorLine = channel_xml->GetLineNum();
+			cfg.ErrorID   = DATACFGERR_IO_CHANNEL;
+			return cfg.ErrorID;
+		}
+
+		m_channel[number].m_setup = m_flagsSetup.getValue(strSetup, err);
+
+		if (err) {
+			cfg.ErrorLine = channel_xml->GetLineNum();
+			cfg.ErrorID   = DATACFGERR_IO_CHANNEL;
+			return cfg.ErrorID;
+		}
+	}
+
 	return TRITONN_RESULT_OK;
 }

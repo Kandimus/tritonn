@@ -16,6 +16,7 @@
 #include <string.h>
 #include "cJSON.h"
 #include "time64.h"
+#include "locker.h"
 #include "stringex.h"
 #include "hash.h"
 #include "log_manager.h"

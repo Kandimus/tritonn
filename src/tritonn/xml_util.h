@@ -19,6 +19,8 @@
 #include "tinyxml2.h"
 #include "def.h"
 
+#define XML_FOR(var, root, name)                       for (tinyxml2::XMLElement* var = root->FirstChildElement(name); var != nullptr; var = var->NextSiblingElement(name))
+
 namespace XmlUtils
 {
 
@@ -122,6 +124,7 @@ const char MODULE[]        = "module";
 const char MSELECTOR[]     = "multiselector";
 const char NAME[]          = "name";
 const char NAMES[]         = "names";
+const char NUMBER[]        = "number";
 const char OPCUA[]         = "opcua";
 const char PASSWORD[]      = "password";
 const char PERIOD[]        = "period";

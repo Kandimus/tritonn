@@ -18,6 +18,7 @@
 #include "tritonn_version.h"
 #include "log_manager.h"
 #include "simplefile.h"
+#include "locker.h"
 #include "threadmaster.h"
 #include "data_station.h"
 #include "data_stream.h"

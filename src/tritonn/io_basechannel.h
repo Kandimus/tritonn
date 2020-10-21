@@ -24,10 +24,9 @@ public:
 	rIOBaseChannel() {}
 	virtual ~rIOBaseChannel() {}
 
-protected:
 	virtual UDINT simulate() = 0;
 
-protected:
+public:
 	USINT m_simType = 0;
 };
 

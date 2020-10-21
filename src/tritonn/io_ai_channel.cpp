@@ -30,18 +30,18 @@ UDINT rIOAIChannel::simulate()
 
 		case SimType::Linear: {
 			DINT tmp = m_simValue + m_simSpeed;
-			if(tmp >= m_simMax) {
-				m_simValue = m_simMax;
-				m_ADC      = m_simValue;
-				m_simSpeed = -m_simSpeed;
-			} else if(tmp <= m_simMin) {
-				m_simValue = m_simMin;
-				m_ADC      = m_simValue;
-				m_simSpeed = -m_simSpeed;
-			} else {
-				m_simValue += m_simSpeed;
-				m_ADC      = m_simValue;
+
+			if (m_simSpeed > 0) {
+				if(tmp >= m_simMax) {
+					tmp = m_simMin;
+				}
+			} else if (m_simSpeed < 0) {
+				if (tmp <= m_simMin) {
+					tmp = m_simMax;
+				}
 			}
+			m_ADC = m_simValue = static_cast<UINT>(tmp);
+			printf("ADC: %i\n", m_ADC);
 			return TRITONN_RESULT_OK;
 		}
 

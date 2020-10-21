@@ -5,6 +5,7 @@
 #include "event_manager.h"
 #include "threadmaster.h"
 #include "data_manager.h"
+#include "io_manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
 #include "data_variable.h"
@@ -111,6 +112,14 @@ int main(int argc, const char **argv)
 	rDataManager::Instance().Run(500);
 
 	rThreadMaster::instance().Add(&rDataManager::Instance(), TMF_NONE, "system.data");
+
+
+	//----------------------------------------------------------------------------------------------
+	// Стартуем обмен с модулями IO
+rThreadMaster::instance().GetArg()->m_simulateIO = 1;
+	rIOManager::instance().Run(500);
+
+	rThreadMaster::instance().Add(&rIOManager::instance(), TMF_NONE, "system.io");
 
 
 	//----------------------------------------------------------------------------------------------

@@ -394,7 +394,8 @@ UDINT rDataConfig::LoadHardware(tinyxml2::XMLElement *root)
 
 	if(nullptr == hardware)
 	{
-		ErrorID  = DATACFGERR_NOTFOUND_HARDWARE;
+		ErrorLine = root->GetLineNum();
+		ErrorID   = DATACFGERR_NOTFOUND_HARDWARE;
 		return ErrorID;
 	}
 

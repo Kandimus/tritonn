@@ -94,8 +94,8 @@ public:
 	LREAL       LastGood;                // Последнее "хорошее" значение
 
 private:
-	rBitsArray m_flagsMode;
-	rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsMode;
+	static rBitsArray m_flagsSetup;
 
 };
 

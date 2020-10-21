@@ -105,7 +105,7 @@ UDINT rBitsArray::getValue(const std::string &str, UDINT &err)
 		{
 			if(name.size())
 			{
-				result |= getValue(name, err);
+				result |= getBit(name, err);
 				name    = "";
 
 				if(err) break;
@@ -118,7 +118,7 @@ UDINT rBitsArray::getValue(const std::string &str, UDINT &err)
 	}
 	if(name.size())
 	{
-		result |= getValue(name, err);
+		result |= getBit(name, err);
 	}
 
 	return result;

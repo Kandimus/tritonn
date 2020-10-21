@@ -16,6 +16,7 @@
 #include <limits>
 #include "def.h"
 #include "tinyxml2.h"
+#include "xml_util.h"
 #include "data_link.h"
 #include "data_config.h"
 #include "event_manager.h"
@@ -257,9 +258,14 @@ UDINT rSource::GenerateVars(vector<rVariable *> &list)
 //
 UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
-	const char *strAlias = element->Attribute("name");
+	const char *strAlias = element->Attribute(XmlName::NAME);
 
-	if(!strAlias) return 1; //TODO Можно еще алиас проверить на валидность имени
+	//TODO Можно еще алиас проверить на валидность имени
+	if (!strAlias) {
+		cfg.ErrorLine = element->GetLineNum();
+		cfg.ErrorID   = DATACFGERR_INVALID_NAME;
+		return cfg.ErrorID;
+	}
 
 	if(cfg.Prefix.size())
 	{
@@ -268,7 +274,7 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	Alias += strAlias;
 	Alias  = String_tolower(Alias);
-	Descr  = rDataConfig::GetAttributeUDINT(element, "descr", 0);
+	Descr  = XmlUtils::getAttributeUDINT(element, XmlName::DESC, 0);
 
 	// Загружаем все пределы по всем входам и выходам
 	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS);

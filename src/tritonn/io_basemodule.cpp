@@ -13,9 +13,22 @@
 //===
 //=================================================================================================
 
+#include "xml_util.h"
+#include "data_config.h"
 #include "io_basemodule.h"
 
-std::string rIOBaseModule::m_name = "BaseModule";
+std::string rIOBaseModule::m_rtti = "BaseModule";
+
+rIOBaseModule::rIOBaseModule()
+{
+	pthread_mutex_init(&m_mutex, nullptr);
+}
+
+rIOBaseModule::~rIOBaseModule()
+{
+	pthread_mutex_destroy(&m_mutex);
+}
+
 
 UDINT rIOBaseModule::processing(USINT issim)
 {
@@ -23,3 +36,16 @@ UDINT rIOBaseModule::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+
+UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+{
+	m_name = XmlUtils::getAttributeString(element, XmlName::NAME, "");
+
+	if (m_name.empty()) {
+		cfg.ErrorLine = element->GetLineNum();
+		cfg.ErrorID   = DATACFGERR_INVALID_NAME;
+		return cfg.ErrorID;
+	}
+
+	return TRITONN_RESULT_OK;
+}

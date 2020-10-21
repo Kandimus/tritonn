@@ -544,8 +544,10 @@ enum rTritonn_Error
 	DATACFGERR_SECURITY_NF,                 //
 	DATACFGERR_OPCUA_USER_NF,               // 150
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 151
+	DATACFGERR_OPCUA_VAR_NF,                // 152
 	DATACFGERR_UNKNOWN_MODULE,              //
+	DATACFGERR_IO_CHANNEL,                  // 154
+	DATACFGERR_INVALID_NAME,                //
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,

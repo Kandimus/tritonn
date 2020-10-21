@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include <sys/sysinfo.h>
+#include "locker.h"
 #include "tickcount.h"
 #include "data_variable.h"
 #include "threadmaster.h"
