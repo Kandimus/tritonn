@@ -1,0 +1,808 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- ver="0.17" -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tritonn.ru" xmlns="http://tritonn.ru" elementFormDefault="qualified">
+<!--
+===================================================================================================
+==
+==  Подготовка
+==
+===================================================================================================
+-->
+
+<!--
+  базовые атрибуты каждого объекта
+-->
+  <xs:attributeGroup name="base_attr">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="descr" type="xs:unsignedInt" default="0"/>
+  </xs:attributeGroup>
+<!--
+  Тип элемента для привязки в него элемента link
+-->
+  <xs:complexType name="link_point">
+    <xs:sequence>
+      <xs:element ref="link" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+<!-- Элемент для привязки сигнала IO к модулю -->
+  <xs:element name="io_link">
+    <xs:complexType>
+      <xs:attribute name="module"  type="xs:integer" default="-1"/>
+      <xs:attribute name="channel" type="xs:integer" default="-1"/>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Лимиты входов или аналогового сигнала
+-->
+  <xs:element name="limits">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="limit" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="hihi"       type="xs:double" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="hi"         type="xs:double" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="lo"         type="xs:double" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="lolo"       type="xs:double" minOccurs="0" maxOccurs="1"/>
+              <xs:element name="hysteresis" type="xs:double" minOccurs="0" maxOccurs="1"/>
+            </xs:all>
+            <xs:attribute name="name"  type="xs:string" use="required"/>
+            <xs:attribute name="setup" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+    Элемент link
+-->
+  <xs:element name="link">
+    <xs:complexType>
+      <xs:attribute name="alias" type="xs:string" use="required"/> <!-- Имя алиаса формируется из полного имени объекта и опционально имени логического выхода -->
+    </xs:complexType>                                              <!-- Пример: alias="STN.STR.Counter:frequency"                                              -->
+  </xs:element>  
+<!--
+    БАЗОВЫЙ КЛАСС всех объектов
+-->
+  <xs:complexType name="BaseObj">
+    <xs:sequence>
+      <xs:element ref="limits"    minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="base_attr"/>
+  </xs:complexType>
+  
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Описательная часть
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+  <xs:element name="tritonn">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref ="hardware" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref ="config"   minOccurs="1" maxOccurs="1"/>
+        <xs:element ref ="custom"   minOccurs="0" maxOccurs="1"/>
+        <xs:element name="security" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref ="comms"    minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="hash"        type="xs:string" use="required"/> <!-- Контрольная сумма файла -->
+      <xs:attribute name="cfgver"      type="xs:string" use="required"/> <!-- Версия кофигуратора -->
+      <xs:attribute name="kernel"      type="xs:string" use="required"/> <!-- Версия ядра и она же версия конфигурационного файла -->
+      <xs:attribute name="name"        type="xs:string" use="required"/> <!-- Название конфигурации -->
+      <xs:attribute name="development" type="xs:string" use="required"/> <!-- Разработчик конфигурации -->
+    </xs:complexType>
+  </xs:element>
+<!--
+  Блок описания модулей ввода-вывода
+-->
+  <xs:element name="hardware">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="module" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+            <xs:element name="channel" minOccurs="0" maxOccurs="32">
+              <xs:complexType>
+                <xs:attribute name="number" type="xs:unsignedInt" use="required"/>
+                <xs:attribute name="setup"  type="xs:string"      use="required"/>
+              </xs:complexType>
+            </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" use="required" />
+            <xs:attribute name="type" use="required">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:pattern value="AI6|FI4|DIO16"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="ver"  type="xs:string" use="required"/> <!-- Версия модуля -->
+          </xs:complexType>
+      </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+===================================================================================================
+==
+==  Блок описания конфигурации
+==
+===================================================================================================
+-->
+  <xs:element name="config">
+    <xs:complexType>
+      <xs:all>
+        <xs:element ref="settings"  minOccurs="0" maxOccurs="1"/>
+        <xs:element name="stations" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="station" minOccurs="1" maxOccurs="32"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="io"           minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="calculate"    minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="variables"    minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="reportsystem" minOccurs="0" maxOccurs="1"/>
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Глобальные настройки  
+-->
+  <xs:element name="settings">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="contracthour" minOccurs="0" maxOccurs="1"/>
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Станция
+-->
+  <xs:element name="station">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="temperature" minOccurs="0" maxOccurs="1" type="link_point"/>
+        <xs:element name="pressure"    minOccurs="0" maxOccurs="1" type="link_point"/>
+        <xs:element name="density"     minOccurs="0" maxOccurs="1" type="link_point"/> 
+        <xs:element name="streams"     minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref ="stream" minOccurs="1" maxOccurs="32"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="io"        minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="calculate" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="limits"    minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="product" use="required"> <!-- Тип нефтепродукта -->
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="PETROLEUM|LUBRICANT|BENZINE"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="precision" default="0"> <!-- Кол-во знаков после запятой в нарастающих. От 0 до 5 -->
+        <xs:simpleType>
+          <xs:restriction base="xs:unsignedInt">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="5"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="setup" type="xs:string" default=""/> <!-- Настройка станции. Пока не используется -->
+    </xs:complexType>
+  </xs:element>
+<!--
+  Линия
+-->
+  <xs:element name="stream">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="impulse"     minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="frequency"   minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "impulse" -->
+        <xs:element name="temperature" minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="pressure"    minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="density"     minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="density15"   minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "dens" -->
+        <xs:element name="density20"   minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "dens" -->
+        <xs:element name="b15"         minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "dens" -->
+        <xs:element name="y15"         minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "dens" -->
+        <xs:element name="factors"     minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="keypad_mf" minOccurs="1" maxOccurs="1" type="xs:double"/>
+              <xs:element name="keypad_kf" minOccurs="1" maxOccurs="1" type="xs:double"/>
+              <xs:element name="points"    minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="point" minOccurs="1" maxOccurs="12">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="hz" type="xs:double"/>
+                          <xs:element name="kf" type="xs:double"/>
+                        </xs:sequence>
+<!--                        <xs:attribute name="id" type="xs:unsignedInt" use="required"/> -->
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="io"        minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="calculate" minOccurs="0" maxOccurs="1"/>
+        <xs:element  ref="limits"   minOccurs="0" maxOccurs="1"/>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="maintenance"   type="xs:boolean"     default="1"/> <!-- Линия находится по умолчанию в учете или нет     -->
+      <xs:attribute name="linearization" type="xs:boolean"     default="1"/> <!-- Используется КЛА -->
+      <xs:attribute name="setup"         type="xs:unsignedInt" default="0"/> <!-- Пока не используется -->
+      <xs:attribute name="flowmeter"     use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="CARIOLIS|TURBINE|ULTRASONIC"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Объекты ввода-вывода
+-->
+  <xs:element name="io">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ai"      minOccurs="0" maxOccurs="64"/>
+        <xs:element ref="counter" minOccurs="0" maxOccurs="16"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Объект - Аналоговый входной сигнал
+-->
+  <xs:element name="ai">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="unit"       type="xs:unsignedInt" minOccurs="0"              /> <!-- Единицы измерения -->
+        <xs:element name="keypad"     type="xs:double"      minOccurs="0"              /> <!-- Значение ручного ввода (симуляция, имитация) -->
+        <xs:element  ref="io_link"                          minOccurs="0" maxOccurs="1"/> <!-- Привязка к модулю ввода-вывода               -->
+        <xs:element  ref="limits"                           minOccurs="0" maxOccurs="1"/>
+        <xs:element name="scale"                            minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="min" type="xs:double"  minOccurs="1" maxOccurs="1"/>
+              <xs:element name="max" type="xs:double"  minOccurs="1" maxOccurs="1"/>
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="mode" default="PHIS"> <!-- Текущий режим работы объекта, или физическая величина или ручной ввод -->
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="PHIS|KEYPAD"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="setup" type="xs:string" use="required"/> <!-- допустимые комбинации значений OFF | NOBUFFER | VIRTUAL | NOICE | (KEYPAD | LASTGOOD) | AMIN | WMIN | WMAX | AMAX | LIMIT_ALL -->
+    </xs:complexType>
+  </xs:element>
+<!--
+  Объект - частотный или импульсный вход
+-->
+  <xs:element name="counter">
+    <xs:complexType>
+      <xs:all>
+        <xs:element ref="io_link" minOccurs="0" maxOccurs="1"/> <!-- Привязка к модулю ввода-вывода               -->
+        <xs:element ref="limits"  minOccurs="0" maxOccurs="1"/>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="setup" type="xs:string" default=""/> <!-- допустимые комбинации значений OFF | NOBUFFER -->
+    </xs:complexType>
+  </xs:element>
+<!--
+  Общие объекты
+-->
+  <xs:element name="calculate">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="densitometer"  minOccurs="0" maxOccurs="16"/>
+        <xs:element ref="reduceddens"   minOccurs="0" maxOccurs="16"/>
+        <xs:element ref="multiselector" minOccurs="0" maxOccurs="16"/>
+        <xs:element ref="selector"      minOccurs="0" maxOccurs="16"/>
+        <xs:element ref="sampler"       minOccurs="0" maxOccurs="16"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Плотномер
+-->
+  <xs:element name="densitometer">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="period"      minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="temperature" minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="pressure"    minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="calibration" minOccurs="1" maxOccurs="1" type="xs:double" default="20"/>
+        <xs:element name="factors"     minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:all>
+	            <xs:element name="k0"   minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k1"   minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k2"   minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k18"  minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k19"  minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k20a" minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k20b" minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k21a" minOccurs="1" maxOccurs="1" type="xs:double"/>
+	            <xs:element name="k21b" minOccurs="1" maxOccurs="1" type="xs:double"/>
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+        <xs:element  ref="limits"      minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="setup" type="xs:string" default=""/>
+    </xs:complexType>
+  </xs:element>
+
+<!--
+  Приведение плотности
+--> 
+  <xs:element name="reduceddens">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="temperature" minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="pressure"    minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="density15"   minOccurs="1" maxOccurs="1" type="link_point"/>
+        <xs:element name="b15"         minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "dens15" -->
+        <xs:element name="y15"         minOccurs="0" maxOccurs="1" type="link_point"/> <!-- shadow-link from "dens15" -->
+        <xs:element  ref="limits"      minOccurs="0" maxOccurs="1"/>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+    </xs:complexType>
+  </xs:element>
+
+<!--
+  Элемент ручной ввод для всех селекторов
+-->
+  <xs:complexType name="sel_keypad">
+    <xs:sequence>
+      <xs:element name="unit"  minOccurs="1" maxOccurs="1" type="xs:unsignedInt"/>
+      <xs:element name="value" minOccurs="1" maxOccurs="1" type="xs:double"/>
+    </xs:sequence>
+  </xs:complexType>
+ 
+  
+  <xs:element name="selector">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="inputs" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="link" minOccurs="2" maxOccurs="4">
+                <xs:complexType>
+                  <xs:attribute name="alias" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="faults" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="link" minOccurs="2" maxOccurs="4">
+                <xs:complexType>
+                  <xs:attribute name="alias" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="keypad" minOccurs="1" maxOccurs="1" type="sel_keypad"/>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="setup" type="xs:string" default=""/>
+      <xs:attribute name="mode" default="NEXT">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="NOCHANGE|ERROR|PREV|NEXT"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="select" type="xs:unsignedInt" default="0"/>
+    </xs:complexType>
+  </xs:element>
+  
+<!--
+  Элемент группа для multiselect
+-->
+  <xs:complexType name="ms_group">
+    <xs:sequence>
+      <xs:element name="group" minOccurs="2" maxOccurs="4">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="link" minOccurs="2" maxOccurs="8"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+<!--
+  Мультиселектор
+-->
+  <xs:element name="multiselector">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="names" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="name" minOccurs="1" maxOccurs="8" type="xs:string"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="inputs"  minOccurs="1" maxOccurs="1" type="ms_group"/>
+        <xs:element name="faults"  minOccurs="0" maxOccurs="1" type="ms_group"/>
+        <xs:element name="keypads" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="keypad" minOccurs="1" maxOccurs="8" type="sel_keypad"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="setup" type="xs:string" default=""/>
+      <xs:attribute name="mode" default="NEXT">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="NOCHANGE|ERROR|PREV|NEXT"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="select" type="xs:unsignedInt" default="0"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="sampler">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="reserved" minOccurs="0" maxOccurs="1" type="link_point"/>
+        <xs:element name="pulse"    minOccurs="1" maxOccurs="1" type="xs:unsignedInt" default="1000"/>
+        <xs:element name="grabvol"  minOccurs="1" maxOccurs="1" type="xs:double"      default="1"/>
+        <xs:element name="canvol"   minOccurs="1" maxOccurs="1" type="xs:double"      default="3000"/>
+        <xs:element name="inputs"   minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="error"     minOccurs="0" maxOccurs="1" type="link_point"/>
+              <xs:element name="canfilled" minOccurs="0" maxOccurs="1" type="link_point"/>
+	          </xs:all>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="outputs"  minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="filled"     minOccurs="0" maxOccurs="1" type="link_point"/>
+	          </xs:all>
+          </xs:complexType>
+        </xs:element>
+      </xs:all>
+      <xs:attributeGroup ref="base_attr"/>
+      <xs:attribute name="method" default="PERIOD">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="PERIOD|VOLUME"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="setup"  type="xs:string" default=""/>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Переменные
+-->
+  <xs:element name="variable">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="BaseObj">
+          <xs:sequence>
+            <xs:element name="value" minOccurs="1" maxOccurs="1" type="xs:double"/>
+            <xs:element name="unit"  minOccurs="1" maxOccurs="1" type="xs:unsignedInt" />
+          </xs:sequence>
+          <xs:attribute name="setup" type="xs:string"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="variables">
+    <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="variable" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Система отчетов
+-->
+  <xs:element name="reportsystem">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="datasets" minOccurs="0" />
+        <xs:element ref="reports"  minOccurs="0" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Источник данных для набора данных
+-->
+  <xs:element name="total">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="item" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="link" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name"  type="xs:string"/>
+      <xs:attribute name="alias" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Данные, которые не усредняются, а берутся мгновенные значения
+-->
+  <xs:element name="snapshots">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="item" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="link" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Набор данных для отчетов
+-->
+  <xs:element name="datasets">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="dataset">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="total"     minOccurs="1" maxOccurs="unbounded"/>
+              <xs:element ref="snapshots" minOccurs="0" maxOccurs="1">
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+<!--
+  Шаблоны отчетов
+-->
+  <xs:element name="reports">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="report" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="period"  minOccurs="0" maxOccurs="1">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:pattern value="1HOUR|2HOUR|3HOUR|4HOUR|6HOUR|8HOUR|12HOUR|DAYLY|WEEKLY|BIWEEKLY|MONTHLY|QUARTERLY|ANNUAL|5MIN|15MIN"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="storage" minOccurs="1" maxOccurs="1" type="xs:unsignedInt"/>
+              <xs:element name="dataset" minOccurs="1" maxOccurs="1" type="xs:string"/>
+            </xs:all>
+            <xs:attributeGroup ref="base_attr"/>
+            <xs:attribute name="type" default="PERIODIC">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:pattern value="PERIODIC|BATCH"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Блок описания точности, строк и событий пользователя
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+  <xs:element name="custom">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref ="precision" minOccurs="0" maxOccurs="1" />
+        <xs:element name="strings"   minOccurs="0" maxOccurs="1" type="userstrings" />
+        <xs:element name="events"    minOccurs="0" maxOccurs="1" type="userstrings" />
+      </xs:sequence>
+      <xs:attribute name="lang" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+<!--
+  Описание точности отображения значений по единицам измерения
+-->
+  <xs:element name="precision">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="unit" minOccurs="0" maxOccurs="999">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="id" type="xs:unsignedInt" use="required"/>
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="default" type="xs:unsignedInt"/>
+    </xs:complexType>
+  </xs:element>  
+  
+<!--
+  Описание строк и событий пользователя
+-->
+  <xs:complexType name="userstrings">
+    <xs:sequence>
+      <xs:element name="lang" minOccurs="1" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="str" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:string">
+                    <xs:attribute name="id" type="xs:unsignedInt" use="required"/>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="value" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Блок описания интефейсов (Модбас, ОРС и т.д.)
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+  <xs:element name="comms">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref ="modbus" minOccurs="0" maxOccurs="1" />
+        <xs:element ref ="opcua"  minOccurs="0" maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="modbus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref ="datamap"  minOccurs="1" maxOccurs="1" />
+        <xs:element ref ="slavetcp" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref ="slavertu" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  <xs:element name="opcua">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref ="datamap"  minOccurs="1" maxOccurs="1" />
+        <xs:element ref ="slavetcp" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref ="slavertu" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="datamap">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="datablock" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="variable" minOccurs="1" maxOccurs="unbounded" />
+              <xs:element name="whitespace" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="swap">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="byte"  minOccurs="0" maxOccurs="1" type="xs:unsignedInt" />
+        <xs:element name="word"  minOccurs="0" maxOccurs="1" type="xs:unsignedInt" />
+        <xs:element name="dword" minOccurs="0" maxOccurs="1" type="xs:unsignedInt" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:complexType name="addressblock">
+    <xs:sequence>
+      <xs:element name="addressblock" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="begin" type="xs:unsignedInt" use="required"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="slavetcp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="whitelist" minOccurs="0" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ip" minOccurs="1" maxOccurs="unbounded" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref ="swap"       minOccurs="0" maxOccurs="1" />
+        <xs:element name="addressmap" minOccurs="1" maxOccurs="1" type="addressblock"/>
+      </xs:sequence>
+      <xs:attribute name="name"       type="xs:string"      use="required"/>
+      <xs:attribute name="id"         type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="port"       type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="counterror" type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="security"   type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="maxclient"  type="xs:unsignedInt" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="slavertu">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref ="swap"       minOccurs="0" maxOccurs="1" />
+        <xs:element name="addressmap" minOccurs="1" maxOccurs="1" type="addressblock"/>
+      </xs:sequence>
+      <xs:attribute name="name"       type="xs:string"      use="required"/>
+      <xs:attribute name="id"         type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="port"       type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="counterror" type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="security"   type="xs:unsignedInt" use="required"/>
+      <xs:attribute name="maxclient"  type="xs:unsignedInt" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+</xs:schema>

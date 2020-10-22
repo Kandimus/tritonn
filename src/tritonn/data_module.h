@@ -15,7 +15,6 @@
 
 #pragma once
 
-//#include "tinyxml2.h"
 #include "def.h"
 
 namespace tinyxml2
@@ -23,30 +22,22 @@ namespace tinyxml2
 	class XMLElement;
 };
 
-class rSource;
-class rSnapshot;
+class rDataConfig;
 
-class rConfigModule
+
+class rDataModule
 {
 public:
-	rConfigModule();
-	virtual ~rConfigModule();
+	rDataModule();
+	virtual ~rDataModule();
+
+	bool  isSetModule() const;
+	UDINT loadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
 	
-	rSource *Channel[MAX_MODULE_CHANNEL];
-
-//	virtual UDINT LoadChannel(tinyxml2::XMLElement *ch, rSnapshot &snapshot) = 0;
-
-protected:
-	UDINT MaxChannel;
+public:
+	USINT m_module;
+	USINT m_channel;
 };
 
-
-class rModuleAI4 : public rConfigModule
-{
-	rModuleAI4();
-	virtual ~rModuleAI4();
-
-	//virtual UDINT LoadChannel(tinyxml2::XMLElement *ch, rSnapshot &snapshot);
-};
 
 

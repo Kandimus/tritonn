@@ -64,7 +64,7 @@ std::unique_ptr<rIOBaseChannel> rIOAI6::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	std::unique_ptr<rIOBaseChannel> module_ptr(new rIOAIChannel(m_channel[num]));
+	auto module_ptr = std::make_unique<rIOAIChannel>(m_channel[num]);
 
 	return module_ptr;
 }

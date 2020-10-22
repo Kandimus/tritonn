@@ -17,6 +17,42 @@
 #include "io_ai_channel.h"
 
 
+/*
+	Расчет кодов АПЦ для разных случаев
+	Канал   Датчик    Min      Max
+	0-24мА  4..20мА   10922    54612
+			  0..20мА   0        54612
+	±11V    0..10V    32767    62556
+	±11V    -10..+10V 2979		62556
+*/
+
+UINT rIOAIChannel::getMinValue() const
+{
+	switch(m_type) {
+		case Type::mA_0_20:  return 0;
+		case Type::mA_4_20:  return 10922;
+		case Type::V_0_10:   return 32767;
+		case Type::V_m10_10: return 2979;
+	}
+	return 0;
+}
+
+UINT rIOAIChannel::getMaxValue() const
+{
+	switch(m_type) {
+		case Type::mA_0_20:  return 54612;
+		case Type::mA_4_20:  return 54612;
+		case Type::V_0_10:   return 62556;
+		case Type::V_m10_10: return 62556;
+	}
+	return 0;
+}
+
+UINT rIOAIChannel::getRange() const
+{
+	return getMaxValue() - getMinValue();
+}
+
 UDINT rIOAIChannel::simulate()
 {
 	switch(m_simType) {

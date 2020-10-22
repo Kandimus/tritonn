@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- ver="0.17" -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tritonn.ru" xmlns="http://tritonn.ru" elementFormDefault="qualified">
+<!--
+  Описательная часть
+-->
+  <xs:element name="strings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="lang" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="str" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="id" type="xs:integer" use="required"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="value" type="xs:string" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="kernel" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

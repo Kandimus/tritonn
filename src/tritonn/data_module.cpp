@@ -15,35 +15,41 @@
 
 
 #include "tinyxml2.h"
-#include "data_snapshot.h"
-#include "data_source.h"
+#include "data_config.h"
 #include "data_module.h"
+#include "xml_util.h"
 
-using namespace tinyxml2;
 
-
-rConfigModule::rConfigModule()
+rDataModule::rDataModule()
 {
-	for(UDINT ii = 0; ii < MAX_MODULE_CHANNEL; ++ii)
-	{
-		Channel[ii] = nullptr;
-	}
+	m_module  = 0xFF;
+	m_channel = 0xFF;
 }
 
-rConfigModule::~rConfigModule()
+rDataModule::~rDataModule()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-rModuleAI4::rModuleAI4() : rConfigModule()
+bool rDataModule::isSetModule() const
 {
-	MaxChannel = 4;
+	return m_module != 0xFF && m_channel != 0xFF;
 }
 
-rModuleAI4::~rModuleAI4()
-{
 
+UDINT rDataModule::loadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+{
+	m_module  = XmlUtils::getAttributeUSINT(element, XmlName::MODULE , 0xFF);
+	m_channel = XmlUtils::getAttributeUSINT(element, XmlName::CHANNEL, 0xFF);
+
+	if (!isSetModule()) {
+		cfg.ErrorLine = element->GetLineNum();
+		cfg.ErrorID   = DATACFGERR_INVALID_MODULELINK;
+		return cfg.ErrorID;
+	}
+
+	return TRITONN_RESULT_OK;
 }
 
 

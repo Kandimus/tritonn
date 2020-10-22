@@ -15,29 +15,17 @@
 
 #pragma once
 
-#include "bits_array.h"
 #include "data_source.h"
+#include "data_module.h"
+#include "bits_array.h"
 #include "compared_values.h"
 #include "data_link.h"
-
-
-
-struct rAIScale
-{
-	rAIScale();
-	
-	rCmpLREAL Min;               // Значение инж. минимума
-	rCmpLREAL Max;               //
-
-	UINT      Code_4mA;          // Максимальный код АЦП
-	UINT      Code_20mA;         // Минимальный код АЦП
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rAI : public rSource
+class rAI : public rSource, private rDataModule
 {
 public:
 	// Статусы аналогового сигнала
@@ -49,6 +37,28 @@ public:
 		MIN    = 0x0020,     // Значение ниже инженерного минимума
 		MAX    = 0x0040,     // Значение выше инженерного максимума
 		FAULT  = 0x0100,     // Ошибка. Выход из строя канала или модуля
+	};
+
+	// Настройка аналоговых сигналов
+	enum Setup
+	{
+		OFF          = 0x0001,     // Cигнал выключен из обработки
+		ERR_KEYPAD   = 0x0002,     // Разрешение при обрыве переводить сигнал в KEYPAD
+		ERR_LASTGOOD = 0x0004,     // Разрешение при обрыве переводить сигнал в LASTGOOD
+		NOBUFFER     = 0x8000,     // Отключение буфферизации значений (сглаживание)
+		VIRTUAL      = 0x4000,     // "Виртуальный" аналоговый сигнал. Без обработки кода АЦП. При установке SimValue события не проиходит
+		NOICE        = 0x2000,     // Подавление шума около 4 и 20мА
+	};
+
+	struct rScale
+	{
+		rScale() : Min(0), Max(100), Code_4mA(10923), Code_20mA(54613) {}
+
+		rCmpLREAL Min;               // Значение инж. минимума
+		rCmpLREAL Max;               //
+
+		UINT      Code_4mA;          // Максимальный код АЦП
+		UINT      Code_20mA;         // Минимальный код АЦП
 	};
 
 	rAI();
@@ -77,16 +87,13 @@ public:
 	rLink       Current;                 // Значение тока/напряжения, пересчитанное из кода АЦП
 
 	// Внутренние переменные
-	//rAI_io Channel;
-	UDINT       SetCode;                 // Для теста
 	UINT        ChFault;                 //TODO Временное решение
 	UINT        Code;                    //TODO Временное решение, пока небудет реализован класс rAI_io
 	DINT        UsedCode;                // Используемый код АЦП для расчета значения
 	rCmpLREAL   KeypadValue;             // Значение ручного ввода
-//	rLimit      Limit;                   // Технологические пределы
-	rAIScale    Scale;                   // Инженерные пределы токового сигала
+	rScale      m_scale;                 // Инженерные пределы токового сигала
 	UINT        Mode;                    // Режим работы
-	rCmpUINT    Setup;                   // Настройка сигнала
+	rCmpUINT    m_setup;                 // Настройка сигнала
 	rAI::Status m_status;                //
 //	STRID       Unit;                    // Номер строки, которая будет использоваться в качесте единиц измерения
 	UDINT       Security;                //
