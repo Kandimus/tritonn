@@ -1,3 +1,6 @@
 [submodule "src/simpletest"]
 	path = src/simpletest
 	url = git@github.com:Kandimus/SimpleTest.git
+[submodule "src/simpleargs"]
+	path = src/simpleargs
+	url = https://github.com/Kandimus/SimpleArgs.git
