@@ -18,6 +18,7 @@
 #include "tritonn_version.h"
 #include "log_manager.h"
 #include "simplefile.h"
+#include "simpleargs.h"
 #include "threadmaster.h"
 #include "data_station.h"
 #include "data_stream.h"
@@ -33,6 +34,7 @@
 #include "event_manager.h"
 #include "data_manager.h"
 #include "listconf.h"
+#include "def_arguments.h"
 
 //TODO Эти модули нужны только для SaveKernel, может их потом вынести в отдельный файл?
 #include "modbustcpslave_manager.h"
@@ -40,7 +42,6 @@
 
 
 extern rSafityValue<DINT> gReboot;
-extern rArguments         gArg;
 
 
 rDataManager::rDataManager() : Live(LIVE_UNDEF), Config()
@@ -599,7 +600,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	std::string text;
 	UDINT result = TRITONN_RESULT_OK;
 
-	if (!rThreadMaster::Instance().GetArg()->ForceRun) {
+	if (!rSimpleArgs::instance().isSet(rArg::ForceRun)) {
 
 		// Проверяем на cold/warm/debug старт
 		result = SimpleFileLoad(FILE_RESTART, text);
@@ -628,8 +629,8 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	// удаляем файл
 	SimpleFileDelete(FILE_RESTART);
 
-	if (rThreadMaster::Instance().GetArg()->ForceConf.size()) {
-		conf = rThreadMaster::Instance().GetArg()->ForceConf;
+	if (rSimpleArgs::instance().isSet(rArg::ForceConf)) {
+		conf = rSimpleArgs::instance().getOption(rArg::ForceConf);
 		return TRITONN_RESULT_OK;
 	}
 

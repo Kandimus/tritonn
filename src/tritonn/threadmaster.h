@@ -18,10 +18,6 @@
 #include <vector>
 //#include "safity.h"
 #include "thread_class.h"
-#include "structures.h"
-
-using std::vector;
-
 
 //
 struct rThreadInfo
@@ -77,10 +73,6 @@ public:
 	// Работа с нитями
 	UDINT Add(rThreadClass* thread, UDINT flags, const string& alias);
 
-	// Командная строка
-	UDINT       ParseArgs(int argc, const char** argv);
-	rArguments *GetArg();
-
 protected:
 	virtual rThreadStatus Proccesing();
 
@@ -93,11 +85,10 @@ protected:
 	UDINT GenerateVars(rThreadInfo* ti, const string& alias);
 
 private:
-	vector<rThreadInfo *> List; // Список всех нитей
-	vector<rSysInfo>      SysInfo;  //
-	rArguments            Arg;
-	rSysInfo              CurSysInfo;
-	UDINT                 TimerNotRun = 5000;
+	std::vector<rThreadInfo*> List; // Список всех нитей
+	std::vector<rSysInfo>     SysInfo;  //
+	rSysInfo CurSysInfo;
+	UDINT    TimerNotRun = 5000;
 
 };
 
