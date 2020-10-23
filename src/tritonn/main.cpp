@@ -10,18 +10,19 @@
 #include "data_variable.h"
 #include "text_manager.h"
 #include "simplefile.h"
+#include "simpleargs.h"
+#include "stringex.h"
 #include "listconf.h" //NOTE TEST
 #include "users.h"
 #include "units.h"
+#include "def_arguments.h"
 
 #ifdef TRITONN_TEST
-	#include "test_thread.h"
-	#include "simpletest.h"
+#include "test_thread.h"
+#include "simpletest.h"
 #endif
 
-//#include "modbustcpslave_manager.h"
 #include "hash.h"
-//#include "opcua_manager.h"
 
 int main(int argc, const char **argv)
 {
@@ -48,14 +49,24 @@ int main(int argc, const char **argv)
 
 	// Разбираем командную строку
 #ifdef TRITONN_TEST
-	rSimpleTest::Instance().Args(argc, argv);
 
-	rThreadMaster::Instance().GetArg()->ForceConf   = "test.xml";
-	rThreadMaster::Instance().GetArg()->ForceRun    = true;
-	rThreadMaster::Instance().GetArg()->TerminalOut = false;
-	rThreadMaster::Instance().GetArg()->logMask     = 0;
+	rSimpleTest::instance().Args(argc, argv);
+
+	rSimpleArgs::instance()
+			.setSwitch(rArg::ForceRun , true)
+			.setSwitch(rArg::Terminal , false)
+			.setSwitch(rArg::Simulate , true)
+			.setOption(rArg::Log      , "0x00000000")
+			.setOption(rArg::ForceConf, "test.xml");
 #else
-	rThreadMaster::Instance().ParseArgs(argc, argv);
+	rSimpleArgs::instance()
+			.addSwitch(rArg::ForceRun , 'f')
+			.addSwitch(rArg::Terminal , 't')
+			.addSwitch(rArg::Simulate , 's')
+			.addOption(rArg::Log      , 'l', "0x00000000")
+			.addOption(rArg::ForceConf, 'c', "test_sikn.xml");
+
+	rSimpleArgs.parse(argc, argv);
 #endif
 
 	rThreadMaster::Instance().Run(1000);
@@ -74,9 +85,12 @@ int main(int argc, const char **argv)
 
 	//----------------------------------------------------------------------------------------------
 	// Менеджер логирования
-	rLogManager::Instance().Enable.Set(true); //TODO Может эти флаги вынести в аргументы?
-	rLogManager::Instance().SetLogMask(rThreadMaster::Instance().GetArg()->logMask);
-	rLogManager::Instance().Terminal.Set(rThreadMaster::Instance().GetArg()->TerminalOut);
+	UDINT logmask = 0;
+	String_IsValidHex(rSimpleArgs::instance().getOption(rArg::Log).c_str(), logmask);
+
+	rLogManager::Instance().Enable.Set(true);
+	rLogManager::Instance().SetLogMask(logmask);
+	rLogManager::Instance().Terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 
 	TRACEERROR("------------------------------------------");
 	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);

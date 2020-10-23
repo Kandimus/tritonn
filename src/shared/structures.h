@@ -56,17 +56,6 @@ struct rState
 	USINT StartReason;    // Причина последней перезагрузки
 };
 
-
-struct rArguments
-{
-	USINT ForceRun;
-	USINT TerminalOut;
-	std::string ForceConf;
-	UDINT logMask;
-};
-
-
-
 // Учет времени работы потоков и функций
 class rProfile
 {

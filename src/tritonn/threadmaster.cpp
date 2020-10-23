@@ -28,10 +28,6 @@
 rThreadMaster::rThreadMaster()
 {
 	RTTI          = "rThreadMaster";
-	Arg.ForceRun  = false;
-	Arg.ForceConf = "";
-	Arg.ForceRun  = false;
-	Arg.logMask   = LM_ALL;
 }
 
 
@@ -88,51 +84,7 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 
 //-------------------------------------------------------------------------------------------------
-// Запись данных в менеджер данных
-UDINT rThreadMaster::ParseArgs(int argc, const char** argv)
-{
-	for(int ii = 1; ii < argc; ++ii)
-	{
-		std::string arg = std::string(argv[ii]);
-		std::string arg2 = ii + 1 < argc ? argv[ii + 1] : "";
-
-		if (arg == "--forcerun" || arg == "-f") {
-			Arg.ForceRun = 1;
-			continue;
-		}
-
-		if (arg == "--terminal" || arg == "-t") {
-			Arg.TerminalOut = 1;
-			rLogManager::Instance().Terminal.Set(Arg.TerminalOut);
-			continue;
-		}
-
-		if (arg == "--config" || arg == "-c") {
-			Arg.ForceConf = arg2;
-			++ii;
-			continue;
-		}
-
-		if (arg == "--log" || arg == "-l") {
-			if(!String_IsValidHex(arg2.c_str(), Arg.logMask)) {
-				Arg.logMask = LM_ALL;
-			}
-			++ii;
-			continue;
-		}
-	}
-
-	return 0;
-}
-
-
-//-------------------------------------------------------------------------------------------------
 //
-rArguments *rThreadMaster::GetArg()
-{
-	return &Arg;
-}
-
 
 //-------------------------------------------------------------------------------------------------
 //

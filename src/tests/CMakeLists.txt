@@ -1,12 +1,12 @@
 project(${PROJECT_NAME_PREFIX}tests)
 
 # Sources
-file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp)
-file(GLOB_RECURSE tritonn_cpp ${CMAKE_SOURCE_DIR}/src/tritonn/*.cpp)
-file(GLOB_RECURSE tritonn_c ${CMAKE_SOURCE_DIR}/src/tritonn/*.c)
-file(GLOB_RECURSE tritonn_h ${CMAKE_SOURCE_DIR}/src/tritonn/*.h)
+file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp
+									 ${CMAKE_SOURCE_DIR}/src/tritonn/*.cpp
+									 ${CMAKE_SOURCE_DIR}/src/tritonn/*.c)
+file(GLOB_RECURSE files_h   ${CMAKE_SOURCE_DIR}/src/tritonn/*.h)
 
-add_executable(${PROJECT_NAME} ${files_cpp} ${tritonn_cpp} ${tritonn_c} ${tritonn_h})
+add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_SOURCE_DIR}/bin/conf/test.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/conf)
@@ -15,8 +15,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "test")
 
 add_lib(shared)
 add_lib(open62541)
+add_lib(simpleargs)
+add_lib(simpletest)
 
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/simpletest")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tritonn")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tests")
 
@@ -32,3 +33,9 @@ add_custom_target(generating_cpp ALL
 add_dependencies(${PROJECT_NAME} generating_cpp)
 
 
+list(APPEND ${SIMPLETEST_ADDDIR} "${CMAKE_SOURCE_DIR}/src/simpleargs")
+if(SIMPLETEST_USING_SIMPLEARGS)
+	list(APPEND ${SIMPLETEST_ADDDEF} "SIMPLETEST_USING_SIMPLEARGS=1")
+endif()
+
+compile_submodule("simpletest" SIMPLETEST_ADDDIR SIMPLETEST_ADDDEF)
