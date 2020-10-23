@@ -6,11 +6,6 @@
 void SimpleTest_AnalogInput(void);
 void SimpleTest_Analog2(void);
 
-void handlerSimpleTest(int a)
-{
-	printf("Section %i: %sSignal %i!%s Exit\n", rSimpleTest::Instance().m_curSection, S_TEXT_FAULT(rSimpleTest::Instance().isColored()), a, S_TEXT_RESET(rSimpleTest::Instance().isColored()));
-	exit(1);
-}
 
 rSimpleTest::rSimpleTest(void)
 {

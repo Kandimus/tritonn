@@ -8,7 +8,7 @@ endmacro()
 
 
 macro( compile_submodule submodulename ADD_DIRECTORIES ADD_DEFININITIONS)
-	project("${PROJECT_NAME_PREFIX}${submodulename}")
+	project(${PROJECT_NAME_PREFIX}${submodulename})
 
 	file(GLOB submodule_cpp ${CMAKE_SOURCE_DIR}/src/${submodulename}/*.c
 									${CMAKE_SOURCE_DIR}/src/${submodulename}/*.cpp)

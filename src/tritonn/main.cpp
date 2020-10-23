@@ -50,23 +50,23 @@ int main(int argc, const char **argv)
 	// Разбираем командную строку
 #ifdef TRITONN_TEST
 
-	rSimpleTest::instance().Args(argc, argv);
+	rSimpleTest::instance().args(argc, argv);
 
 	rSimpleArgs::instance()
 			.setSwitch(rArg::ForceRun , true)
 			.setSwitch(rArg::Terminal , false)
 			.setSwitch(rArg::Simulate , true)
-			.setOption(rArg::Log      , "0x00000000")
+			.setOption(rArg::Log      , "FFFFFFFF")
 			.setOption(rArg::ForceConf, "test.xml");
 #else
 	rSimpleArgs::instance()
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
-			.addOption(rArg::Log      , 'l', "0x00000000")
+			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::ForceConf, 'c', "test_sikn.xml");
 
-	rSimpleArgs.parse(argc, argv);
+	rSimpleArgs::instance().parse(argc, argv);
 #endif
 
 	rThreadMaster::Instance().Run(1000);
@@ -86,6 +86,7 @@ int main(int argc, const char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Менеджер логирования
 	UDINT logmask = 0;
+	std::string aaa = rSimpleArgs::instance().getOption(rArg::Log);
 	String_IsValidHex(rSimpleArgs::instance().getOption(rArg::Log).c_str(), logmask);
 
 	rLogManager::Instance().Enable.Set(true);

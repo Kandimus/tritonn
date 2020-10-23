@@ -19,9 +19,9 @@
 
 namespace rArg
 {
-	const std::string Log      = "log";
-	const std::string ForceRun = "force-run";
-	const std::string Terminal = "terimnal";
-	const std::string Simulate = "simulate";
+	const std::string Log       = "log";
+	const std::string ForceRun  = "force-run";
+	const std::string Terminal  = "terminal";
+	const std::string Simulate  = "simulate";
 	const std::string ForceConf = "force-conf";
 }

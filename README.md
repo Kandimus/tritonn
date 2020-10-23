@@ -1,7 +1,18 @@
 # tritonn
 
+## Setup git
+
+    # ssh-keygen -t rsa -C "user.name@mail.domain"
+    # gedit ~/.ssh/id_rsa
+
+Copy text to clipboard, open github.com, click on **settings** -> **SSH and GPG keys**. Add new SSH-key from clipboard.
+
+    # git config --global user.name "YourFullName"
+    # git config --global user.email myemail@mail.ru
+
 ## Get ##
     # cd ~/projects/tritonn
+    # git fetch
     # git checkout master
     # git pull
     # git submodule update
@@ -15,7 +26,7 @@
     # ./tritonn
 
 ## Command line ##
->--forcerun
+>--force-run
 
 Ignore cold-restart
 
@@ -23,10 +34,14 @@ Ignore cold-restart
 
 Out logs end events to terminal
 
->--config *filename*
+>--force-conf *filename*
 
-Run config ./conf/*filename*
+Open config ./conf/*filename*
 
 >--log *hex*
 
 Set log mask as *hex*
+
+>--simulate
+
+Simulate IO modules
