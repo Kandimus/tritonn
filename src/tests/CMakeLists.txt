@@ -3,10 +3,11 @@ project(${PROJECT_NAME_PREFIX}tests)
 # Sources
 file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp)
 file(GLOB_RECURSE tritonn_cpp ${CMAKE_SOURCE_DIR}/src/tritonn/*.cpp)
+file(GLOB         test_cpp  ${CMAKE_SOURCE_DIR}/src/simpletest/*.cpp)
 file(GLOB_RECURSE tritonn_c ${CMAKE_SOURCE_DIR}/src/tritonn/*.c)
 file(GLOB_RECURSE tritonn_h ${CMAKE_SOURCE_DIR}/src/tritonn/*.h)
 
-add_executable(${PROJECT_NAME} ${files_cpp} ${tritonn_cpp} ${tritonn_c} ${tritonn_h})
+add_executable(${PROJECT_NAME} ${files_cpp} ${tritonn_cpp} ${tritonn_c} ${tritonn_h} ${test_cpp})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_SOURCE_DIR}/bin/conf/test.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/conf)

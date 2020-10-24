@@ -49,7 +49,7 @@ int main(int argc, const char **argv)
 
 	// Разбираем командную строку
 #ifdef TRITONN_TEST
-	rSimpleTest::Instance().Args(argc, argv);
+	rSimpleTest::instance().args(argc, argv);
 
 	rThreadMaster::instance().GetArg()->m_forceConf   = "test.xml";
 	rThreadMaster::instance().GetArg()->m_forceRun    = true;

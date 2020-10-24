@@ -162,6 +162,13 @@ UDINT rAI::Calculate()
 		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
 		auto channel     = static_cast<rIOAIChannel*>(channel_ptr.get());
 
+		if (channel == nullptr)
+		{
+			rEventManager::instance().Add(ReinitEvent(EID_AI_MODULE) << m_module << m_channel);
+			rDataManager::Instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			return DATACFGERR_REALTIME_MODULELINK;
+		}
+
 		CheckExpr(channel->m_state, AI_LE_CODE_FAULT, event_fault.Reinit(EID_AI_CH_OK) << ID << Descr, event_success.Reinit(EID_AI_CH_OK) << ID << Descr);
 			
 		//TODO Если считали успешно, то обрабатываем полученный код АЦП
@@ -425,10 +432,10 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 		return result;
 	}
 
-	tinyxml2::XMLElement *module  = element->FirstChildElement("module");
-	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
-	tinyxml2::XMLElement *unit   = element->FirstChildElement(XmlName::UNIT);
-	tinyxml2::XMLElement *scale  = element->FirstChildElement(XmlName::SCALE);
+	tinyxml2::XMLElement* module = element->FirstChildElement(XmlName::IOLINK);
+	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
+	tinyxml2::XMLElement* unit   = element->FirstChildElement(XmlName::UNIT);
+	tinyxml2::XMLElement* scale  = element->FirstChildElement(XmlName::SCALE);
 
 	// Если аналоговый сигнал не привязан к каналу, то разрешаем менять его значение
 	if (module) {

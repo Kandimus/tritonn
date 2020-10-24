@@ -55,6 +55,8 @@ UINT rIOAIChannel::getRange() const
 
 UDINT rIOAIChannel::simulate()
 {
+	m_state = 0;
+
 	switch(m_simType) {
 		case SimType::None:
 			return TRITONN_RESULT_OK;
@@ -77,7 +79,6 @@ UDINT rIOAIChannel::simulate()
 				}
 			}
 			m_ADC = m_simValue = static_cast<UINT>(tmp);
-			printf("ADC: %i\n", m_ADC);
 			return TRITONN_RESULT_OK;
 		}
 

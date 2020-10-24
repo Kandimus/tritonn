@@ -58,7 +58,7 @@ UDINT rIOAI6::processing(USINT issim)
 
 std::unique_ptr<rIOBaseChannel> rIOAI6::getChannel(USINT num)
 {
-	if (num < CHANNEL_COUNT) {
+	if (num >= CHANNEL_COUNT) {
 		return nullptr;
 	}
 

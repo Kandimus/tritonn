@@ -29,7 +29,7 @@ rTestThread::~rTestThread()
 //
 rThreadStatus rTestThread::Proccesing()
 {
-	rSimpleTest::Instance().Run();
+	rSimpleTest::instance().run();
 	Finish();
 	rThreadClass::Proccesing();
 

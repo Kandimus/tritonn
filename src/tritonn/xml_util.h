@@ -100,6 +100,7 @@ const char INPUTS[]        = "inputs";
 //const char CFGNAME_INTERFACES[]    = "interfaces";
 const char INTERNAL[]      = "internal";
 const char IO[]            = "io";
+const char IOLINK[]        = "iolink";
 const char IP[]            = "ip";
 const char ITEM[]          = "item";
 const char KEYPAD[]        = "keypad";
