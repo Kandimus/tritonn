@@ -20,6 +20,7 @@
 #include "data_config.h"
 #include "data_variable.h"
 #include "data_rvar.h"
+#include "xml_util.h"
 
 
 
@@ -27,7 +28,12 @@
 //
 rRVar::rRVar() : rSource(), Setup(0)
 {
-	InitLink(LINK_SETUP_INOUTPUT | LINK_SETUP_NONAME | LINK_SETUP_WRITEBLE, Value, U_any, SID_VALUE, CFGNAME_VALUE, LINK_SHADOW_NONE);
+	if (m_flagSetup.empty()) {
+		m_flagSetup
+				.add("CONST", VAR_SETUP_CONST);
+	}
+
+	InitLink(LINK_SETUP_INOUTPUT | LINK_SETUP_NONAME | LINK_SETUP_WRITEBLE, Value, U_any, SID_VALUE, XmlName::VALUE, LINK_SHADOW_NONE);
 }
 
 
@@ -97,20 +103,20 @@ UDINT rRVar::GenerateVars(vector<rVariable *> &list)
 //
 UDINT rRVar::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
-	string strSetup = (element->Attribute(CFGNAME_SETUP)) ? element->Attribute(CFGNAME_SETUP) : "";
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, "");
 	UDINT  err = 0;
 
 	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_VAR;
 
-	tinyxml2::XMLElement *xml_value = element->FirstChildElement(CFGNAME_VALUE);
-	tinyxml2::XMLElement *xml_unit  = element->FirstChildElement(CFGNAME_UNIT);
+	tinyxml2::XMLElement *xml_value = element->FirstChildElement(XmlName::VALUE);
+	tinyxml2::XMLElement *xml_unit  = element->FirstChildElement(XmlName::UNIT);
 
 	if(nullptr == xml_value || nullptr == xml_unit)
 	{
 		return DATACFGERR_VAR;
 	}
 
-	Setup = rDataConfig::GetFlagFromStr(rDataConfig::VarSetupFlags, strSetup, err);
+	Setup = m_flagSetup.getValue(strSetup, err);
 
 	Value.Value = rDataConfig::GetTextLREAL(xml_value, 0.0  , err);
 	Value.Unit  = rDataConfig::GetTextUDINT(xml_unit , U_any, err);

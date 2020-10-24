@@ -16,12 +16,14 @@
 #include <limits>
 #include "def.h"
 #include "tinyxml2.h"
+#include "xml_util.h"
 #include "data_link.h"
 #include "data_config.h"
 #include "event_manager.h"
 #include "data_variable.h"
 #include "data_source.h"
 #include "text_manager.h"
+#include "xml_util.h"
 
 
 
@@ -83,7 +85,7 @@ LREAL rSource::GetValue(const string &name, UDINT unit, UDINT &err)
 		Calculate();
 	}
 
-	if(name == CFGNAME_FAULT) return (LREAL)Fault;
+	if(name == XmlName::FAULT) return (LREAL)Fault;
 
 	link = GetOutputByName(name);
 
@@ -256,9 +258,14 @@ UDINT rSource::GenerateVars(vector<rVariable *> &list)
 //
 UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
-	const char *strAlias = element->Attribute("name");
+	const char *strAlias = element->Attribute(XmlName::NAME);
 
-	if(!strAlias) return 1; //TODO Можно еще алиас проверить на валидность имени
+	//TODO Можно еще алиас проверить на валидность имени
+	if (!strAlias) {
+		cfg.ErrorLine = element->GetLineNum();
+		cfg.ErrorID   = DATACFGERR_INVALID_NAME;
+		return cfg.ErrorID;
+	}
 
 	if(cfg.Prefix.size())
 	{
@@ -267,17 +274,17 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	Alias += strAlias;
 	Alias  = String_tolower(Alias);
-	Descr  = rDataConfig::GetAttributeUDINT(element, "descr", 0);
+	Descr  = XmlUtils::getAttributeUDINT(element, XmlName::DESC, 0);
 
 	// Загружаем все пределы по всем входам и выходам
-	tinyxml2::XMLElement *limits = element->FirstChildElement(CFGNAME_LIMITS);
+	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS);
 
 	if(nullptr == limits) return tinyxml2::XML_SUCCESS;
 
-	for(tinyxml2::XMLElement *limit = limits->FirstChildElement(CFGNAME_LIMIT); nullptr != limit; limit = limit->NextSiblingElement(CFGNAME_LIMIT))
+	for(tinyxml2::XMLElement *limit = limits->FirstChildElement(XmlName::LIMIT); nullptr != limit; limit = limit->NextSiblingElement(XmlName::LIMIT))
 	{
 		rLink *link = nullptr;
-		string ioname = String_tolower(limit->Attribute(CFGNAME_NAME));
+		string ioname = String_tolower(limit->Attribute(XmlName::NAME));
 
 		for(UDINT ii = 0; ii < Inputs.size(); ++ii)
 		{
@@ -408,7 +415,7 @@ UDINT rSource::CheckOutput(const string &name)
 {
 	string lowname = String_tolower(name);
 
-	if(CFGNAME_FAULT == lowname) return 0;
+	if(XmlName::FAULT == lowname) return 0;
 
 	for(UDINT ii = 0; ii < Outputs.size(); ++ii)
 	{
@@ -431,7 +438,7 @@ UDINT rSource::CheckExpr(bool expr, UDINT flag, rEvent &event_fault, rEvent &eve
 		{
 			LockErr |= flag;
 
-			rEventManager::Instance().Add(event_fault);
+			rEventManager::instance().Add(event_fault);
 		}
 
 		return 1;
@@ -442,7 +449,7 @@ UDINT rSource::CheckExpr(bool expr, UDINT flag, rEvent &event_fault, rEvent &eve
 		{
 			LockErr &= ~flag;
 
-			rEventManager::Instance().Add(event_success);
+			rEventManager::instance().Add(event_success);
 		}
 	}
 
@@ -454,7 +461,7 @@ UDINT rSource::SendEventSetLE(UDINT flag, rEvent &event)
 {
 	if(!(LockErr & flag))
 	{
-		rEventManager::Instance().Add(event);
+		rEventManager::instance().Add(event);
 
 		LockErr |= flag;
 
@@ -469,7 +476,7 @@ UDINT rSource::SendEventClearLE(UDINT flag, rEvent &event)
 {
 	if(LockErr & flag)
 	{
-		rEventManager::Instance().Add(event);
+		rEventManager::instance().Add(event);
 		LockErr &= ~flag;
 
 		return 1;

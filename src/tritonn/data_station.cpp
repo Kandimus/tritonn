@@ -26,6 +26,7 @@
 #include "data_variable.h"
 #include "data_stream.h"
 #include "data_station.h"
+#include "xml_util.h"
 
 using std::vector;
 
@@ -52,13 +53,13 @@ rStation::rStation() : Setup(0)
 
 	Stream.clear();
 
-	InitLink(LINK_SETUP_INOUTPUT, Temp        , U_C       , SID_TEMPERATURE      , CFGNAME_TEMP         , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Pres        , U_MPa     , SID_PRESSURE         , CFGNAME_PRES         , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Dens        , U_kg_m3   , SID_DENSITY          , CFGNAME_DENSITY      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowMass    , UnitMass  , SID_FLOWRATE_MASS    , CFGNAME_FLOWRATEMASS , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume  , UnitVolume, SID_FLOWRATE_VOLUME  , CFGNAME_FLOWRATEVOL  , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume15, UnitVolume, SID_FLOWRATE_VOLUME15, CFGNAME_FLOWRATEVOL15, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume20, UnitVolume, SID_FLOWRATE_VOLUME20, CFGNAME_FLOWRATEVOL20, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Temp        , U_C       , SID_TEMPERATURE      , XmlName::TEMP         , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Pres        , U_MPa     , SID_PRESSURE         , XmlName::PRES         , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Dens        , U_kg_m3   , SID_DENSITY          , XmlName::DENSITY      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowMass    , UnitMass  , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume  , UnitVolume, SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume15, UnitVolume, SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , FlowVolume20, UnitVolume, SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, LINK_SHADOW_NONE);
 }
 
 
@@ -134,10 +135,10 @@ UDINT rStation::Calculate()
 		Total.Inc.Volume20 += str->Total.Inc.Volume20;
 
 		UDINT check = Total.Calculate(UnitMass, UnitVolume);
-		if(check & TOTAL_MAX_MASS    ) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_MASS)    );
-		if(check & TOTAL_MAX_VOLUME  ) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME)  );
-		if(check & TOTAL_MAX_VOLUME15) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME15));
-		if(check & TOTAL_MAX_VOLUME20) rEventManager::Instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME20));
+		if(check & TOTAL_MAX_MASS    ) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_MASS)    );
+		if(check & TOTAL_MAX_VOLUME  ) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME)  );
+		if(check & TOTAL_MAX_VOLUME15) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME15));
+		if(check & TOTAL_MAX_VOLUME20) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME20));
 	}
 
 	// Расчет параметров станции
@@ -149,9 +150,9 @@ UDINT rStation::Calculate()
 
 		if(str->Maintenance) continue;
 
-		if(nullptr == Temp.Source) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(CFGNAME_TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(nullptr == Pres.Source) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(CFGNAME_PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(nullptr == Dens.Source) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(CFGNAME_DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(nullptr == Temp.Source) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(nullptr == Pres.Source) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(nullptr == Dens.Source) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
 	}
 
 	return 0;
@@ -234,14 +235,14 @@ UDINT rStation::GenerateVars(vector<rVariable *> &list)
 UDINT rStation::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
 	string defProduct = rDataConfig::GetFlagNameByValue(rDataConfig::STNProductValues, PRODUCT_PETROLEUM);
-	string strProduct = (element->Attribute(CFGNAME_PRODUCT)) ? element->Attribute(CFGNAME_PRODUCT)  : defProduct;
+	string strProduct = XmlUtils::getAttributeString(element, XmlName::PRODUCT, defProduct);
 	UDINT  err = 0;
 
 	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return 1;
 
-	tinyxml2::XMLElement *temp = element->FirstChildElement(CFGNAME_TEMP);
-	tinyxml2::XMLElement *pres = element->FirstChildElement(CFGNAME_PRES);
-	tinyxml2::XMLElement *dens = element->FirstChildElement(CFGNAME_DENSITY);
+	tinyxml2::XMLElement *temp = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement *pres = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement *dens = element->FirstChildElement(XmlName::DENSITY);
 
 	Product   = (TYPE_PRODUCT)rDataConfig::GetFlagFromStr(rDataConfig::STNProductValues , strProduct , err);
 	if(err) return DATACFGERR_STATION;
@@ -249,9 +250,9 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	Setup.Init(0);
 
 	// Параметры ниже могут отсутствовать в конфигурации, в этом случае они будут вычисляться как средневзвешанные
-	if(temp) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement(CFGNAME_LINK), Temp)) return cfg.ErrorID;
-	if(pres) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement(CFGNAME_LINK), Pres)) return cfg.ErrorID;
-	if(dens) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement(CFGNAME_LINK), Dens)) return cfg.ErrorID;
+	if(temp) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement(XmlName::LINK), Temp)) return cfg.ErrorID;
+	if(pres) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement(XmlName::LINK), Pres)) return cfg.ErrorID;
+	if(dens) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement(XmlName::LINK), Dens)) return cfg.ErrorID;
 
 	ReinitLimitEvents();
 

@@ -23,6 +23,7 @@
 #include "data_link.h"
 #include "data_variable.h"
 #include "data_selector.h"
+#include "xml_util.h"
 
 
 using std::vector;
@@ -106,7 +107,7 @@ UDINT rSelector::Calculate()
 	//TODO Какие значения будут в выходах?
 	if(Select.Value >= CountInputs || Select.Value < -1)
 	{
-		rEventManager::Instance().Add(ReinitEvent(EID_SELECTOR_ERROR) << Select.Value);
+		rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_ERROR) << Select.Value);
 		Select.Init(-1);
 		Fault = 1;
 		//return 0;
@@ -130,7 +131,7 @@ UDINT rSelector::Calculate()
 				// Переход на значение ошибки
 				case SELECTOR_MODE_TOERROR:
 				{
-					rEventManager::Instance().Add(ReinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
+					rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
 
 					Select.Value = -1;
 					Fault        = 1;
@@ -156,13 +157,13 @@ UDINT rSelector::Calculate()
 
 					if(faultGrp[Select.Value])
 					{
-						rEventManager::Instance().Add(ReinitEvent(EID_SELECTOR_NOTHINGNEXT) << Select.Value);
+						rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_NOTHINGNEXT) << Select.Value);
 
 						Select.Value = -1;
 					}
 					else
 					{
-						rEventManager::Instance().Add(ReinitEvent(EID_SELECTOR_TONEXT) << Select.Value);
+						rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_TONEXT) << Select.Value);
 					}
 				}
 			} //switch
@@ -291,11 +292,11 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	if(err) return DATACFGERR_SELECTOR;
 
 	// Простой селектор
-	if(string(CFGNAME_SELECTOR) == element->Name())
+	if(string(XmlName::SELECTOR) == element->Name())
 	{
-		tinyxml2::XMLElement *inputs = element->FirstChildElement(CFGNAME_INPUTS);
-		tinyxml2::XMLElement *faults = element->FirstChildElement(CFGNAME_FAULTS);
-		tinyxml2::XMLElement *keypad = element->FirstChildElement(CFGNAME_KEYPAD);
+		tinyxml2::XMLElement *inputs = element->FirstChildElement(XmlName::INPUTS);
+		tinyxml2::XMLElement *faults = element->FirstChildElement(XmlName::FAULTS);
+		tinyxml2::XMLElement *keypad = element->FirstChildElement(XmlName::KEYPAD);
 
 		if(nullptr == inputs || nullptr == keypad)
 		{
@@ -304,7 +305,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 		//------------------------------------
 		// Входа
-		for(tinyxml2::XMLElement *link = inputs->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
+		for(tinyxml2::XMLElement *link = inputs->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
 		{
 			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, ValueIn[ii][0])) return cfg.ErrorID;
 			++ii;
@@ -321,7 +322,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 		// Фаулты (ошибки)
 		if(faults)
 		{
-			for(tinyxml2::XMLElement *link = faults->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
+			for(tinyxml2::XMLElement *link = faults->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
 			{
 				if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][0], ValueIn[ii][0], "fault")) return cfg.ErrorID;
 				// Принудительно выключаем пределы
@@ -333,21 +334,21 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 		}
 
 		// Подстановочное значение
-		Keypad[0] = rDataConfig::GetTextLREAL(keypad->FirstChildElement(CFGNAME_VALUE),   0.0, err);
-		KpUnit[0] = rDataConfig::GetTextUDINT(keypad->FirstChildElement(CFGNAME_UNIT) , U_any, err);
+		Keypad[0] = rDataConfig::GetTextLREAL(keypad->FirstChildElement(XmlName::VALUE),   0.0, err);
+		KpUnit[0] = rDataConfig::GetTextUDINT(keypad->FirstChildElement(XmlName::UNIT) , U_any, err);
 
 		if(err) return DATACFGERR_SELECTOR;
 	}
 
 	// Мульти-селектор
-	else if(string(CFGNAME_MSELECTOR) == element->Name())
+	else if(string(XmlName::MSELECTOR) == element->Name())
 	{
 		Setup.Init(Setup.Value | SELECTOR_SETUP_MULTI);
 
-		tinyxml2::XMLElement *names   = element->FirstChildElement(CFGNAME_NAMES);
-		tinyxml2::XMLElement *inputs  = element->FirstChildElement(CFGNAME_INPUTS);
-		tinyxml2::XMLElement *faults  = element->FirstChildElement(CFGNAME_FAULTS);
-		tinyxml2::XMLElement *keypads = element->FirstChildElement(CFGNAME_KEYPADS);
+		tinyxml2::XMLElement *names   = element->FirstChildElement(XmlName::NAMES);
+		tinyxml2::XMLElement *inputs  = element->FirstChildElement(XmlName::INPUTS);
+		tinyxml2::XMLElement *faults  = element->FirstChildElement(XmlName::FAULTS);
+		tinyxml2::XMLElement *keypads = element->FirstChildElement(XmlName::KEYPADS);
 
 		if(nullptr == names || nullptr == inputs || nullptr == keypads)
 		{
@@ -356,7 +357,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 		// Загружаем имена выходов
 		UDINT grp = 0;
-		for(tinyxml2::XMLElement *name = names->FirstChildElement(CFGNAME_NAME); name != nullptr; name = name->NextSiblingElement(CFGNAME_NAME))
+		for(tinyxml2::XMLElement *name = names->FirstChildElement(XmlName::NAME); name != nullptr; name = name->NextSiblingElement(XmlName::NAME))
 		{
 			NameInput[grp] = name->GetText();
 
@@ -367,11 +368,11 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 		// Загружаем входа
 		ii = 0;
-		for(tinyxml2::XMLElement *group = inputs->FirstChildElement(CFGNAME_GROUP); group != nullptr; group = group->NextSiblingElement(CFGNAME_GROUP))
+		for(tinyxml2::XMLElement *group = inputs->FirstChildElement(XmlName::GROUP); group != nullptr; group = group->NextSiblingElement(XmlName::GROUP))
 		{
 			// Линки
 			grp = 0;
-			for(tinyxml2::XMLElement *link = group->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
+			for(tinyxml2::XMLElement *link = group->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
 			{
 				if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, ValueIn[ii][grp])) return cfg.ErrorID;
 
@@ -391,13 +392,13 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 		if(faults)
 		{
 			ii = 0;
-			for(tinyxml2::XMLElement *group = faults->FirstChildElement(CFGNAME_GROUP); group != nullptr; group = group->NextSiblingElement(CFGNAME_GROUP))
+			for(tinyxml2::XMLElement *group = faults->FirstChildElement(XmlName::GROUP); group != nullptr; group = group->NextSiblingElement(XmlName::GROUP))
 			{
 				// Линки
 				grp = 0;
-				for(tinyxml2::XMLElement *link = group->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
+				for(tinyxml2::XMLElement *link = group->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
 				{
-					if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][grp], ValueIn[ii][grp], CFGNAME_FAULT)) return cfg.ErrorID;
+					if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][grp], ValueIn[ii][grp], XmlName::FAULT)) return cfg.ErrorID;
 
 					FaultIn[ii][grp].Limit.Setup.Init(LIMIT_SETUP_OFF);
 
@@ -412,10 +413,10 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 		// Подстановочные значения
 		grp = 0;
-		for(tinyxml2::XMLElement *keypad = keypads->FirstChildElement(CFGNAME_KEYPAD); keypad != nullptr; keypad = keypad->NextSiblingElement(CFGNAME_KEYPAD))
+		for(tinyxml2::XMLElement *keypad = keypads->FirstChildElement(XmlName::KEYPAD); keypad != nullptr; keypad = keypad->NextSiblingElement(XmlName::KEYPAD))
 		{
-			Keypad[grp] = rDataConfig::GetTextLREAL(keypad->FirstChildElement(CFGNAME_VALUE),   0.0, err);
-			KpUnit[grp] = rDataConfig::GetTextUDINT(keypad->FirstChildElement(CFGNAME_UNIT) , U_any, err);
+			Keypad[grp] = rDataConfig::GetTextLREAL(keypad->FirstChildElement(XmlName::VALUE),   0.0, err);
+			KpUnit[grp] = rDataConfig::GetTextUDINT(keypad->FirstChildElement(XmlName::UNIT) , U_any, err);
 
 			++grp;
 			if(grp >= MAX_SELECTOR_GROUP || err) return DATACFGERR_SELECTOR;

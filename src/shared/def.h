@@ -176,6 +176,7 @@ const UDINT  HALT_REASON_WEBFILE       = 0x00020000;
 const UDINT  HALT_REASON_HARDWARE      = 0x00030000;
 const UDINT  HALT_REASON_REPORT        = 0x00040000;
 const UDINT  HALT_REASON_OPC           = 0x00050000;
+const UDINT  HALT_REASON_RUNTIME       = 0x00060000;
 
 
 //THREADMASTER_FLAGS
@@ -216,21 +217,6 @@ const UINT   LIMIT_STATUS_AMAX         = 0x0020;     // Значение выш�
 const UINT   LIMIT_STATUS_MASK         = 0x00FF;     // Маска для извлечения статуса пределов
 
 
-//-------------------------------------------------------------------------------------------------
-// AI
-// Настройка аналоговых сигналов
-const UINT   AI_SETUP_OFF              = 0x0001;     // Cигнал выключен из обработки
-const UINT   AI_SETUP_NOBUFFER         = 0x0002;     // Отключение буфферизации значений (сглаживание)
-const UINT   AI_SETUP_VIRTUAL          = 0x0004;     // "Виртуальный" аналоговый сигнал. Без обработки кода АЦП. При установке SimValue события не проиходит
-const UINT   AI_SETUP_NOICE            = 0x0008;     // Подавление шума около 4 и 20мА
-const UINT   AI_SETUP_ERR_KEYPAD       = 0x0010;     // Разрешение при обрыве переводить сигнал в KEYPAD
-const UINT   AI_SETUP_ERR_LASTGOOD     = 0x0020;     // Разрешение при обрыве переводить сигнал в LASTGOOD
-
-// Дополнительные статусы аналогового сигнала
-const UINT   AI_STATUS_MIN             = 0x0100;     // Значение ниже инженерного минимума
-const UINT   AI_STATUS_MAX             = 0x0200;     // Значение выше инженерного максимума
-const UINT   AI_STATUS_FAULT           = 0x8000;     // Ошибка. Выход из строя канала или модуля
-const UINT   AI_STATUS_UNDEF           = 0x0001;     // Статуст не определен, канал выключен
 
 // Режимы аналоговых сигналов.
 const UINT   AI_MODE_PHIS              = 0;          // Симуляции нет, используется физический сигнал
@@ -499,7 +485,7 @@ enum rTritonn_Error
 	FILE_RESULT_EFILE,                      //  41 Прочие ошибки файла (сбой функции stat)
 
 	DATACFGERR_STRUCT         = 100,        // 100
-	DATACFGERR_HARDWARE,                    //
+	DATACFGERR_NOTFOUND_HARDWARE,           //
 	DATACFGERR_CONFIG,                      // 102
 	DATACFGERR_IO,
 	DATACFGERR_UNKNOWIO,                    // 104
@@ -550,7 +536,12 @@ enum rTritonn_Error
 	DATACFGERR_SECURITY_NF,                 //
 	DATACFGERR_OPCUA_USER_NF,               // 150
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 151
+	DATACFGERR_OPCUA_VAR_NF,                // 152
+	DATACFGERR_UNKNOWN_MODULE,              //
+	DATACFGERR_IO_CHANNEL,                  // 154
+	DATACFGERR_INVALID_NAME,                //
+	DATACFGERR_INVALID_MODULELINK,          // 156
+	DATACFGERR_REALTIME_MODULELINK,         //
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,

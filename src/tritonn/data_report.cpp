@@ -26,7 +26,7 @@
 #include "data_variable.h"
 #include "simplefile.h"
 #include "data_report.h"
-
+#include "xml_util.h"
 
 
 
@@ -371,13 +371,13 @@ tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, 
 
 	if(nullptr == repsys) return nullptr;
 
-	datasets = repsys->FirstChildElement(CFGNAME_DATASETS);
+	datasets = repsys->FirstChildElement(XmlName::DATASETS);
 
 	if(nullptr == datasets) return nullptr;
 
-	for(tinyxml2::XMLElement *ds = datasets->FirstChildElement(CFGNAME_DATASET); ds != nullptr; ds = ds->NextSiblingElement(CFGNAME_DATASET))
+	for(tinyxml2::XMLElement *ds = datasets->FirstChildElement(XmlName::DATASET); ds != nullptr; ds = ds->NextSiblingElement(XmlName::DATASET))
 	{
-		if(!strcmp(ds->Attribute(CFGNAME_NAME), dsname)) return ds;
+		if(!strcmp(ds->Attribute(XmlName::NAME), dsname)) return ds;
 	}
 
 	return nullptr;
@@ -389,14 +389,14 @@ tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, 
 UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
 	string defType  = rDataConfig::GetFlagNameByValue(rDataConfig::ReportTypeFlags , REPORT_PERIODIC);
-	string strType  = rDataConfig::GetAttributeString(element, CFGNAME_TYPE, defType);
+	string strType  = XmlUtils::getAttributeString(element, XmlName::TYPE, defType);
 	UDINT  err      = 0;
 
 	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_REPORT;
 
-	tinyxml2::XMLElement *period  = element->FirstChildElement(CFGNAME_PERIOD);
-	tinyxml2::XMLElement *storage = element->FirstChildElement(CFGNAME_STORAGE);
-	tinyxml2::XMLElement *dsname  = element->FirstChildElement(CFGNAME_DATASET);
+	tinyxml2::XMLElement *period  = element->FirstChildElement(XmlName::PERIOD);
+	tinyxml2::XMLElement *storage = element->FirstChildElement(XmlName::STORAGE);
+	tinyxml2::XMLElement *dsname  = element->FirstChildElement(XmlName::DATASET);
 
 	// Тип отчета
 	Type = rDataConfig::GetFlagFromStr(rDataConfig::ReportTypeFlags, strType, err);
@@ -416,7 +416,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	// Загрузка периодических отчетов
 	if(REPORT_PERIODIC == Type)
 	{
-		string strPeriod = rDataConfig::GetTextString(element->FirstChildElement(CFGNAME_PERIOD), "", err);
+		string strPeriod = rDataConfig::GetTextString(element->FirstChildElement(XmlName::PERIOD), "", err);
 
 		Period = rDataConfig::GetFlagFromStr(rDataConfig::ReportPeriodFlags, strPeriod, err);
 
@@ -431,48 +431,48 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	// Перебираем станции и линии в dataset
 	// Заполняем только объект Present
-	for(tinyxml2::XMLElement *xml_total = dataset->FirstChildElement(CFGNAME_TOTAL); xml_total != nullptr; xml_total = xml_total->NextSiblingElement(CFGNAME_TOTAL))
+	for(tinyxml2::XMLElement *xml_total = dataset->FirstChildElement(XmlName::TOTAL); xml_total != nullptr; xml_total = xml_total->NextSiblingElement(XmlName::TOTAL))
 	{
 		rReportTotal *tot = new rReportTotal();
 
 		Present.AverageItems.push_back(tot);
 
 		tot->Source = nullptr;
-		tot->Name   = rDataConfig::GetAttributeString(xml_total, CFGNAME_NAME , "");
-		tot->Alias  = rDataConfig::GetAttributeString(xml_total, CFGNAME_ALIAS, "");
+		tot->Name   = rDataConfig::GetAttributeString(xml_total, XmlName::NAME , "");
+		tot->Alias  = rDataConfig::GetAttributeString(xml_total, XmlName::ALIAS, "");
 
 		if(tot->Name.empty() || tot->Alias.empty()) return DATACFGERR_REPORT;
 
-		for(tinyxml2::XMLElement *xml_item = xml_total->FirstChildElement(CFGNAME_ITEM); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(CFGNAME_ITEM))
+		for(tinyxml2::XMLElement *xml_item = xml_total->FirstChildElement(XmlName::ITEM); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(XmlName::ITEM))
 		{
 			rReportItem *item = new rReportItem();
 
 			tot->Items.push_back(item);
 
-			item->Name = rDataConfig::GetAttributeString(xml_item, CFGNAME_NAME, "");
+			item->Name = rDataConfig::GetAttributeString(xml_item, XmlName::NAME, "");
 
 			if(item->Name.empty()) return DATACFGERR_REPORT;
 
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(xml_item->FirstChildElement(CFGNAME_LINK), item->Source)) return cfg.ErrorID;
+			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(xml_item->FirstChildElement(XmlName::LINK), item->Source)) return cfg.ErrorID;
 		}
 	}
 
 	// Загружаем мгновенные данные из dataset
 	// Заполняем только объект Present
-	tinyxml2::XMLElement *xml_snapshots = dataset->FirstChildElement(CFGNAME_SNAPSHOTS);
+	tinyxml2::XMLElement *xml_snapshots = dataset->FirstChildElement(XmlName::SNAPSHOTS);
 	if(xml_snapshots != nullptr)
 	{
-		for(tinyxml2::XMLElement *xml_item = xml_snapshots->FirstChildElement(CFGNAME_ITEM); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(CFGNAME_ITEM))
+		for(tinyxml2::XMLElement *xml_item = xml_snapshots->FirstChildElement(XmlName::ITEM); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(XmlName::ITEM))
 		{
 			rReportItem *item = new rReportItem();
 
 			Present.SnapshotItems.push_back(item);
 
-			item->Name = rDataConfig::GetAttributeString(xml_item, CFGNAME_NAME, "");
+			item->Name = rDataConfig::GetAttributeString(xml_item, XmlName::NAME, "");
 
 			if(item->Name.empty()) return DATACFGERR_REPORT;
 
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(xml_item->FirstChildElement(CFGNAME_LINK), item->Source)) return cfg.ErrorID;
+			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(xml_item->FirstChildElement(XmlName::LINK), item->Source)) return cfg.ErrorID;
 		}
 	}
 
@@ -550,7 +550,7 @@ UDINT rReport::Store()
 		p_itm->Value = 0.0;
 	}
 
-	rEventManager::Instance().Add(ReinitEvent(EID_REPORT_GENERATED));
+	rEventManager::instance().Add(ReinitEvent(EID_REPORT_GENERATED));
 
 	// Формируем XML дерево отчета
 	SaveToXML();
@@ -738,7 +738,7 @@ UDINT rReport::SaveToXML(UDINT present)
 
 	if(result != TRITONN_RESULT_OK)
 	{
-		rEventManager::Instance().Add(ReinitEvent(EID_REPORT_GENERATED) << result);
+		rEventManager::instance().Add(ReinitEvent(EID_REPORT_GENERATED) << result);
 		return 0;
 	}
 

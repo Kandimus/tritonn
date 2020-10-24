@@ -5,6 +5,7 @@
 #include "event_manager.h"
 #include "threadmaster.h"
 #include "data_manager.h"
+#include "io_manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
 #include "data_variable.h"
@@ -69,7 +70,7 @@ int main(int argc, const char **argv)
 	rSimpleArgs::instance().parse(argc, argv);
 #endif
 
-	rThreadMaster::Instance().Run(1000);
+	rThreadMaster::instance().Run(1000);
 
 
 	// Таблицы конвертации единиц измерения
@@ -98,7 +99,7 @@ int main(int argc, const char **argv)
 	rLogManager::Instance().StartServer();
 	rLogManager::Instance().Run(10);
 
-	rThreadMaster::Instance().Add(&rLogManager::Instance(), TMF_NONE, "system.logs");
+	rThreadMaster::instance().Add(&rLogManager::Instance(), TMF_NONE, "system.logs");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -112,11 +113,11 @@ int main(int argc, const char **argv)
 
 	//----------------------------------------------------------------------------------------------
 	// Менеджер сообщений
-	rEventManager::Instance().LoadText(FILE_SYSTEMEVENT); // Системные события
-	rEventManager::Instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
-	rEventManager::Instance().Run(100);
+	rEventManager::instance().LoadText(FILE_SYSTEMEVENT); // Системные события
+	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
+	rEventManager::instance().Run(100);
 
-	rThreadMaster::Instance().Add(&rEventManager::Instance(), TMF_NONE, "system.events");
+	rThreadMaster::instance().Add(&rEventManager::instance(), TMF_NONE, "system.events");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -124,7 +125,14 @@ int main(int argc, const char **argv)
 	rDataManager::Instance().LoadConfig();
 	rDataManager::Instance().Run(500);
 
-	rThreadMaster::Instance().Add(&rDataManager::Instance(), TMF_NONE, "system.data");
+	rThreadMaster::instance().Add(&rDataManager::Instance(), TMF_NONE, "system.data");
+
+
+	//----------------------------------------------------------------------------------------------
+	// Стартуем обмен с модулями IO
+	rIOManager::instance().Run(500);
+
+	rThreadMaster::instance().Add(&rIOManager::instance(), TMF_NONE, "system.io");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -132,7 +140,7 @@ int main(int argc, const char **argv)
 	rTermManager::Instance().Run(500);
 	rTermManager::Instance().StartServer("0.0.0.0", TCP_PORT_TERM);
 
-	rThreadMaster::Instance().Add(&rTermManager::Instance(), TMF_NONE, "system.config");
+	rThreadMaster::instance().Add(&rTermManager::Instance(), TMF_NONE, "system.config");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -140,36 +148,36 @@ int main(int argc, const char **argv)
 	rJSONManager::Instance().Run(500);
 	rJSONManager::Instance().StartServer("0.0.0.0", TCP_PORT_JSON);
 
-	rThreadMaster::Instance().Add(&rJSONManager::Instance(), TMF_NONE, "system.json");
+	rThreadMaster::instance().Add(&rJSONManager::Instance(), TMF_NONE, "system.json");
 
 	rDataManager::Instance().StartInterfaces();
 
 	//
 	// Событие о запуске
 	event.Reinit(EID_SYSTEM_RUNNING);
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 
 	event.Reinit(EID_TEST_SUCCESS) << STRID(16) << 12.34 << 45.6 << STRID(33) << 9.87654;
-	rEventManager::Instance().Add(event);
+	rEventManager::instance().Add(event);
 	
 
 #ifdef TRITONN_TEST
 	rThreadStatus oldteststatus = rThreadStatus::UNDEF;
-	rTestThread::Instance().Run(0);
+	rTestThread::instance().Run(0);
 #endif
 
 	while(1)
 	{
 #ifdef TRITONN_TEST
-		rThreadStatus teststatus = rTestThread::Instance().GetStatus();
+		rThreadStatus teststatus = rTestThread::instance().GetStatus();
 		if (oldteststatus != rThreadStatus::FINISHED && teststatus == rThreadStatus::FINISHED) {
-			rThreadMaster::Instance().Finish();
+			rThreadMaster::instance().Finish();
 			mSleep(1000);
 		}
 		oldteststatus = teststatus;
 #endif
 
-		if (rThreadMaster::Instance().GetStatus() == rThreadStatus::CLOSED) {
+		if (rThreadMaster::instance().GetStatus() == rThreadStatus::CLOSED) {
 			TRACEW(LM_SYSTEM, "Closing...");
 			break;
 		}

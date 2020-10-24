@@ -29,6 +29,7 @@
 #include "data_variable.h"
 #include "data_station.h"
 #include "data_denssol.h"
+#include "xml_util.h"
 
 
 const UDINT DENSSOL_LE_PERIOD    = 0x00000001;
@@ -47,18 +48,18 @@ rDensSol::rDensSol() : Setup(0)
 //	Setup       = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
-	InitLink(LINK_SETUP_INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, CFGNAME_TEMP     , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Pres  , U_bar    , SID_PRESSURE   , CFGNAME_PRES     , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INPUT   , Period, U_mksec  , SID_PERIOD     , CFGNAME_PERIOD   , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , CFGNAME_DENSITY  , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens15, U_kg_m3  , SID_DENSITY15  , CFGNAME_DENSITY15, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , CFGNAME_DENSITY20, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , B     , U_1_C    , SID_B          , CFGNAME_B        , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , B15   , U_1_C    , SID_B15        , CFGNAME_B15      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Y     , U_1_MPa  , SID_Y          , CFGNAME_Y        , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Y15   , U_1_MPa  , SID_Y15        , CFGNAME_Y15      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , CFGNAME_CTL      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , CFGNAME_CPL      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INOUTPUT, Pres  , U_bar    , SID_PRESSURE   , XmlName::PRES     , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_INPUT   , Period, U_mksec  , SID_PERIOD     , XmlName::PERIOD   , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , B15   , U_1_C    , SID_B15        , XmlName::B15      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , Y15   , U_1_MPa  , SID_Y15        , XmlName::Y15      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , LINK_SHADOW_NONE);
 }
 
 
@@ -136,7 +137,7 @@ UDINT rDensSol::Calculate()
 		UsedCoef = Coef;
 		Accept   = 0;
 
-		rEventManager::Instance().Add(ReinitEvent(EID_DENSSOL_ACCEPT));
+		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_ACCEPT));
 	}
 
 	// Расчет плотности
@@ -294,10 +295,10 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_DENSSOL;
 
-	tinyxml2::XMLElement *koef   = element->FirstChildElement(CFGNAME_FACTORS);
-	tinyxml2::XMLElement *temp   = element->FirstChildElement(CFGNAME_TEMP);
-	tinyxml2::XMLElement *pres   = element->FirstChildElement(CFGNAME_PRES);
-	tinyxml2::XMLElement *period = element->FirstChildElement(CFGNAME_PERIOD);
+	tinyxml2::XMLElement *koef   = element->FirstChildElement(XmlName::FACTORS);
+	tinyxml2::XMLElement *temp   = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement *pres   = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement *period = element->FirstChildElement(XmlName::PERIOD);
 
 	if(!koef || !temp || !pres || !period)
 	{
@@ -305,9 +306,9 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	}
 
 	// Обязательные линки и параметры, без которых работа не возможна
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement  (CFGNAME_LINK), Temp  )) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement  (CFGNAME_LINK), Pres  )) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(period->FirstChildElement(CFGNAME_LINK), Period)) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement  (XmlName::LINK), Temp  )) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement  (XmlName::LINK), Pres  )) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(period->FirstChildElement(XmlName::LINK), Period)) return cfg.ErrorID;
 
 	Coef.K0.Init  (rDataConfig::GetTextLREAL(koef->FirstChildElement("k0")  , 0.0, err));
 	Coef.K1.Init  (rDataConfig::GetTextLREAL(koef->FirstChildElement("k1")  , 0.0, err));
@@ -325,7 +326,7 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	}
 
 	// Не обязательный параметр
-	Calibr.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(CFGNAME_CALIBR), 20.0, err));
+	Calibr.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::CALIBR), 20.0, err));
 	err = 0;
 
 	// Так как мы еще не загрузили данные из EEPROM, то принимает текущие коэф-ты за рабочие.
@@ -334,7 +335,7 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	// Проверки
 	if(nullptr == Station)
 	{
-		rEventManager::Instance().Add(ReinitEvent(EID_DENSSOL_FAULT_STATION));
+		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_FAULT_STATION));
 		return DATACFGERR_DENSSOL_NOSTN;
 	}
 

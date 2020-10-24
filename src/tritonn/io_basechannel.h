@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== data_module.h
+//=== io_basechannel.h
 //===
 //=== Copyright (c) 2019 by RangeSoft.
 //=== All rights reserved.
@@ -9,7 +9,7 @@
 //===
 //=================================================================================================
 //===
-//=== Классы для описания модулей ввода-вывода
+//=== Базовый класс канала
 //===
 //=================================================================================================
 
@@ -17,26 +17,17 @@
 
 #include "def.h"
 
-namespace tinyxml2
-{
-	class XMLElement;
-};
-
-class rDataConfig;
-
-
-class rDataModule
+class rIOBaseChannel
 {
 public:
-	rDataModule();
-	virtual ~rDataModule();
 
-	bool  isSetModule() const;
-	UDINT loadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	
+	rIOBaseChannel() {}
+	virtual ~rIOBaseChannel() {}
+
+	virtual UDINT simulate() = 0;
+
 public:
-	USINT m_module;
-	USINT m_channel;
+	USINT m_simType = 0;
 };
 
 

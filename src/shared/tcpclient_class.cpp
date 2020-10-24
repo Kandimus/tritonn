@@ -18,8 +18,9 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
-#include "../shared/log_manager.h"
-#include "../shared/tcpclient_class.h"
+#include "locker.h"
+#include "log_manager.h"
+#include "tcpclient_class.h"
 
 
 rTCPClientClass::rTCPClientClass(rClientTCP &client) : ReconnetTime(1000), Setup(0), Connected(0)

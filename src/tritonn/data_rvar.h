@@ -17,6 +17,7 @@
 
 #include "data_source.h"
 #include "data_link.h"
+#include "bits_array.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,13 +43,18 @@ protected:
 public:
 
 
+// Inputs, Inoutputs
 public:
-	// Inputs, Inoutputs
 
-	// Outputs
+// Outputs
+public:
 	rLink     Value;                   // Результирующие значение
 
+public:
 	UINT      Setup;                   // Настройка сигнала
+
+private:
+	rBitsArray m_flagSetup;
 };
 
 

@@ -38,7 +38,7 @@ UDINT rCompared<T>::Compare(rEvent &event)
 	if(Value != Saved)
 	{
 		event << Value << Saved;
-		rEventManager::Instance().Add(event);
+		rEventManager::instance().Add(event);
 
 		Saved = Value;
 
@@ -90,7 +90,7 @@ UDINT rCmpREAL::Compare(REAL prec, rEvent &event)
 	if(fabsf(Value - Saved) < prec)
 	{
 		event << Value << Saved;
-		rEventManager::Instance().Add(event);
+		rEventManager::instance().Add(event);
 		
 		Saved = Value;
 		
@@ -116,7 +116,7 @@ UDINT rCmpLREAL::Compare(LREAL prec, rEvent &event)
 	if(fabs(Value - Saved) > prec)
 	{
 		event << Value << Saved;
-		rEventManager::Instance().Add(event);
+		rEventManager::instance().Add(event);
 		
 		Saved = Value;
 		

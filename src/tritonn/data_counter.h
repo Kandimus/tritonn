@@ -17,6 +17,7 @@
 
 //#include "io.h"
 #include "data_source.h"
+#include "bits_array.h"
 #include "compared_values.h"
 #include "tickcount.h"
 
@@ -71,7 +72,7 @@ public:
 	UINT       Status;                  // Нах это???????
 
 protected:
-
+	static rBitsArray m_flagsSetup;
 };
 
 

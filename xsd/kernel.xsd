@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- ver="0.17" -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tritonn.ru" xmlns="http://tritonn.ru" elementFormDefault="qualified">
+
+<!--
+  Тип BOOL
+-->
+<xs:simpleType name="type_bool">
+      <xs:restriction base="xs:string">
+        <xs:pattern value="true|false|1|0"/>
+      </xs:restriction>
+    </xs:simpleType>
+
+<!--
+  Элемент value
+-->
+<xs:element name="value">
+  <xs:complexType>
+    <xs:attribute name="name"     type="xs:string"  use="required"/>
+    <xs:attribute name="type"     type="xs:string"  default=""/>
+    <xs:attribute name="unit"     type="xs:string"  default="0"/>
+    <xs:attribute name="readonly" type="type_bool"  default="1"/>
+    <xs:attribute name="loadable" type="type_bool"  default="0"/>
+    <xs:attribute name="access"   type="xs:string"  default="0"/>
+  </xs:complexType>
+</xs:element>
+<!--
+  Тип элементов перечисления элементов value
+-->
+<xs:complexType name="type_value">
+  <xs:sequence>
+    <xs:element ref="value"  minOccurs="0" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!--
+  Элемент input
+-->
+<xs:element name="input">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="shadow"  minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name"   type="xs:string" use="required"/>
+    <xs:attribute name="unit"   type="xs:string" use="required"/>
+    <xs:attribute name="shadow" type="xs:string"/>
+  </xs:complexType>
+</xs:element>
+<!--
+  Тип элементов перечисления элементов input
+-->
+<xs:complexType name="type_input">
+  <xs:sequence>
+    <xs:element ref="input"  minOccurs="0" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!--
+  Элемент output
+-->
+<xs:element name="output">
+  <xs:complexType>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="unit" type="xs:string" use="required"/>
+    <xs:attribute name="default" type="xs:string" use="optional"/>
+  </xs:complexType>
+</xs:element>
+<!--
+  Тип элементов перечисления элементов output
+-->
+<xs:complexType name="type_output">
+  <xs:sequence>
+    <xs:element ref="output"  minOccurs="0" maxOccurs="unbounded"/>
+  </xs:sequence>
+</xs:complexType>
+
+<!--
+  Тип элементов ios и objects
+-->
+<xs:complexType name="type_object">
+  <xs:all>
+    <xs:element name="values"  type="type_value"  minOccurs="1" maxOccurs="1"/>
+    <xs:element name="inputs"  type="type_input"  minOccurs="0" maxOccurs="1"/>
+    <xs:element name="outputs" type="type_output" minOccurs="0" maxOccurs="1"/>
+  </xs:all>
+  <xs:attribute name="name" type="xs:string" use="required"/>
+  <xs:attribute name="global">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="true|false|1|0"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+</xs:complexType>
+
+<!-- Тип сигнала IO для привязки к модулю -->
+  
+    
+<!--
+  Описательная часть
+-->
+  <xs:element name="kernel">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sysvars" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="values"  type="type_value"  minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="io_list" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="io" type="type_object" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="objects" minOccurs="1" maxOccurs="1">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="object" type="type_object" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="hardware" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="ver" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

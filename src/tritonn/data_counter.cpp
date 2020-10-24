@@ -25,8 +25,7 @@
 #include "data_variable.h"
 #include "data_config.h"
 #include "data_counter.h"
-
-using std::vector;
+#include "xml_util.h"
 
 
 const UDINT FI_BAD_COUNT     = 0x10000000;
@@ -39,11 +38,18 @@ const UDINT FI_LE_SIM_OFF    = 0x00000008;
 const UDINT FI_LE_SIM_LAST   = 0x00000010;
 const UDINT FI_LE_CODE_FAULT = 0x00000020;
 
+rBitsArray rCounter::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 rCounter::rCounter() : Setup(FI_SETUP_OFF)
 {
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"      , FI_SETUP_OFF)
+				.add("NOBUFFER" , FI_SETUP_NOBUFFER);
+	}
+
 	LockErr     = 0;
 	LastCount   = FI_BAD_COUNT;
 	CountTail   = 0;
@@ -54,9 +60,9 @@ rCounter::rCounter() : Setup(FI_SETUP_OFF)
 		Spline[ii] = FI_BAD_SPLINE;
 	}
 
-	InitLink(LINK_SETUP_OUTPUT, Impulse, U_imp  , SID_IMPULSE  , CFGNAME_IMPULSE, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Freq   , U_Hz   , SID_FREQUENCY, CFGNAME_FREQ   , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Period , U_mksec, SID_PERIOD   , CFGNAME_PERIOD , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, Impulse, U_imp  , SID_IMPULSE  , XmlName::IMPULSE, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, Freq   , U_Hz   , SID_FREQUENCY, XmlName::FREQ   , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, Period , U_mksec, SID_PERIOD   , XmlName::PERIOD , LINK_SHADOW_NONE);
 }
 
 
@@ -262,15 +268,12 @@ UDINT rCounter::GenerateVars(vector<rVariable *> &list)
 //
 UDINT rCounter::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
-	string defSetup = rDataConfig::GetFlagNameByBit(rDataConfig::FISetupFlags, FI_SETUP_OFF);
-	string strSetup = (element->Attribute("setup")) ? element->Attribute("setup") : defSetup;
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(FI_SETUP_OFF));
 	UDINT  err      = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return 1;
+	if(TRITONN_RESULT_OK != rSource::LoadFromXML(element, cfg)) return 1;
 
-//	tinyxml2::XMLElement *module = element->FirstChildElement("io_link");
-
-	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::FISetupFlags, strSetup, err));
+	Setup.Init(m_flagsSetup.getValue(strSetup, err));
 	if(err) return 1;
 
 	ReinitLimitEvents();

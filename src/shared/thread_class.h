@@ -25,7 +25,7 @@
 #define SINGLETON(singletonclass) \
 	public: \
 		virtual ~singletonclass(); \
-		static singletonclass& Instance() { static singletonclass Singleton; return Singleton; } \
+		static singletonclass& instance() { static singletonclass Singleton; return Singleton; } \
 	private: \
 		singletonclass(); \
 		singletonclass(const singletonclass&); \
@@ -52,28 +52,6 @@ enum class rThreadCommand : UDINT
 	RESTORE,
 	ABORT,
 };
-
-class rLocker
-{
-public:
-	rLocker(pthread_mutex_t &m)
-	{
-		mutex = &m;
-		pthread_mutex_lock(mutex);
-	}
-	~rLocker()
-	{
-		pthread_mutex_unlock(mutex);
-	}
-
-	void Nop() {;}
-
-private:
-	pthread_mutex_t *mutex;
-};
-
-
-
 
 
 class rLogManager;
