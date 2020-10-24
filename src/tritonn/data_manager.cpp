@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include "tritonn_version.h"
+#include "locker.h"
 #include "log_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"

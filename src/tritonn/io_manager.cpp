@@ -16,6 +16,8 @@
 #include "io_basechannel.h"
 #include "data_config.h"
 #include "units.h"
+#include "simpleargs.h"
+#include "def_arguments.h"
 #include "io_manager.h"
 #include "threadmaster.h"
 #include "tinyxml2.h"
@@ -64,7 +66,7 @@ rThreadStatus rIOManager::Proccesing()
 		Lock();
 
 		for(auto& item : m_modules) {
-			item->processing(rThreadMaster::instance().GetArg()->m_simulateIO);
+			item->processing(rSimpleArgs::instance().isSet(rArg::Simulate));
 		}
 
 		Unlock();
