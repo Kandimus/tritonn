@@ -19,10 +19,11 @@
 #include "safity.h"
 #include "thread_class.h"
 #include "data_config.h"
-#include "data_snapshot.h"
+#include "data_variable.h"
 #include "data_sysvar.h"
 
 
+class rSnapshot;
 class rInterface;
 
 
@@ -30,17 +31,7 @@ class rInterface;
 //
 class rDataManager : public rThreadClass
 {
-public:
-	virtual ~rDataManager();
-
-// Singleton
-private:
-	rDataManager();
-	rDataManager(const rDataManager &);
-	rDataManager& operator=(rDataManager &);
-
-public:
-	static rDataManager &Instance();
+	SINGLETON(rDataManager)
 
 // Методы
 public:
@@ -89,6 +80,7 @@ private:
 	rDataConfig          Config;   // Конфигурация, связки объектов
 //	string              ConfName;
 
+	rVariableList             m_listVariables;
 	rSystemVariable           SysVar;     // Системные переменные
 	std::vector<rSource* >    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
 	std::vector<rInterface* > ListInterface;

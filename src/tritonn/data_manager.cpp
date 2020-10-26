@@ -14,6 +14,7 @@
 //=================================================================================================
 
 
+#include "data_manager.h"
 #include <string.h>
 #include "tritonn_version.h"
 #include "locker.h"
@@ -21,6 +22,7 @@
 #include "simplefile.h"
 #include "simpleargs.h"
 #include "threadmaster.h"
+#include "data_snapshot.h"
 #include "data_station.h"
 #include "data_stream.h"
 #include "data_selector.h"
@@ -33,7 +35,6 @@
 #include "data_variable.h"
 #include "text_manager.h"
 #include "event_manager.h"
-#include "data_manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
 
@@ -64,12 +65,6 @@ rDataManager::~rDataManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-rDataManager &rDataManager::Instance()
-{
-	static rDataManager Singleton;
-
-	return Singleton;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,20 +79,18 @@ UDINT rDataManager::Get(rSnapshot &snapshot)
 {
 	rLocker locker(Mutex); locker.Nop();
 
-	for(UDINT ii = 0; ii < snapshot.Size(); ++ii)
+	for(auto item : snapshot)
 	{
-		rSnapshotItem *item = snapshot[ii];
-
 		if(SS_STATUS_NOTASSIGN != item->Status) continue;
 
 		// Переменная невидимая, а уровень доступа не админ и не СА
-		if((item->Variable->Flags & VARF_HIDE) && (0 == (snapshot.GetAccess() & ACCESS_MASK_VIEWHIDE)))
+		if((item->Variable->getFlags() & rVariable::Flags::HIDE) && (0 == (snapshot.GetAccess() & ACCESS_MASK_VIEWHIDE)))
 		{
 			item->Status = SS_STATUS_NOTFOUND;
 			continue;
 		}
 
-		memcpy(item->Data, item->Variable->Pointer, EPT_SIZE[item->Variable->Type]);
+		memcpy(item->Data, item->Variable->m_pointer, EPT_SIZE[item->Variable->m_type]);
 		item->Status = SS_STATUS_ASSIGN;
 	}
 
@@ -111,38 +104,31 @@ UDINT rDataManager::Set(rSnapshot &snapshot)
 {
 	rLocker locker(Mutex); locker.Nop();
 
-	for(UDINT ii = 0; ii < snapshot.Size(); ++ii)
-	{
-		rSnapshotItem *item = snapshot[ii];
-
-		if(SS_STATUS_ASSIGN != item->Status) continue;
+	for (auto item : snapshot) {
+		if (SS_STATUS_ASSIGN != item->Status) {
+			continue;
+		}
 
 		// Переменная невидимая, а уровень доступа не админ и не СА
-		if((item->Variable->Flags & VARF_HIDE) && (0 == (snapshot.GetAccess() & ACCESS_MASK_VIEWHIDE)))
-		{
+		if ((item->Variable->getFlags() & rVariable::Flags::HIDE) && (0 == (snapshot.GetAccess() & ACCESS_MASK_VIEWHIDE))) {
 			item->Status = SS_STATUS_NOTFOUND;
 			continue;
 		}
 
 		// Переменная только для чтения
-		if(item->Variable->Flags & VARF_READONLY)
-		{
-			if(item->Variable->Flags & VARF_SUWRITE)
-			{
-				if(0 == (snapshot.GetAccess() & ACCESS_SA))
-				{
+		if (item->Variable->getFlags() & rVariable::Flags::READONLY) {
+			if (item->Variable->getFlags() & rVariable::Flags::SUWRITE) {
+				if (0 == (snapshot.GetAccess() & ACCESS_SA)) {
 					item->Status = SS_STATUS_READONLY;
 					continue;
 				}
-			}
-			else
-			{
+			} else {
 				item->Status = SS_STATUS_READONLY;
 				continue;
 			}
 		}
 
-		if((item->Variable->Access & snapshot.GetAccess()) != item->Variable->Access)
+		if((item->Variable->getAccess() & snapshot.GetAccess()) != item->Variable->getAccess())
 		{
 			item->Status = SS_STATUS_ACCESSDENIED;
 
@@ -150,7 +136,7 @@ UDINT rDataManager::Set(rSnapshot &snapshot)
 			continue;
 		}
 
-		memcpy(item->Variable->Pointer, item->Data, EPT_SIZE[item->Variable->Type]);
+		memcpy(item->Variable->m_pointer, item->Data, EPT_SIZE[item->Variable->getType()]);
 		item->Status = SS_STATUS_WRITED;
 	}
 
@@ -164,13 +150,13 @@ UDINT rDataManager::GetAllVariables(rSnapshot &snapshot)
 
 	snapshot.Clear();
 
-	for(UDINT ii = 0; ii < rVariable::ListVar.size(); ++ii)
+	for (auto var : m_listVariables)
 	{
-		const rVariable *var = rVariable::ListVar[ii];
+		if (var->getFlags() & rVariable::Flags::HIDE) {
+			continue;
+		}
 
-		if(var->Flags & VARF_HIDE) continue;
-
-		snapshot.Add(var->Name);
+		snapshot.Add(var->getName());
 	}
 
 	return TRITONN_RESULT_OK;

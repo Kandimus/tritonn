@@ -159,9 +159,8 @@ UDINT rSource::Calculate()
 	Calculated = 1;
 	Fault      = 0;
 
-	for(UDINT ii = 0; ii < Inputs.size(); ++ii)
-	{
-		Inputs[ii]->Calculate();
+	for (auto link : m_inputs) {
+		link->Calculate();
 	}
 
 	return 0;
@@ -171,11 +170,13 @@ UDINT rSource::Calculate()
 
 UDINT rSource::PostCalculate()
 {
-	for(UDINT ii = 0; ii < Outputs.size(); ++ii)
+	for (auto link : m_outputs)
 	{
-		if(Outputs[ii]->Setup & LINK_SETUP_INPUT) continue;
+		if (link->Setup & LINK_SETUP_INPUT) {
+			continue;
+		}
 
-		Outputs[ii]->CalculateLimit();
+		link->CalculateLimit();
 	}
 
 	return 0;
@@ -208,8 +209,8 @@ UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, STRID nameid, const
 	link.Shadow = shadow;
 	link.Descr  = nameid;
 
-	if(setup & LINK_SETUP_INPUT ) Inputs.push_back (&link);
-	if(setup & LINK_SETUP_OUTPUT) Outputs.push_back(&link);
+	if(setup & LINK_SETUP_INPUT ) m_inputs.push_back (&link);
+	if(setup & LINK_SETUP_OUTPUT) m_outputs.push_back(&link);
 
 	// Вызываем функцию конечного класса
 	InitLimitEvent(link);
@@ -220,37 +221,37 @@ UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, STRID nameid, const
 
 UDINT rSource::ReinitLimitEvents()
 {
-	for(UDINT ii = 0; ii < Inputs.size(); ++ii)
-	{
-		InitLimitEvent(*Inputs[ii]);
+	for (auto link : m_inputs) {
+		InitLimitEvent(*link);
 	}
 
-	for(UDINT ii = 0; ii < Outputs.size(); ++ii)
-	{
-		if(!(Outputs[ii]->Setup & LINK_SETUP_INPUT)) InitLimitEvent(*Outputs[ii]);
+	for (auto link : m_outputs) {
+		if (!(link->Setup & LINK_SETUP_INPUT)) {
+			InitLimitEvent(*link);
+		}
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::GenerateVars(vector<rVariable *> &list)
+UDINT rSource::generateVars(rVariableList& list)
 {
-	for(UDINT ii = 0; ii < Inputs.size(); ++ii)
-	{
-		Inputs[ii]->GenerateVars(list);
+	for (auto link : m_inputs) {
+		link->generateVars(list);
 	}
 
-	for(UDINT ii = 0; ii < Outputs.size(); ++ii)
-	{
-		if(Outputs[ii]->Setup & LINK_SETUP_INPUT) continue;
+	for (auto link : m_outputs) {
+		if (link->Setup & LINK_SETUP_INPUT) {
+			continue;
+		}
 
-		Outputs[ii]->GenerateVars(list);
+		link->generateVars(list);
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -281,38 +282,31 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	if(nullptr == limits) return tinyxml2::XML_SUCCESS;
 
-	for(tinyxml2::XMLElement *limit = limits->FirstChildElement(XmlName::LIMIT); nullptr != limit; limit = limit->NextSiblingElement(XmlName::LIMIT))
-	{
+	XML_FOR(limit_xml, limits, XmlName::LIMIT) {
 		rLink *link = nullptr;
-		string ioname = String_tolower(limit->Attribute(XmlName::NAME));
+		string ioname = String_tolower(limit_xml->Attribute(XmlName::NAME));
 
-		for(UDINT ii = 0; ii < Inputs.size(); ++ii)
-		{
-			if(Inputs[ii]->IO_Name == ioname)
-			{
-				link = Inputs[ii];
+		for (auto item : m_inputs) {
+			if (item->IO_Name == ioname) {
+				link = item;
 				break;
 			}
 		}
 
-		if(nullptr == link)
-		{
-			for(UDINT ii = 0; ii < Outputs.size(); ++ii)
-			{
-				if(Outputs[ii]->IO_Name == ioname)
-				{
-					link = Outputs[ii];
+		if (link == nullptr) {
+			for (auto item : m_outputs) {
+				if (item->IO_Name == ioname) {
+					link = item;
 					break;
 				}
 			}
 		}
 
-		if(nullptr == link)
-		{
+		if (link == nullptr) {
 			return DATACFGERR_LIMIT;
 		}
 
-		link->Limit.LoadFromXML(limit, cfg);
+		link->Limit.LoadFromXML(limit_xml, cfg);
 	}
 
 	return tinyxml2::XML_SUCCESS;
@@ -322,12 +316,12 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rSource::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	const string Tag[2] = {"object", "io"};
-	vector<rVariable *> list;
+	rVariableList list;
 
-	GenerateVars(list);
+	generateVars(list);
 
 	fprintf(file, "<!--\n\t%s\n-->\n", comment.c_str());
 
@@ -336,43 +330,42 @@ UDINT rSource::SaveKernel(FILE *file, UDINT isio, const string &objname, const s
 	fprintf(file, ">\n");
 
 	fprintf(file, "\t<values>\n");
-	for(UDINT ii = 0; ii < list.size(); ++ii)
-	{
-		rVariable *v = list[ii];
-
-		if(v->Flags & VARF___H_) continue;
+	for (auto var : list) {
+		if (var->isHide()) {
+			continue;
+		}
 
 		fprintf(file, "\t\t<value name=\"%s\" type=\"%s\" readonly=\"%i\" loadable=\"%i\" unit=\"%i\" access=\"0x%08X\"/>\n",
-				  v->Name.c_str() + Alias.size() + 1, NAME_TYPE[v->Type].c_str(), (v->Flags & VARF_R___) ? 1 : 0, (v->Flags & VARF____L) ? 1 : 0, (UDINT)v->Unit, v->Access);
+				var->getName().c_str() + Alias.size() + 1, NAME_TYPE[var->getType()].c_str(),
+				(var->isReadonly()) ? 1 : 0, (var->isLodable()) ? 1 : 0,
+				(UDINT)var->getUnit(), var->getAccess());
 	}
 	fprintf(file, "\t</values>\n");
 
 	// Входа
-	if(Inputs.size())
-	{
+	if (m_inputs.size()) {
 		fprintf(file, "\t<inputs>\n");
-		for(UDINT ii = 0; ii < Inputs.size(); ++ii)
-		{
+		for (auto link : m_inputs) {
 			UDINT shadow_count = 0;
 
-			fprintf(file, "\t\t<input name=\"%s\" unit=\"%i\"", Inputs[ii]->IO_Name.c_str(), (UDINT)Inputs[ii]->Unit);
+			fprintf(file, "\t\t<input name=\"%s\" unit=\"%i\"", link->IO_Name.c_str(), (UDINT)link->Unit);
 
-			for(UDINT jj = 0; jj < Inputs.size(); ++jj)
-			{
-				if(ii == jj) continue;
+			for (auto sublink : m_inputs) {
+				if (link == sublink) {
+					continue;
+				}
 
-				if(Inputs[jj]->Shadow == Inputs[ii]->IO_Name)
-				{
+				if (sublink->Shadow == link->IO_Name) {
 					if(0 == shadow_count) fprintf(file, ">\n");
 
-					fprintf(file, "\t\t\t<shadow name=\"%s\"/>\n", Inputs[jj]->IO_Name.c_str());
+					fprintf(file, "\t\t\t<shadow name=\"%s\"/>\n", sublink->IO_Name.c_str());
 					++shadow_count;
 				}
 			}
 
 			if(0 == shadow_count)
 			{
-				if(Inputs[ii]->Shadow.size()) fprintf(file, " shadow=\"%s\"", Inputs[ii]->Shadow.c_str());
+				if(link->Shadow.size()) fprintf(file, " shadow=\"%s\"", link->Shadow.c_str());
 				fprintf(file, "/>\n");
 			}
 			else
@@ -384,12 +377,12 @@ UDINT rSource::SaveKernel(FILE *file, UDINT isio, const string &objname, const s
 	}
 
 	// Outputs
-	if(Outputs.size())
-	{
+	if (m_outputs.size()) {
 		fprintf(file, "\t<outputs>\n");
-		for(UDINT ii = 0; ii < Outputs.size(); ++ii)
-		{
-			fprintf(file, "\t\t<output name=\"%s\" unit=\"%i\"%s/>\n", Outputs[ii]->IO_Name.c_str(), (UDINT)Outputs[ii]->Unit, (0 == ii) ? " default=\"1\"" : "");
+
+		for (auto link : m_outputs) {
+			fprintf(file, "\t\t<output name=\"%s\" unit=\"%i\"%s/>\n",
+					link->IO_Name.c_str(), (UDINT)link->Unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
 		}
 
 		fprintf(file, "\t\t<output name=\"fault\" unit=\"512\"/>\n");
@@ -399,13 +392,7 @@ UDINT rSource::SaveKernel(FILE *file, UDINT isio, const string &objname, const s
 
 	fprintf(file, "</%s>\n", Tag[isio ? 1 : 0].c_str());
 
-	for(UDINT ii = 0; ii < list.size(); ++ii)
-	{
-		delete list[ii];
-	}
-	list.clear();
-
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -417,9 +404,9 @@ UDINT rSource::CheckOutput(const string &name)
 
 	if(XmlName::FAULT == lowname) return 0;
 
-	for(UDINT ii = 0; ii < Outputs.size(); ++ii)
+	for(auto link : m_outputs)
 	{
-		if(lowname == name) return 0;
+		if(lowname == link->IO_Name) return 0;
 	}
 
 	return 1;

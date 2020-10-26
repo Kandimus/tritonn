@@ -25,20 +25,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rLink::rLink()
-{
-	Source  = nullptr;
-	Owner   = nullptr;
-	Param   = "";
-	FullTag = "";
-	Unit    = U_any;
-	Value   = 0.0;
-	Shadow  = "";
-
-	Outputs.clear();
-	Inputs.clear();
-}
-
 
 rLink::~rLink()
 {
@@ -157,10 +143,10 @@ void rLink::Init(UINT setup, UDINT unit, rSource *owner, const string &ioname, S
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLink::GenerateVars(vector<rVariable *> &list)
+UDINT rLink::generateVars(rVariableList& list)
 {
 	string name  = "";
-	UINT   flags = VARF_R___;
+	UINT   flags = rVariable::Flags::READONLY;
 
 	if(nullptr == Owner)
 	{
@@ -176,22 +162,22 @@ UDINT rLink::GenerateVars(vector<rVariable *> &list)
 
 	if(Setup & LINK_SETUP_WRITEBLE)
 	{
-		flags &= ~VARF_READONLY;
+		flags &= ~rVariable::Flags::READONLY;
 	}
 
 	if(Setup & LINK_SETUP_SIMPLE)
 	{
-		list.push_back(new rVariable(name, TYPE_LREAL, flags, &Value, Unit, 0));
+		list.add(name, TYPE_LREAL, flags, &Value, Unit, 0);
 	}
 	else
 	{
-		list.push_back(new rVariable(name + ".value", TYPE_LREAL, flags    , &Value        , Unit     , 0));
-		list.push_back(new rVariable(name + ".unit" , TYPE_STRID, VARF_R___,  Unit.GetPtr(), U_DIMLESS, 0));
+		list.add(name + ".value", TYPE_LREAL, flags                  , &Value        , Unit     , 0);
+		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R____,  Unit.GetPtr(), U_DIMLESS, 0);
 
-		Limit.GenerateVars(list, name, Unit);
+		Limit.generateVars(list, name, Unit);
 	}
 
-	return 1;
+	return TRITONN_RESULT_OK;
 }
 
 

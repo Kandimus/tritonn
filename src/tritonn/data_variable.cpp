@@ -14,29 +14,27 @@
 //===
 //=================================================================================================
 
-#include <algorithm>
-#include <cctype>
-#include <clocale>
-#include <limits>
-#include "string.h"
 #include "data_variable.h"
-#include <stdint.h>
-#include "data_source.h"
-#include "structures.h"
+#include <algorithm>
+#include "simplefile.h"
+//#include <cctype>
+//#include <clocale>
+//#include <limits>
+//#include "string.h"
+//#include <stdint.h>
+//#include "data_source.h"
+//#include "structures.h"
 
 
-vector<rVariable *> rVariable::ListVar;
-
-
-rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void *pointer, STRID unit, UDINT access)
+rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access)
 {
-	Name    = String_tolower(name);
-	Type    = type;
-	Flags   = flags;
-	Pointer = pointer;
-	Hash    = std::hash<std::string>{}(Name);
-	Unit    = unit;
-	Access  = access;
+	m_name    = String_tolower(name);
+	m_type    = type;
+	m_flags   = flags;
+	m_pointer = pointer;
+	m_hash    = std::hash<std::string>{}(m_name);
+	m_unit    = unit;
+	m_access  = access;
 }
 
 
@@ -44,15 +42,25 @@ rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void *po
 // Конструктор удаляет все дерево переменных, включая дочерние и соседние узлы
 rVariable::~rVariable()
 {
-	Name     = "";
-	Type     = TYPE_UNDEF;
-	Flags    = 0;
-	Pointer  = nullptr;
-	Access   = 0;
 }
 
 
-void rVariableList::add(const string& name, TT_TYPE type, rVarFlag flags, void* pointer, STRID unit, UDINT access)
+
+rVariableList::rVariableList()
+{
+}
+
+rVariableList::~rVariableList()
+{
+	for (auto var : m_list) {
+		if (var) {
+			delete var;
+		}
+	}
+	m_list.clear();
+}
+
+void rVariableList::add(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access)
 {
 	const rVariable* var = find(name);
 
@@ -61,20 +69,32 @@ void rVariableList::add(const string& name, TT_TYPE type, rVarFlag flags, void* 
 		return;
 	}
 
-	m_list.push_back(new rVariable(name, type, flags, pointer, uint, access));
+	m_list.push_back(new rVariable(name, type, flags, pointer, unit, access));
+}
+
+void rVariableList::addExternal(const rVariableList& varlist)
+{
+	for (auto var : varlist.m_list) {
+		if (find(var->m_name)) {
+			//TODO Выдать сообщение
+			continue;
+		}
+
+		add(var->m_name, var->m_type, var->m_flags | rVariable::Flags::EXTERNAL, nullptr, var->m_unit, var->m_access);
+	}
 }
 
 
 //
 const rVariable* rVariableList::find(const string &name)
 {
-	string namelower = String_tolower(name);
-	UDINT  hash      = std::hash<std::string>{}(namelower);
+	std::string namelower = String_tolower(name);
+	UDINT  hash = std::hash<std::string>{}(namelower);
 
 	for(auto var : m_list) {
-		if(hash == var->Hash)
+		if(hash == var->m_hash)
 		{
-			if(var->Name == namelower)
+			if(var->m_name == namelower)
 			{
 				return var;
 			}
@@ -89,7 +109,7 @@ const rVariable* rVariableList::find(const string &name)
 // Сортируем список по hash, для более быстрого поиска в будущем
 void rVariableList::sort()
 {
-	std::sort(m_list.begin(), m_list.end(), [](const rVariable *a, const rVariable *b){ return a->Hash < b->Hash;});
+	std::sort(m_list.begin(), m_list.end(), [](const rVariable *a, const rVariable *b){ return a->m_hash < b->m_hash;});
 }
 
 
@@ -106,27 +126,19 @@ void rVariableList::deleteAll()
 }
 
 
-UDINT rVariableList::saveToCSV(const string& path)
+UDINT rVariableList::saveToCSV(const std::string& path)
 {
-	string
-	FILE *file = fopen((path + ".variable.csv").c_str(), "wt");
+	std::string text = ":alias;type;flags;access;alias hash;\n";
 
-	if(!file) return 1;
+	for (auto var : m_list) {
+		if(var->m_flags & rVariable::Flags::HIDE) {
+			continue;
+		}
 
-	fprintf(file, ":alias;type;flags;access;alias hash;\n");
-
-	for(UDINT ii = 0; ii < ListVar.size(); ++ii)
-	{
-		const rVariable *var = ListVar[ii];
-
-		if(var->Flags & VARF___H_) continue;
-
-		fprintf(file, "%s;%s;%#06x;%08X;%#010x;\n", var->Name.c_str(), NAME_TYPE[var->Type].c_str(), var->Flags, var->Access, var->Hash);
+		text += String_format("%s;%s;%#06x;%08X;%#010x;\n", var->m_name.c_str(), NAME_TYPE[var->m_type].c_str(), var->m_flags, var->m_access, var->m_hash);
 	}
 
-	fclose(file);
-
-	return 0;
+	return SimpleFileSave(path + ".variable.csv", text);
 }
 
 

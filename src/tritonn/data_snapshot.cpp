@@ -315,11 +315,6 @@ rSnapshotItem* rSnapshot::Back() const
 	 return m_list.back();
 }
 
-UDINT rSnapshot::Size() const
-{
-	 return m_list.size();
-}
-
 UDINT rSnapshot::GetAccess() const
 {
 	return Access;

@@ -120,17 +120,17 @@ UINT rLimit::Calculate(LREAL val, UDINT check)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLimit::GenerateVars(vector<rVariable *> &list, const string &owner_name, STRID owner_unit)
+UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit)
 {
 	if(Setup.Value & LIMIT_SETUP_OFF) return 0;
 
-	list.push_back(new rVariable(owner_name + ".LoLo"      , TYPE_LREAL, VARF____L, &AMin.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".Lo"        , TYPE_LREAL, VARF____L, &WMin.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".Hi"        , TYPE_LREAL, VARF____L, &WMax.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".HiHi"      , TYPE_LREAL, VARF____L, &AMax.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".Hysteresis", TYPE_LREAL, VARF____L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".status"    , TYPE_UINT , VARF_R___, &Status          , U_DIMLESS , 0));
-	list.push_back(new rVariable(owner_name + ".setup"     , TYPE_UINT , VARF_RS_L, &Setup.Value     , U_DIMLESS , ACCESS_LIMITS));
+	list.add(owner_name + ".LoLo"      , TYPE_LREAL, rVariable::Flags::___L_, &AMin.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".Lo"        , TYPE_LREAL, rVariable::Flags::___L_, &WMin.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".Hi"        , TYPE_LREAL, rVariable::Flags::___L_, &WMax.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".HiHi"      , TYPE_LREAL, rVariable::Flags::___L_, &AMax.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".Hysteresis", TYPE_LREAL, rVariable::Flags::___L_, &Hysteresis.Value, owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R____, &Status          , U_DIMLESS , 0);
+	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L_, &Setup.Value     , U_DIMLESS , ACCESS_LIMITS);
 
 	return 0;
 }

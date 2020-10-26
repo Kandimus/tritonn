@@ -18,6 +18,7 @@
 #include "data_source.h"
 #include "compared_values.h"
 
+class rVariableList;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -30,7 +31,7 @@ public:
 
 public:
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT GenerateVars(vector<rVariable *> &list, const string &owner_name, STRID owner_unit);
+	virtual UDINT generateVars(rVariableList& list, const string &owner_name, STRID owner_unit);
 
 public:
 	virtual UINT Calculate(LREAL val, UDINT check);

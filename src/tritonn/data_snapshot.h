@@ -96,15 +96,19 @@ public:
 	const rVariable *Add(const string &name, void *buf);
 
 	rSnapshotItem *operator[](const UDINT index);
-	 rSnapshotItem *operator()(const std::string& name);
+	rSnapshotItem *operator()(const std::string& name);
 	rSnapshotItem *Back() const;
 
-	UDINT Size() const;
+
 
 	UDINT GetAccess() const;
 	void  SetAccess(UDINT access);
 	void  ResetAssign();
 	void  Clear();
+
+	std::vector<rSnapshotItem*>::iterator begin() { return m_list.begin(); }
+	std::vector<rSnapshotItem*>::iterator end()   { return m_list.end();   }
+	size_t size() const { return m_list.size(); }
 
 protected:
 	 vector<rSnapshotItem *> m_list;

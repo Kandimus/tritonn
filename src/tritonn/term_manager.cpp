@@ -179,9 +179,9 @@ UDINT rTermManager::PacketLogin(rTermClient *client, rPacketLoginData *packet)
 	rPacketLoginAnswe answe;
 
 	answe.Data.Access  = client->User->GetAccess();
-	rDataManager::Instance().GetVersion(answe.Data.Version);
-	rDataManager::Instance().GetState  (answe.Data.State);
-	rDataManager::Instance().GetConfigInfo(answe.Data.Config);
+	rDataManager::instance().GetVersion(answe.Data.Version);
+	rDataManager::instance().GetState  (answe.Data.State);
+	rDataManager::instance().GetConfigInfo(answe.Data.Config);
 
 	Send(client, &answe.Data, LENGTH_PACKET_LOGINANSWE);
 
@@ -218,7 +218,7 @@ UDINT rTermManager::PacketSet(rTermClient *client, rPacketSetData *packet)
 		memcpy(answe.Data.Name[ii], packet->Name[ii], MAX_VARIABLE_LENGTH);
 	}
 
-	rDataManager::Instance().Set(ss);
+	rDataManager::instance().Set(ss);
 
 	for(UDINT ii = 0; ii < packet->Count; ++ii)
 	{
@@ -259,7 +259,7 @@ UDINT rTermManager::PacketGet(rTermClient *client, rPacketGetData *packet)
 		ss.Add(packet->Name[ii]);
 	}
 
-	rDataManager::Instance().Get(ss);
+	rDataManager::instance().Get(ss);
 
 	for(UDINT ii = 0; ii < packet->Count; ++ii)
 	{

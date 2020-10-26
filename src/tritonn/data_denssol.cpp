@@ -266,7 +266,7 @@ UDINT rDensSol::GenerateVars(vector<rVariable *> &list)
 	list.push_back(new rVariable(Alias + ".SetFactor.K20B" , TYPE_LREAL, VARF____L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS));
 	list.push_back(new rVariable(Alias + ".SetFactor.K21A" , TYPE_LREAL, VARF____L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS));
 	list.push_back(new rVariable(Alias + ".SetFactor.K21B" , TYPE_LREAL, VARF____L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS));
-	list.push_back(new rVariable(Alias + ".Factor.K0"      , TYPE_LREAL, VARF_RS__, &UsedCoef.K0.Value  , U_COEFSOL, ACCESS_SA));
+	list.push_back(new rVariable(Alias + ".Factor.K0"      , TYPE_LREAL, rVariable::Flags::RS___, &UsedCoef.K0.Value  , U_COEFSOL, ACCESS_SA));
 	list.push_back(new rVariable(Alias + ".Factor.K1"      , TYPE_LREAL, VARF_RS__, &UsedCoef.K1.Value  , U_COEFSOL, ACCESS_SA));
 	list.push_back(new rVariable(Alias + ".Factor.K2"      , TYPE_LREAL, VARF_RS__, &UsedCoef.K2.Value  , U_COEFSOL, ACCESS_SA));
 	list.push_back(new rVariable(Alias + ".Factor.K18"     , TYPE_LREAL, VARF_RS__, &UsedCoef.K18.Value , U_COEFSOL, ACCESS_SA));
