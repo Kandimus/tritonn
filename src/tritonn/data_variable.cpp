@@ -28,7 +28,7 @@
 vector<rVariable *> rVariable::ListVar;
 
 
-rVariable::rVariable(string name, TT_TYPE type, UINT flags, void *pointer, STRID unit, UDINT access)
+rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void *pointer, STRID unit, UDINT access)
 {
 	Name    = String_tolower(name);
 	Type    = type;
@@ -47,25 +47,36 @@ rVariable::~rVariable()
 	Name     = "";
 	Type     = TYPE_UNDEF;
 	Flags    = 0;
-	Pointer  = 0;
+	Pointer  = nullptr;
 	Access   = 0;
 }
 
 
+void rVariableList::add(const string& name, TT_TYPE type, rVarFlag flags, void* pointer, STRID unit, UDINT access)
+{
+	const rVariable* var = find(name);
+
+	if (var) {
+		//TODO Выдать сообщение
+		return;
+	}
+
+	m_list.push_back(new rVariable(name, type, flags, pointer, uint, access));
+}
+
 
 //
-const rVariable *rVariable::Find(const string &name)
+const rVariable* rVariableList::find(const string &name)
 {
 	string namelower = String_tolower(name);
 	UDINT  hash      = std::hash<std::string>{}(namelower);
 
-	for(UDINT ii = 0; ii < ListVar.size(); ++ii)
-	{
-		if(hash == ListVar[ii]->Hash)
+	for(auto var : m_list) {
+		if(hash == var->Hash)
 		{
-			if(ListVar[ii]->Name == namelower)
+			if(var->Name == namelower)
 			{
-				return ListVar[ii];
+				return var;
 			}
 		}
 	}
@@ -76,25 +87,28 @@ const rVariable *rVariable::Find(const string &name)
 
 //-------------------------------------------------------------------------------------------------
 // Сортируем список по hash, для более быстрого поиска в будущем
-void rVariable::Sort()
+void rVariableList::sort()
 {
-	std::sort(ListVar.begin(), ListVar.end(), [](const rVariable *a, const rVariable *b){ return a->Hash < b->Hash;});
+	std::sort(m_list.begin(), m_list.end(), [](const rVariable *a, const rVariable *b){ return a->Hash < b->Hash;});
 }
 
 
 //
-void rVariable::DeleteVariables()
+void rVariableList::deleteAll()
 {
-	for(UDINT ii = 0; ii < ListVar.size(); ++ii)
+	for(auto var : m_list)
 	{
-		delete ListVar[ii];
+		if (var) {
+			delete var;
+		}
 	}
-	ListVar.clear();
+	m_list.clear();
 }
 
 
-UDINT rVariable::SaveToCSV(const string &path)
+UDINT rVariableList::saveToCSV(const string& path)
 {
+	string
 	FILE *file = fopen((path + ".variable.csv").c_str(), "wt");
 
 	if(!file) return 1;
