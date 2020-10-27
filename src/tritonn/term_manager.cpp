@@ -16,8 +16,8 @@
 #include <string.h>
 #include "log_manager.h"
 #include "data_manager.h"
-#include "data_variable.h"
 #include "users.h"
+#include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "packet_get.h"
 #include "packet_getanswe.h"

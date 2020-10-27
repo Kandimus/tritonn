@@ -17,7 +17,8 @@
 #include <cmath>
 #include "tinyxml2.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "log_manager.h"
 #include "data_link.h"
 #include "xml_util.h"

@@ -18,7 +18,8 @@
 #include "text_id.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_rvar.h"
 #include "xml_util.h"
 
@@ -91,11 +92,11 @@ UDINT rRVar::Calculate()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rRVar::GenerateVars(vector<rVariable *> &list)
+UDINT rRVar::generateVars(rVariableList& list)
 {
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -138,11 +139,11 @@ UDINT rRVar::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 }
 
 
-UDINT rRVar::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rRVar::saveKernel(FILE *file, UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal)
 {
 	Value.Limit.Setup.Init(0);
 
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(file, isio, objname, comment, isglobal);
 }
 
 

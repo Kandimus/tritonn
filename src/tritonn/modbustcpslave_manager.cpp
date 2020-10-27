@@ -23,6 +23,7 @@
 #include "xml_util.h"
 #include "data_manager.h"
 #include "data_variable.h"
+#include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "users.h"
 #include "listconf.h"
@@ -39,7 +40,7 @@ extern rVariable *gVariable;
 //
 // КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rModbusTCPSlaveManager::rModbusTCPSlaveManager()
-	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT)
+	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT), m_snapshot(this)
 {
 	RTTI        = "rModbusTCPSlaveManager";
 	LogMask    |= LM_TERMINAL;
@@ -89,8 +90,8 @@ rThreadStatus rModbusTCPSlaveManager::Proccesing()
 			return thread_status;
 		}
 
-		Snapshot.ResetAssign();
-		rDataManager::Instance().Get(Snapshot);
+		m_snapshot.resetAssign();
+		rDataManager::instance().set(m_snapshot);
 
 		{
 			rLocker lock(Mutex); lock.Nop();
@@ -100,11 +101,13 @@ rThreadStatus rModbusTCPSlaveManager::Proccesing()
 			{
 				rModbusLink *link = &ModbusLink[ii];
 
-				if(link->Item->GetStatus() != SS_STATUS_ASSIGN) continue;
+				if(!link->m_item->isAssigned()) {
+					continue;
+				}
 
 				Modbus[link->Address] = 0;
-				link->Item->GetBuffer(&Modbus[link->Address]);
-				SwapBuffer(&Modbus[link->Address], link->Item->GetSizeVar());
+				link->m_item->getBuffer(&Modbus[link->Address]);
+				SwapBuffer(&Modbus[link->Address], link->m_item->getSizeVar());
 			}
 		}
 
@@ -202,9 +205,10 @@ void rModbusTCPSlaveManager::Func_0x06 (rModbusTCPSlaveClient *client)
 	UINT  adr  = client->Buff[3] + (client->Buff[2] << 8);
 	UINT  val  = client->Buff[5] + (client->Buff[4] << 8);
 
-	rSnapshot snapshot;
+	rSnapshot snapshot(rDataManager::instance().getVariableClass());
 
-	snapshot.SetAccess(ACCESS_MASK_SA); //TODO тут нужен анализ на SecurityModbus
+	//TODO тут нужен анализ на SecurityModbus
+	snapshot.setAccess(ACCESS_MASK_SA);
 
 	rSnapshotItem *ss = FindSnapshotItem(adr);
 
@@ -214,18 +218,18 @@ void rModbusTCPSlaveManager::Func_0x06 (rModbusTCPSlaveClient *client)
 	}
 	else
 	{
-		UDINT countregs = TypeCountReg(ss->GetVariable()->Type);
+		UDINT countregs = TypeCountReg(ss->getVariable()->getType());
 		UDINT sizeregs  = countregs << 1;
 
 		if(countregs == 1)
 		{
 			SwapBuffer(&val, sizeregs);
 
-			snapshot.Add(ss->GetVariable()->Name, val);
-
-			rDataManager::Instance().Set(snapshot);
+			snapshot.add(ss->getVariable()->getName(), val);
 		}
 	}
+
+	rDataManager::instance().set(snapshot);
 
 	memcpy(answe, client->Buff, size);
 	client->Send(answe, size);

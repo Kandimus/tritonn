@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== data_variable.cpp
+//=== variable_list.cpp
 //===
 //=== Copyright (c) 2019 by RangeSoft.
 //=== All rights reserved.
@@ -14,36 +14,9 @@
 //===
 //=================================================================================================
 
-#include "data_variable.h"
-#include <algorithm>
+#include "variable_list.h"
+#include "variable_item.h"
 #include "simplefile.h"
-//#include <cctype>
-//#include <clocale>
-//#include <limits>
-//#include "string.h"
-//#include <stdint.h>
-//#include "data_source.h"
-//#include "structures.h"
-
-
-rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access)
-{
-	m_name    = String_tolower(name);
-	m_type    = type;
-	m_flags   = flags;
-	m_pointer = pointer;
-	m_hash    = std::hash<std::string>{}(m_name);
-	m_unit    = unit;
-	m_access  = access;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-// Конструктор удаляет все дерево переменных, включая дочерние и соседние узлы
-rVariable::~rVariable()
-{
-}
-
 
 
 rVariableList::rVariableList()

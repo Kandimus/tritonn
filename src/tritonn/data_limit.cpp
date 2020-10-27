@@ -21,9 +21,9 @@
 //#include "data_selector.h"
 #include "event_eid.h"
 #include "event_manager.h"
-//#include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_limit.h"
 #include "xml_util.h"
 

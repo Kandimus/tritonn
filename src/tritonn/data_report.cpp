@@ -23,7 +23,8 @@
 #include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "simplefile.h"
 #include "data_report.h"
 #include "xml_util.h"
@@ -37,14 +38,14 @@ void rReportTime::SetCurTime()
 
 
 //
-void rReportTime::GenerateVars(const string &prefix, UINT flags, UDINT access, vector<rVariable *> &list)
+void rReportTime::generateVars(const string &prefix, UINT flags, UDINT access, rVariableList& list)
 {
-	list.push_back(new rVariable(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access));
-	list.push_back(new rVariable(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access));
-	list.push_back(new rVariable(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access));
-	list.push_back(new rVariable(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access));
-	list.push_back(new rVariable(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access));
-	list.push_back(new rVariable(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access));
+	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access);
+	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access);
+	list.add(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access);
+	list.add(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access);
+	list.add(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access);
+	list.add(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access);
 }
 
 
@@ -278,14 +279,14 @@ UDINT rReport::Calculate()
 
 //-------------------------------------------------------------------------------------------------
 //
-void rReportDataset::GenerateVars(const string &prefix, vector<rVariable *> &list)
+void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 {
 	string name = "";
 
-	list.push_back(new rVariable(prefix + "status", TYPE_UINT, VARF_RS__, &Mark, U_DIMLESS, ACCESS_SA));
+	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS___, &Mark, U_DIMLESS, ACCESS_SA);
 
-	StartTime.GenerateVars(prefix + "datetime.begin.", VARF_RS__, ACCESS_SA, list);
-	FinalTime.GenerateVars(prefix + "datetime.end."  , VARF_RS__, ACCESS_SA, list);
+	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS___, ACCESS_SA, list);
+	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS___, ACCESS_SA, list);
 
 	// Формируем переменые
 	for(UDINT ii = 0; ii < AverageItems.size(); ++ii)
@@ -294,14 +295,14 @@ void rReportDataset::GenerateVars(const string &prefix, vector<rVariable *> &lis
 
 		name = prefix + tot->Name + ".total.";
 
-		list.push_back(new rVariable(name + "begin.mass"    , TYPE_LREAL, VARF_RS__, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA));
-		list.push_back(new rVariable(name + "begin.volume"  , TYPE_LREAL, VARF_RS__, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA));
-		list.push_back(new rVariable(name + "begin.volume15", TYPE_LREAL, VARF_RS__, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA));
-		list.push_back(new rVariable(name + "begin.volume20", TYPE_LREAL, VARF_RS__, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA));
-		list.push_back(new rVariable(name + "end.mass"      , TYPE_LREAL, VARF_RS__, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA));
-		list.push_back(new rVariable(name + "end.volume"    , TYPE_LREAL, VARF_RS__, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA));
-		list.push_back(new rVariable(name + "end.volume15"  , TYPE_LREAL, VARF_RS__, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA));
-		list.push_back(new rVariable(name + "end.volume20"  , TYPE_LREAL, VARF_RS__, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA));
+		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA);
+		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA);
+		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA);
+		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA);
+		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA);
 
 		name = prefix + tot->Name + ".";
 
@@ -309,7 +310,7 @@ void rReportDataset::GenerateVars(const string &prefix, vector<rVariable *> &lis
 		{
 			rReportItem *itm = tot->Items[jj];
 
-			list.push_back(new rVariable(name + itm->Name, TYPE_LREAL, VARF_RS__, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA));
+			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS___, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
 		}
 	}
 
@@ -319,7 +320,7 @@ void rReportDataset::GenerateVars(const string &prefix, vector<rVariable *> &lis
 	{
 		rReportItem *itm = SnapshotItems[ii];
 
-		list.push_back(new rVariable(name + itm->Name, TYPE_LREAL, VARF_RS__, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA));
+		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS___, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
 	}
 }
 
@@ -327,33 +328,33 @@ void rReportDataset::GenerateVars(const string &prefix, vector<rVariable *> &lis
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReport::GenerateVars(vector<rVariable *> &list)
+UDINT rReport::generateVars(rVariableList& list)
 {
 	string name = Alias + ".";
 
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
 	// Общие переменные для всех типов отчетов
-	list.push_back(new rVariable(name + "type"               , TYPE_UINT , VARF_R___, &Type         , U_DIMLESS, 0));
-	list.push_back(new rVariable(name + "archive.load.accept", TYPE_UINT , VARF_____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT));
+	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R____, &Type         , U_DIMLESS, 0);
+	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::_____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT);
 
-	ArchiveTime.GenerateVars(name + "archive.load.", VARF_____, ACCESS_REPORT, list);
+	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::_____, ACCESS_REPORT, list);
 
 	if(REPORT_PERIODIC == Type)
 	{
-		list.push_back(new rVariable(name + "period", TYPE_UINT, VARF_R___, &Period, U_DIMLESS, 0));
+		list.add(name + "period", TYPE_UINT, rVariable::Flags::_____, &Period, U_DIMLESS, 0);
 	}
 	else
 	{
-		list.push_back(new rVariable(name + "command", TYPE_USINT, VARF_____, &Command, U_DIMLESS, ACCESS_BATCH));
-		list.push_back(new rVariable(name + "status" , TYPE_UINT , VARF_R___, &Status , U_DIMLESS, 0));
+		list.add(name + "command", TYPE_USINT, rVariable::Flags::_____, &Command, U_DIMLESS, ACCESS_BATCH);
+		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R____, &Status , U_DIMLESS, 0);
 	}
 
-	Present.GenerateVars  (name + "present."  , list);
-	Completed.GenerateVars(name + "completed.", list);
-	Archive.GenerateVars  (name + "archive."  , list);
+	Present.generateVars  (name + "present."  , list);
+	Completed.generateVars(name + "completed.", list);
+	Archive.generateVars  (name + "archive."  , list);
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -486,7 +487,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-UDINT rReport::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rReport::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Present.AverageItems.push_back(new rReportTotal());
 	Present.AverageItems.back()->Name = "#totalsource_1";
@@ -503,7 +504,7 @@ UDINT rReport::SaveKernel(FILE *file, UDINT isio, const string &objname, const s
 	Completed.CreateFrom(Present);
 	Archive.CreateFrom(Present);
 
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(file, isio, objname, comment, isglobal);
 }
 
 

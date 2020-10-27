@@ -18,7 +18,7 @@
 #include "tinyxml2.h"
 #include "data_config.h"
 #include "event_manager.h"
-#include "data_variable.h"
+#include "variable_list.h"
 #include "data_interface.h"
 #include "text_manager.h"
 

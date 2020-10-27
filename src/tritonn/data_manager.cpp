@@ -21,7 +21,9 @@
 #include "log_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"
+#include "variable_item.h"
 #include "threadmaster.h"
+#include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "data_station.h"
 #include "data_stream.h"
@@ -32,7 +34,6 @@
 #include "data_counter.h"
 #include "data_report.h"
 #include "data_rvar.h"
-#include "data_variable.h"
 #include "text_manager.h"
 #include "event_manager.h"
 #include "listconf.h"
@@ -75,88 +76,94 @@ rDataManager::~rDataManager()
 
 //-------------------------------------------------------------------------------------------------
 // Получение данных от менеджера данных
-UDINT rDataManager::Get(rSnapshot &snapshot)
+UDINT rDataManager::get(rSnapshot& snapshot)
 {
+	char buffer[8] = {0};
+
 	rLocker locker(Mutex); locker.Nop();
 
-	for(auto item : snapshot)
-	{
-		if(SS_STATUS_NOTASSIGN != item->Status) continue;
-
-		// Переменная невидимая, а уровень доступа не админ и не СА
-		if((item->Variable->getFlags() & rVariable::Flags::HIDE) && (0 == (snapshot.GetAccess() & ACCESS_MASK_VIEWHIDE)))
-		{
-			item->Status = SS_STATUS_NOTFOUND;
+	for (auto item : snapshot) {
+		if (!item->isToAssign() || !item->getVariable()) {
 			continue;
 		}
 
-		memcpy(item->Data, item->Variable->m_pointer, EPT_SIZE[item->Variable->m_type]);
-		item->Status = SS_STATUS_ASSIGN;
+		// Переменная невидимая, а уровень доступа не админ и не СА
+		if (item->getVariable()->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
+			item->setNotFound();
+			continue;
+		}
+
+		if (item->getVariable()->getBuffer(buffer)) {
+			item->setBuffer(buffer);
+			item->m_status = rSnapshotItem::Status::ASSIGNED;
+		}
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 // Запись данных в менеджер данных
-UDINT rDataManager::Set(rSnapshot &snapshot)
+UDINT rDataManager::set(rSnapshot& snapshot)
 {
+	char buffer[8] = {0};
+
 	rLocker locker(Mutex); locker.Nop();
 
 	for (auto item : snapshot) {
-		if (SS_STATUS_ASSIGN != item->Status) {
+		if (!item->isToWrite() || !item->getVariable()) {
 			continue;
 		}
 
 		// Переменная невидимая, а уровень доступа не админ и не СА
-		if ((item->Variable->getFlags() & rVariable::Flags::HIDE) && (0 == (snapshot.GetAccess() & ACCESS_MASK_VIEWHIDE))) {
-			item->Status = SS_STATUS_NOTFOUND;
+		if (item->getVariable()->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
+			item->setNotFound();
 			continue;
 		}
 
 		// Переменная только для чтения
-		if (item->Variable->getFlags() & rVariable::Flags::READONLY) {
-			if (item->Variable->getFlags() & rVariable::Flags::SUWRITE) {
-				if (0 == (snapshot.GetAccess() & ACCESS_SA)) {
-					item->Status = SS_STATUS_READONLY;
+		if (item->getVariable()->isReadonly()) {
+			if (item->getVariable()->isSUWrite()) {
+				if (0 == (snapshot.getAccess() & ACCESS_SA)) {
+					item->setReadonly();
 					continue;
 				}
 			} else {
-				item->Status = SS_STATUS_READONLY;
+				item->setReadonly();
 				continue;
 			}
 		}
 
-		if((item->Variable->getAccess() & snapshot.GetAccess()) != item->Variable->getAccess())
-		{
-			item->Status = SS_STATUS_ACCESSDENIED;
-
+		if ((item->getVariable()->getAccess() & snapshot.getAccess()) != item->getVariable()->getAccess()) {
+			item->setAccessDenied();
 			//TODO Выдать сообщение
 			continue;
 		}
 
-		memcpy(item->Variable->m_pointer, item->Data, EPT_SIZE[item->Variable->getType()]);
-		item->Status = SS_STATUS_WRITED;
+		if (item->getBuffer(buffer)) {
+			item->getVariable()->setBuffer(buffer);
+			item->m_status = rSnapshotItem::Status::WRITED;
+		}
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
-UDINT rDataManager::GetAllVariables(rSnapshot &snapshot)
+UDINT rDataManager::getAllVariables(rSnapshot& snapshot)
 {
 	rLocker locker(Mutex); UNUSED(locker);
 
-	snapshot.Clear();
+	snapshot.clear();
 
 	for (auto var : m_listVariables)
 	{
-		if (var->getFlags() & rVariable::Flags::HIDE) {
+		if (var->isHide()) {
 			continue;
 		}
 
-		snapshot.Add(var->getName());
+		snapshot.add(var);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -311,8 +318,8 @@ UDINT rDataManager::LoadConfig()
 		//TODO проверить на валидность hash
 		TRACEI(LM_SYSTEM | LM_I, "Load config file '%s'", conf.c_str());
 		result = Config.LoadFile(conf, SysVar, ListSource, ListInterface, ListReport);
-		if(TRITONN_RESULT_OK != result)
-		{
+
+		if(TRITONN_RESULT_OK != result) {
 			return CreateConfigHaltEvent(Config);
 		}
 
@@ -321,42 +328,44 @@ UDINT rDataManager::LoadConfig()
 
 	//--------------------------------------------
 	// Создаем переменные
-	SysVar.InitVariables(rVariable::ListVar);
+	SysVar.initVariables(m_listVariables);
 
 	// Добавляем интерфейсы, создаем под них переменные
-	for(auto interface : ListInterface)
-	{
+	for(auto interface : ListInterface) {
 		rThreadMaster::instance().Add(interface->GetThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->Alias);
 	}
 
 	// Собираем переменные от объектов
-	for(auto source : ListSource)
-	{
-		//TODO Нужно ли выдавать ошибку?
-		if(source->GenerateVars(rVariable::ListVar)) return 1;
+	for (auto source : ListSource) {
+		result = source->generateVars(m_listVariables);
+		if (result != TRITONN_RESULT_OK) {
+			//TODO Нужно ли выдавать ошибку?
+			return result;
+		}
 	}
 
 	// Собираем переменные от интерфейсов
-	for(auto interface : ListInterface)
-	{
-		//TODO Нужно ли выдавать ошибку?
-		if(interface->GenerateVars(rVariable::ListVar)) return 1;
+	for (auto interface : ListInterface) {
+		result = interface->generateVars(m_listVariables);
+		if (result != TRITONN_RESULT_OK) {
+			//TODO Нужно ли выдавать ошибку?
+			return 1;
+		}
 	}
 
-	rVariable::Sort();
+	m_listVariables.sort();
 
 	//--------------------------------------------
 	//NOTE только в процессе разработки
 	if(LIVE_STARTING == GetLiveStatus())
 	{
-		rVariable::SaveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
+		m_listVariables.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		SaveKernel();                         // Сохраняем описание ядра
 	}
 
 	//TODO  Тут нужно проверить переменные в интерфейсах
-	for(UDINT ii = 0; ii < ListInterface.size(); ++ii)
-	{
-		result = ListInterface[ii]->CheckVars(Config);
+	for (auto interface : ListInterface) {
+		result = interface->CheckVars(Config);
 		if(TRITONN_RESULT_OK != result)
 		{
 			return CreateConfigHaltEvent(Config);
@@ -435,24 +444,24 @@ UDINT rDataManager::SaveKernel()
 
 	SysVar.SaveKernel(file);
 
-	rvar->SaveKernel(file, false, "var", "Переменная", true);
+	rvar->saveKernel(file, false, "var", "Переменная", true);
 
 	fprintf(file, "\n<io_list>\n");
-	ai->SaveKernel(file, true, "ai", "Аналоговый сигнал", true);
-	fi->SaveKernel(file, true, "counter", "Частотно-импульсный сигнал", true);
+	ai->saveKernel(file, true, "ai", "Аналоговый сигнал", true);
+	fi->saveKernel(file, true, "counter", "Частотно-импульсный сигнал", true);
 	fprintf(file, "</io_list>\n");
 
 	fprintf(file, "<objects>\n");
-	denssol->SaveKernel(file, false, "densitometer", "Плотномер (Солартрон)", false);
-	rdcdens->SaveKernel(file, false, "reduceddens", "Приведение плотности", true);
-	ssel->SaveKernel   (file, false, "selector", "Селектор", true);
-	msel->SaveKernel   (file, false, "multiselector", "Мультиселектор", true);
-	stn->SaveKernel    (file, false, "station", "Станция", true);
-	str->SaveKernel    (file, false, "stream", "Линия", false);
+	denssol->saveKernel(file, false, "densitometer", "Плотномер (Солартрон)", false);
+	rdcdens->saveKernel(file, false, "reduceddens", "Приведение плотности", true);
+	ssel->saveKernel   (file, false, "selector", "Селектор", true);
+	msel->saveKernel   (file, false, "multiselector", "Мультиселектор", true);
+	stn->saveKernel    (file, false, "station", "Станция", true);
+	str->saveKernel    (file, false, "stream", "Линия", false);
 	rep->Type = REPORT_PERIODIC;
-	rep->SaveKernel    (file, false, "report", "Отчет (периодический)", true);
+	rep->saveKernel    (file, false, "report", "Отчет (периодический)", true);
 	rep->Type = REPORT_BATCH;
-	rep->SaveKernel    (file, false, "report", "Отчет (по партии)", true);
+	rep->saveKernel    (file, false, "report", "Отчет (по партии)", true);
 	fprintf(file, "</objects>\n");
 
 	fprintf(file, "<interfaces>\n");

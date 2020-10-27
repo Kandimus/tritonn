@@ -23,7 +23,8 @@
 #include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "io_manager.h"
 #include "io_ai_channel.h"
 #include "xml_util.h"
@@ -165,7 +166,7 @@ UDINT rAI::Calculate()
 		if (channel == nullptr)
 		{
 			rEventManager::instance().Add(ReinitEvent(EID_AI_MODULE) << m_module << m_channel);
-			rDataManager::Instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
@@ -398,24 +399,22 @@ UDINT rAI::SetFault()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::GenerateVars(vector<rVariable *> &list)
+UDINT rAI::generateVars(rVariableList& list)
 {
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
 	// Variables
-	list.push_back(new rVariable(Alias + ".code"            , TYPE_UINT , VARF_R__L, &Code             , U_DIMLESS , 0));
-	list.push_back(new rVariable(Alias + ".keypad"          , TYPE_LREAL, VARF____L, &KeypadValue.Value, Value.Unit, ACCESS_KEYPAD));
-	list.push_back(new rVariable(Alias + ".scales.min"      , TYPE_LREAL, VARF____L, &m_scale.Min.Value, Value.Unit, ACCESS_SCALES));
-	list.push_back(new rVariable(Alias + ".scales.max"      , TYPE_LREAL, VARF____L, &m_scale.Max.Value, Value.Unit, ACCESS_SCALES));
-	list.push_back(new rVariable(Alias + ".setup"           , TYPE_UINT , VARF_RS_L, &m_setup.Value    , U_DIMLESS , ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".mode"            , TYPE_UINT , VARF____L, &Mode             , U_DIMLESS , ACCESS_KEYPAD));
-	list.push_back(new rVariable(Alias + ".status"          , TYPE_UINT , VARF_R___, &m_status         , U_DIMLESS , 0));
+	list.add(Alias + ".code"      , TYPE_UINT , rVariable::Flags::R__L_, &Code             , U_DIMLESS , 0);
+	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L_, &KeypadValue.Value, Value.Unit, ACCESS_KEYPAD);
+	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L_, &m_scale.Min.Value, Value.Unit, ACCESS_SCALES);
+	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L_, &m_scale.Max.Value, Value.Unit, ACCESS_SCALES);
+	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L_, &m_setup.Value    , U_DIMLESS , ACCESS_SA);
+	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L_, &Mode             , U_DIMLESS , ACCESS_KEYPAD);
+	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R____, &m_status         , U_DIMLESS , 0);
 
-	list.push_back(new rVariable(Alias + ".fault"           , TYPE_UDINT, VARF_R___, &Fault            , U_DIMLESS , 0));
+	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R____, &Fault            , U_DIMLESS , 0);
 
-//	Limit.GenerateVars(list, Alias, SSPOINTER(IO.AI[ID].Limit), Unit);
-
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -478,13 +477,13 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 }
 
 
-UDINT rAI::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rAI::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Value.Limit.Setup.Init(0);
 	PhValue.Limit.Setup.Init(0);
 	Current.Limit.Setup.Init(0);
 
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(file, isio, objname, comment, isglobal);
 }
 
 
