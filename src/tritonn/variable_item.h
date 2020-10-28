@@ -74,6 +74,8 @@ public:
 	};
 
 	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access);
+	rVariable(rVariable *var);
+	rVariable(rVariable &var);
 	virtual ~rVariable();
 
 	const std::string& getName() const { return m_name; }
@@ -81,13 +83,16 @@ public:
 	UINT    getFlags()   const { return m_flags;  }
 	STRID   getUnit()    const { return m_unit;   }
 	UDINT   getAccess()  const { return m_access; }
-	bool    getBuffer(void* buffer) const;
-	bool    setBuffer(void* buffer) const;
 	bool    isReadonly() const { return m_flags & Flags::READONLY; }
 	bool    isHide()     const { return m_flags & Flags::HIDE;     }
 	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
 	bool    isLodable()  const { return m_flags & Flags::LOADABLE; }
 	bool    isExternal() const { return m_flags & Flags::EXTERNAL; }
+
+protected:
+	bool    getBuffer(void* buffer) const;
+	bool    setBuffer(void* buffer) const;
+
 
 protected:
 	UDINT       m_hash;

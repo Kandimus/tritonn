@@ -17,11 +17,13 @@
 
 #include "def.h"
 
-class rVariable;
+class rVariableClass;
 class rSnapshot;
 
 class rSnapshotItem
 {
+	friend class rVariableClass;
+
 public:
 	enum Status : UDINT
 	{
@@ -64,17 +66,13 @@ public:
 
 	bool isAssigned() const { return m_status == Status::ASSIGNED; }
 	bool isToAssign() const { return m_status == Status::TOASSIGN; }
-	bool isToWrite()  const { return m_status == Status::TOWRITE; }
-	void setNotFound() { m_status = Status::NOTFOUND; }
-	void setReadonly() { m_status = Status::READONLY; }
-	void setAccessDenied() { m_status = Status::ACCESSDENIED; }
+	bool isToWrite()  const { return m_status == Status::TOWRITE;  }
+	bool isWrited()   const { return m_status == Status::WRITED;   }
 
-	bool             setBuffer(void *buffer);
-	bool             getBuffer(void *buffer);
 	const rVariable *getVariable() const { return m_var; }
 	Status           getStatus()   const { return m_status; }
 	UDINT            getSizeVar()  const;
-	void             resetAssign();
+	void             reset();
 
 public:
 	Status           m_status;
@@ -86,4 +84,8 @@ private:
 protected:
 	rSnapshotItem();
 	void clearData();
+	void setNotFound()     { m_status = Status::NOTFOUND; }
+	void setReadonly()     { m_status = Status::READONLY; }
+	void setAccessDenied() { m_status = Status::ACCESSDENIED; }
+
 };

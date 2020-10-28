@@ -29,7 +29,9 @@ public:
 	virtual ~rVariableList();
 
 	void  add(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access);
-	void  addExternal(const rVariableList& varlist);
+	void  add(const rVariable* var);
+	void  add(const rVariable& var);
+	bool  addExternal(const rVariableList& varlist);
 	void  sort();
 	void  deleteAll(void);
 	UDINT saveToCSV(const std::string& path);

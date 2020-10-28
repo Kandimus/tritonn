@@ -30,6 +30,15 @@ rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* po
 	m_access  = access;
 }
 
+rVariable::rVariable(rVariable *var)
+{
+	*this = *var;
+}
+
+rVariable::rVariable(rVariable &var)
+{
+	*this = var;
+}
 
 //-------------------------------------------------------------------------------------------------
 // Конструктор удаляет все дерево переменных, включая дочерние и соседние узлы

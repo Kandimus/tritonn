@@ -214,7 +214,7 @@ std::string rSnapshotItem::getValueString()
 
 bool rSnapshotItem::getBuffer(void *buffer)
 {
-	if (m_status != Status::TOWRITE || m_status != Status::ASSIGNED) {
+	if (m_status != Status::TOWRITE && m_status != Status::ASSIGNED && m_status != Status::WRITED) {
 		m_status = Status::ERROR;
 		return false;
 	}
@@ -225,7 +225,7 @@ bool rSnapshotItem::getBuffer(void *buffer)
 
 bool rSnapshotItem::setBuffer(void *buffer)
 {
-	if (m_status != Status::NOTASSIGN) {
+	if (m_status != Status::TOASSIGN) {
 		m_status = Status::ERROR;
 		return false;
 	}
@@ -234,7 +234,6 @@ bool rSnapshotItem::setBuffer(void *buffer)
 	m_status = Status::ASSIGN;
 	return true;
 }
-
 
 //
 void rSnapshotItem::clearData()
@@ -248,7 +247,7 @@ UDINT rSnapshotItem::getSizeVar() const
 }
 
 
-void rSnapshotItem::resetAssign()
+void rSnapshotItem::reset()
 {
-	m_status = Status::NOTASSIGN;
+	m_status = Status::TOASSIGN;
 }

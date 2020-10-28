@@ -35,11 +35,6 @@ class rDataManager : public rThreadClass, public rVariableClass
 
 // Методы
 public:
-	// Работа с данными
-	UDINT    get(rSnapshot& snapshot);
-	UDINT    set(rSnapshot& snapshot);
-	UDINT    getAllVariables(rSnapshot& snapshot);
-
 	// Текущий статус и работа со статусами
 	void     SetLiveStatus(USINT status/*, UDINT haltreason*/);
 	USINT    GetLiveStatus();

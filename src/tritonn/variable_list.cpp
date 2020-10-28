@@ -45,18 +45,42 @@ void rVariableList::add(const std::string& name, TT_TYPE type, UINT flags, void*
 	m_list.push_back(new rVariable(name, type, flags, pointer, unit, access));
 }
 
-void rVariableList::addExternal(const rVariableList& varlist)
+void rVariableList::add(const rVariable* var)
+{
+	if (!var) {
+		return;
+	}
+
+	const rVariable* localvar = find(name);
+	if (localvar) {
+		//TODO Выдать сообщение
+		return;
+	}
+
+	m_list.push_back(new rVariable(var));
+}
+
+void rVariableList::add(const rVariable& var)
+{
+	const rVariable* localvar = find(name);
+	if (localvar) {
+		//TODO Выдать сообщение
+		return;
+	}
+	m_list.push_back(new rVariable(var));
+}
+
+
+bool rVariableList::addExternal(const rVariableList& varlist)
 {
 	for (auto var : varlist.m_list) {
 		if (find(var->m_name)) {
-			//TODO Выдать сообщение
-			continue;
+			return false;
 		}
-
-		add(var->m_name, var->m_type, var->m_flags | rVariable::Flags::EXTERNAL, nullptr, var->m_unit, var->m_access);
+		add(var);
 	}
+	return true;
 }
-
 
 //
 const rVariable* rVariableList::find(const string &name)

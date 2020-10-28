@@ -47,7 +47,7 @@
 extern rSafityValue<DINT> gReboot;
 
 
-rDataManager::rDataManager() : Live(LIVE_UNDEF), Config()
+rDataManager::rDataManager() : rVariableClass(Mutex), Live(LIVE_UNDEF), Config()
 {
 	RTTI             = "rDataManager";
 	SysVar.Ver.Major = TRITONN_VERSION_MAJOR;
@@ -73,101 +73,6 @@ rDataManager::~rDataManager()
 //
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-//-------------------------------------------------------------------------------------------------
-// Получение данных от менеджера данных
-UDINT rDataManager::get(rSnapshot& snapshot)
-{
-	char buffer[8] = {0};
-
-	rLocker locker(Mutex); locker.Nop();
-
-	for (auto item : snapshot) {
-		if (!item->isToAssign() || !item->getVariable()) {
-			continue;
-		}
-
-		// Переменная невидимая, а уровень доступа не админ и не СА
-		if (item->getVariable()->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
-			item->setNotFound();
-			continue;
-		}
-
-		if (item->getVariable()->getBuffer(buffer)) {
-			item->setBuffer(buffer);
-			item->m_status = rSnapshotItem::Status::ASSIGNED;
-		}
-	}
-
-	return TRITONN_RESULT_OK;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-// Запись данных в менеджер данных
-UDINT rDataManager::set(rSnapshot& snapshot)
-{
-	char buffer[8] = {0};
-
-	rLocker locker(Mutex); locker.Nop();
-
-	for (auto item : snapshot) {
-		if (!item->isToWrite() || !item->getVariable()) {
-			continue;
-		}
-
-		// Переменная невидимая, а уровень доступа не админ и не СА
-		if (item->getVariable()->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
-			item->setNotFound();
-			continue;
-		}
-
-		// Переменная только для чтения
-		if (item->getVariable()->isReadonly()) {
-			if (item->getVariable()->isSUWrite()) {
-				if (0 == (snapshot.getAccess() & ACCESS_SA)) {
-					item->setReadonly();
-					continue;
-				}
-			} else {
-				item->setReadonly();
-				continue;
-			}
-		}
-
-		if ((item->getVariable()->getAccess() & snapshot.getAccess()) != item->getVariable()->getAccess()) {
-			item->setAccessDenied();
-			//TODO Выдать сообщение
-			continue;
-		}
-
-		if (item->getBuffer(buffer)) {
-			item->getVariable()->setBuffer(buffer);
-			item->m_status = rSnapshotItem::Status::WRITED;
-		}
-	}
-
-	return TRITONN_RESULT_OK;
-}
-
-
-UDINT rDataManager::getAllVariables(rSnapshot& snapshot)
-{
-	rLocker locker(Mutex); UNUSED(locker);
-
-	snapshot.clear();
-
-	for (auto var : m_listVariables)
-	{
-		if (var->isHide()) {
-			continue;
-		}
-
-		snapshot.add(var);
-	}
-
-	return TRITONN_RESULT_OK;
-}
 
 
 //-------------------------------------------------------------------------------------------------
