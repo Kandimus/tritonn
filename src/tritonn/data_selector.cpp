@@ -244,31 +244,31 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	rSource::generateVars(list);
 
-	list.add(Alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L_, &Select.Value, U_DIMLESS, ACCESS_SELECT);
-	list.add(Alias + ".inputcount", TYPE_UINT , rVariable::Flags::R____, &CountInputs , U_DIMLESS, 0);
-	list.add(Alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS___, &Setup.Value , U_DIMLESS, ACCESS_SA);
-	list.add(Alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L_, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
+	list.add(Alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L, &Select.Value, U_DIMLESS, ACCESS_SELECT);
+	list.add(Alias + ".inputcount", TYPE_UINT , rVariable::Flags::R___, &CountInputs , U_DIMLESS, 0);
+	list.add(Alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value , U_DIMLESS, ACCESS_SA);
+	list.add(Alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
 
-	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R____, &Fault       , U_DIMLESS, 0);
+	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault       , U_DIMLESS, 0);
 
 	// Мультиселектор
 	if(Setup.Value & SELECTOR_SETUP_MULTI)
 	{
-		list.add(Alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R____, &CountGroups , U_DIMLESS, 0);
+		list.add(Alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0);
 
 		for(UDINT grp = 0; grp < CountGroups; ++grp)
 		{
 			alias_unit   = String_format("%s.%s.keypad.unit" , Alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", Alias.c_str(), NameInput[grp].c_str());
 
-			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__L_,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0);
-			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___L_, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD);
+			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0);
+			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___L, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD);
 		}
 	}
 	else
 	{
-		list.add(Alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L_,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
-		list.add(Alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L_, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
+		list.add(Alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
+		list.add(Alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;

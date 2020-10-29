@@ -22,7 +22,8 @@
 #include "log_manager.h"
 #include "xml_util.h"
 #include "data_manager.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "users.h"
@@ -40,7 +41,7 @@ extern rVariable *gVariable;
 //
 // КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rModbusTCPSlaveManager::rModbusTCPSlaveManager()
-	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT), m_snapshot(this)
+	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT), m_snapshot(rDataManager::instance().getVariableClass())
 {
 	RTTI        = "rModbusTCPSlaveManager";
 	LogMask    |= LM_TERMINAL;
@@ -252,9 +253,7 @@ void rModbusTCPSlaveManager::Func_0x10 (rModbusTCPSlaveClient *client)
 		return;
 	}
 
-	rSnapshot snapshot;
-
-	snapshot.SetAccess(ACCESS_MASK_SA); //TODO тут нужен анализ на SecurityModbus
+	rSnapshot snapshot(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA); //TODO тут нужен анализ на SecurityModbus
 
 	for(UDINT ii = 0; ii < count;)
 	{
@@ -268,7 +267,7 @@ void rModbusTCPSlaveManager::Func_0x10 (rModbusTCPSlaveClient *client)
 			continue;
 		}
 
-		countregs = TypeCountReg(ss->GetVariable()->Type);
+		countregs = TypeCountReg(ss->getVariable()->getType());
 		sizeregs  = countregs << 1;
 
 		if(countregs + ii >= count)
@@ -278,12 +277,12 @@ void rModbusTCPSlaveManager::Func_0x10 (rModbusTCPSlaveClient *client)
 
 		SwapBuffer(values + ii * 2, sizeregs);
 
-		snapshot.Add(ss->GetVariable()->Name, values + ii * 2);
+		snapshot.add(ss->getVariable()->getName(), values + ii * 2);
 
 		ii += countregs;
 	}
 
-	rDataManager::Instance().Set(snapshot);
+	snapshot.set();
 
 	// Ответ
 	memcpy(answe, client->Buff, 4);
@@ -347,9 +346,8 @@ void rModbusTCPSlaveManager::SwapBuffer(void *value, UDINT size)
 
 rSnapshotItem *rModbusTCPSlaveManager::FindSnapshotItem(UINT addr)
 {
-	for(UDINT ii = 0; ii < ModbusLink.size(); ++ii)
-	{
-		if(ModbusLink[ii].Address == addr) return ModbusLink[ii].Item;
+	for(auto& item : ModbusLink) {
+		if(item.Address == addr) return item.m_item;
 	}
 
 	return nullptr;
@@ -398,35 +396,30 @@ UDINT rModbusTCPSlaveManager::CheckVars(rDataConfig &cfg)
 {
 	UDINT address = 0;
 
-	for(UDINT ii = 0; ii < TempLink.size(); ++ii)
-	{
-		rTempLink  *tlink = &TempLink[ii];
+	for(auto& tlink : TempLink) {
 		rModbusLink link;
 
-		Snapshot.Add(tlink->VarName);
-
-		if(nullptr == Snapshot.Back()->GetVariable())
-		{
-			cfg.ErrorLine = tlink->LineNum;
-			cfg.ErrorStr  = tlink->VarName;
+		if(m_snapshot.add(tlink.VarName) == nullptr) {
+			cfg.ErrorLine = tlink.LineNum;
+			cfg.ErrorStr  = tlink.VarName;
 			cfg.ErrorID   = DATACFGERR_INTERFACES_NF_VAR;
 
 			return cfg.ErrorID;
 		}
 
-		if(tlink->Address)
+		if(tlink.Address)
 		{
-			address = tlink->Address;
+			address = tlink.Address;
 		}
 
 		link.Address = address;
-		link.Item    = Snapshot.Back();
-		address     += TypeCountReg(link.Item->GetVariable()->Type);
+		link.m_item  = m_snapshot.last();
+		address     += TypeCountReg(link.m_item->getVariable()->getType());
 
 		if(address > 0x0000FFFF)
 		{
-			cfg.ErrorLine = tlink->LineNum;
-			cfg.ErrorStr  = tlink->VarName;
+			cfg.ErrorLine = tlink.LineNum;
+			cfg.ErrorStr  = tlink.VarName;
 			cfg.ErrorID   = DATACFGERR_INTERFACES_ADDROVERFLOW;
 
 			return cfg.ErrorID;
@@ -452,8 +445,8 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus()
 		return result;
 	}
 
-	tinyxml2::XMLDocument  doc;
-	tinyxml2::XMLElement  *xml_modbus;
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* xml_modbus;
 
 	if(tinyxml2::XML_SUCCESS != doc.Parse(filetext.c_str()))
 	{
@@ -471,12 +464,12 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus()
 		UDINT       err = 0;
 		rModbusLink link;
 
-		Snapshot.Add(rDataConfig::GetTextString(xml_item, "", err));
+		m_snapshot.add(rDataConfig::GetTextString(xml_item, "", err));
 
 		link.Address = rDataConfig::GetAttributeUDINT(xml_item, "addr", 0xFFFF);
-		link.Item    = Snapshot.Back();
+		link.m_item  = m_snapshot.last();
 
-		if(link.Address == 0xFFFF || nullptr == link.Item->GetVariable())
+		if(link.Address == 0xFFFF || nullptr == link.m_item->getVariable())
 		{
 			return -2;
 		}
@@ -517,12 +510,12 @@ tinyxml2::XMLElement *rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement *el
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rModbusTCPSlaveManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
+UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
 {
 	UDINT  port = 0;
 	string ip   = "";
 
-	rInterface::LoadFromXML(xml_root, cfg);
+	rInterface::loadFromXML(xml_root, cfg);
 
 	Alias    = "comms.modbus." + Alias;
 	port     = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
@@ -630,13 +623,13 @@ UDINT rModbusTCPSlaveManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 }
 
 
-UDINT rModbusTCPSlaveManager::GenerateVars(vector<rVariable *> &list)
+UDINT rModbusTCPSlaveManager::generateVars(rVariableList& list)
 {
-	list.push_back(new rVariable(Alias + ".status" , TYPE_UINT , VARF_R___, &Live       , U_DIMLESS, 0));
-	list.push_back(new rVariable(Alias + ".tx"     , TYPE_UDINT, VARF_R___, &Tx         , U_DIMLESS, 0));
-	list.push_back(new rVariable(Alias + ".rx"     , TYPE_UDINT, VARF_R___, &Rx         , U_DIMLESS, 0));
-	list.push_back(new rVariable(Alias + ".errorrx", TYPE_USINT, VARF_R___, &RxError    , U_DIMLESS, 0));
-	list.push_back(new rVariable(Alias + ".clients", TYPE_USINT, VARF_R___, &ClientCount, U_DIMLESS, 0));
+	list.add(Alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0);
+	list.add(Alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0);
+	list.add(Alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0);
+	list.add(Alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0);
+	list.add(Alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }

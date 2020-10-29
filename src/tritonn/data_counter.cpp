@@ -255,11 +255,11 @@ UDINT rCounter::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".setcount", TYPE_UDINT, rVariable::Flags::RSH__, &SetCount   , U_DIMLESS, ACCESS_SA);
-	list.add(Alias + ".Count"   , TYPE_UINT , rVariable::Flags::R_H__, &Count      , U_DIMLESS, 0);
-	list.add(Alias + ".Setup"   , TYPE_UINT , rVariable::Flags::RS_L_, &Setup.Value, U_DIMLESS, ACCESS_SA);
+	list.add(Alias + ".setcount", TYPE_UDINT, rVariable::Flags::RSH_, &SetCount   , U_DIMLESS, ACCESS_SA);
+	list.add(Alias + ".Count"   , TYPE_UINT , rVariable::Flags::R_H_, &Count      , U_DIMLESS, 0);
+	list.add(Alias + ".Setup"   , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value, U_DIMLESS, ACCESS_SA);
 
-	list.add(Alias + ".fault"   , TYPE_UDINT, rVariable::Flags::R____, &Fault      , U_DIMLESS, 0);
+	list.add(Alias + ".fault"   , TYPE_UDINT, rVariable::Flags::R___, &Fault      , U_DIMLESS, 0);
 
 	return 0;
 }

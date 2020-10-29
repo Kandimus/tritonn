@@ -35,16 +35,16 @@
 										case TYPE_REAL : *(REAL  *)m_data = static_cast< REAL>(val); return; \
 										case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>(val); return; \
 										case TYPE_STRID: *(STRID *)m_data = STRID(val); return; \
-										default: m_status = Status::NOTASSIGN; clearData(); return; \
+										default: m_status = Status::ERROR; clearData(); return; \
 									} \
 								} catch(...) { \
-									m_status = Status::NOTASSIGN; \
+									m_status = Status::ERROR; \
 									clearData(); \
 								} \
 							}
 
 #define SNAPSHOT_GET(x)		{ \
-								if ((m_status != Status::ASSIGN && m_status != Status::WRITED) || nullptr == m_var) return x(0); \
+								if ((m_status != Status::ASSIGNED && m_status != Status::WRITED) || nullptr == m_var) return x(0); \
 								try { \
 									switch (m_var->getType()) { \
 										case TYPE_USINT: return x(*(USINT *)m_data); \
@@ -56,10 +56,10 @@
 										case TYPE_REAL : return static_cast<x>(*(REAL  *)m_data); \
 										case TYPE_LREAL: return x(*(LREAL *)m_data); \
 										case TYPE_STRID: return x(*(STRID *)m_data); \
-										default: m_status = Status::NOTASSIGN; return static_cast<x>(0); \
+										default: m_status = Status::ERROR; return static_cast<x>(0); \
 									} \
 								} catch(...) { \
-									m_status = Status::NOTASSIGN; return static_cast<x>(0); \
+									m_status = Status::ERROR; return static_cast<x>(0); \
 								} \
 							}
 
@@ -74,7 +74,7 @@ rSnapshotItem::rSnapshotItem(const rSnapshotItem& snapshot)
 rSnapshotItem::rSnapshotItem(const rVariable* var)
 {
 	m_var    = var;
-	m_status = Status::NOTASSIGN;
+	m_status = Status::TOASSIGN;
 }
 
 rSnapshotItem::rSnapshotItem(const rVariable* var, SINT  val) { SNAPSHOT_ASSIGN }
@@ -116,7 +116,7 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, const string &val)
 						case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>( number); break;
 						case TYPE_STRID: *(STRID *)m_data = static_cast<STRID>( number); break;
 						default:
-							m_status = Status::NOTASSIGN;
+							m_status = Status::ERROR;
 							clearData();
 							break;
 					}
@@ -137,14 +137,14 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, const string &val)
 			case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>(std::stod (val.c_str())); break;\
 			case TYPE_STRID: *(STRID *)m_data = static_cast<STRID>(std::stoul(val.c_str())); break;\
 			default:
-				m_status = Status::NOTASSIGN;
+				m_status = Status::ERROR;
 				clearData();
 				break;
 		}
 	}
 	catch(...)
 	{
-		m_status = Status::NOTASSIGN;
+		m_status = Status::ERROR;
 		clearData();
 	}
 }
@@ -157,7 +157,7 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, void *buf)
 	}
 
 	m_var    = var;
-	m_status = Status::ASSIGN;
+	m_status = Status::ASSIGNED;
 
 	memcpy(m_data, buf, EPT_SIZE[m_var->getType()]);
 }
@@ -182,7 +182,7 @@ STRID rSnapshotItem::getValueSTRID() {SNAPSHOT_GET(STRID);}
 
 std::string rSnapshotItem::getValueString()
 {
-	if ((m_status != Status::ASSIGN && m_status != Status::WRITED) || m_var == nullptr) {
+	if ((m_status != Status::ASSIGNED && m_status != Status::WRITED) || m_var == nullptr) {
 		return "";
 	}
 
@@ -200,38 +200,24 @@ std::string rSnapshotItem::getValueString()
 			case TYPE_LREAL: return String_format("%#g" , *(LREAL *)m_data); break;
 			case TYPE_STRID: return String_format("%u"  , *(UDINT *)m_data); break;
 			default:
-				m_status = Status::NOTASSIGN;
+				m_status = Status::ERROR;
 				return "";
 		}
 	}
 	catch(...)
 	{
-		m_status = Status::NOTASSIGN;
+		m_status = Status::ERROR;
 		return "";
 	}
 }
 
-
-bool rSnapshotItem::getBuffer(void *buffer)
+bool rSnapshotItem::getBuffer(void *buffer) const
 {
-	if (m_status != Status::TOWRITE && m_status != Status::ASSIGNED && m_status != Status::WRITED) {
-		m_status = Status::ERROR;
+	if (!isAssigned() || !isWrited() || !isToWrite()) {
 		return false;
 	}
 
 	memcpy(buffer, m_data, getSizeVar());
-	return true;
-}
-
-bool rSnapshotItem::setBuffer(void *buffer)
-{
-	if (m_status != Status::TOASSIGN) {
-		m_status = Status::ERROR;
-		return false;
-	}
-
-	memcpy(m_data, buffer, getSizeVar());
-	m_status = Status::ASSIGN;
 	return true;
 }
 

@@ -989,7 +989,7 @@ UDINT rDataConfig::LoadModbusTCP(tinyxml2::XMLElement *root)
 	UDINT                   result   = TRITONN_RESULT_OK;
 	rModbusTCPSlaveManager *slavetcp = new rModbusTCPSlaveManager();
 
-	result = slavetcp->LoadFromXML(root, *this);
+	result = slavetcp->loadFromXML(root, *this);
 	slavetcp->Pause.Set(-1);
 
 	if(TRITONN_RESULT_OK != result)
@@ -1028,7 +1028,7 @@ UDINT rDataConfig::LoadOPCUA(tinyxml2::XMLElement *root)
 	}
 
 	opcua  = new rOPCUAManager();
-	result = opcua->LoadFromXML(xml_opcua, *this);
+	result = opcua->loadFromXML(xml_opcua, *this);
 	opcua->Pause.Set(-1);
 
 	if(TRITONN_RESULT_OK != result)
@@ -1209,7 +1209,7 @@ void rDataConfig::SaveWeb()
 		rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 		TRACEERROR("Can't save json tree");
 
-		rDataManager::Instance().DoHalt(HALT_REASON_WEBFILE | result);
+		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
 		return;
 	}
 
@@ -1242,7 +1242,7 @@ void rDataConfig::SaveWeb()
 			rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 			TRACEERROR("Can't save json tree");
 
-			rDataManager::Instance().DoHalt(HALT_REASON_WEBFILE | result);
+			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
 			return;
 		}
 	}

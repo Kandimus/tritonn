@@ -72,7 +72,7 @@ public:
 
 	std::string saveToCSV();
 
-	friend bool operator < (const rVariable* left, const rVariable* right);
+	bool operator < (const rVariable* right) { return this->m_hash < right->m_hash; };
 
 protected:
 	rVariable(rVariable *var);

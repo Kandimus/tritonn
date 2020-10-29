@@ -122,10 +122,10 @@ int main(int argc, const char **argv)
 
 	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
-	rDataManager::Instance().LoadConfig();
-	rDataManager::Instance().Run(500);
+	rDataManager::instance().LoadConfig();
+	rDataManager::instance().Run(500);
 
-	rThreadMaster::instance().Add(&rDataManager::Instance(), TMF_NONE, "system.data");
+	rThreadMaster::instance().Add(&rDataManager::instance(), TMF_NONE, "system.data");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ int main(int argc, const char **argv)
 
 	rThreadMaster::instance().Add(&rJSONManager::Instance(), TMF_NONE, "system.json");
 
-	rDataManager::Instance().StartInterfaces();
+	rDataManager::instance().StartInterfaces();
 
 	//
 	// Событие о запуске
@@ -183,8 +183,6 @@ int main(int argc, const char **argv)
 		}
 	}
 
-	rVariable::DeleteVariables();
-			
 	mSleep(500);
 	
 	TRACEERROR("Все потоки закрыты!");

@@ -370,7 +370,7 @@ UDINT rDataManager::SaveKernel()
 	fprintf(file, "</objects>\n");
 
 	fprintf(file, "<interfaces>\n");
-	mbSlTCP->SaveKernel(file, "ModbusSlaveTCP", "Модбас слейв TCP");
+	mbSlTCP->saveKernel(file, "ModbusSlaveTCP", "Модбас слейв TCP");
 //	opcua->SaveKernel(file, "OPCUA", "OPC UA server");
 	fprintf(file, "</interfaces>\n");
 

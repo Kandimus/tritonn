@@ -30,19 +30,19 @@ public:
 	rSnapshot(rVariableClass* varclass, UDINT access);
 	virtual ~rSnapshot();
 
-	const rVariable *add(const rSnapshotItem& snapshot);
-	const rVariable *add(const std::string& name           );
-	const rVariable *add(const std::string& name, SINT  val);
-	const rVariable *add(const std::string& name, USINT val);
-	const rVariable *add(const std::string& name, INT   val);
-	const rVariable *add(const std::string& name, UINT  val);
-	const rVariable *add(const std::string& name, DINT  val);
-	const rVariable *add(const std::string& name, UDINT val);
-	const rVariable *add(const std::string& name, REAL  val);
-	const rVariable *add(const std::string& name, LREAL val);
-	const rVariable *add(const std::string& name, STRID val);
-	const rVariable *add(const std::string& name, const std::string &val);
-	const rVariable *add(const std::string& name, void* buf);
+	const rVariable* add(const rSnapshotItem& snapshot);
+	const rVariable* add(const std::string& name           );
+	const rVariable* add(const std::string& name, SINT  val);
+	const rVariable* add(const std::string& name, USINT val);
+	const rVariable* add(const std::string& name, INT   val);
+	const rVariable* add(const std::string& name, UINT  val);
+	const rVariable* add(const std::string& name, DINT  val);
+	const rVariable* add(const std::string& name, UDINT val);
+	const rVariable* add(const std::string& name, REAL  val);
+	const rVariable* add(const std::string& name, LREAL val);
+	const rVariable* add(const std::string& name, STRID val);
+	const rVariable* add(const std::string& name, const std::string &val);
+	const rVariable* add(const std::string& name, void* buf);
 
 	rSnapshotItem* operator[](const UDINT index);
 	rSnapshotItem* operator()(const std::string& name);

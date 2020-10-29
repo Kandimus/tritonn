@@ -20,7 +20,8 @@
 #include "data_link.h"
 #include "data_config.h"
 #include "event_manager.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_source.h"
 #include "text_manager.h"
 #include "xml_util.h"
@@ -40,8 +41,8 @@ rSource::rSource()
 
 rSource::~rSource()
 {
-	Inputs.clear();
-	Outputs.clear();
+	m_inputs.clear();
+	m_outputs.clear();
 }
 
 
@@ -49,22 +50,17 @@ rSource::~rSource()
 // Поиск выходного линка по его имени
 rLink *rSource::GetOutputByName(const string &name)
 {
-	if(Outputs.empty())
-	{
+	if(m_outputs.empty()) {
 		return nullptr;
 	}
 
-	if(name.empty())
-	{
-		return Outputs[0];
+	if(name.empty()) {
+		return m_outputs[0];
 	}
 
-	for(UDINT ii = 0; ii < Outputs.size(); ++ii)
-	{
-		string aaa = Outputs[ii]->IO_Name;
-		if(name == Outputs[ii]->IO_Name)
-		{
-			return Outputs[ii];
+	for(auto item : m_outputs) {
+		if(name == item->IO_Name) {
+			return item;
 		}
 	}
 
@@ -170,8 +166,7 @@ UDINT rSource::Calculate()
 
 UDINT rSource::PostCalculate()
 {
-	for (auto link : m_outputs)
-	{
+	for (auto link : m_outputs) {
 		if (link->Setup & LINK_SETUP_INPUT) {
 			continue;
 		}

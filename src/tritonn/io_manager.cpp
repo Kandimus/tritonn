@@ -76,7 +76,7 @@ rThreadStatus rIOManager::Proccesing()
 }
 
 
-UDINT rIOManager::generateVars(rVariable& list)
+UDINT rIOManager::generateVars(rVariableList& list)
 {
 	//list.push_back(new rVariable("hardware.count", TYPE_USINT , VARF_R___, &m_moduleCount, U_DIMLESS , 0));
 	for (auto module : m_modules) {

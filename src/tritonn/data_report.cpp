@@ -283,10 +283,10 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 {
 	string name = "";
 
-	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS___, &Mark, U_DIMLESS, ACCESS_SA);
+	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS__, &Mark, U_DIMLESS, ACCESS_SA);
 
-	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS___, ACCESS_SA, list);
-	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS___, ACCESS_SA, list);
+	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS__, ACCESS_SA, list);
+	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS__, ACCESS_SA, list);
 
 	// Формируем переменые
 	for(UDINT ii = 0; ii < AverageItems.size(); ++ii)
@@ -295,14 +295,14 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 
 		name = prefix + tot->Name + ".total.";
 
-		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA);
-		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA);
-		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS___, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA);
-		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS___, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA);
+		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA);
+		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA);
+		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA);
+		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA);
 
 		name = prefix + tot->Name + ".";
 
@@ -310,7 +310,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 		{
 			rReportItem *itm = tot->Items[jj];
 
-			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS___, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
+			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
 		}
 	}
 
@@ -320,7 +320,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 	{
 		rReportItem *itm = SnapshotItems[ii];
 
-		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS___, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
+		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
 	}
 }
 
@@ -335,19 +335,19 @@ UDINT rReport::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Общие переменные для всех типов отчетов
-	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R____, &Type         , U_DIMLESS, 0);
-	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::_____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT);
+	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R___, &Type         , U_DIMLESS, 0);
+	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT);
 
-	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::_____, ACCESS_REPORT, list);
+	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::____, ACCESS_REPORT, list);
 
 	if(REPORT_PERIODIC == Type)
 	{
-		list.add(name + "period", TYPE_UINT, rVariable::Flags::_____, &Period, U_DIMLESS, 0);
+		list.add(name + "period", TYPE_UINT, rVariable::Flags::____, &Period, U_DIMLESS, 0);
 	}
 	else
 	{
-		list.add(name + "command", TYPE_USINT, rVariable::Flags::_____, &Command, U_DIMLESS, ACCESS_BATCH);
-		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R____, &Status , U_DIMLESS, 0);
+		list.add(name + "command", TYPE_USINT, rVariable::Flags::____, &Command, U_DIMLESS, ACCESS_BATCH);
+		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R___, &Status , U_DIMLESS, 0);
 	}
 
 	Present.generateVars  (name + "present."  , list);

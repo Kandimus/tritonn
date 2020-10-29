@@ -49,7 +49,7 @@ struct rModbusSwap
 };
 
 
-class rModbusTCPSlaveManager: public rInterface, public rTCPClass, public rVariableClass
+class rModbusTCPSlaveManager: public rInterface, public rTCPClass//, public rVariableClass
 {
 public:
 	rModbusTCPSlaveManager();
@@ -64,7 +64,7 @@ protected:
 
 // Наследование от rInterface
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT CheckVars(rDataConfig &cfg);
 	virtual UDINT StartServer();

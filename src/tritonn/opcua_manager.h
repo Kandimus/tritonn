@@ -22,10 +22,8 @@
 #include "data_interface.h"
 #include "data_snapshot.h"
 
-
-
-using std::vector;
-
+class rVariableList;
+class rDataConfig;
 
 struct rOPCVarLink
 {
@@ -49,9 +47,8 @@ public:
 
 // Наследование от rInterface
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
-	//	virtual UDINT SaveKernel(FILE *file, const string &objname, const string &comment);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
+	virtual UDINT generateVars(rVariableList &list);
 	virtual UDINT CheckVars(rDataConfig &cfg);
 	virtual UDINT StartServer();
 	virtual rThreadClass *GetThreadClass();
@@ -77,14 +74,14 @@ private:
 	static const string      Lang;
 	static const string      RootName;
 
-	vector<rOPCVarLink>      OPCVarLink;
-	rSnapshot                Snapshot;
+	std::vector<rOPCVarLink> OPCVarLink;
+	rSnapshot                m_snapshot;
 
 protected:
-	const UA_DataType *GetTypeUA(const rVariable *var);
+	const UA_DataType *GetTypeUA(const rVariable* var);
 	UDINT AddAllVariables();
-	UDINT AddVariable(const rSnapshotItem *ssitem);
-	UDINT AddFolder(const string &path);
+	UDINT AddVariable(const rSnapshotItem* ssitem);
+	UDINT AddFolder(const std::string& path);
 };
 
 

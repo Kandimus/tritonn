@@ -57,7 +57,7 @@ public:
 	UINT getRange() const;
 
 public:
-	virtual UDINT generateVars(std::string& name, rVariableList& list);
+	virtual UDINT generateVars(const std::string& name, rVariableList& list);
 	virtual UDINT simulate();
 
 public:

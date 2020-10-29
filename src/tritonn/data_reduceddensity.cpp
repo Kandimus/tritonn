@@ -156,7 +156,7 @@ UDINT rReducedDens::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(Alias + ".fault", TYPE_UDINT, rVariable::Flags::R____, &Fault, U_DIMLESS, 0);
+	list.add(Alias + ".fault", TYPE_UDINT, rVariable::Flags::R___, &Fault, U_DIMLESS, 0);
 
 	return 0;
 }

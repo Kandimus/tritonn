@@ -18,7 +18,10 @@
 #include <sys/sysinfo.h>
 #include "locker.h"
 #include "tickcount.h"
-#include "data_variable.h"
+//#include "data_manager.h"
+#include "variable_item.h"
+#include "variable_list.h"
+#include "variable_class.h"
 #include "threadmaster.h"
 #include "log_manager.h"
 #include "stringex.h"
@@ -26,9 +29,9 @@
 #include "units.h"
 
 
-rThreadMaster::rThreadMaster()
+rThreadMaster::rThreadMaster() : rVariableClass(Mutex)
 {
-	RTTI          = "rThreadMaster";
+	RTTI = "rThreadMaster";
 }
 
 
@@ -45,23 +48,23 @@ rThreadMaster::~rThreadMaster()
 
 //-------------------------------------------------------------------------------------------------
 // Получение данных от менеджера данных
-UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
+UDINT rThreadMaster::add(rThreadClass *thread, UDINT flags, const std::string& alias)
 {
-	rLocker lock(Mutex); lock.Nop();
+	rLocker lock(Mutex); UNUSED(lock);
 
-	rThreadInfo *info = new rThreadInfo();
+	rInfo *info = new rInfo();
 
-	info->Class           = thread;
-	info->Flags           = flags;
-	info->Thread          = thread->GetThread();
-	info->Counter         = 0;
-	info->CntAvrMax       = 0;
-	info->TimeAvr.IdleMin = 0xFFFFFFFF;
-	info->TimeAvr.WorkMin = 0xFFFFFFFF;
+	info->m_class           = thread;
+	info->m_flags           = flags;
+	info->m_thread          = thread->GetThread();
+	info->m_counter         = 0;
+	info->m_cntAvrMax       = 0;
+	info->m_timeAvr.IdleMin = 0xFFFFFFFF;
+	info->m_timeAvr.WorkMin = 0xFFFFFFFF;
 
-	List.push_back(info);
+	m_list.push_back(info);
 
-	GenerateVars(info, alias);
+	generateVars(info, alias);
 
 	if(flags & TMF_NOTRUN) return TRITONN_RESULT_OK;
 
@@ -69,16 +72,16 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 	{
 		mSleep(50);
 
-		info->Status = info->Class->GetStatus();
+		info->m_status = info->m_class->GetStatus();
 
-		if(info->Status == rThreadStatus::FINISHED)
+		if(info->m_status == rThreadStatus::FINISHED)
 		{
 			TRACEERROR("Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
 			return 1;
 		}
 	}
-	while(info->Status != rThreadStatus::RUNNING);
+	while(info->m_status != rThreadStatus::RUNNING);
 
 	return TRITONN_RESULT_OK;
 }
@@ -89,25 +92,25 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 //-------------------------------------------------------------------------------------------------
 //
-void rThreadMaster::CloseAll()
+void rThreadMaster::closeAll()
 {
-	for (DINT ii = List.size() - 1; ii >= 0; --ii) {
-		string name = List[ii]->Class->GetRTTI();
+	for (DINT ii = m_list.size() - 1; ii >= 0; --ii) {
+		std::string name = m_list[ii]->m_class->GetRTTI();
 
-		List[ii]->Class->Finish();
-		pthread_join(*List[ii]->Thread, NULL);
+		m_list[ii]->m_class->Finish();
+		pthread_join(*m_list[ii]->m_thread, NULL);
 
-		if((List[ii]->Flags & TMF_DELETE) && List[ii]->Class)
+		if((m_list[ii]->m_flags & TMF_DELETE) && m_list[ii]->m_class)
 		{
-			delete List[ii]->Class;
+			delete m_list[ii]->m_class;
 		}
 
-		delete List[ii];
+		delete m_list[ii];
 
 		TRACEERROR("--------- Поток %s закрыт!", name.c_str());
 	}
 
-	List.clear();
+	m_list.clear();
 
 	Finish();
 }

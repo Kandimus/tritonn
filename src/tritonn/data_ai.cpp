@@ -404,15 +404,15 @@ UDINT rAI::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".code"      , TYPE_UINT , rVariable::Flags::R__L_, &Code             , U_DIMLESS , 0);
-	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L_, &KeypadValue.Value, Value.Unit, ACCESS_KEYPAD);
-	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L_, &m_scale.Min.Value, Value.Unit, ACCESS_SCALES);
-	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L_, &m_scale.Max.Value, Value.Unit, ACCESS_SCALES);
-	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L_, &m_setup.Value    , U_DIMLESS , ACCESS_SA);
-	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L_, &Mode             , U_DIMLESS , ACCESS_KEYPAD);
-	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R____, &m_status         , U_DIMLESS , 0);
+	list.add(Alias + ".code"      , TYPE_UINT , rVariable::Flags::R__L, &Code             , U_DIMLESS , 0);
+	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, Value.Unit, ACCESS_KEYPAD);
+	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, Value.Unit, ACCESS_SCALES);
+	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, Value.Unit, ACCESS_SCALES);
+	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS , ACCESS_SA);
+	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode             , U_DIMLESS , ACCESS_KEYPAD);
+	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS , 0);
 
-	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R____, &Fault            , U_DIMLESS , 0);
+	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS , 0);
 
 	return TRITONN_RESULT_OK;
 }

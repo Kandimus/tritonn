@@ -23,7 +23,7 @@ struct rPacketLoginData;
 struct rPacketSetData;
 struct rPacketGetData;
 
-class rTermManager: public rTCPClass, public rVariableClass
+class rTermManager: public rTCPClass//, public rVariableClass
 {
 public:
 	virtual ~rTermManager();

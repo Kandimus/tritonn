@@ -173,7 +173,7 @@ UDINT rLink::generateVars(rVariableList& list)
 	else
 	{
 		list.add(name + ".value", TYPE_LREAL, flags                  , &Value        , Unit     , 0);
-		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R____,  Unit.GetPtr(), U_DIMLESS, 0);
+		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___,  Unit.GetPtr(), U_DIMLESS, 0);
 
 		Limit.generateVars(list, name, Unit);
 	}

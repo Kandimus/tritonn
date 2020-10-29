@@ -17,6 +17,7 @@
 
 #include "def.h"
 
+class rVariable;
 class rVariableClass;
 class rSnapshot;
 
@@ -72,6 +73,7 @@ public:
 	const rVariable *getVariable() const { return m_var; }
 	Status           getStatus()   const { return m_status; }
 	UDINT            getSizeVar()  const;
+	bool             getBuffer(void *buffer) const;
 	void             reset();
 
 public:

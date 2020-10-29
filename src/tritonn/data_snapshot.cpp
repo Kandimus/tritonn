@@ -15,6 +15,7 @@
 
 #include "data_snapshot.h"
 #include "data_snapshot_item.h"
+#include "variable_item.h"
 #include "variable_class.h"
 
 
@@ -44,23 +45,26 @@ rSnapshot::~rSnapshot()
 }
 
 
-const rVariable *rSnapshot::add(const rSnapshotItem &snapshot        ) { m_list.push_back(new rSnapshotItem(snapshot )); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name                   ) { m_list.push_back(new rSnapshotItem(name     )); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, SINT          val)
+const rVariable* rSnapshot::add(const rSnapshotItem& snapshot)
 {
-	const rVariable* var = findVar(name);
-	m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable();
+	m_list.push_back(new rSnapshotItem(snapshot));
+	m_list.back()->m_status = rSnapshotItem::Status::UNDEF;
+
+	return m_list.back()->getVariable();
 }
-const rVariable *rSnapshot::Add(const string &name, USINT         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, INT           val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, UINT          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, DINT          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, UDINT         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, REAL          val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, LREAL         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, STRID         val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, const string &val) { m_list.push_back(new rSnapshotItem(name, val)); return m_list.back()->GetVariable(); }
-const rVariable *rSnapshot::Add(const string &name, void         *buf) { m_list.push_back(new rSnapshotItem(name, buf)); return m_list.back()->GetVariable(); }
+
+const rVariable *rSnapshot::add(const std::string& name                   ) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, SINT          val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, USINT         val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, INT           val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, UINT          val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, DINT          val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, UDINT         val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, REAL          val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, LREAL         val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, STRID         val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, const std::string &val) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, val)); return var; }
+const rVariable *rSnapshot::add(const std::string& name, void         *buf) { const rVariable* var = findVar(name); if (var) m_list.push_back(new rSnapshotItem(var, buf)); return var; }
 
 
 rSnapshotItem *rSnapshot::operator[](const UDINT index)
@@ -73,8 +77,8 @@ rSnapshotItem *rSnapshot::operator[](const UDINT index)
 rSnapshotItem* rSnapshot::operator()(const std::string& name)
 {
 	for (auto& item : m_list) {
-		if (item->GetVariable()) {
-			if (item->GetVariable()->Name == name) {
+		if (item->getVariable()) {
+			if (item->getVariable()->getName() == name) {
 				return item;
 			}
 		}
@@ -83,27 +87,27 @@ rSnapshotItem* rSnapshot::operator()(const std::string& name)
 	return nullptr;
 }
 
-rSnapshotItem* rSnapshot::Back() const
+rSnapshotItem* rSnapshot::last() const
 {
 	 return m_list.back();
 }
 
-UDINT rSnapshot::GetAccess() const
+UDINT rSnapshot::getAccess() const
 {
-	return Access;
+	return m_access;
 }
 
-void rSnapshot::SetAccess(UDINT access)
+void rSnapshot::setAccess(UDINT access)
 {
-	Access = access;
+	m_access = access;
 }
 
 
-void rSnapshot::ResetAssign()
+void rSnapshot::resetAssign()
 {
 	 for(auto &list : m_list)
 	{
-		list->ResetAssign();
+		list->reset();
 	}
 }
 

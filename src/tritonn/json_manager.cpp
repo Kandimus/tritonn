@@ -20,7 +20,8 @@
 #include "hash.h"
 #include "log_manager.h"
 #include "data_manager.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "users.h"
 #include "listconf.h"
@@ -388,15 +389,15 @@ string rJSONManager::Packet_REQ(cJSON *root)
 //
 string rJSONManager::Packet_DataGet(cJSON *root)
 {
-	rSnapshot  ss(0);
+	rSnapshot  ss(rDataManager::instance().getVariableClass());
 //	cJSON     *jtoken   = cJSON_GetObjectItem(root, JSONSTR_TOKEN);
 	cJSON     *jids     = cJSON_GetObjectItem(root, JSONSTR_IDS);
 //	rActivity *act      = nullptr;
 	// Ответ
-	cJSON     *answe    = cJSON_CreateObject();
-	cJSON     *response = cJSON_CreateObject();
-	cJSON     *data     = nullptr;
-	string     ts       = String_format("%L", timegm64(NULL));
+	cJSON*      answe    = cJSON_CreateObject();
+	cJSON*      response = cJSON_CreateObject();
+	cJSON*      data     = nullptr;
+	std::string ts       = String_format("%L", timegm64(NULL));
 
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_DATAGET));
@@ -426,24 +427,24 @@ string rJSONManager::Packet_DataGet(cJSON *root)
 	{
 		cJSON *jvar = cJSON_GetArrayItem(jids, ii);
 
-		ss.Add(jvar->valuestring);
+		ss.add(jvar->valuestring);
 	}
-	rDataManager::Instance().Get(ss);
+	ss.get();
 
 	// Заполняем ответ
 	for(DINT ii = 0; ii < cJSON_GetArraySize(jids); ++ii)
 	{
 		rSnapshotItem   *item = ss[ii];
-		const rVariable *var = item->GetVariable();
+		const rVariable *var = item->getVariable();
 
 		cJSON *avar = cJSON_CreateObject();
 		cJSON *jvar = cJSON_GetArrayItem(jids, ii);
 
 		cJSON_AddItemToObject(avar, JSONSTR_ID     , cJSON_CreateString(jvar->valuestring));
-		cJSON_AddItemToObject(avar, JSONSTR_VALUE  , cJSON_CreateNumber((item->GetStatus() == SS_STATUS_ASSIGN) ? item->GetValueLREAL() : 0.0));
-		cJSON_AddItemToObject(avar, JSONSTR_ACCVIS , cJSON_CreateBool  ((item->GetStatus() == SS_STATUS_ASSIGN) ? 1 : 0));
-		cJSON_AddItemToObject(avar, JSONSTR_ACCEDIT, cJSON_CreateBool  ((item->GetStatus() == SS_STATUS_ASSIGN) ? !(var->Flags & VARF_READONLY) : 0));
-		cJSON_AddItemToObject(avar, JSONSTR_SUCCESS, cJSON_CreateBool  ((item->GetStatus() == SS_STATUS_ASSIGN) ? 1 : 0));
+		cJSON_AddItemToObject(avar, JSONSTR_VALUE  , cJSON_CreateNumber(item->isAssigned() ? item->getValueLREAL() : 0.0));
+		cJSON_AddItemToObject(avar, JSONSTR_ACCVIS , cJSON_CreateBool  (item->isAssigned() ? 1 : 0));
+		cJSON_AddItemToObject(avar, JSONSTR_ACCEDIT, cJSON_CreateBool  (item->isAssigned() ? !var->isReadonly() : 0));
+		cJSON_AddItemToObject(avar, JSONSTR_SUCCESS, cJSON_CreateBool  (item->isAssigned()  ? 1 : 0));
 
 		cJSON_AddItemToArray(data, avar);
 	}
@@ -455,7 +456,7 @@ string rJSONManager::Packet_DataGet(cJSON *root)
 
 string rJSONManager::Packet_DataSet(cJSON *root)
 {
-	rSnapshot  ss;
+	rSnapshot  ss(rDataManager::instance().getVariableClass());
 	rActivity *act      = nullptr;
 	cJSON     *jids     = cJSON_GetObjectItem(root, JSONSTR_IDS);
 	cJSON     *jtoken   = cJSON_GetObjectItem(root, JSONSTR_TOKEN);
@@ -493,7 +494,7 @@ string rJSONManager::Packet_DataSet(cJSON *root)
 
 	UDINT local = (nullptr == jlocal) ? true : jlocal->valueint;
 
-	ss.SetAccess(act->User->GetAccess(local));
+	ss.setAccess(act->User->GetAccess(local));
 
 	// Заполняем snapshot требуемыми переменными
 	for(DINT ii = 0; ii < cJSON_GetArraySize(jids); ++ii)
@@ -502,9 +503,9 @@ string rJSONManager::Packet_DataSet(cJSON *root)
 		cJSON *jname  = cJSON_GetObjectItem(jvar, JSONSTR_ID);
 		cJSON *jvalue = cJSON_GetObjectItem(jvar, JSONSTR_VALUE);
 
-		ss.Add(jname->valuestring, string(jvalue->valuestring));
+		ss.add(jname->valuestring, string(jvalue->valuestring));
 	}
-	rDataManager::Instance().Set(ss);
+	ss.set();
 
 	// Разбираем запрос
 	for(DINT ii = 0; ii < cJSON_GetArraySize(jids); ++ii)
@@ -516,8 +517,8 @@ string rJSONManager::Packet_DataSet(cJSON *root)
 
 		cJSON_AddItemToObject(avar, JSONSTR_ID     , cJSON_CreateString(jname->valuestring));
 		cJSON_AddItemToObject(avar, JSONSTR_VALUE  , cJSON_CreateString(jvalue->valuestring));
-		cJSON_AddItemToObject(avar, JSONSTR_SUCCESS, cJSON_CreateBool  (ss[ii]->GetStatus() == SS_STATUS_WRITED));
-		cJSON_AddItemToObject(avar, JSONSTR_RESULT , cJSON_CreateNumber(ss[ii]->GetStatus()));
+		cJSON_AddItemToObject(avar, JSONSTR_SUCCESS, cJSON_CreateBool  (ss[ii]->isWrited()));
+		cJSON_AddItemToObject(avar, JSONSTR_RESULT , cJSON_CreateNumber(ss[ii]->getStatus()));
 
 		cJSON_AddItemToArray(data, avar);
 	}
@@ -677,8 +678,8 @@ string rJSONManager::Packet_Status(cJSON */*root*/)
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_ISTATUS));
 	cJSON_AddItemToObject(response, JSONSTR_TIME    , time);
 
-	rDataManager::Instance().GetState(state);
-	rDataManager::Instance().GetTime (sdt);
+	rDataManager::instance().GetState(state);
+	rDataManager::instance().GetTime (sdt);
 
 	// Выдаем уровень доступа
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateTrue());
@@ -710,8 +711,8 @@ string rJSONManager::Packet_Conf(cJSON */*root*/)
 	cJSON_AddItemToObject(response, JSONSTR_VERSION , jver);
 	cJSON_AddItemToObject(response, JSONSTR_CONFIG  , jconf);
 
-	rDataManager::Instance().GetConfigInfo(conf);
-	rDataManager::Instance().GetVersion   (ver);
+	rDataManager::instance().GetConfigInfo(conf);
+	rDataManager::instance().GetVersion   (ver);
 
 	// Выдаем уровень доступа
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS, cJSON_CreateTrue());
@@ -742,7 +743,7 @@ string rJSONManager::Packet_ListConf(cJSON */*root*/)
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_ILISTCONF));
 
-	if(LIVE_REBOOT_COLD != rDataManager::Instance().GetLiveStatus())
+	if(LIVE_REBOOT_COLD != rDataManager::instance().GetLiveStatus())
 	{
 		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
 		CreateErrorJSON(response, JSONERR_NOTCOLDSTART, "");
@@ -779,7 +780,7 @@ string rJSONManager::Packet_Restart (cJSON *root)
 	cJSON     *jrestart = cJSON_GetObjectItem(root, JSONSTR_RESTART);
 	cJSON     *jlocal   = cJSON_GetObjectItem(root, JSONSTR_LOCAL);
 	rActivity *act      = nullptr;
-	USINT      live     = rDataManager::Instance().GetLiveStatus();
+	USINT      live     = rDataManager::instance().GetLiveStatus();
 	string     conf     = "";
 	// ответ
 	cJSON     *answe    = cJSON_CreateObject();
@@ -836,7 +837,7 @@ string rJSONManager::Packet_Restart (cJSON *root)
 		}
 	}
 
-	UDINT result = rDataManager::Instance().Restart(jrestart->valueint, conf);
+	UDINT result = rDataManager::instance().Restart(jrestart->valueint, conf);
 
 	// Выдаем результат
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateBool(0 == result));

@@ -17,6 +17,8 @@
 #include "xml_util.h"
 #include "data_config.h"
 #include "variable_item.h"
+#include "variable_list.h"
+#include "units.h"
 
 
 std::string rIOBaseModule::m_rtti = "BaseModule";
@@ -38,7 +40,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rIOBaseModule::generateVars(std::string& prefix, rVariableList& list)
+UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list)
 {
 	std::string p = prefix + "." + m_name + ".";
 
