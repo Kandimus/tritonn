@@ -37,7 +37,7 @@ public:
 // Методы
 public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
-	UDINT GenerateVars(vector<rVariable* > &list);
+	UDINT generateVars(rVariable& list);
 	UDINT SaveKernel(FILE* file);
 
 	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);

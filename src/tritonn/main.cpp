@@ -8,7 +8,7 @@
 #include "io_manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
-#include "data_variable.h"
+//#include "data_variable.h"
 #include "text_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"
@@ -95,7 +95,7 @@ int main(int argc, const char **argv)
 	rLogManager::Instance().Terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 
 	TRACEERROR("------------------------------------------");
-	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
+	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
 	rLogManager::Instance().StartServer();
 	rLogManager::Instance().Run(10);
 

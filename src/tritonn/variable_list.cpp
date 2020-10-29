@@ -45,43 +45,6 @@ void rVariableList::add(const std::string& name, TT_TYPE type, UINT flags, void*
 	m_list.push_back(new rVariable(name, type, flags, pointer, unit, access));
 }
 
-void rVariableList::add(const rVariable* var)
-{
-	if (!var) {
-		return;
-	}
-
-	const rVariable* localvar = find(name);
-	if (localvar) {
-		//TODO Выдать сообщение
-		return;
-	}
-
-	m_list.push_back(new rVariable(var));
-}
-
-void rVariableList::add(const rVariable& var)
-{
-	const rVariable* localvar = find(name);
-	if (localvar) {
-		//TODO Выдать сообщение
-		return;
-	}
-	m_list.push_back(new rVariable(var));
-}
-
-
-bool rVariableList::addExternal(const rVariableList& varlist)
-{
-	for (auto var : varlist.m_list) {
-		if (find(var->m_name)) {
-			return false;
-		}
-		add(var);
-	}
-	return true;
-}
-
 //
 const rVariable* rVariableList::find(const string &name)
 {
@@ -106,7 +69,7 @@ const rVariable* rVariableList::find(const string &name)
 // Сортируем список по hash, для более быстрого поиска в будущем
 void rVariableList::sort()
 {
-	std::sort(m_list.begin(), m_list.end(), [](const rVariable *a, const rVariable *b){ return a->m_hash < b->m_hash;});
+	std::sort(m_list.begin(), m_list.end(), [](const rVariable *a, const rVariable *b){ return a < b; });
 }
 
 
@@ -128,11 +91,7 @@ UDINT rVariableList::saveToCSV(const std::string& path)
 	std::string text = ":alias;type;flags;access;alias hash;\n";
 
 	for (auto var : m_list) {
-		if(var->m_flags & rVariable::Flags::HIDE) {
-			continue;
-		}
-
-		text += String_format("%s;%s;%#06x;%08X;%#010x;\n", var->m_name.c_str(), NAME_TYPE[var->m_type].c_str(), var->m_flags, var->m_access, var->m_hash);
+		text += var->saveToCSV();
 	}
 
 	return SimpleFileSave(path + ".variable.csv", text);

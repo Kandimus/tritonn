@@ -51,6 +51,8 @@ public:
 	void  setAccess(UDINT access);
 	void  resetAssign();
 	void  clear();
+	UDINT get();
+	UDINT set();
 
 	rSnapshotItem* last() const;
 	std::vector<rSnapshotItem*>::iterator begin() { return m_list.begin(); }

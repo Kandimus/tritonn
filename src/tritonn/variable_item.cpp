@@ -32,12 +32,15 @@ rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* po
 
 rVariable::rVariable(rVariable *var)
 {
-	*this = *var;
-}
+	if (!var) {
+		return;
+	}
 
-rVariable::rVariable(rVariable &var)
-{
-	*this = var;
+	*this = *var;
+
+	var->m_extVar = this;
+	m_pointer     = nullptr;
+	m_flags      |= Flags::EXTERNAL;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -64,4 +67,18 @@ bool rVariable::setBuffer(void* buffer) const
 
 	memcpy(m_pointer, buffer, EPT_SIZE[m_type]);
 	return true;
+}
+
+std::string rVariable::saveToCSV()
+{
+	if (isHide()) {
+		return "";
+	}
+
+	return String_format("%s;%s;%#06x;%08X;%#010x;\n", m_name.c_str(), NAME_TYPE[m_type].c_str(), m_flags, m_access, m_hash);
+}
+
+bool operator < (const rVariable* left, const rVariable* right)
+{
+	return left->m_hash < right->m_hash;
 }

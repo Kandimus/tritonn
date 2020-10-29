@@ -37,6 +37,13 @@ rVariableClass::~rVariableClass()
 
 UDINT rVariableClass::processing()
 {
+	if (!m_linkClass) {
+		return TRITONN_RESULT_OK;
+	}
+
+	m_linkClass->writeExt(m_varList);
+	m_linkClass->readExt(m_varList);
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -56,17 +63,19 @@ UDINT rVariableClass::get(rSnapshot& snapshot)
 	rLocker locker(*m_mutex); UNUSED(locker);
 
 	for (auto item : snapshot) {
-		if (!item->isToAssign() || !item->getVariable()) {
+		const rVariable* var = item->getVariable();
+
+		if (!item->isToAssign() || !var) {
 			continue;
 		}
 
 		// Переменная невидимая, а уровень доступа не админ и не СА
-		if (item->getVariable()->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
+		if (var->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
 			item->setNotFound();
 			continue;
 		}
 
-		void *ptr = item->getVariable()->isExternal() ? item->getVariable()->m_extRead : item->getVariable()->m_pointer;
+		void *ptr = var->isExternal() ? var->m_extRead : var->m_pointer;
 		memcpy(item->m_data, ptr, item->getSizeVar());
 		item->m_status = rSnapshotItem::Status::ASSIGNED;
 	}
@@ -84,19 +93,21 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 	rLocker locker(*m_mutex); UNUSED(locker);
 
 	for (auto item : snapshot) {
-		if (!item->isToWrite() || !item->getVariable()) {
+		const rVariable* var = item->getVariable();
+
+		if (!item->isToWrite() || !var) {
 			continue;
 		}
 
 		// Переменная невидимая, а уровень доступа не админ и не СА
-		if (item->getVariable()->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
+		if (var->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
 			item->setNotFound();
 			continue;
 		}
 
 		// Переменная только для чтения
-		if (item->getVariable()->isReadonly()) {
-			if (item->getVariable()->isSUWrite()) {
+		if (var->isReadonly()) {
+			if (var->isSUWrite()) {
 				if (0 == (snapshot.getAccess() & ACCESS_SA)) {
 					item->setReadonly();
 					continue;
@@ -107,15 +118,19 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 			}
 		}
 
-		if ((item->getVariable()->getAccess() & snapshot.getAccess()) != item->getVariable()->getAccess()) {
+		if ((var->getAccess() & snapshot.getAccess()) != var->getAccess()) {
 			item->setAccessDenied();
 			//TODO Выдать сообщение
 			continue;
 		}
 
-		if (item->)
-		memcpy(item->getVariable()->m_pointer, item->m_data, item->getSizeVar());
+		void *ptr = var->isExternal() ? var->m_extWrite : var->m_pointer;
+		memcpy(ptr, item->m_data, item->getSizeVar());
 		item->m_status = rSnapshotItem::Status::WRITED;
+
+		if(var->isExternal()) {
+			var->m_flags |= rVariable::Flags::EXTWRITED;
+		}
 	}
 
 	return TRITONN_RESULT_OK;
@@ -138,7 +153,65 @@ UDINT rVariableClass::getAllVariables(rSnapshot& snapshot)
 	return TRITONN_RESULT_OK;
 }
 
-bool rVariableClass::addExternal(rVariableList& varlist)
+UDINT rVariableClass::writeExt(rVariableList& varlist)
 {
-	return m_varList.addExternal(varlist);
+	rLocker locker(m_mutex); UNUSED(locker);
+
+	for (auto var : varlist) {
+		if (!var) {
+			continue;
+		}
+
+		if (!var->isExternal() || !var->m_extVar) {
+			continue;
+		}
+
+		memcpy(var->m_extRead, var->m_extVar->m_pointer, item->getSizeVar());
+	}
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rVariableClass::readExt(rVariableList& varlist)
+{
+	rLocker locker(m_mutex); UNUSED(locker);
+
+	for (auto var : varlist) {
+		if (!var) {
+			continue;
+		}
+
+		if (!var->isExternal() || !var->m_extVar) {
+			continue;
+		}
+
+		if (!(var->m_extVar->m_flags & rVariable::Flags::EXTWRITED)) {
+			continue;
+		}
+
+		memcpy(var->m_extVar->m_pointer, var->m_extWrite, item->getSizeVar());
+		var->m_extVar->m_flags &= ~rVariable::Flags::EXTWRITED;
+	}
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rVariableClass::addExternal(rVariableList& varlist)
+{
+	for (auto var : varlist.m_list) {
+		if (find(var->m_name)) {
+			continue;
+		}
+		m_varList.m_list.push_back(new rVariable(var));
+	}
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rVariableClass::lintToExternal(rVariableClass* varclass)
+{
+	m_linkClass = varclass;
+
+	if (varclass) {
+		varclass->addExternal(m_varList);
+	}
+
+	return TRITONN_RESULT_OK;
 }

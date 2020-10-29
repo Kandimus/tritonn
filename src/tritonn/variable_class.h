@@ -33,12 +33,20 @@ public:
 
 	UDINT get(rSnapshot& snapshot);
 	UDINT set(rSnapshot& snapshot);
-	UDINT addExternal(rVariableList& varlist);
+
 	UDINT getAllVariables(rSnapshot& snapshot);
 	const rVariable* findVar(const std::string& name);
 
 protected:
+	UDINT writeExt(rVariableList& varlist);
+	UDINT readExt(rVariableList& varlist);
+	UDINT addExternal(rVariableList& varlist);
+	UDINT lintToExternal(rVariableClass* varclass);
+
+protected:
+	rVariableClass*  m_linkClass = nullptr;
 	rVariableList    m_varList;
+	rSnapshot*       m_snapshot;
 	pthread_mutex_t* m_mutex = nullptr;
 };
 

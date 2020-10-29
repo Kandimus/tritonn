@@ -13,9 +13,11 @@
 //===
 //=================================================================================================
 
+#include "io_basemodule.h"
 #include "xml_util.h"
 #include "data_config.h"
-#include "io_basemodule.h"
+#include "variable_item.h"
+
 
 std::string rIOBaseModule::m_rtti = "BaseModule";
 
@@ -36,6 +38,23 @@ UDINT rIOBaseModule::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rIOBaseModule::generateVars(std::string& prefix, rVariableList& list)
+{
+	std::string p = prefix + "." + m_name + ".";
+
+	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R___, &m_type        , U_DIMLESS , 0);
+	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R___, &m_nodeID      , U_DIMLESS , 0);
+	list.add(p + "vendor"      , TYPE_UDINT, rVariable::Flags::R___, &m_vendorID    , U_DIMLESS , 0);
+	list.add(p + "productCode" , TYPE_UDINT, rVariable::Flags::R___, &m_productCode , U_DIMLESS , 0);
+	list.add(p + "revision"    , TYPE_UDINT, rVariable::Flags::R___, &m_revision    , U_DIMLESS , 0);
+	list.add(p + "serialNumber", TYPE_UDINT, rVariable::Flags::R___, &m_serialNumber, U_DIMLESS , 0);
+	list.add(p + "temperature" , TYPE_REAL , rVariable::Flags::R___, &m_temperature , U_DIMLESS , 0);
+	list.add(p + "can"         , TYPE_UINT , rVariable::Flags::R___, &m_CAN         , U_DIMLESS , 0);
+	list.add(p + "firmware"    , TYPE_UINT , rVariable::Flags::R___, &m_firmware    , U_DIMLESS , 0);
+	list.add(p + "hardware"    , TYPE_UINT , rVariable::Flags::R___, &m_hardware    , U_DIMLESS , 0);
+
+	return TRITONN_RESULT_OK;
+}
 
 UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 {

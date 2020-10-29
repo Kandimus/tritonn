@@ -48,9 +48,19 @@ public:
 		SMOOTH = 0x0020,     //
 	};
 
-	rIOAIChannel() {};
+public:
+	rIOAIChannel() {}
 	virtual ~rIOAIChannel() {}
 
+	UINT getMinValue() const;
+	UINT getMaxValue() const;
+	UINT getRange() const;
+
+public:
+	virtual UDINT generateVars(std::string& name, rVariableList& list);
+	virtual UDINT simulate();
+
+public:
 	UINT    m_setup        = 0; // Настройка канала
 	UINT    m_ADC          = 0; // Текущий код ацп
 	REAL    m_current      = 0;             // Текущий ток
@@ -63,13 +73,6 @@ public:
 	UINT    m_simMin       = 0;
 	UINT    m_simValue     = 0;
 	INT     m_simSpeed     = 1;
-
-public:
-	virtual UDINT simulate();
-
-	UINT getMinValue() const;
-	UINT getMaxValue() const;
-	UINT getRange() const;
 
 };
 

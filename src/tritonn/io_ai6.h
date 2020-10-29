@@ -47,6 +47,7 @@ public:
 	virtual UDINT processing(USINT issim);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
+	virtual UDINT generateVars(std::string& prefix, rVariableList& list);
 
 public:
 	UINT getADC(USINT id);

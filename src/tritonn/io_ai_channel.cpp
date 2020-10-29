@@ -13,8 +13,11 @@
 //===
 //=================================================================================================
 
-#include <math.h>
 #include "io_ai_channel.h"
+#include <math.h>
+#include "variable_item.h"
+#include "simpleargs.h"
+#include "def_arguments.h"
 
 
 /*
@@ -51,6 +54,23 @@ UINT rIOAIChannel::getMaxValue() const
 UINT rIOAIChannel::getRange() const
 {
 	return getMaxValue() - getMinValue();
+}
+
+UDINT rIOAIChannel::generateVars(std::string& name, rVariableList& list)
+{
+	std::string p = name + ".";
+
+	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0);
+	list.add(p + "adc"    , TYPE_UINT , rVariable::Flags::R___, &m_ADC    , U_DIMLESS , 0);
+	list.add(p + "current", TYPE_REAL , rVariable::Flags::R___, &m_current, U_DIMLESS , 0);
+	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state  , U_DIMLESS , 0);
+
+	if (rSimpleArgs.instance().isSet(rArg::Simulate)) {
+		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0);
+		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::____, &m_simMin  , U_DIMLESS , 0);
+		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::____, &m_simValue, U_DIMLESS , 0);
+		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::____, &m_simSpeed, U_DIMLESS , 0);
+	}
 }
 
 UDINT rIOAIChannel::simulate()

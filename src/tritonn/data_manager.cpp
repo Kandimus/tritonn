@@ -462,9 +462,9 @@ rThreadStatus rDataManager::Proccesing()
 			}
 		}
 
-      Unlock();
-		
+		rVariableClass::processing();
 		rThreadClass::EndProccesing();
+		Unlock();
 	} // while
 }
 

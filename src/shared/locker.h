@@ -25,13 +25,25 @@ public:
 		mutex = &m;
 		pthread_mutex_lock(mutex);
 	}
+
+	rLocker(pthread_mutex_t *m)
+	{
+		mutex = m;
+
+		if (mutex) {
+			pthread_mutex_lock(mutex);
+		}
+	}
+
 	~rLocker()
 	{
-		pthread_mutex_unlock(mutex);
+		if (mutex) {
+			pthread_mutex_unlock(mutex);
+		}
 	}
 
 	void Nop() {;}
 
 private:
-	pthread_mutex_t *mutex;
+	pthread_mutex_t *mutex = nullptr;
 };
