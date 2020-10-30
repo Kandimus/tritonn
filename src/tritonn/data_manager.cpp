@@ -237,7 +237,7 @@ UDINT rDataManager::LoadConfig()
 
 	// Добавляем интерфейсы, создаем под них переменные
 	for(auto interface : ListInterface) {
-		rThreadMaster::instance().Add(interface->GetThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->Alias);
+		rThreadMaster::instance().add(interface->GetThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->Alias);
 	}
 
 	// Собираем переменные от объектов

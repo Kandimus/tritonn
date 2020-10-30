@@ -15,10 +15,12 @@
 //=================================================================================================
 
 #include "variable_class.h"
+#include "locker.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
+#include <cstring>
 
 
 rVariableClass::rVariableClass(pthread_mutex_t& mutex)
@@ -57,9 +59,6 @@ const rVariable* rVariableClass::findVar(const std::string& name)
 // Получение данных от менеджера данных
 UDINT rVariableClass::get(rSnapshot& snapshot)
 {
-	char buffer[8] = {0};
-
-
 	rLocker locker(*m_mutex); UNUSED(locker);
 
 	for (auto item : snapshot) {
@@ -75,7 +74,7 @@ UDINT rVariableClass::get(rSnapshot& snapshot)
 			continue;
 		}
 
-		void *ptr = var->isExternal() ? var->m_extRead : var->m_pointer;
+		const void *ptr = var->isExternal() ? var->m_extRead : var->m_pointer;
 		memcpy(item->m_data, ptr, item->getSizeVar());
 		item->m_status = rSnapshotItem::Status::ASSIGNED;
 	}
@@ -92,16 +91,16 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 
 	rLocker locker(*m_mutex); UNUSED(locker);
 
-	for (auto item : snapshot) {
-		const rVariable* var = item->getVariable();
+	for (auto ssitem : snapshot) {
+		const rVariable* var = ssitem->getVariable();
 
-		if (!item->isToWrite() || !var) {
+		if (!ssitem->isToWrite() || !var) {
 			continue;
 		}
 
 		// Переменная невидимая, а уровень доступа не админ и не СА
 		if (var->isHide() && (0 == (snapshot.getAccess() & ACCESS_MASK_VIEWHIDE))) {
-			item->setNotFound();
+			ssitem->setNotFound();
 			continue;
 		}
 
@@ -109,28 +108,29 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 		if (var->isReadonly()) {
 			if (var->isSUWrite()) {
 				if (0 == (snapshot.getAccess() & ACCESS_SA)) {
-					item->setReadonly();
+					ssitem->setReadonly();
 					continue;
 				}
 			} else {
-				item->setReadonly();
+				ssitem->setReadonly();
 				continue;
 			}
 		}
 
 		if ((var->getAccess() & snapshot.getAccess()) != var->getAccess()) {
-			item->setAccessDenied();
+			ssitem->setAccessDenied();
 			//TODO Выдать сообщение
 			continue;
 		}
 
-		void *ptr = var->isExternal() ? var->m_extWrite : var->m_pointer;
-		memcpy(ptr, item->m_data, item->getSizeVar());
-		item->m_status = rSnapshotItem::Status::WRITED;
+		var->setBuffer(ssitem->m_data);
+//		void *ptr = var->isExternal() ? var->m_extWrite : var->m_pointer;
+//		std::memcpy(ptr, , ssitem->getSizeVar());
+		ssitem->m_status = rSnapshotItem::Status::WRITED;
 
-		if(var->isExternal()) {
-			var->m_flags |= rVariable::Flags::EXTWRITED;
-		}
+//		if(var->isExternal()) {
+//			var->m_flags |= rVariable::Flags::EXTWRITED;
+//		}
 	}
 
 	return TRITONN_RESULT_OK;
@@ -139,11 +139,9 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 
 UDINT rVariableClass::getAllVariables(rSnapshot& snapshot)
 {
-	rLocker locker(Mutex); UNUSED(locker);
-
 	snapshot.clear();
 
-	for (auto var : m_listVariables) {
+	for (auto var : m_varList) {
 		if (var->isHide()) {
 			continue;
 		}
@@ -166,7 +164,7 @@ UDINT rVariableClass::writeExt(rVariableList& varlist)
 			continue;
 		}
 
-		memcpy(var->m_extRead, var->m_extVar->m_pointer, item->getSizeVar());
+		std::memcpy(static_cast<void *>(var->m_extRead), var->m_extVar->m_pointer, EPT_SIZE[var->getType()]);
 	}
 	return TRITONN_RESULT_OK;
 }
@@ -188,7 +186,7 @@ UDINT rVariableClass::readExt(rVariableList& varlist)
 			continue;
 		}
 
-		memcpy(var->m_extVar->m_pointer, var->m_extWrite, item->getSizeVar());
+		memcpy(var->m_extVar->m_pointer, var->m_extWrite, EPT_SIZE[var->getType()]);
 		var->m_extVar->m_flags &= ~rVariable::Flags::EXTWRITED;
 	}
 	return TRITONN_RESULT_OK;
@@ -197,7 +195,7 @@ UDINT rVariableClass::readExt(rVariableList& varlist)
 UDINT rVariableClass::addExternal(rVariableList& varlist)
 {
 	for (auto var : varlist.m_list) {
-		if (find(var->m_name)) {
+		if (varlist.find(var->m_name)) {
 			continue;
 		}
 		m_varList.m_list.push_back(new rVariable(var));

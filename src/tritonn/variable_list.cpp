@@ -17,6 +17,7 @@
 #include "variable_list.h"
 #include "variable_item.h"
 #include "simplefile.h"
+#include <algorithm>
 
 
 rVariableList::rVariableList()
@@ -46,15 +47,15 @@ void rVariableList::add(const std::string& name, TT_TYPE type, UINT flags, void*
 }
 
 //
-const rVariable* rVariableList::find(const string &name)
+rVariable* rVariableList::find(const string &name)
 {
 	std::string namelower = String_tolower(name);
 	UDINT  hash = std::hash<std::string>{}(namelower);
 
 	for(auto var : m_list) {
-		if(hash == var->m_hash)
+		if(hash == var->getHash())
 		{
-			if(var->m_name == namelower)
+			if(var->getName() == namelower)
 			{
 				return var;
 			}
@@ -69,7 +70,7 @@ const rVariable* rVariableList::find(const string &name)
 // Сортируем список по hash, для более быстрого поиска в будущем
 void rVariableList::sort()
 {
-	std::sort(m_list.begin(), m_list.end(), [](const rVariable *a, const rVariable *b){ return a < b; });
+	std::sort(m_list.begin(), m_list.end(), [](rVariable *a, rVariable *b){ return a < b; });
 }
 
 

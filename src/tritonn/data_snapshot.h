@@ -51,8 +51,8 @@ public:
 	void  setAccess(UDINT access);
 	void  resetAssign();
 	void  clear();
-	UDINT get();
-	UDINT set();
+	bool  get();
+	bool  set();
 
 	rSnapshotItem* last() const;
 	std::vector<rSnapshotItem*>::iterator begin() { return m_list.begin(); }
@@ -60,7 +60,7 @@ public:
 	size_t size() const { return m_list.size(); }
 
 protected:
-	std::vector<rSnapshotItem *> m_list;
+	std::vector<rSnapshotItem*> m_list;
 	UDINT           m_access;
 	rVariableClass* m_varClass;
 

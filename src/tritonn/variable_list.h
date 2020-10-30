@@ -21,9 +21,12 @@
 #include <string>
 
 class rVariable;
+class rVariableClass;
 
 class rVariableList
 {
+	friend class rVariableClass;
+
 public:
 	rVariableList();
 	virtual ~rVariableList();
@@ -32,14 +35,14 @@ public:
 	void  sort();
 	void  deleteAll(void);
 	UDINT saveToCSV(const std::string& path);
-	const rVariable* find(const std::string& name);
+	rVariable* find(const std::string& name);
 
 	size_t size() const { return m_list.size(); }
-	std::vector<const rVariable*>::iterator begin() { return m_list.begin(); }
-	std::vector<const rVariable*>::iterator end()   { return m_list.end();   }
+	std::vector<rVariable*>::iterator begin() { return m_list.begin(); }
+	std::vector<rVariable*>::iterator end()   { return m_list.end();   }
 
 private:
-	std::vector<const rVariable*> m_list;
+	std::vector<rVariable*> m_list;
 };
 
 

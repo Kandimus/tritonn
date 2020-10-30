@@ -64,6 +64,7 @@ public:
 	UINT    getFlags()   const { return m_flags;  }
 	STRID   getUnit()    const { return m_unit;   }
 	UDINT   getAccess()  const { return m_access; }
+	UDINT   getHash()    const { return m_hash;   }
 	bool    isReadonly() const { return m_flags & Flags::READONLY; }
 	bool    isHide()     const { return m_flags & Flags::HIDE;     }
 	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }

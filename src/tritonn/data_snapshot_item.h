@@ -64,23 +64,36 @@ public:
 	LREAL       getValueLREAL();
 	STRID       getValueSTRID();
 	std::string getValueString();
-
+/*
+	void assign(SINT  val);
+	void assign(USINT val);
+	void assign(INT   val);
+	void assign(UINT  val);
+	void assign(DINT  val);
+	void assign(UDINT val);
+	void assign(REAL  val);
+	void assign(LREAL val);
+	void assign(STRID val);
+	void assign(const std::string &val);
+	void assign(void *buf);
+*/
 	bool isAssigned() const { return m_status == Status::ASSIGNED; }
 	bool isToAssign() const { return m_status == Status::TOASSIGN; }
 	bool isToWrite()  const { return m_status == Status::TOWRITE;  }
 	bool isWrited()   const { return m_status == Status::WRITED;   }
 
-	const rVariable *getVariable() const { return m_var; }
+	const rVariable* getVariable() const { return m_var; }
 	Status           getStatus()   const { return m_status; }
 	UDINT            getSizeVar()  const;
 	bool             getBuffer(void *buffer) const;
+	void             toAssign();
 	void             reset();
 
 public:
-	Status           m_status;
 
 private:
-	const rVariable *m_var;
+	const rVariable* m_var;
+	Status           m_status;
 	char             m_data[8];
 
 protected:
@@ -89,5 +102,4 @@ protected:
 	void setNotFound()     { m_status = Status::NOTFOUND; }
 	void setReadonly()     { m_status = Status::READONLY; }
 	void setAccessDenied() { m_status = Status::ACCESSDENIED; }
-
 };

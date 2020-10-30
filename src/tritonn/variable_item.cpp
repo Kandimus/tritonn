@@ -65,7 +65,13 @@ bool rVariable::setBuffer(void* buffer) const
 		return false;
 	}
 
-	memcpy(m_pointer, buffer, EPT_SIZE[m_type]);
+	void *ptr = isExternal() ? m_extWrite : m_pointer;
+	memcpy(ptr, buffer, EPT_SIZE[m_type]);
+
+	if (isExternal()) {
+		m_flags |= rVariable::Flags::EXTWRITED;
+	}
+
 	return true;
 }
 
@@ -76,9 +82,4 @@ std::string rVariable::saveToCSV()
 	}
 
 	return String_format("%s;%s;%#06x;%08X;%#010x;\n", m_name.c_str(), NAME_TYPE[m_type].c_str(), m_flags, m_access, m_hash);
-}
-
-bool operator < (const rVariable* left, const rVariable* right)
-{
-	return left->m_hash < right->m_hash;
 }

@@ -3,6 +3,8 @@
 #include "simpletest.h"
 #include "data_ai.h"
 #include "data_manager.h"
+#include "data_snapshot_item.h"
+#include "data_snapshot.h"
 #include "simpletest.h"
 
 
@@ -10,117 +12,117 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 {
 	S_SECTION("set keypad value") {
 		const LREAL testvalue = 22.0;
-		rSnapshot set_ss(ACCESS_MASK_ADMIN);
-		rSnapshot get_ss(ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
-		set_ss.Add("io.ai01.keypad", testvalue);
-		set_ss.Add("io.ai01.mode", AI_MODE_MKEYPAD);
-		rDataManager::Instance().Set(set_ss);
+		ss.add("io.ai01.keypad", testvalue);
+		ss.add("io.ai01.mode", AI_MODE_MKEYPAD);
+		ss.set();
+		ss.clear();
 
 		mSleep(600);
 
-		get_ss.Add("io.ai01.present.value");
-		rDataManager::Instance().Get(get_ss);
+		ss.add("io.ai01.present.value");
+		ss.get();
 
-		S_REQUIRE(get_ss("io.ai01.present.value") != nullptr)
-		S_CHECK(S_DBL_EQ(get_ss("io.ai01.present.value")->GetValueLREAL(), testvalue));
+		S_REQUIRE(ss("io.ai01.present.value") != nullptr)
+		S_CHECK(S_DBL_EQ(ss("io.ai01.present.value")->getValueLREAL(), testvalue));
 	}
 
 	S_SECTION("test scales & limits (hihi, hi, lo, lolo)") {
-		rSnapshot set_ss(ACCESS_MASK_ADMIN);
-		rSnapshot get_ss(ACCESS_MASK_ADMIN);
+		rSnapshot set_ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot get_ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
-		set_ss.Add("io.ai01.scales.min"  , -10.0);
-		set_ss.Add("io.ai01.scales.max"  , 100.0);
-		set_ss.Add("io.ai01.present.lolo", 0.0);
-		set_ss.Add("io.ai01.present.lo"  , 20.0);
-		set_ss.Add("io.ai01.present.hi"  , 40.0);
-		set_ss.Add("io.ai01.present.hihi", 60.0);
-		set_ss.Add("io.ai01.keypad"      , -11.0);
-		set_ss.Add("io.ai01.mode"        , AI_MODE_MKEYPAD);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.add("io.ai01.scales.min"  , -10.0);
+		set_ss.add("io.ai01.scales.max"  , 100.0);
+		set_ss.add("io.ai01.present.lolo", 0.0);
+		set_ss.add("io.ai01.present.lo"  , 20.0);
+		set_ss.add("io.ai01.present.hi"  , 40.0);
+		set_ss.add("io.ai01.present.hihi", 60.0);
+		set_ss.add("io.ai01.keypad"      , -11.0);
+		set_ss.add("io.ai01.mode"        , AI_MODE_MKEYPAD);
+		set_ss.set();
 		mSleep(600);
 
-		get_ss.Add("io.ai01.present.status");
-		get_ss.Add("io.ai01.status");
-		rDataManager::Instance().Get(get_ss);
+		get_ss.add("io.ai01.present.status");
+		get_ss.add("io.ai01.status");
+		get_ss.get();
 
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() & static_cast<UINT>(rAI::Status::MIN));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() & static_cast<UINT>(rAI::Status::MIN));
 
 		// LOLO
-		set_ss.Clear();
-		set_ss.Add("io.ai01.keypad", -5.0);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.clear();
+		set_ss.add("io.ai01.keypad", -5.0);
+		set_ss.set();
 		mSleep(600);
 
-		rDataManager::Instance().Get(get_ss);
+		get_ss.get();
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// LO
-		set_ss.Clear();
-		set_ss.Add("io.ai01.keypad", 5.0);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.clear();
+		set_ss.add("io.ai01.keypad", 5.0);
+		set_ss.set();
 		mSleep(600);
 
-		rDataManager::Instance().Get(get_ss);
+		get_ss.get();
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_WMIN);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_WMIN);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// NORMAL
-		set_ss.Clear();
-		set_ss.Add("io.ai01.keypad", 30.0);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.clear();
+		set_ss.add("io.ai01.keypad", 30.0);
+		set_ss.set();
 		mSleep(600);
 
-		rDataManager::Instance().Get(get_ss);
+		get_ss.get();
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_NORMAL);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_NORMAL);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// HI
-		set_ss.Clear();
-		set_ss.Add("io.ai01.keypad", 50.0);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.clear();
+		set_ss.add("io.ai01.keypad", 50.0);
+		set_ss.set();
 		mSleep(600);
 
-		rDataManager::Instance().Get(get_ss);
+		get_ss.get();
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_WMAX);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_WMAX);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// HIHI
-		set_ss.Clear();
-		set_ss.Add("io.ai01.keypad", 70.0);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.clear();
+		set_ss.add("io.ai01.keypad", 70.0);
+		set_ss.set();
 		mSleep(600);
 
-		rDataManager::Instance().Get(get_ss);
+		get_ss.get();
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMAX);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_AMAX);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// MAX
-		set_ss.Clear();
-		set_ss.Add("io.ai01.keypad", 101.0);
-		rDataManager::Instance().Set(set_ss);
+		set_ss.clear();
+		set_ss.add("io.ai01.keypad", 101.0);
+		set_ss.set();
 		mSleep(600);
 
-		rDataManager::Instance().Get(get_ss);
+		get_ss.get();
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
-		S_CHECK(get_ss("io.ai01.present.status")->GetValueUINT() == LIMIT_STATUS_AMAX);
-		S_CHECK(get_ss("io.ai01.status")->GetValueUINT() == static_cast<UINT>(rAI::Status::MAX));
+		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_AMAX);
+		S_CHECK(get_ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::MAX));
 	}
 
 	S_SECTION("test limits current (hihi, lolo)") {

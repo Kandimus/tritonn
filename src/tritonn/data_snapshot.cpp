@@ -48,7 +48,7 @@ rSnapshot::~rSnapshot()
 const rVariable* rSnapshot::add(const rSnapshotItem& snapshot)
 {
 	m_list.push_back(new rSnapshotItem(snapshot));
-	m_list.back()->m_status = rSnapshotItem::Status::UNDEF;
+	m_list.back()->reset();
 
 	return m_list.back()->getVariable();
 }
@@ -107,7 +107,7 @@ void rSnapshot::resetAssign()
 {
 	 for(auto &list : m_list)
 	{
-		list->reset();
+		list->toAssign();
 	}
 }
 
@@ -127,6 +127,25 @@ void rSnapshot::clear()
 	m_list.clear();
 }
 
+bool rSnapshot::get()
+{
+	if (!m_varClass) {
+		return false;
+	}
+
+	m_varClass->get(*this);
+	return true;
+}
+
+bool rSnapshot::set()
+{
+	if (!m_varClass) {
+		return false;
+	}
+
+	m_varClass->get(*this);
+	return true;
+}
 
 const rVariable* rSnapshot::findVar(const std::string& name)
 {

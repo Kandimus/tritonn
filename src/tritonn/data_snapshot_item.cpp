@@ -235,5 +235,10 @@ UDINT rSnapshotItem::getSizeVar() const
 
 void rSnapshotItem::reset()
 {
+	m_status = Status::UNDEF;
+}
+
+void rSnapshotItem::toAssign()
+{
 	m_status = Status::TOASSIGN;
 }
