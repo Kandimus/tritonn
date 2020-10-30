@@ -322,7 +322,7 @@ string rJSONManager::ParsingJSON(const char *text)
 	}
 	else
 	{
-		result = GetErrorJSON(JSONERR_UNKNOWMETHOD, "");
+		result = GetErrorJSON(JSONERR_UNKNOWMETHOD, "request not found");
 	}
 
 	cJSON_Delete(root);
@@ -339,7 +339,7 @@ string rJSONManager::Packet_REQ(cJSON *root)
 {
 	cJSON *jcmd = cJSON_GetObjectItem(root, JSONSTR_COMMAND);
 
-	if(nullptr == jcmd) return GetErrorJSON(JSONERR_UNKNOWMETHOD, "");
+	if(nullptr == jcmd) return GetErrorJSON(JSONERR_UNKNOWMETHOD, "command not found");
 
 	//
 	if(!strcmp(jcmd->valuestring, JSONSTR_DATAGET))
@@ -380,7 +380,7 @@ string rJSONManager::Packet_REQ(cJSON *root)
 		return Packet_Restart(root);
 	}
 
-	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "");
+	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "unknow command");
 }
 
 
@@ -396,7 +396,11 @@ string rJSONManager::Packet_DataGet(cJSON *root)
 	cJSON     *answe    = cJSON_CreateObject();
 	cJSON     *response = cJSON_CreateObject();
 	cJSON     *data     = nullptr;
-	string     ts       = String_format("%L", timegm64(NULL));
+	string     ts       = "";
+	UDT udt;
+
+	gettimeofday(&udt, NULL);
+	ts       = String_format("%L", udt.tv_sec);
 
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_DATAGET));
