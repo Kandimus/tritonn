@@ -322,7 +322,7 @@ string rJSONManager::ParsingJSON(const char *text)
 	}
 	else
 	{
-		result = GetErrorJSON(JSONERR_UNKNOWMETHOD, "");
+		result = GetErrorJSON(JSONERR_UNKNOWMETHOD, "request not found");
 	}
 
 	cJSON_Delete(root);
@@ -339,7 +339,7 @@ string rJSONManager::Packet_REQ(cJSON *root)
 {
 	cJSON *jcmd = cJSON_GetObjectItem(root, JSONSTR_COMMAND);
 
-	if(nullptr == jcmd) return GetErrorJSON(JSONERR_UNKNOWMETHOD, "");
+	if(nullptr == jcmd) return GetErrorJSON(JSONERR_UNKNOWMETHOD, "command not found");
 
 	//
 	if(!strcmp(jcmd->valuestring, JSONSTR_DATAGET))
@@ -380,7 +380,7 @@ string rJSONManager::Packet_REQ(cJSON *root)
 		return Packet_Restart(root);
 	}
 
-	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "");
+	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "unknow command");
 }
 
 
