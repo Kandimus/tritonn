@@ -396,7 +396,11 @@ string rJSONManager::Packet_DataGet(cJSON *root)
 	cJSON     *answe    = cJSON_CreateObject();
 	cJSON     *response = cJSON_CreateObject();
 	cJSON     *data     = nullptr;
-	string     ts       = String_format("%L", timegm64(NULL));
+	string     ts       = "";
+	UDT udt;
+
+	gettimeofday(&udt, NULL);
+	ts       = String_format("%L", udt.tv_sec);
 
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_DATAGET));
