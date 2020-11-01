@@ -181,7 +181,7 @@ const UINT   LINK_SETUP_INPUT          = 0x0001;
 const UINT   LINK_SETUP_OUTPUT         = 0x0002;
 const UINT   LINK_SETUP_SIMPLE         = 0x0004;
 const UINT   LINK_SETUP_NONAME         = 0x0008;
-const UINT   LINK_SETUP_WRITEBLE       = 0x0010;
+const UINT   LINK_SETUP_WRITABLE       = 0x0010;
 const UINT   LINK_SETUP_INOUTPUT       = LINK_SETUP_INPUT | LINK_SETUP_OUTPUT;
 const string LINK_SHADOW_NONE          = "";
 

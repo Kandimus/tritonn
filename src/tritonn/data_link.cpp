@@ -161,7 +161,7 @@ UDINT rLink::generateVars(rVariableList& list)
 		name += "." + IO_Name;
 	}
 
-	if(Setup & LINK_SETUP_WRITEBLE)
+	if(Setup & LINK_SETUP_WRITABLE)
 	{
 		flags &= ~rVariable::Flags::READONLY;
 	}

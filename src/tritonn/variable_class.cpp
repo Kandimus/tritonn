@@ -74,7 +74,12 @@ UDINT rVariableClass::get(rSnapshot& snapshot)
 			continue;
 		}
 
-		const void *ptr = var->isExternal() ? var->m_extRead : var->m_pointer;
+		const void *ptr = var->isExternal() ? var->m_external->m_read : var->m_pointer;
+		if (var->isExternal()) {
+			ptr = var->m_external->m_read;
+		} else {
+			ptr = var->m_pointer;
+		}
 		memcpy(item->m_data, ptr, item->getSizeVar());
 		item->m_status = rSnapshotItem::Status::ASSIGNED;
 	}
@@ -87,8 +92,6 @@ UDINT rVariableClass::get(rSnapshot& snapshot)
 // Запись данных в менеджер данных
 UDINT rVariableClass::set(rSnapshot& snapshot)
 {
-	char buffer[8] = {0};
-
 	rLocker locker(*m_mutex); UNUSED(locker);
 
 	for (auto ssitem : snapshot) {
@@ -123,14 +126,14 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 			continue;
 		}
 
-		var->setBuffer(ssitem->m_data);
-//		void *ptr = var->isExternal() ? var->m_extWrite : var->m_pointer;
-//		std::memcpy(ptr, , ssitem->getSizeVar());
+//		var->setBuffer(ssitem->m_data);
+		void *ptr = var->isExternal() ? var->m_external->m_write : var->m_pointer;
+		std::memcpy(ptr, ssitem->m_data, ssitem->getSizeVar());
 		ssitem->m_status = rSnapshotItem::Status::WRITED;
 
-//		if(var->isExternal()) {
-//			var->m_flags |= rVariable::Flags::EXTWRITED;
-//		}
+		if(var->isExternal()) {
+			var->m_external->m_isWrited = true;
+		}
 	}
 
 	return TRITONN_RESULT_OK;
@@ -160,12 +163,27 @@ UDINT rVariableClass::writeExt(rVariableList& varlist)
 			continue;
 		}
 
-		if (!var->isExternal() || !var->m_extVar) {
+		if (!var->m_external || !var->m_pointer) {
 			continue;
 		}
 
-		std::memcpy(static_cast<void *>(var->m_extRead), var->m_extVar->m_pointer, EPT_SIZE[var->getType()]);
+		if (!var->m_external->m_var) {
+			continue;
+		}
+
+		rVariable* myvar = var->m_external->m_var;
+
+		if (!myvar->isExternal() || !myvar->m_external) {
+			continue;
+		}
+
+		if (myvar->m_external->m_var != var) {
+			continue;
+		}
+
+		std::memcpy(myvar->m_external->m_read, var->m_pointer, EPT_SIZE[var->getType()]);
 	}
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -178,24 +196,25 @@ UDINT rVariableClass::readExt(rVariableList& varlist)
 			continue;
 		}
 
-		if (!var->isExternal() || !var->m_extVar) {
+		if (!var->isExternal() || !var->m_external->m_var) {
 			continue;
 		}
 
-		if (!(var->m_extVar->m_flags & rVariable::Flags::EXTWRITED)) {
+		if (!var->m_external->m_isWrited) {
 			continue;
 		}
 
-		memcpy(var->m_extVar->m_pointer, var->m_extWrite, EPT_SIZE[var->getType()]);
-		var->m_extVar->m_flags &= ~rVariable::Flags::EXTWRITED;
+		memcpy(var->m_external->m_var->m_pointer, var->m_external->m_write, EPT_SIZE[var->getType()]);
+		var->m_external->m_isWrited = false;
 	}
+
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rVariableClass::addExternal(rVariableList& varlist)
+UDINT rVariableClass::addExternal(rVariableList& extlist)
 {
-	for (auto var : varlist.m_list) {
-		if (varlist.find(var->m_name)) {
+	for (auto var : extlist.m_list) {
+		if (m_varList.find(var->m_name)) {
 			continue;
 		}
 		m_varList.m_list.push_back(new rVariable(var));
@@ -203,7 +222,7 @@ UDINT rVariableClass::addExternal(rVariableList& varlist)
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rVariableClass::lintToExternal(rVariableClass* varclass)
+UDINT rVariableClass::linkToExternal(rVariableClass* varclass)
 {
 	m_linkClass = varclass;
 

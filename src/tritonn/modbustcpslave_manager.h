@@ -17,7 +17,6 @@
 
 #include <vector>
 #include "tcp_class.h"
-#include "variable_class.h"
 #include "data_interface.h"
 #include "data_snapshot.h"
 
@@ -49,7 +48,7 @@ struct rModbusSwap
 };
 
 
-class rModbusTCPSlaveManager: public rInterface, public rTCPClass//, public rVariableClass
+class rModbusTCPSlaveManager: public rTCPClass, public rInterface
 {
 public:
 	rModbusTCPSlaveManager();
@@ -65,7 +64,7 @@ protected:
 // Наследование от rInterface
 public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
-	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT generateVars(rVariableClass* parent);
 	virtual UDINT CheckVars(rDataConfig &cfg);
 	virtual UDINT StartServer();
 	virtual rThreadClass *GetThreadClass();

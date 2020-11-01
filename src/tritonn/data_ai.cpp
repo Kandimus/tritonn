@@ -442,7 +442,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			return result;
 		}
 	} else {
-		Value.Setup |= LINK_SETUP_WRITEBLE;
+		Value.Setup |= LINK_SETUP_WRITABLE;
 	}
 
 	if(nullptr == limits || nullptr == unit || nullptr == scale)
@@ -468,8 +468,6 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	// Подправляем единицы измерения, исходя из конфигурации AI
 	Value.Unit   = Unit;
 	PhValue.Unit = Unit;
-
-
 
 	ReinitLimitEvents();
 

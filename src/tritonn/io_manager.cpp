@@ -23,7 +23,6 @@
 #include "tinyxml2.h"
 #include "xml_util.h"
 #include "io_ai6.h"
-#include "data_manager.h"
 
 
 rIOManager::rIOManager() : rVariableClass(Mutex)
@@ -76,14 +75,16 @@ rThreadStatus rIOManager::Proccesing()
 }
 
 
-UDINT rIOManager::generateVars(rVariableList& list)
+UDINT rIOManager::generateVars(rVariableClass* parent)
 {
 	//list.push_back(new rVariable("hardware.count", TYPE_USINT , VARF_R___, &m_moduleCount, U_DIMLESS , 0));
 	for (auto module : m_modules) {
-		module->generateVars("hardware", m_varList);
+		module->generateVars("hardware.", m_varList);
 	}
 
-	rVariableClass::lintToExternal(&rDataManager::instance());
+	if (parent) {
+		rVariableClass::linkToExternal(parent);
+	}
 
 	return TRITONN_RESULT_OK;
 }

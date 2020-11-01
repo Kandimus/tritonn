@@ -31,6 +31,30 @@ public:
 		V_0_10,          //
 	};
 
+	enum class Scale_mA_0_20 : UINT
+	{
+		Min = 0,
+		Max = 54612,
+	};
+
+	enum class Scale_mA_4_20 : UINT
+	{
+		Min = 10922,
+		Max = 54612,
+	};
+
+	enum class Scale_V_m10_10 : UINT
+	{
+		Min = 2979,
+		Max = 62556,
+	};
+
+	enum class Scale_V_0_10 : UINT
+	{
+		Min = 32767,
+		Max = 62556,
+	};
+
 	enum SimType
 	{
 		None = 0,

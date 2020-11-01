@@ -38,9 +38,12 @@ rVariable::rVariable(rVariable *var)
 
 	*this = *var;
 
-	var->m_extVar = this;
-	m_pointer     = nullptr;
-	m_flags      |= Flags::EXTERNAL;
+	var->m_external   = new rExternal;
+	var->m_external->m_var = this;
+	m_external        = new rExternal;
+	m_external->m_var = var;
+	m_pointer         = nullptr;
+	m_flags          |= Flags::EXTERNAL;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -48,7 +51,7 @@ rVariable::rVariable(rVariable *var)
 rVariable::~rVariable()
 {
 }
-
+/*
 bool rVariable::getBuffer(void* buffer) const
 {
 	if(m_pointer == nullptr) {
@@ -74,7 +77,7 @@ bool rVariable::setBuffer(void* buffer) const
 
 	return true;
 }
-
+*/
 std::string rVariable::saveToCSV()
 {
 	if (isHide()) {

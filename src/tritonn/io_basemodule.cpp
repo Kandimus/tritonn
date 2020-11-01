@@ -18,6 +18,8 @@
 #include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
+#include "simpleargs.h"
+#include "def_arguments.h"
 #include "units.h"
 
 
@@ -42,7 +44,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list)
 {
-	std::string p = prefix + "." + m_name + ".";
+	std::string p = prefix + m_name + ".";
 
 	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R___, &m_type        , U_DIMLESS , 0);
 	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R___, &m_nodeID      , U_DIMLESS , 0);

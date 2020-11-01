@@ -1050,7 +1050,7 @@ UDINT rDataConfig::LoadOPCUA(tinyxml2::XMLElement *root)
 //-------------------------------------------------------------------------------------------------
 // Основная особенность функции LoadLink от LoadShadowLink в том, что на вход в первую подается
 // указатель на сам тег линка, а во вторую указатель на родителя
-UDINT rDataConfig::LoadLink(tinyxml2::XMLElement *element, rLink &link)
+UDINT rDataConfig::LoadLink(tinyxml2::XMLElement* element, rLink& link)
 {
 	if(nullptr == element)
 	{
@@ -1070,7 +1070,8 @@ UDINT rDataConfig::LoadLink(tinyxml2::XMLElement *element, rLink &link)
 		return ErrorID;
 	}
 
-	link.Source = nullptr;
+	link.Source    = nullptr;
+	link.m_lineNum = element->GetLineNum();
 
 	ListLink.push_back(&link);
 
@@ -1123,7 +1124,7 @@ UDINT rDataConfig::ResolveLinks(void)
 					if(src->CheckOutput(link->Param))
 					{
 						ErrorStr  = link->FullTag;
-						ErrorLine = 0;
+						ErrorLine = link->m_lineNum;
 						ErrorID   = DATACFGERR_CHECKLINK;
 					}
 				}
@@ -1135,7 +1136,7 @@ UDINT rDataConfig::ResolveLinks(void)
 		if(nullptr == link->Source)
 		{
 			ErrorStr  = link->FullTag;
-			ErrorLine = 0;
+			ErrorLine = link->m_lineNum;
 			ErrorID   = DATACFGERR_RESOLVELINK;
 
 			return ErrorID;

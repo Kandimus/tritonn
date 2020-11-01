@@ -59,6 +59,8 @@ public:
 	UINT        Setup   = 0;
 	std::string Shadow  = "";
 
+	UDINT       m_lineNum;
+
 //private:
 	virtual LREAL GetValue(const string &name, UDINT unit, UDINT &err);
 };

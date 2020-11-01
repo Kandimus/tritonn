@@ -5,11 +5,56 @@
 #include "data_manager.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
+#include "io_ai_channel.h"
 #include "simpletest.h"
 
 
 S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 {
+	S_SECTION("virtual") {
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		LREAL test_val = 22.0;
+
+		ss.add("io.ai_virt.present.value", test_val);
+		ss.set();
+
+		mSleep(600);
+
+		ss.clear();
+		ss.add("io.ai_virt.present.value");
+		ss.get();
+
+		S_REQUIRE(ss("io.ai_virt.present.value") != nullptr)
+		LREAL aa = ss("io.ai_virt.present.value")->getValueLREAL();
+		S_CHECK(S_DBL_EQ(ss("io.ai_virt.present.value")->getValueLREAL(), test_val));
+	}
+
+	S_SECTION("set simulate value") {
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		LREAL min_val = -10.0;
+
+		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
+		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
+		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Min));
+		ss.add("io.ai00.scales.min"                , min_val);
+		ss.add("io.ai00.scales.max"                , 100.0);
+		ss.set();
+
+		mSleep(600);
+
+		ss.clear();
+		ss.add("hardware.ai6_1.ch_01.type");
+		ss.add("hardware.ai6_1.ch_01.simulate.type");
+		ss.add("io.ai00.present.value");
+		ss.get();
+
+		S_REQUIRE(ss("io.ai00.present.value") != nullptr)
+		S_CHECK(S_DBL_EQ(ss("io.ai00.present.value")->getValueLREAL(), min_val));
+
+		printf("hardware.ai6_1.ch_01.type = %i\n", ss("hardware.ai6_1.ch_01.type")->getValueUSINT());
+		printf("hardware.ai6_1.ch_01.simulate.type = %i\n", ss("hardware.ai6_1.ch_01.simulate.type")->getValueUSINT());
+	}
+
 	S_SECTION("set keypad value") {
 		const LREAL testvalue = 22.0;
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);

@@ -41,7 +41,7 @@ protected:
 	UDINT writeExt(rVariableList& varlist);
 	UDINT readExt(rVariableList& varlist);
 	UDINT addExternal(rVariableList& varlist);
-	UDINT lintToExternal(rVariableClass* varclass);
+	UDINT linkToExternal(rVariableClass* extlist);
 
 protected:
 	rVariableClass*  m_linkClass = nullptr;

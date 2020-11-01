@@ -41,7 +41,9 @@ extern rVariable *gVariable;
 //
 // КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rModbusTCPSlaveManager::rModbusTCPSlaveManager()
-	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT), m_snapshot(rDataManager::instance().getVariableClass())
+	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT),
+	  rInterface(Mutex),
+	  m_snapshot(rDataManager::instance().getVariableClass())
 {
 	RTTI        = "rModbusTCPSlaveManager";
 	LogMask    |= LM_TERMINAL;
@@ -623,17 +625,20 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 }
 
 
-UDINT rModbusTCPSlaveManager::generateVars(rVariableList& list)
+UDINT rModbusTCPSlaveManager::generateVars(rVariableClass* parent)
 {
-	list.add(Alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0);
-	list.add(Alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0);
-	list.add(Alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0);
-	list.add(Alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0);
-	list.add(Alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0);
+	m_varList.add(Alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0);
+	m_varList.add(Alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0);
+	m_varList.add(Alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0);
+	m_varList.add(Alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0);
+	m_varList.add(Alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0);
+
+	if (parent) {
+		rVariableClass::linkToExternal(parent);
+	}
 
 	return TRITONN_RESULT_OK;
 }
-
 
 /*
 UDINT rModbusTCPSlaveManager::SaveKernel(FILE *file, const string &objname, const string &comment)

@@ -139,7 +139,9 @@ const string rOPCUAManager::RootName = "tritonn";
 
 
 //TODO Вынести создания Сервера в отдельную процедуру!!!
-rOPCUAManager::rOPCUAManager() : m_snapshot(rDataManager::instance().getVariableClass())
+rOPCUAManager::rOPCUAManager()
+	: rInterface(Mutex),
+	  m_snapshot(rDataManager::instance().getVariableClass())
 {
 	RTTI      = "rOPCUAManager";
 	OPCServer = nullptr;
@@ -585,10 +587,10 @@ UDINT rOPCUAManager::SetNodeValue(const UA_NodeId *node, const UA_DataValue *dat
 	return UA_STATUSCODE_BADINTERNALERROR;
 }
 
-
-UDINT rOPCUAManager::generateVars(rVariableList& list)
+UDINT rOPCUAManager::generateVars(rVariableClass* parent)
 {
-	UNUSED(list);
+	UNUSED(parent);
+
 	return TRITONN_RESULT_OK;
 }
 

@@ -25,7 +25,8 @@
 
 
 
-rInterface::rInterface()
+rInterface::rInterface(pthread_mutex_t& mutex)
+	: rVariableClass(mutex)
 {
 }
 
@@ -57,16 +58,15 @@ UDINT rInterface::loadFromXML(tinyxml2::XMLElement *element, rDataConfig &/*cfg*
 UDINT rInterface::saveKernel(FILE *file, const string &objname, const string &comment)
 {
 	const string Tag[2] = {"", "io"};
-	rVariableList list;
 
-	generateVars(list);
+	generateVars(nullptr);
 
 	fprintf(file, "<!--\n\t%s\n-->\n", comment.c_str());
 
 	fprintf(file, "<interface name=\"%s\">\n", objname.c_str());
 
 	fprintf(file, "\t<values>\n");
-	for (auto var : list) {
+	for (auto var : m_varList) {
 		if (var->isHide()) {
 			continue;
 		}

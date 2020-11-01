@@ -36,6 +36,7 @@
 #include "data_rvar.h"
 #include "text_manager.h"
 #include "event_manager.h"
+#include "io_manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
 
@@ -233,7 +234,7 @@ UDINT rDataManager::LoadConfig()
 
 	//--------------------------------------------
 	// Создаем переменные
-	SysVar.initVariables(m_listVariables);
+	SysVar.initVariables(m_varList);
 
 	// Добавляем интерфейсы, создаем под них переменные
 	for(auto interface : ListInterface) {
@@ -242,7 +243,7 @@ UDINT rDataManager::LoadConfig()
 
 	// Собираем переменные от объектов
 	for (auto source : ListSource) {
-		result = source->generateVars(m_listVariables);
+		result = source->generateVars(m_varList);
 		if (result != TRITONN_RESULT_OK) {
 			//TODO Нужно ли выдавать ошибку?
 			return result;
@@ -251,20 +252,22 @@ UDINT rDataManager::LoadConfig()
 
 	// Собираем переменные от интерфейсов
 	for (auto interface : ListInterface) {
-		result = interface->generateVars(m_listVariables);
+		result = interface->generateVars(getVariableClass());
 		if (result != TRITONN_RESULT_OK) {
 			//TODO Нужно ли выдавать ошибку?
 			return 1;
 		}
 	}
 
-	m_listVariables.sort();
+	rIOManager::instance().generateVars(getVariableClass());
+
+	m_varList.sort();
 
 	//--------------------------------------------
 	//NOTE только в процессе разработки
 	if(LIVE_STARTING == GetLiveStatus())
 	{
-		m_listVariables.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
+		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		SaveKernel();                         // Сохраняем описание ядра
 	}
 

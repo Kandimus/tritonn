@@ -36,7 +36,7 @@ public:
 		HIDE      = 0x0004, // Переменная не будет отображатся в ОРС-сервере
 		LOADABLE  = 0x0008, // Переменная загружается из конфигурации
 		EXTERNAL  = 0x4000, //
-		EXTWRITED = 0x8000, //
+//		EXTWRITED = 0x8000, //
 
 		____ = NONE,
 		R___ = READONLY,
@@ -76,6 +76,14 @@ public:
 	bool operator < (const rVariable* right) { return this->m_hash < right->m_hash; };
 
 protected:
+	struct rExternal
+	{
+		rVariable*  m_var = nullptr;
+		char m_write[8] = {0};
+		char m_read[8] = {0};
+		bool m_isWrited = false;
+	};
+
 	rVariable(rVariable *var);
 
 	bool    getBuffer(void* buffer) const;
@@ -85,16 +93,17 @@ private:
 	rVariable(rVariable& var);
 
 protected:
-	UDINT       m_hash;
-	std::string m_name;
-	TT_TYPE     m_type;
-	UINT        m_flags;
-	STRID       m_unit;
-	UDINT       m_access;
+	UDINT       m_hash   = 0;
+	std::string m_name   = "";
+	TT_TYPE     m_type   = TYPE_UNDEF;
+	UINT        m_flags  = Flags::NONE;
+	STRID       m_unit   = 0;
+	UDINT       m_access = 0;
 
-	rVariable*  m_extVar;
-	char        m_extWrite[8];
-	char        m_extRead[8];
+	rExternal*  m_external = nullptr;
+//	rVariable*  m_extVar;
+//	char        m_extWrite[8];
+//	char        m_extRead[8];
 
 private:
 	void* m_pointer; // Прямой указатель на данные. Использовать вне функций запрещено!
