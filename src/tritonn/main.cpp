@@ -8,7 +8,7 @@
 #include "io_manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
-#include "data_variable.h"
+//#include "data_variable.h"
 #include "text_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"
@@ -95,11 +95,11 @@ int main(int argc, const char **argv)
 	rLogManager::Instance().Terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 
 	TRACEERROR("------------------------------------------");
-	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
+	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
 	rLogManager::Instance().StartServer();
 	rLogManager::Instance().Run(10);
 
-	rThreadMaster::instance().Add(&rLogManager::Instance(), TMF_NONE, "system.logs");
+	rThreadMaster::instance().add(&rLogManager::Instance(), TMF_NONE, "system.logs");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -117,22 +117,22 @@ int main(int argc, const char **argv)
 	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
 	rEventManager::instance().Run(100);
 
-	rThreadMaster::instance().Add(&rEventManager::instance(), TMF_NONE, "system.events");
+	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "system.events");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
-	rDataManager::Instance().LoadConfig();
-	rDataManager::Instance().Run(500);
+	rDataManager::instance().LoadConfig();
+	rDataManager::instance().Run(400);
 
-	rThreadMaster::instance().Add(&rDataManager::Instance(), TMF_NONE, "system.data");
+	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "system.data");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Стартуем обмен с модулями IO
-	rIOManager::instance().Run(500);
+	rIOManager::instance().Run(400);
 
-	rThreadMaster::instance().Add(&rIOManager::instance(), TMF_NONE, "system.io");
+	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "system.io");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ int main(int argc, const char **argv)
 	rTermManager::Instance().Run(500);
 	rTermManager::Instance().StartServer("0.0.0.0", TCP_PORT_TERM);
 
-	rThreadMaster::instance().Add(&rTermManager::Instance(), TMF_NONE, "system.config");
+	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "system.config");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -148,9 +148,9 @@ int main(int argc, const char **argv)
 	rJSONManager::Instance().Run(500);
 	rJSONManager::Instance().StartServer("0.0.0.0", TCP_PORT_JSON);
 
-	rThreadMaster::instance().Add(&rJSONManager::Instance(), TMF_NONE, "system.json");
+	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "system.json");
 
-	rDataManager::Instance().StartInterfaces();
+	rDataManager::instance().StartInterfaces();
 
 	//
 	// Событие о запуске
@@ -183,8 +183,6 @@ int main(int argc, const char **argv)
 		}
 	}
 
-	rVariable::DeleteVariables();
-			
 	mSleep(500);
 	
 	TRACEERROR("Все потоки закрыты!");

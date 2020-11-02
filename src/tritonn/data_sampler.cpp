@@ -71,26 +71,13 @@ UDINT rSampler::GetFault(void)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSampler::GenerateVars(vector<rVariable *> &/*list*/)
+UDINT rSampler::generateVars(rVariableList&/*list*/)
 {
-//	list.push_back(new rVariable(Alias + ".Values.Present" , TYPE_LREAL, VARF_RO, SSPOINTER(IO.AI[ID].Value   )));
-//	list.push_back(new rVariable(Alias + ".Values.Physical", TYPE_LREAL, VARF_RO, SSPOINTER(IO.AI[ID].PhValue )));
-//	list.push_back(new rVariable(Alias + ".Values.Current" , TYPE_LREAL, VARF_RO, SSPOINTER(IO.AI[ID].Current )));
-//	list.push_back(new rVariable(Alias + ".Values.Keypad"  , TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].KeypadValue)));
-
-//	list.push_back(new rVariable(Alias + ".Limits.Min" , TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Limits.Min.Value )));
-//	list.push_back(new rVariable(Alias + ".Limits.AMin", TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Limits.AMin.Value)));
-//	list.push_back(new rVariable(Alias + ".Limits.WMin", TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Limits.WMin.Value)));
-//	list.push_back(new rVariable(Alias + ".Limits.WMax", TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Limits.WMax.Value)));
-//	list.push_back(new rVariable(Alias + ".Limits.AMax", TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Limits.AMax.Value)));
-//	list.push_back(new rVariable(Alias + ".Limits.Max" , TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Limits.Max.Value )));
-
-//	list.push_back(new rVariable(Alias + ".Hysteresis", TYPE_LREAL, VARF_RW, SSPOINTER(IO.AI[ID].Hysteresis)));
 //	list.push_back(new rVariable(Alias + ".Status"    , TYPE_UINT , VARF_RO, SSPOINTER(IO.AI[ID].Status    )));
 //	list.push_back(new rVariable(Alias + ".Mode"      , TYPE_UINT , VARF_RW, SSPOINTER(IO.AI[ID].Mode      )));
 //	list.push_back(new rVariable(Alias + ".Unit"      , TYPE_STRID, VARF_RO, SSPOINTER(IO.AI[ID].Unit      )));
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -210,7 +197,7 @@ UDINT rSampler::Calculate()
 
 UDINT rSampler::LoadFromXML(tinyxml2::XMLElement */*element*/, rDataConfig &/*cfg*/)
 {
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 /*
 	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::SelectorSetupFlags, SELECTOR_SETUP_OFF);
 	string defMode  = rDataConfig::GetFlagNameByValue(rDataConfig::SelectorModeFlags , SELECTOR_MODE_CHANGENEXT);
@@ -348,7 +335,7 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement */*element*/, rDataConfig &/*cf
 	}
 	else return DATACFGERR_SELECTOR;
 */
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

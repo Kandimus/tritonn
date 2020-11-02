@@ -19,7 +19,7 @@
 #include <memory>
 #include "safity.h"
 #include "tinyxml2.h"
-#include "data_variable.h"
+#include "variable_class.h"
 #include "thread_class.h"
 #include "io_basemodule.h"
 
@@ -28,7 +28,7 @@ class rIOBaseChannel;
 
 //-------------------------------------------------------------------------------------------------
 //
-class rIOManager : public rThreadClass
+class rIOManager : public rThreadClass, public rVariableClass
 {
 	SINGLETON(rIOManager)
 
@@ -37,7 +37,7 @@ public:
 // Методы
 public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
-	UDINT GenerateVars(vector<rVariable* > &list);
+	UDINT generateVars(rVariableClass* parent);
 	UDINT SaveKernel(FILE* file);
 
 	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);

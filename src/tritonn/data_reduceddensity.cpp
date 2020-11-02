@@ -23,7 +23,8 @@
 #include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_station.h"
 #include "data_reduceddensity.h"
 #include "xml_util.h"
@@ -150,12 +151,12 @@ UDINT rReducedDens::SetFault()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-UDINT rReducedDens::GenerateVars(vector<rVariable *> &list)
+UDINT rReducedDens::generateVars(rVariableList& list)
 {
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.push_back(new rVariable(Alias + ".fault"    , TYPE_UDINT, VARF_R___, &Fault       , U_DIMLESS, 0));
+	list.add(Alias + ".fault", TYPE_UDINT, rVariable::Flags::R___, &Fault, U_DIMLESS, 0);
 
 	return 0;
 }
@@ -195,7 +196,7 @@ UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReducedDens::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rReducedDens::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Temp.Limit.Setup.Init(0);
 	Pres.Limit.Setup.Init(0);
@@ -208,7 +209,7 @@ UDINT rReducedDens::SaveKernel(FILE *file, UDINT isio, const string &objname, co
 	B.Limit.Setup.Init(0);
 	Y.Limit.Setup.Init(0);
 
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(file, isio, objname, comment, isglobal);
 }
 
 

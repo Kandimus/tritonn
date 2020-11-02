@@ -15,13 +15,11 @@
 
 #pragma once
 
-#include <vector>
 #include "def.h"
 #include "structures.h"
 
-using std::vector;
+class rVariableList;
 
-class rVariable;
 
 // Системные переменные
 class rSystemVariable
@@ -31,7 +29,7 @@ public:
 	~rSystemVariable() {}
 
 	UDINT SaveKernel(FILE *file);
-	UDINT InitVariables(vector<rVariable *> &list);
+	UDINT initVariables(rVariableList& list);
 
 public:
 	rVersion    Ver;

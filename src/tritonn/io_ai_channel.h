@@ -31,6 +31,30 @@ public:
 		V_0_10,          //
 	};
 
+	enum class Scale_mA_0_20 : UDINT
+	{
+		Min = 0,
+		Max = 54612,
+	};
+
+	enum class Scale_mA_4_20 : UDINT
+	{
+		Min = 10922,
+		Max = 54612,
+	};
+
+	enum class Scale_V_m10_10 : UDINT
+	{
+		Min = 2979,
+		Max = 62556,
+	};
+
+	enum class Scale_V_0_10 : UDINT
+	{
+		Min = 32767,
+		Max = 62556,
+	};
+
 	enum SimType
 	{
 		None = 0,
@@ -48,9 +72,19 @@ public:
 		SMOOTH = 0x0020,     //
 	};
 
-	rIOAIChannel() {};
+public:
+	rIOAIChannel() {}
 	virtual ~rIOAIChannel() {}
 
+	UINT getMinValue() const;
+	UINT getMaxValue() const;
+	UINT getRange() const;
+
+public:
+	virtual UDINT generateVars(const std::string& name, rVariableList& list);
+	virtual UDINT simulate();
+
+public:
 	UINT    m_setup        = 0; // Настройка канала
 	UINT    m_ADC          = 0; // Текущий код ацп
 	REAL    m_current      = 0;             // Текущий ток
@@ -63,13 +97,6 @@ public:
 	UINT    m_simMin       = 0;
 	UINT    m_simValue     = 0;
 	INT     m_simSpeed     = 1;
-
-public:
-	virtual UDINT simulate();
-
-	UINT getMinValue() const;
-	UINT getMaxValue() const;
-	UINT getRange() const;
 
 };
 

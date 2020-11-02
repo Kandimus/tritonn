@@ -22,6 +22,11 @@
 #include "total.h"
 #include "data_link.h"
 
+namespace tinyxml2
+{
+	class XMLPrinter;
+	class XMLElement;
+}
 
 struct rReportTime
 {
@@ -29,8 +34,8 @@ struct rReportTime
 	struct tm  _TM;
 
 	void  SetCurTime();
-	void  GenerateVars(const string &prefix, UINT flags, UDINT access, vector<rVariable *> &list);
-	void  Print(tinyxml2::XMLPrinter &printer, const char *name);
+	void  generateVars(const std::string &prefix, UINT flags, UDINT access, rVariableList& list);
+	void  Print(tinyxml2::XMLPrinter& printer, const char *name);
 };
 
 
@@ -44,7 +49,7 @@ struct rReportItem
 	string Name;     // Имя для переменных
 	LREAL  Value;    // Значение в текущем отчете
 
-	void Print(tinyxml2::XMLPrinter &printer);
+	void Print(tinyxml2::XMLPrinter& printer);
 };
 
 
@@ -68,10 +73,10 @@ public:
 	STRID         UnitMass;             // Ед. измерения массы
 	STRID         UnitVolume;           // Ед. измерения объема
 
-	vector<rReportItem *> Items;        // Список переменных для средневзвешивания
+	std::vector<rReportItem *> Items;        // Список переменных для средневзвешивания
 
-	void Print(tinyxml2::XMLPrinter &printer);
-	void PrintTotals(tinyxml2::XMLPrinter &printer, const char *name, rBaseTotal &total);
+	void Print(tinyxml2::XMLPrinter& printer);
+	void PrintTotals(tinyxml2::XMLPrinter& printer, const char *name, rBaseTotal &total);
 };
 
 
@@ -94,7 +99,7 @@ public:
 	void  Clear();
 	void  Print(tinyxml2::XMLPrinter &printer);
 	void  CreateFrom(rReportDataset &ds);
-	void  GenerateVars(const string &prefix, vector<rVariable *> &list);
+	void  generateVars(const std::string &prefix, rVariableList& list);
 };
 
 
@@ -111,8 +116,8 @@ public:
 	virtual const char *RTTI() { return "report"; }
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
-	virtual UDINT SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT saveKernel(FILE *file, UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

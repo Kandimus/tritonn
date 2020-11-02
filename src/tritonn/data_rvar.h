@@ -34,8 +34,8 @@ public:
 	virtual const char *RTTI() { return "rvar"; }
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
-	virtual UDINT SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

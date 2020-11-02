@@ -23,7 +23,8 @@
 #include "precision.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_stream.h"
 #include "data_station.h"
 #include "xml_util.h"
@@ -200,31 +201,31 @@ const rTotal *rStation::GetTotal(void)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rStation::GenerateVars(vector<rVariable *> &list)
+UDINT rStation::generateVars(rVariableList& list)
 {
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.push_back(new rVariable(Alias + ".Product"               , TYPE_UDINT, VARF_RS_L, &Product               , U_DIMLESS , ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".Setup"                 , TYPE_UINT , VARF_RS_L, &Setup.Value           , U_DIMLESS , ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".total.present.volume"  , TYPE_LREAL, VARF_R___, &Total.Present.Volume  , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.present.volume15", TYPE_LREAL, VARF_R___, &Total.Present.Volume15, UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.present.volume20", TYPE_LREAL, VARF_R___, &Total.Present.Volume20, UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.present.mass"    , TYPE_LREAL, VARF_R___, &Total.Present.Mass    , UnitMass  , 0));
-	list.push_back(new rVariable(Alias + ".total.inc.volume"      , TYPE_LREAL, VARF_RSH_, &Total.Inc.Volume      , UnitVolume, ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".total.inc.volume15"    , TYPE_LREAL, VARF_RSH_, &Total.Inc.Volume15    , UnitVolume, ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".total.inc.volume20"    , TYPE_LREAL, VARF_RSH_, &Total.Inc.Volume20    , UnitVolume, ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".total.inc.mass"        , TYPE_LREAL, VARF_RSH_, &Total.Inc.Mass        , UnitMass  , ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".total.raw.volume"      , TYPE_LREAL, VARF_RSH_, &Total.Raw.Volume      , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.raw.volume15"    , TYPE_LREAL, VARF_RSH_, &Total.Raw.Volume15    , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.raw.volume20"    , TYPE_LREAL, VARF_RSH_, &Total.Raw.Volume20    , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.raw.mass"        , TYPE_LREAL, VARF_RSH_, &Total.Raw.Mass        , UnitMass  , 0));
-	list.push_back(new rVariable(Alias + ".total.past.volume"     , TYPE_LREAL, VARF_RSH_, &Total.Past.Volume     , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.past.volume15"   , TYPE_LREAL, VARF_RSH_, &Total.Past.Volume15   , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.past.volume20"   , TYPE_LREAL, VARF_RSH_, &Total.Past.Volume20   , UnitVolume, 0));
-	list.push_back(new rVariable(Alias + ".total.past.mass"       , TYPE_LREAL, VARF_RSH_, &Total.Past.Mass       , UnitMass  , 0));
+	list.add(Alias + ".Product"               , TYPE_UDINT, rVariable::Flags::RS_L, &Product               , U_DIMLESS , ACCESS_SA);
+	list.add(Alias + ".Setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value           , U_DIMLESS , ACCESS_SA);
+	list.add(Alias + ".total.present.volume"  , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume  , UnitVolume, 0);
+	list.add(Alias + ".total.present.volume15", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume15, UnitVolume, 0);
+	list.add(Alias + ".total.present.volume20", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume20, UnitVolume, 0);
+	list.add(Alias + ".total.present.mass"    , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Mass    , UnitMass  , 0);
+	list.add(Alias + ".total.inc.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume      , UnitVolume, ACCESS_SA);
+	list.add(Alias + ".total.inc.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume15    , UnitVolume, ACCESS_SA);
+	list.add(Alias + ".total.inc.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume20    , UnitVolume, ACCESS_SA);
+	list.add(Alias + ".total.inc.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Mass        , UnitMass  , ACCESS_SA);
+	list.add(Alias + ".total.raw.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume      , UnitVolume, 0);
+	list.add(Alias + ".total.raw.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume15    , UnitVolume, 0);
+	list.add(Alias + ".total.raw.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume20    , UnitVolume, 0);
+	list.add(Alias + ".total.raw.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Mass        , UnitMass  , 0);
+	list.add(Alias + ".total.past.volume"     , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume     , UnitVolume, 0);
+	list.add(Alias + ".total.past.volume15"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume15   , UnitVolume, 0);
+	list.add(Alias + ".total.past.volume20"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume20   , UnitVolume, 0);
+	list.add(Alias + ".total.past.mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Mass       , UnitMass  , 0);
 
-	list.push_back(new rVariable(Alias + ".fault"                 , TYPE_UDINT, VARF_R___, &Fault                 , U_DIMLESS , 0));
+	list.add(Alias + ".fault"                 , TYPE_UDINT, rVariable::Flags::R___, &Fault                 , U_DIMLESS , 0);
 
 	return 0;
 }
@@ -261,7 +262,7 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 
 
-UDINT rStation::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rStation::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Temp.Limit.Setup.Init(0);
 	Pres.Limit.Setup.Init(0);
@@ -271,7 +272,7 @@ UDINT rStation::SaveKernel(FILE *file, UDINT isio, const string &objname, const 
 	FlowVolume15.Limit.Setup.Init(0);
 	FlowVolume20.Limit.Setup.Init(0);
 
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(file, isio, objname, comment, isglobal);
 }
 
 

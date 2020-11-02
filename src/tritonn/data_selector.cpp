@@ -21,7 +21,8 @@
 #include "event_manager.h"
 #include "data_manager.h"
 #include "data_link.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_selector.h"
 #include "xml_util.h"
 
@@ -193,8 +194,8 @@ UDINT rSelector::Calculate()
 // Генерация Inputs/Outputs
 void rSelector::GenerateIO()
 {
-	Inputs.clear();
-	Outputs.clear();
+	m_inputs.clear();
+	m_outputs.clear();
 
 	if(Setup.Value & SELECTOR_SETUP_MULTI)
 	{
@@ -236,41 +237,41 @@ void rSelector::GenerateIO()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSelector::GenerateVars(vector<rVariable *> &list)
+UDINT rSelector::generateVars(rVariableList& list)
 {
 	string alias_unit   = "";
 	string alias_keypad = "";
 
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
-	list.push_back(new rVariable(Alias + ".Select"    , TYPE_INT  , VARF____L, &Select.Value, U_DIMLESS, ACCESS_SELECT));
-	list.push_back(new rVariable(Alias + ".inputcount", TYPE_UINT , VARF_R___, &CountInputs , U_DIMLESS, 0));
-	list.push_back(new rVariable(Alias + ".Setup"     , TYPE_UINT , VARF_RS__, &Setup.Value , U_DIMLESS, ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".Mode"      , TYPE_UINT , VARF____L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT));
+	list.add(Alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L, &Select.Value, U_DIMLESS, ACCESS_SELECT);
+	list.add(Alias + ".inputcount", TYPE_UINT , rVariable::Flags::R___, &CountInputs , U_DIMLESS, 0);
+	list.add(Alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value , U_DIMLESS, ACCESS_SA);
+	list.add(Alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
 
-	list.push_back(new rVariable(Alias + ".fault"     , TYPE_UDINT, VARF_R___, &Fault       , U_DIMLESS, 0));
+	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault       , U_DIMLESS, 0);
 
 	// Мультиселектор
 	if(Setup.Value & SELECTOR_SETUP_MULTI)
 	{
-		list.push_back(new rVariable(Alias + ".selectorcount", TYPE_UINT, VARF_R___, &CountGroups , U_DIMLESS, 0));
+		list.add(Alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0);
 
 		for(UDINT grp = 0; grp < CountGroups; ++grp)
 		{
 			alias_unit   = String_format("%s.%s.keypad.unit" , Alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", Alias.c_str(), NameInput[grp].c_str());
 
-			list.push_back(new rVariable(alias_unit  , TYPE_UDINT, VARF_R__L,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0));
-			list.push_back(new rVariable(alias_keypad, TYPE_LREAL, VARF____L, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD));
+			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0);
+			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___L, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD);
 		}
 	}
 	else
 	{
-		list.push_back(new rVariable(Alias + ".keypad.unit" , TYPE_UDINT, VARF_R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0));
-		list.push_back(new rVariable(Alias + ".Keypad.value", TYPE_LREAL, VARF____L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD));
+		list.add(Alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
+		list.add(Alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 

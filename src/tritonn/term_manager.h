@@ -16,14 +16,14 @@
 #pragma once
 
 #include "tcp_class.h"
-
+#include "variable_class.h"
 
 class  rTermClient;
 struct rPacketLoginData;
 struct rPacketSetData;
 struct rPacketGetData;
 
-class rTermManager: public rTCPClass
+class rTermManager: public rTCPClass//, public rVariableClass
 {
 public:
 	virtual ~rTermManager();

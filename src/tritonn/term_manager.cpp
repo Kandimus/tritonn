@@ -16,8 +16,8 @@
 #include <string.h>
 #include "log_manager.h"
 #include "data_manager.h"
-#include "data_variable.h"
 #include "users.h"
+#include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "packet_get.h"
 #include "packet_getanswe.h"
@@ -179,9 +179,9 @@ UDINT rTermManager::PacketLogin(rTermClient *client, rPacketLoginData *packet)
 	rPacketLoginAnswe answe;
 
 	answe.Data.Access  = client->User->GetAccess();
-	rDataManager::Instance().GetVersion(answe.Data.Version);
-	rDataManager::Instance().GetState  (answe.Data.State);
-	rDataManager::Instance().GetConfigInfo(answe.Data.Config);
+	rDataManager::instance().GetVersion(answe.Data.Version);
+	rDataManager::instance().GetState  (answe.Data.State);
+	rDataManager::instance().GetConfigInfo(answe.Data.Config);
 
 	Send(client, &answe.Data, LENGTH_PACKET_LOGINANSWE);
 
@@ -202,7 +202,7 @@ UDINT rTermManager::PacketSet(rTermClient *client, rPacketSetData *packet)
 //	TRACEW(LogMask, "Packet Set %s", packet->Name[0]);
 
 	rPacketSetAnswe answe;
-	rSnapshot       ss(client->User->GetAccess());
+	rSnapshot       ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
 
 	answe.Data.UserData = packet->UserData;
 	answe.Data.Count    = packet->Count;
@@ -212,20 +212,20 @@ UDINT rTermManager::PacketSet(rTermClient *client, rPacketSetData *packet)
 		string      name   = packet->Name[ii];
 		string      val    = packet->Value[ii];
 
-		ss.Add(name, val);
+		ss.add(name, val);
 
 		// Копируем имя переменной из входящего пакета в исходящий
 		memcpy(answe.Data.Name[ii], packet->Name[ii], MAX_VARIABLE_LENGTH);
 	}
 
-	rDataManager::Instance().Set(ss);
+	ss.set();
 
 	for(UDINT ii = 0; ii < packet->Count; ++ii)
 	{
 
-		answe.Data.Result[ii] = ss[ii]->GetStatus();
+		answe.Data.Result[ii] = ss[ii]->getStatus();
 
-		strncpy(answe.Data.Value[ii], ss[ii]->GetValueString().c_str(), MAX_VARVALUE_LENGTH);
+		strncpy(answe.Data.Value[ii], ss[ii]->getValueString().c_str(), MAX_VARVALUE_LENGTH);
 	}
 
 	Send(client, &answe.Data, LENGTH_PACKET_SETANSWE);
@@ -246,7 +246,7 @@ UDINT rTermManager::PacketGet(rTermClient *client, rPacketGetData *packet)
 
 	//TRACEW(LogMask, "Packet Get.");
 
-	rSnapshot       ss(client->User->GetAccess());
+	rSnapshot       ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
 	rPacketGetAnswe answe;
 
 	answe.Data.UserData = packet->UserData;
@@ -256,15 +256,15 @@ UDINT rTermManager::PacketGet(rTermClient *client, rPacketGetData *packet)
 	{
 		memcpy(answe.Data.Name[ii], packet->Name[ii], MAX_VARIABLE_LENGTH);
 
-		ss.Add(packet->Name[ii]);
+		ss.add(packet->Name[ii]);
 	}
 
-	rDataManager::Instance().Get(ss);
+	ss.get();
 
 	for(UDINT ii = 0; ii < packet->Count; ++ii)
 	{
-		strncpy(answe.Data.Value[ii], ss[ii]->GetValueString().c_str(), MAX_VARVALUE_LENGTH);
-		answe.Data.Result[ii] = ss[ii]->GetStatus();
+		strncpy(answe.Data.Value[ii], ss[ii]->getValueString().c_str(), MAX_VARVALUE_LENGTH);
+		answe.Data.Result[ii] = ss[ii]->getStatus();
 	}
 
 	Send(client, &answe.Data, LENGTH_PACKET_GETANSWE);

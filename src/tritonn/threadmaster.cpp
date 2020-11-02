@@ -18,7 +18,10 @@
 #include <sys/sysinfo.h>
 #include "locker.h"
 #include "tickcount.h"
-#include "data_variable.h"
+//#include "data_manager.h"
+#include "variable_item.h"
+#include "variable_list.h"
+#include "variable_class.h"
 #include "threadmaster.h"
 #include "log_manager.h"
 #include "stringex.h"
@@ -26,9 +29,9 @@
 #include "units.h"
 
 
-rThreadMaster::rThreadMaster()
+rThreadMaster::rThreadMaster() : rVariableClass(Mutex)
 {
-	RTTI          = "rThreadMaster";
+	RTTI = "rThreadMaster";
 }
 
 
@@ -45,23 +48,23 @@ rThreadMaster::~rThreadMaster()
 
 //-------------------------------------------------------------------------------------------------
 // Получение данных от менеджера данных
-UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
+UDINT rThreadMaster::add(rThreadClass *thread, UDINT flags, const std::string& alias)
 {
-	rLocker lock(Mutex); lock.Nop();
+	rLocker lock(Mutex); UNUSED(lock);
 
-	rThreadInfo *info = new rThreadInfo();
+	rInfo *info = new rInfo();
 
-	info->Class           = thread;
-	info->Flags           = flags;
-	info->Thread          = thread->GetThread();
-	info->Counter         = 0;
-	info->CntAvrMax       = 0;
-	info->TimeAvr.IdleMin = 0xFFFFFFFF;
-	info->TimeAvr.WorkMin = 0xFFFFFFFF;
+	info->m_class           = thread;
+	info->m_flags           = flags;
+	info->m_thread          = thread->GetThread();
+	info->m_counter         = 0;
+	info->m_cntAvrMax       = 0;
+	info->m_timeAvr.IdleMin = 0xFFFFFFFF;
+	info->m_timeAvr.WorkMin = 0xFFFFFFFF;
 
-	List.push_back(info);
+	m_list.push_back(info);
 
-	GenerateVars(info, alias);
+	generateVars(info, alias);
 
 	if(flags & TMF_NOTRUN) return TRITONN_RESULT_OK;
 
@@ -69,16 +72,16 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 	{
 		mSleep(50);
 
-		info->Status = info->Class->GetStatus();
+		info->m_status = info->m_class->GetStatus();
 
-		if(info->Status == rThreadStatus::FINISHED)
+		if(info->m_status == rThreadStatus::FINISHED)
 		{
 			TRACEERROR("Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
 			return 1;
 		}
 	}
-	while(info->Status != rThreadStatus::RUNNING);
+	while(info->m_status != rThreadStatus::RUNNING);
 
 	return TRITONN_RESULT_OK;
 }
@@ -89,25 +92,25 @@ UDINT rThreadMaster::Add(rThreadClass *thread, UDINT flags, const string& alias)
 
 //-------------------------------------------------------------------------------------------------
 //
-void rThreadMaster::CloseAll()
+void rThreadMaster::closeAll()
 {
-	for (DINT ii = List.size() - 1; ii >= 0; --ii) {
-		string name = List[ii]->Class->GetRTTI();
+	for (DINT ii = m_list.size() - 1; ii >= 0; --ii) {
+		std::string name = m_list[ii]->m_class->GetRTTI();
 
-		List[ii]->Class->Finish();
-		pthread_join(*List[ii]->Thread, NULL);
+		m_list[ii]->m_class->Finish();
+		pthread_join(*m_list[ii]->m_thread, NULL);
 
-		if((List[ii]->Flags & TMF_DELETE) && List[ii]->Class)
+		if((m_list[ii]->m_flags & TMF_DELETE) && m_list[ii]->m_class)
 		{
-			delete List[ii]->Class;
+			delete m_list[ii]->m_class;
 		}
 
-		delete List[ii];
+		delete m_list[ii];
 
 		TRACEERROR("--------- Поток %s закрыт!", name.c_str());
 	}
 
-	List.clear();
+	m_list.clear();
 
 	Finish();
 }
@@ -127,31 +130,26 @@ rThreadStatus rThreadMaster::Proccesing()
 
 	while(true)
 	{
-		GetCPUState(cpu_start);
-
 		// Обработка команд нити
 		rThreadStatus thread_status = rThreadClass::Proccesing();
 		if(!THREAD_IS_WORK(thread_status))
 		{
-			CloseAll();
+			closeAll();
 			Closed();
 			return rThreadStatus::CLOSED;
 		}
 
 		// Следим за всеми потоками
-		for(UDINT ii = 0; ii < List.size(); ++ii)
-		{
-			rThreadInfo *thread_info = List[ii];
+		for (auto item : m_list) {
+			item->m_status = item->m_class->GetStatus();
 
-			thread_info->Status = thread_info->Class->GetStatus();
-
-			if(THREAD_IS_WORK(thread_info->Status))
+			if(THREAD_IS_WORK(item->m_status))
 			{
-				thread_info->Flags &= ~TMF_NOTRUN;
+				item->m_flags &= ~TMF_NOTRUN;
 			}
-			else if(!(thread_info->Flags & TMF_NOTRUN))
+			else if(!(item->m_flags & TMF_NOTRUN))
 			{
-				TRACEERROR("--------- Аварийное закрытие потока %s!", thread_info->Class->GetRTTI());
+				TRACEERROR("--------- Аварийное закрытие потока %s!", item->m_class->GetRTTI());
 				break;
 			}
 
@@ -160,133 +158,67 @@ rThreadStatus rThreadMaster::Proccesing()
 			{
 				if(notruntimer->GetCount() >= 10 * 1000)
 				{
-					thread_info->Flags &= ~TMF_NOTRUN;
+					item->m_flags &= ~TMF_NOTRUN;
 					delete notruntimer;
 					notruntimer = nullptr;
 				}
 			}
 
-			CalcThreadTimeInfo(thread_info);
+			calcThreadTimeInfo(item);
 		}
 
 		if(savetimer.GetCount() >= 5 * 60 * 1000)
 		{
-			SaveAllTimerInfo();
+			saveAllTimerInfo();
 			savetimer.Reset();
 		}
 
-		CalcSysInfo(cpu_start);
-		printf("CPU %.2f%% (%+.2f%%)\n", CurSysInfo.CPUUsage, CurSysInfo.ModifyCPU);
-
-
-		//TRACEERROR("Менеджер данных работает!");
+		m_curSysInfo.calculate();
+		printf("CPU %.2f%% (%+.2f%%)\n", m_curSysInfo.m_usageCPU, m_curSysInfo.m_modifyCPU);
 	} // while
 }
 
 
-
-
-UDINT rThreadMaster::CalcSysInfo(rCPUState &cpu_start)
-{
-	struct sysinfo sys_info;
-	rCPUState  cpu;
-
-	if(sysinfo(&sys_info) != -1)
-	{
-		UDINT freemem = (sys_info.freeram * sys_info.mem_unit) / 1024;
-
-		CurSysInfo.ModifyMem = freemem - CurSysInfo.FreeMem;
-		CurSysInfo.FreeMem   = freemem;
-//		printf("Free memory %ikb (%+ikb)\n", FreeMem, ModifyMem);
-	}
-
-	GetCPUState(cpu);
-
-	float active = cpu.GetActive() - cpu_start.GetActive();
-	float idle   = cpu.GetIdle()   - cpu_start.GetIdle();
-	float total  = active + idle;
-	float usage  = (100.f * active / total);
-
-	CurSysInfo.ModifyCPU = usage - CurSysInfo.CPUUsage;
-	CurSysInfo.CPUUsage  = usage;
-
-	SysInfo.push_back(CurSysInfo);
-
-    return 0;
-}
-
-
-//
-UDINT rThreadMaster::GetCPUState(rCPUState &cpu)
-{
-	FILE *fstat = fopen("/proc/stat", "r");
-
-	if(nullptr == fstat)
-	{
-		return -1;
-	}
-
-	//read values from /proc/pid/stat
-	bzero(&cpu, sizeof(rCPUState));
-
-	if (fscanf(fstat, "%*s %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu",
-						 &cpu.User, &cpu.Nice, &cpu.System, &cpu.Idle, &cpu.IOWait, &cpu.IRQ, &cpu.SoftIRQ, &cpu.Steal, &cpu.Guest, &cpu.GuestNice) == EOF)
-	{
-		fclose(fstat);
-		return -1;
-	}
-
-	fclose(fstat);
-
-	//cpu.TotalUsage = cpu.User + cpu.Nice + cpu.System + cpu.Idle + cpu.IOWait + cpu.IRQ + cpu.SoftIRQ + cpu.Steal + cpu.Guest + cpu.GuestNice;
-
-	return TRITONN_RESULT_OK;
-}
-
-
-
-UDINT rThreadMaster::CalcThreadTimeInfo(rThreadInfo *ti)
+UDINT rThreadMaster::calcThreadTimeInfo(rInfo *ti)
 {
 	UDINT worktime = 0;
 	UDINT idletime = 0;
 	vector<rThreadTimeInfo> vti;
 
-	ti->Class->GetTimeInfo(vti);
+	ti->m_class->GetTimeInfo(vti);
 
-	if(vti.size())
-	{
-		for(UDINT ii = 0; ii < vti.size(); ++ii)
-		{
-			worktime += vti[ii].Work;
-			idletime += vti[ii].Idle;
+	if(vti.size()) {
+		for(auto& item : vti) {
+			worktime += item.Work;
+			idletime += item.Idle;
 		}
 		worktime /= vti.size();
 		idletime /= vti.size();
 	}
 
-	if(worktime < ti->TimeAvr.WorkMin) ti->TimeAvr.WorkMin = worktime;
-	if(worktime > ti->TimeAvr.WorkMax) ti->TimeAvr.WorkMax = worktime;
-	if(idletime < ti->TimeAvr.IdleMin) ti->TimeAvr.IdleMin = idletime;
-	if(idletime > ti->TimeAvr.IdleMax) ti->TimeAvr.IdleMax = idletime;
+	if(worktime < ti->m_timeAvr.WorkMin) ti->m_timeAvr.WorkMin = worktime;
+	if(worktime > ti->m_timeAvr.WorkMax) ti->m_timeAvr.WorkMax = worktime;
+	if(idletime < ti->m_timeAvr.IdleMin) ti->m_timeAvr.IdleMin = idletime;
+	if(idletime > ti->m_timeAvr.IdleMax) ti->m_timeAvr.IdleMax = idletime;
 
-	ti->TimeAvr.WorkAverage = UDINT((LREAL(ti->TimeAvr.WorkAverage) * LREAL(ti->Counter) + LREAL(worktime)) / LREAL(ti->Counter + 1));
-	ti->TimeAvr.IdleAverage = UDINT((LREAL(ti->TimeAvr.IdleAverage) * LREAL(ti->Counter) + LREAL(idletime)) / LREAL(ti->Counter + 1));
-	++ti->Counter;
+	ti->m_timeAvr.WorkAverage = UDINT((LREAL(ti->m_timeAvr.WorkAverage) * LREAL(ti->m_counter) + LREAL(worktime)) / LREAL(ti->m_counter + 1));
+	ti->m_timeAvr.IdleAverage = UDINT((LREAL(ti->m_timeAvr.IdleAverage) * LREAL(ti->m_counter) + LREAL(idletime)) / LREAL(ti->m_counter + 1));
+	++ti->m_counter;
 
-	if(worktime > ti->TimeAvr.WorkAverage || 0 == ti->CntAvrMax)
+	if(worktime > ti->m_timeAvr.WorkAverage || 0 == ti->m_cntAvrMax)
 	{
-		ti->TimeAvr.WorkAvgMax = UDINT((LREAL(ti->TimeAvr.WorkAvgMax) * LREAL(ti->CntAvrMax) + LREAL(worktime)) / LREAL(ti->CntAvrMax + 1));
-		++ti->CntAvrMax;
+		ti->m_timeAvr.WorkAvgMax = UDINT((LREAL(ti->m_timeAvr.WorkAvgMax) * LREAL(ti->m_cntAvrMax) + LREAL(worktime)) / LREAL(ti->m_cntAvrMax + 1));
+		++ti->m_cntAvrMax;
 	}
 
-	ti->TimeInfo.push_back(new rThreadTimeInfo(worktime, idletime));
+	ti->m_timeInfo.push_back(new rThreadTimeInfo(worktime, idletime));
 
 	//printf("%s : work avr %u us, avr max %u us, max %u us\n", ti->Class->GetRTTI(), ti->TimeAvr.WorkAverage, ti->TimeAvr.WorkAvgMax, ti->TimeAvr.WorkMax);
     return 0;
 }
 
 
-UDINT rThreadMaster::SaveAllTimerInfo()
+UDINT rThreadMaster::saveAllTimerInfo()
 {
 	string filename = "";
 	string worktext = "";
@@ -303,57 +235,51 @@ UDINT rThreadMaster::SaveAllTimerInfo()
 	memtext  = "memory;";
 	memmtext = "memory modify;";
 
-	for(UDINT ii = 0; ii < SysInfo.size(); ++ii)
-	{
-		cputext  += String_format("%.2f;", SysInfo[ii].CPUUsage);
-		cpumtext += String_format("%.2f;", SysInfo[ii].ModifyCPU);
-		memtext  += String_format("%u;"  , SysInfo[ii].FreeMem);
-		memmtext += String_format("%i;"  , SysInfo[ii].ModifyMem);
+	for (auto& item : m_sysInfo) {
+		cputext  += String_format("%.2f;", item.m_usageCPU);
+		cpumtext += String_format("%.2f;", item.m_modifyCPU);
+		memtext  += String_format("%u;"  , item.m_freeMem);
+		memmtext += String_format("%i;"  , item.m_modifyMem);
 	}
-	SysInfo.clear();
+	m_sysInfo.clear();
 
 	SimpleFileSave(filename, cputext + "\n" + cpumtext + "\n" + memtext + "\n" + memmtext);
 
 
-	for(UDINT ii = 0; ii < List.size(); ++ii)
-	{
-		rThreadInfo *thread_info = List[ii];
-
-		filename = String_format("%s%s_%u.csv", DIR_TIMEINFO.c_str(), thread_info->Class->GetRTTI(), utime);
+	for (auto thread : m_list) {
+		filename = String_format("%s%s_%u.csv", DIR_TIMEINFO.c_str(), thread->m_class->GetRTTI(), utime);
 		worktext = "work;";
 		idletext = "idle;";
 
-		for(UDINT jj = 0; jj < thread_info->TimeInfo.size(); ++jj)
-		{
-			worktext += String_format("%u;", thread_info->TimeInfo[jj]->Work);
-			idletext += String_format("%u;", thread_info->TimeInfo[jj]->Idle);
+		for (auto ti : thread->m_timeInfo) {
+			worktext += String_format("%u;", ti->Work);
+			idletext += String_format("%u;", ti->Idle);
 
-			delete thread_info->TimeInfo[jj];
-			thread_info->TimeInfo[jj] = nullptr;
+			delete ti;
 		}
 
 		SimpleFileSave(filename, worktext + "\n" + idletext);
 
-		thread_info->TimeInfo.clear();
+		thread->m_timeInfo.clear();
 	}
 
 	return TRITONN_RESULT_OK;
 }
 
 
-UDINT rThreadMaster::GenerateVars(rThreadInfo* ti, const string& alias)
+UDINT rThreadMaster::generateVars(rInfo* ti, const std::string& alias)
 {
 	if (!ti || alias.empty()) {
 		return TRITONN_RESULT_OK;
 	}
 
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Work.Max"    , TYPE_UDINT , VARF_R___, &ti->TimeAvr.WorkMax    , U_DIMLESS, 0));
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Work.Min"    , TYPE_UDINT , VARF_R___, &ti->TimeAvr.WorkMin    , U_DIMLESS, 0));
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Work.AvgMax" , TYPE_UDINT , VARF_R___, &ti->TimeAvr.WorkAvgMax , U_DIMLESS, 0));
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Work.Average", TYPE_UDINT , VARF_R___, &ti->TimeAvr.WorkAverage, U_DIMLESS, 0));
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Idle.Max"    , TYPE_UDINT , VARF_R___, &ti->TimeAvr.IdleMax    , U_DIMLESS, 0));
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Idle.Min"    , TYPE_UDINT , VARF_R___, &ti->TimeAvr.IdleMin    , U_DIMLESS, 0));
-	rVariable::ListVar.push_back(new rVariable("system.diag." + alias + ".Idle.Average", TYPE_UDINT , VARF_R___, &ti->TimeAvr.IdleAverage, U_DIMLESS, 0));
+	m_varList.add("system.diag." + alias + ".Work.Max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".Work.Min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".Work.AvgMax" , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".Work.Average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".Idle.Max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".Idle.Min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".Idle.Average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }

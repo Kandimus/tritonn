@@ -67,17 +67,6 @@ const UDINT  MAX_PACKET_GET_COUNT      = 32;          // Количество п
 
 
 //-------------------------------------------------------------------------------------------------
-// Константы результата записи или чтения переменных
-const UDINT  SS_STATUS_UNDEF           = 0;           // Статус не определен
-const UDINT  SS_STATUS_NOTFOUND        = 1;           // Переменая не найдена
-const UDINT  SS_STATUS_READONLY        = 2;           // Переменная только для чтения (результат записи)
-const UDINT  SS_STATUS_ACCESSDENIED    = 3;           // Доступ запрещен (результат записи)
-const UDINT  SS_STATUS_NOTASSIGN       = 4;           // Значение переменной не присвоено (для последующего чтения)
-const UDINT  SS_STATUS_ASSIGN          = 5;           // Значение переменной присвоено (результат чтения или для записи)
-const UDINT  SS_STATUS_WRITED          = 6;           // Значение записанно (результат записи)
-
-
-//-------------------------------------------------------------------------------------------------
 // Логи
 const UDINT  MAX_LOG_TEXT              = 936;         // Общая длина посылки будет максимум 1024 байт
 const UDINT  MAX_LOG_FILENAME          = 64;
@@ -192,7 +181,7 @@ const UINT   LINK_SETUP_INPUT          = 0x0001;
 const UINT   LINK_SETUP_OUTPUT         = 0x0002;
 const UINT   LINK_SETUP_SIMPLE         = 0x0004;
 const UINT   LINK_SETUP_NONAME         = 0x0008;
-const UINT   LINK_SETUP_WRITEBLE       = 0x0010;
+const UINT   LINK_SETUP_WRITABLE       = 0x0010;
 const UINT   LINK_SETUP_INOUTPUT       = LINK_SETUP_INPUT | LINK_SETUP_OUTPUT;
 const string LINK_SHADOW_NONE          = "";
 

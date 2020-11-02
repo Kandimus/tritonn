@@ -22,8 +22,10 @@
 #include "stringex.h"
 #include "opcua_manager.h"
 #include "log_manager.h"
+#include "data_snapshot_item.h"
 #include "data_manager.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "xml_util.h"
 
 
@@ -138,6 +140,8 @@ const string rOPCUAManager::RootName = "tritonn";
 
 //TODO Вынести создания Сервера в отдельную процедуру!!!
 rOPCUAManager::rOPCUAManager()
+	: rInterface(Mutex),
+	  m_snapshot(rDataManager::instance().getVariableClass())
 {
 	RTTI      = "rOPCUAManager";
 	OPCServer = nullptr;
@@ -224,16 +228,17 @@ rThreadStatus rOPCUAManager::Proccesing()
 		{
 			rLocker lock(Mutex); lock.Nop();
 
-			Snapshot.ResetAssign();
+			m_snapshot.resetAssign();
 
-			rDataManager::Instance().Get(Snapshot);
+			m_snapshot.get();
 			tick.Reset();
+
+			rVariableClass::processing();
+			rThreadClass::EndProccesing();
 		}
 
 		UA_UInt16 timeout = UA_Server_run_iterate(OPCServer, waitInternal);
 		Delay.Set(timeout);
-
-		rThreadClass::EndProccesing();
 	} // while
 }
 
@@ -259,7 +264,7 @@ UDINT rOPCUAManager::StartServer()
 	if(retval != UA_STATUSCODE_GOOD)
 	{
 		//TODO Event
-		rDataManager::Instance().DoHalt(HALT_REASON_OPC | retval);
+		rDataManager::instance().DoHalt(HALT_REASON_OPC | retval);
 		return retval;
 	}
 
@@ -269,24 +274,23 @@ UDINT rOPCUAManager::StartServer()
 
 	AddFolder(RootName);
 
-	rDataManager::Instance().GetAllVariables(Snapshot);
+	m_snapshot.getAllVariables();
+	//m_snapshot.add("hardware.ai6_1.ch_01.simulate.value");
 	result = AddAllVariables();
 
-	if(result != TRITONN_RESULT_OK)
-	{
-		rDataManager::Instance().DoHalt(HALT_REASON_OPC | retval);
+	if (result != TRITONN_RESULT_OK) {
+		rDataManager::instance().DoHalt(HALT_REASON_OPC | retval);
 		return retval;
 	}
 
 	// Запускаем OPC сервер
 	result = UA_Server_run_startup(OPCServer);
-	if(result != UA_STATUSCODE_GOOD)
-	{
+	if (result != UA_STATUSCODE_GOOD) {
 		UA_Server_run_shutdown(OPCServer);
 		UA_Server_delete(OPCServer);
 		OPCServer = nullptr;
 
-		rDataManager::Instance().DoHalt(HALT_REASON_OPC | result);
+		rDataManager::instance().DoHalt(HALT_REASON_OPC | result);
 
 		return retval;
 	}
@@ -309,9 +313,8 @@ UDINT rOPCUAManager::AddAllVariables()
 {
 	UDINT result = TRITONN_RESULT_OK;
 
-	for(UDINT ii = 0; ii < Snapshot.Size(); ++ii)
-	{
-		result = AddVariable(Snapshot[ii]);
+	for(auto item : m_snapshot) {
+		result = AddVariable(item);
 
 		if(TRITONN_RESULT_OK != result) return result;
 	}
@@ -335,7 +338,7 @@ UDINT rOPCUAManager::AddVariable(const rSnapshotItem *ssitem)
 		return OPCUA_ERROR_VARNF;
 	}
 
-	const rVariable   *var      = ssitem->GetVariable();
+	const rVariable*   var      = ssitem->getVariable();
 	const UA_DataType *datatype = nullptr;
 
 	if(nullptr == var)
@@ -343,8 +346,8 @@ UDINT rOPCUAManager::AddVariable(const rSnapshotItem *ssitem)
 		return OPCUA_ERROR_VARNF;
 	}
 
-	path = RootName + "." + var->Name;
-	name = var->Name;
+	path = RootName + "." + var->getName();
+	name = var->getName();
 	pos  = path.rfind('.');
 
 	if(pos > 0)
@@ -379,7 +382,7 @@ UDINT rOPCUAManager::AddVariable(const rSnapshotItem *ssitem)
 //	attr.dataType    = datatype->typeId;
 	attr.accessLevel = UA_ACCESSLEVELMASK_READ;
 
-	if(!(var->Flags & VARF_READONLY))
+	if(!var->isReadonly())
 	{
 		attr.accessLevel |= UA_ACCESSLEVELMASK_WRITE;
 	}
@@ -455,7 +458,7 @@ const UA_DataType *rOPCUAManager::GetTypeUA(const rVariable *var)
 {
 	if(nullptr == var) return nullptr;
 
-	switch(var->Type)
+	switch(var->getType())
 	{
 		case TYPE_SINT:  return &UA_TYPES[UA_TYPES_SBYTE];
 		case TYPE_USINT: return &UA_TYPES[UA_TYPES_BYTE];
@@ -473,12 +476,12 @@ const UA_DataType *rOPCUAManager::GetTypeUA(const rVariable *var)
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rOPCUAManager::LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
+UDINT rOPCUAManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
 {
 	tinyxml2::XMLElement *xml_properties = nullptr;
 	UDINT                 err          = 0;
 
-	rInterface::LoadFromXML(xml_root, cfg);
+	rInterface::loadFromXML(xml_root, cfg);
 
 	Alias = "comms.opcua";
 
@@ -544,7 +547,7 @@ UDINT rOPCUAManager::GetNodeValue(const UA_NodeId *node, UA_DataValue *dataValue
 		{
 			rLocker lock(Mutex); lock.Nop();
 
-			link->Item->GetBuffer(link->Value);
+			link->Item->getBuffer(link->Value);
 			UA_Variant_setScalarCopy(&dataValue->value, link->Value, link->UAType);
 			dataValue->hasValue = true;
 
@@ -567,15 +570,16 @@ UDINT rOPCUAManager::SetNodeValue(const UA_NodeId *node, const UA_DataValue *dat
 		{
 			if(dataValue->hasValue && UA_Variant_isScalar(&dataValue->value) && dataValue->value.type == link->UAType && dataValue->value.data)
 			{
-				rSnapshot ss;
+				rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 				rLocker lock(Mutex); lock.Nop();
 
-				ss.Add(link->Item->GetVariable()->Name, dataValue->value.data);
-				ss.SetAccess(ACCESS_MASK_ADMIN);
+				ss.add(link->Item->getVariable()->getName(), dataValue->value.data);
 
-				rDataManager::Instance().Set(ss);
+				ss.set();
 
-				if(ss[0]->GetStatus() != SS_STATUS_WRITED) return UA_STATUSCODE_BADNOTWRITABLE;
+				if(!ss[0]->isWrited()) {
+					return UA_STATUSCODE_BADNOTWRITABLE;
+				}
 
 				return UA_STATUSCODE_GOOD;
 			}
@@ -585,10 +589,10 @@ UDINT rOPCUAManager::SetNodeValue(const UA_NodeId *node, const UA_DataValue *dat
 	return UA_STATUSCODE_BADINTERNALERROR;
 }
 
-
-UDINT rOPCUAManager::GenerateVars(vector<rVariable *> &list)
+UDINT rOPCUAManager::generateVars(rVariableClass* parent)
 {
-	UNUSED(list);
+	UNUSED(parent);
+
 	return TRITONN_RESULT_OK;
 }
 

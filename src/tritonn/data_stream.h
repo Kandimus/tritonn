@@ -58,8 +58,8 @@ public:
 
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
-	virtual UDINT SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 
 	virtual const rTotal *GetTotal(void);

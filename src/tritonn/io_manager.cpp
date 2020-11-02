@@ -25,7 +25,7 @@
 #include "io_ai6.h"
 
 
-rIOManager::rIOManager()
+rIOManager::rIOManager() : rVariableClass(Mutex)
 {
 	RTTI = "rIOManager";
 }
@@ -51,7 +51,6 @@ std::unique_ptr<rIOBaseChannel> rIOManager::getChannel(USINT module, USINT chann
 	return m_modules[module]->getChannel(channel);
 }
 
-
 rThreadStatus rIOManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
@@ -69,14 +68,23 @@ rThreadStatus rIOManager::Proccesing()
 			item->processing(rSimpleArgs::instance().isSet(rArg::Simulate));
 		}
 
+		rVariableClass::processing();
+		rThreadClass::EndProccesing();
 		Unlock();
 	}
 }
 
 
-UDINT rIOManager::GenerateVars(vector<rVariable* > &list)
+UDINT rIOManager::generateVars(rVariableClass* parent)
 {
-	list.push_back(new rVariable("hardware.count", TYPE_USINT , VARF_R___, &m_moduleCount, U_DIMLESS , 0));
+	//list.push_back(new rVariable("hardware.count", TYPE_USINT , VARF_R___, &m_moduleCount, U_DIMLESS , 0));
+	for (auto module : m_modules) {
+		module->generateVars("hardware.", m_varList);
+	}
+
+	if (parent) {
+		rVariableClass::linkToExternal(parent);
+	}
 
 	return TRITONN_RESULT_OK;
 }

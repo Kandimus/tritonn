@@ -69,6 +69,17 @@ std::unique_ptr<rIOBaseChannel> rIOAI6::getChannel(USINT num)
 	return module_ptr;
 }
 
+UDINT rIOAI6::generateVars(const std::string& prefix, rVariableList& list)
+{
+	rIOBaseModule::generateVars(prefix, list);
+
+	for (int ii = 0; ii < CHANNEL_COUNT; ++ii) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
+		m_channel[ii].generateVars(p, list);
+	}
+	return TRITONN_RESULT_OK;
+}
+
 
 UDINT rIOAI6::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 {

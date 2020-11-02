@@ -16,14 +16,17 @@
 #pragma once
 
 #include "def.h"
+#include <string>
+
+class rVariableList;
 
 class rIOBaseChannel
 {
 public:
+	rIOBaseChannel();
+	virtual ~rIOBaseChannel();
 
-	rIOBaseChannel() {}
-	virtual ~rIOBaseChannel() {}
-
+	virtual UDINT generateVars(const std::string& name, rVariableList& list);
 	virtual UDINT simulate() = 0;
 
 public:

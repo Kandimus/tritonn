@@ -19,36 +19,22 @@
 #include "safity.h"
 #include "thread_class.h"
 #include "data_config.h"
-#include "data_snapshot.h"
+#include "variable_class.h"
 #include "data_sysvar.h"
 
 
+class rSnapshot;
 class rInterface;
 
 
 //-------------------------------------------------------------------------------------------------
 //
-class rDataManager : public rThreadClass
+class rDataManager : public rThreadClass, public rVariableClass
 {
-public:
-	virtual ~rDataManager();
-
-// Singleton
-private:
-	rDataManager();
-	rDataManager(const rDataManager &);
-	rDataManager& operator=(rDataManager &);
-
-public:
-	static rDataManager &Instance();
+	SINGLETON(rDataManager)
 
 // Методы
 public:
-	// Работа с данными
-	UDINT    Get(rSnapshot &snapshot);
-	UDINT    Set(rSnapshot &snapshot);
-	UDINT    GetAllVariables(rSnapshot &snapshot);
-
 	// Текущий статус и работа со статусами
 	void     SetLiveStatus(USINT status/*, UDINT haltreason*/);
 	USINT    GetLiveStatus();

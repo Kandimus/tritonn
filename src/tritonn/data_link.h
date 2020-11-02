@@ -25,7 +25,6 @@
 class rLink : public rSource
 {
 public:
-	rLink();
 	virtual ~rLink();
 	
 	// Виртуальные функции от rSource
@@ -35,30 +34,32 @@ public:
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
 	virtual UDINT Calculate();
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
+	virtual UDINT generateVars(rVariableList& list);
 
 private:
 	virtual UDINT InitLimitEvent(rLink &link);
 	virtual LREAL GetValue();
 
 public:
-	void  Init(UINT setup, UDINT unit, rSource *owner, const string &ioname, STRID descr);
+	void  Init(UINT setup, UDINT unit, rSource *owner, const std::string &ioname, STRID descr);
 	void  CalculateLimit();
 	STRID GetSourceUnit();
 
 public:
-	string    FullTag;                 // Полное имя тега-источника (пример "sikn.line.io.temp:present")
-	string    Param;                   // Имя параметра-источника (из примера "present")
-	string    IO_Name;                 // Собственное имя источника данных
-	rSource  *Source;                  // Источник данных
-	rSource  *Owner;                   // Куда привязаны
+	std::string FullTag = "";         // Полное имя тега-источника (пример "sikn.line.io.temp:present")
+	std::string Param   = "";         // Имя параметра-источника (из примера "present")
+	std::string IO_Name = "";         // Собственное имя источника данных
+	rSource*    Source  = nullptr;    // Источник данных
+	rSource*    Owner   = nullptr;    // Куда привязаны
 
-	STRID     Unit;                    // Требуемые ед.измерения
-	LREAL     Value;                   // Полученное значение
-	rLimit    Limit;
+	STRID       Unit    = U_any;      // Требуемые ед.измерения
+	LREAL       Value   = 0.0;        // Полученное значение
+	rLimit      Limit;
 
-	UINT      Setup;
-	string    Shadow;
+	UINT        Setup   = 0;
+	std::string Shadow  = "";
+
+	UDINT       m_lineNum;
 
 //private:
 	virtual LREAL GetValue(const string &name, UDINT unit, UDINT &err);

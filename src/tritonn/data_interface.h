@@ -18,32 +18,34 @@
 #include <vector>
 #include "tinyxml2.h"
 #include "def.h"
+#include "variable_class.h"
 
 
 using std::vector;
 
 class  rThreadClass;
 class  rDataConfig;
-class  rVariable;
+class  rVariableList;
 
 
 //-------------------------------------------------------------------------------------------------
 //
-class rInterface
+class rInterface : public rVariableClass
 {
 public:
-	rInterface();
+	rInterface(pthread_mutex_t& mutex);
 	virtual ~rInterface();
 
-	string Alias;
-
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &) = 0;
-	virtual UDINT SaveKernel(FILE *file, const string &objname, const string &comment);
-	virtual UDINT GenerateVars(vector<rVariable *> &list) = 0; // Генерация собственных переменных
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &) = 0;
+	virtual UDINT saveKernel(FILE *file, const string &objname, const string &comment);
+	virtual UDINT generateVars(rVariableClass* parent) = 0; // Генерация собственных переменных
 	virtual UDINT CheckVars(rDataConfig &cfg) = 0;             // Проверка переменных, поиск переменных, сгенерированных другими интерфейсами
 	virtual UDINT StartServer() = 0;
 	virtual rThreadClass *GetThreadClass() = 0;
+
+public:
+	std::string Alias;
 };
 
 

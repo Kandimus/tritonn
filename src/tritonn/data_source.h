@@ -16,18 +16,19 @@
 #pragma once
 
 #include <vector>
-#include "tinyxml2.h"
 #include "def.h"
 #include "units.h"
 #include "event_class.h"
 
-using std::vector;
-
 class  rDataConfig;
-class  rVariable;
+class  rVariableList;
 class  rStation;
 class  rLink;
 class  rTotal;
+
+namespace tinyxml2 {
+	class XMLElement;
+}
 
 
 const UDINT SOURCE_LE_OUTPUT = 0x40000000;
@@ -41,9 +42,9 @@ public:
 	rSource();
 	virtual ~rSource();
 
-	string Alias;                   // Полное имя объекта, формируется из префикса и xml-атрибута "name"
-	STRID  Descr;
-	UDINT  ID;
+	std::string Alias;                   // Полное имя объекта, формируется из префикса и xml-атрибута "name"
+	STRID       Descr;
+	UDINT       ID;
 
 	rStation *Station;
 
@@ -55,8 +56,8 @@ protected:
 
 	// Описание входов-выходов
 	//NOTE На данные структуры нельзя делать ссылки при формировании Variables
-	vector<rLink *> Inputs;
-	vector<rLink *> Outputs;
+	std::vector<rLink*> m_inputs;
+	std::vector<rLink*> m_outputs;
 
 	rEvent &ReinitEvent(UDINT eid);
 	rEvent &ReinitEvent(rEvent &event, UDINT eid);
@@ -72,8 +73,8 @@ public:
 	virtual STRID GetValueUnit(const string &name, UDINT &err);
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
+	virtual UDINT saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT PreCalculate();
 	virtual UDINT Calculate();
 	virtual UDINT PostCalculate();

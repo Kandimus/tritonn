@@ -16,20 +16,17 @@
 #pragma once
 
 #include <vector>
-#include "tinyxml2.h"
 #include "tcp_class.h"
 #include "data_interface.h"
 #include "data_snapshot.h"
 
-using std::vector;
 
-
-class rVariable;
+class rSnapshotItem;
 class rModbusTCPSlaveClient;
 
 struct rModbusLink
 {
-	rSnapshotItem *Item;
+	rSnapshotItem *m_item;
 	UINT           Address;
 };
 
@@ -51,7 +48,7 @@ struct rModbusSwap
 };
 
 
-class rModbusTCPSlaveManager: public rInterface, public rTCPClass
+class rModbusTCPSlaveManager: public rTCPClass, public rInterface
 {
 public:
 	rModbusTCPSlaveManager();
@@ -66,14 +63,14 @@ protected:
 
 // Наследование от rInterface
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
+	virtual UDINT generateVars(rVariableClass* parent);
 	virtual UDINT CheckVars(rDataConfig &cfg);
 	virtual UDINT StartServer();
 	virtual rThreadClass *GetThreadClass();
 
 protected:
-	rSnapshot   Snapshot;
+	rSnapshot   m_snapshot;
 	UINT*       Modbus = nullptr;
 	string      Name;            // Имя объекта, для переменных
 	USINT       SlaveID;

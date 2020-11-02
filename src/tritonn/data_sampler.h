@@ -36,7 +36,7 @@ public:
 
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT GenerateVars(vector<rVariable *> &list);
+	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

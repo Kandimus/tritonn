@@ -22,7 +22,8 @@
 #include "text_id.h"
 #include "event_manager.h"
 #include "data_manager.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_config.h"
 #include "data_counter.h"
 #include "xml_util.h"
@@ -249,16 +250,16 @@ UDINT rCounter::Calculate()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::GenerateVars(vector<rVariable *> &list)
+UDINT rCounter::generateVars(rVariableList& list)
 {
-	rSource::GenerateVars(list);
+	rSource::generateVars(list);
 
 	// Variables
-	list.push_back(new rVariable(Alias + ".setcount", TYPE_UDINT, VARF_RSH_, &SetCount   , U_DIMLESS, ACCESS_SA));
-	list.push_back(new rVariable(Alias + ".Count"   , TYPE_UINT , VARF_R_H_, &Count      , U_DIMLESS, 0));
-	list.push_back(new rVariable(Alias + ".Setup"   , TYPE_UINT , VARF_RS_L, &Setup.Value, U_DIMLESS, ACCESS_SA));
+	list.add(Alias + ".setcount", TYPE_UDINT, rVariable::Flags::RSH_, &SetCount   , U_DIMLESS, ACCESS_SA);
+	list.add(Alias + ".Count"   , TYPE_UINT , rVariable::Flags::R_H_, &Count      , U_DIMLESS, 0);
+	list.add(Alias + ".Setup"   , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value, U_DIMLESS, ACCESS_SA);
 
-	list.push_back(new rVariable(Alias + ".fault"   , TYPE_UDINT, VARF_R___, &Fault      , U_DIMLESS, 0));
+	list.add(Alias + ".fault"   , TYPE_UDINT, rVariable::Flags::R___, &Fault      , U_DIMLESS, 0);
 
 	return 0;
 }
@@ -282,12 +283,12 @@ UDINT rCounter::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 }
 
 
-UDINT rCounter::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rCounter::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Impulse.Limit.Setup.Init(0);
 	Freq.Limit.Setup.Init(0);
 	Period.Limit.Setup.Init(0);
 
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(file, isio, objname, comment, isglobal);
 }
 

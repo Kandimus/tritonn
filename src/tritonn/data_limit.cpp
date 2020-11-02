@@ -21,9 +21,9 @@
 //#include "data_selector.h"
 #include "event_eid.h"
 #include "event_manager.h"
-//#include "data_manager.h"
 #include "data_config.h"
-#include "data_variable.h"
+#include "variable_item.h"
+#include "variable_list.h"
 #include "data_limit.h"
 #include "xml_util.h"
 
@@ -120,17 +120,17 @@ UINT rLimit::Calculate(LREAL val, UDINT check)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLimit::GenerateVars(vector<rVariable *> &list, const string &owner_name, STRID owner_unit)
+UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit)
 {
 	if(Setup.Value & LIMIT_SETUP_OFF) return 0;
 
-	list.push_back(new rVariable(owner_name + ".LoLo"      , TYPE_LREAL, VARF____L, &AMin.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".Lo"        , TYPE_LREAL, VARF____L, &WMin.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".Hi"        , TYPE_LREAL, VARF____L, &WMax.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".HiHi"      , TYPE_LREAL, VARF____L, &AMax.Value      , owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".Hysteresis", TYPE_LREAL, VARF____L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS));
-	list.push_back(new rVariable(owner_name + ".status"    , TYPE_UINT , VARF_R___, &Status          , U_DIMLESS , 0));
-	list.push_back(new rVariable(owner_name + ".setup"     , TYPE_UINT , VARF_RS_L, &Setup.Value     , U_DIMLESS , ACCESS_LIMITS));
+	list.add(owner_name + ".LoLo"      , TYPE_LREAL, rVariable::Flags::___L, &AMin.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".Lo"        , TYPE_LREAL, rVariable::Flags::___L, &WMin.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".Hi"        , TYPE_LREAL, rVariable::Flags::___L, &WMax.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".HiHi"      , TYPE_LREAL, rVariable::Flags::___L, &AMax.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".Hysteresis", TYPE_LREAL, rVariable::Flags::___L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R___, &Status          , U_DIMLESS , 0);
+	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value     , U_DIMLESS , ACCESS_LIMITS);
 
 	return 0;
 }
