@@ -38,7 +38,7 @@ public:
 	const rVariable* findVar(const std::string& name);
 
 protected:
-	UDINT writeExt(rVariableList& varlist);
+	UDINT writeExt(rVariableList& extvarlist);
 	UDINT readExt(rVariableList& varlist);
 	UDINT addExternal(rVariableList& varlist);
 	UDINT linkToExternal(rVariableClass* extlist);

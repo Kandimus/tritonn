@@ -154,58 +154,68 @@ UDINT rVariableClass::getAllVariables(rSnapshot& snapshot)
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rVariableClass::writeExt(rVariableList& varlist)
+UDINT rVariableClass::writeExt(rVariableList& extvarlist)
 {
 	rLocker locker(m_mutex); UNUSED(locker);
 
-	for (auto var : varlist) {
-		if (!var) {
+	for (auto extvar : extvarlist) {
+		if (!extvar) {
 			continue;
 		}
 
-		if (!var->m_external || !var->m_pointer) {
+		if (!extvar->m_external || !extvar->m_pointer) {
 			continue;
 		}
 
-		if (!var->m_external->m_var) {
+		if (!extvar->m_external->m_var) {
 			continue;
 		}
 
-		rVariable* myvar = var->m_external->m_var;
+		rVariable* localvar = extvar->m_external->m_var;
 
-		if (!myvar->isExternal() || !myvar->m_external) {
+		if (!localvar->isExternal() || !localvar->m_external) {
 			continue;
 		}
 
-		if (myvar->m_external->m_var != var) {
+		if (localvar->m_external->m_var != extvar) {
 			continue;
 		}
 
-		std::memcpy(myvar->m_external->m_read, var->m_pointer, EPT_SIZE[var->getType()]);
+		std::memcpy(localvar->m_external->m_read, extvar->m_pointer, EPT_SIZE[extvar->getType()]);
 	}
 
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rVariableClass::readExt(rVariableList& varlist)
+UDINT rVariableClass::readExt(rVariableList& extvarlist)
 {
 	rLocker locker(m_mutex); UNUSED(locker);
 
-	for (auto var : varlist) {
-		if (!var) {
+	for (auto extvar : extvarlist) {
+		if (!extvar) {
 			continue;
 		}
 
-		if (!var->isExternal() || !var->m_external->m_var) {
+		if (!extvar->m_external) {
 			continue;
 		}
 
-		if (!var->m_external->m_isWrited) {
+		rVariable* localvar = extvar->m_external->m_var;
+
+		if (!localvar->isExternal() || !localvar->m_external) {
 			continue;
 		}
 
-		memcpy(var->m_external->m_var->m_pointer, var->m_external->m_write, EPT_SIZE[var->getType()]);
-		var->m_external->m_isWrited = false;
+		if (extvar != localvar->m_external->m_var) {
+			continue;
+		}
+
+		if (!localvar->m_external->m_isWrited) {
+			continue;
+		}
+
+		memcpy(extvar->m_pointer, localvar->m_external->m_write, EPT_SIZE[extvar->getType()]);
+		localvar->m_external->m_isWrited = false;
 	}
 
 	return TRITONN_RESULT_OK;

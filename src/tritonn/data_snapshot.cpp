@@ -143,7 +143,17 @@ bool rSnapshot::set()
 		return false;
 	}
 
-	m_varClass->get(*this);
+	m_varClass->set(*this);
+	return true;
+}
+
+bool rSnapshot::getAllVariables()
+{
+	if (!m_varClass) {
+		return false;
+	}
+
+	m_varClass->getAllVariables(*this);
 	return true;
 }
 

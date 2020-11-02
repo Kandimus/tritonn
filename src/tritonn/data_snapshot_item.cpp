@@ -157,7 +157,7 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, void *buf)
 	}
 
 	m_var    = var;
-	m_status = Status::ASSIGNED;
+	m_status = Status::TOWRITE;
 
 	memcpy(m_data, buf, EPT_SIZE[m_var->getType()]);
 }
@@ -213,7 +213,7 @@ std::string rSnapshotItem::getValueString()
 
 bool rSnapshotItem::getBuffer(void *buffer) const
 {
-	if (!isAssigned() || !isWrited() || !isToWrite()) {
+	if (!isAssigned()/* || !isWrited() || !isToWrite()*/) {
 		return false;
 	}
 

@@ -3,7 +3,7 @@
           xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module ver="1.0" name="ai6_1" type="AI6">
-		  <channel number="0" setup="NOICE | SMOOTH" />
+		  <channel number="0" setup="NOICE | SMOOTH" type=""/>
 		</module>
 	</hardware>
 	<config>
@@ -28,7 +28,7 @@
           </limit>
         </limits>
       </ai>
-      <ai name="ai00" mode="PHIS" setup="NOICE | LASTGOOD" description="4001">
+      <ai name="ai00" mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4001">
         <iolink module="0" channel="0"/>
         <unit>16</unit>
         <keypad>12.5</keypad>

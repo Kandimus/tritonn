@@ -123,14 +123,14 @@ int main(int argc, const char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
 	rDataManager::instance().LoadConfig();
-	rDataManager::instance().Run(500);
+	rDataManager::instance().Run(400);
 
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "system.data");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Стартуем обмен с модулями IO
-	rIOManager::instance().Run(500);
+	rIOManager::instance().Run(400);
 
 	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "system.io");
 

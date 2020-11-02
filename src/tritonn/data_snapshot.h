@@ -53,6 +53,7 @@ public:
 	void  clear();
 	bool  get();
 	bool  set();
+	bool  getAllVariables();
 
 	rSnapshotItem* last() const;
 	std::vector<rSnapshotItem*>::iterator begin() { return m_list.begin(); }

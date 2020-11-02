@@ -232,12 +232,13 @@ rThreadStatus rOPCUAManager::Proccesing()
 
 			m_snapshot.get();
 			tick.Reset();
+
+			rVariableClass::processing();
+			rThreadClass::EndProccesing();
 		}
 
 		UA_UInt16 timeout = UA_Server_run_iterate(OPCServer, waitInternal);
 		Delay.Set(timeout);
-
-		rThreadClass::EndProccesing();
 	} // while
 }
 
@@ -273,7 +274,8 @@ UDINT rOPCUAManager::StartServer()
 
 	AddFolder(RootName);
 
-	rDataManager::instance().getAllVariables(m_snapshot);
+	m_snapshot.getAllVariables();
+	//m_snapshot.add("hardware.ai6_1.ch_01.simulate.value");
 	result = AddAllVariables();
 
 	if (result != TRITONN_RESULT_OK) {

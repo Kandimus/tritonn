@@ -224,7 +224,7 @@ UDINT rAI::Calculate()
 	else //if !virtual
 	{
 		//aidata->StatusCh = OFAISTATUSCH_OK;
-		SetFault();
+		//SetFault();
 	}
 	
 	

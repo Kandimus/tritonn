@@ -8,6 +8,7 @@
 #include "io_ai_channel.h"
 #include "simpletest.h"
 
+const UDINT SleepValue = 800;
 
 S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 {
@@ -18,7 +19,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		ss.add("io.ai_virt.present.value", test_val);
 		ss.set();
 
-		mSleep(600);
+		mSleep(SleepValue);
 
 		ss.clear();
 		ss.add("io.ai_virt.present.value");
@@ -40,11 +41,11 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		ss.add("io.ai00.scales.max"                , 100.0);
 		ss.set();
 
-		mSleep(600);
+		mSleep(SleepValue * 2);
 
 		ss.clear();
 		ss.add("hardware.ai6_1.ch_01.type");
-		ss.add("hardware.ai6_1.ch_01.simulate.type");
+		ss.add("hardware.ai6_1.ch_01.simulate.value");
 		ss.add("io.ai00.present.value");
 		ss.get();
 
@@ -52,7 +53,8 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_CHECK(S_DBL_EQ(ss("io.ai00.present.value")->getValueLREAL(), min_val));
 
 		printf("hardware.ai6_1.ch_01.type = %i\n", ss("hardware.ai6_1.ch_01.type")->getValueUSINT());
-		printf("hardware.ai6_1.ch_01.simulate.type = %i\n", ss("hardware.ai6_1.ch_01.simulate.type")->getValueUSINT());
+		printf("hardware.ai6_1.ch_01.simulate.value = %i\n", ss("hardware.ai6_1.ch_01.simulate.value")->getValueUINT());
+		printf("io.ai00.present.value = %.6f\n", ss("io.ai00.present.value")->getValueLREAL());
 	}
 
 	S_SECTION("set keypad value") {
