@@ -271,15 +271,6 @@ UDINT rDataManager::LoadConfig()
 		SaveKernel();                         // Сохраняем описание ядра
 	}
 
-	//TODO  Тут нужно проверить переменные в интерфейсах
-	for (auto interface : ListInterface) {
-		result = interface->CheckVars(Config);
-		if(TRITONN_RESULT_OK != result)
-		{
-			return CreateConfigHaltEvent(Config);
-		}
-	}
-
 	//--------------------------------------------
 	//TODO Нужно из rTextManager и rEventManager извлеч список языков, и сформировать единый список внутри rDataManager
 	//TODO Сохранить массивы строк для WEB
@@ -404,7 +395,6 @@ UDINT rDataManager::SaveKernel()
 rThreadStatus rDataManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
-	UDINT ii = 0;
 
 	while(true)
 	{
@@ -435,33 +425,24 @@ rThreadStatus rDataManager::Proccesing()
 
 		if(SysVar.State.Live == LIVE_RUNNING)
 		{
-
-			//TODO Получаем данные пришедшие по CAN-шине
-
-//			++Snapshot.IO.AI[0].Code; //TODO Для теста )))
-
 			// Пердвычисления для всех объектов
-			for(ii = 0; ii < ListSource.size(); ++ii)
-			{
-				ListSource[ii]->PreCalculate();
+			for (auto item : ListSource) {
+				item->PreCalculate();
 			}
 
 			// Основной расчет всех объектов
-			for(ii = 0; ii < ListSource.size(); ++ii)
-			{
-				ListSource[ii]->Calculate();
+			for (auto item : ListSource) {
+				item->Calculate();
 			}
 
-			// Пердвычисления для всех объектов
-			for(ii = 0; ii < ListReport.size(); ++ii)
-			{
-				ListReport[ii]->PreCalculate();
+			// Пердвычисления для отчетов
+			for (auto item : ListReport) {
+				item->PreCalculate();
 			}
 
 			// Основной расчет отчетов
-			for(ii = 0; ii < ListReport.size(); ++ii)
-			{
-				ListReport[ii]->Calculate();
+			for (auto item : ListReport) {
+				item->Calculate();
 			}
 		}
 
@@ -491,6 +472,19 @@ UDINT rDataManager::CreateConfigHaltEvent(rDataConfig &cfg)
 
 UDINT rDataManager::StartInterfaces()
 {
+	UDINT result = TRITONN_RESULT_OK;
+
+	rThreadMaster::instance().generateVars(getVariableClass());
+
+	// Проверяем переменные в интерфейсах
+	for (auto interface : ListInterface) {
+		result = interface->CheckVars(Config);
+
+		if(TRITONN_RESULT_OK != result) {
+			return CreateConfigHaltEvent(Config);
+		}
+	}
+
 	for (auto interface : ListInterface) {
 		interface->StartServer();
 	}

@@ -43,6 +43,7 @@ class rSystemInfo
 {
 public:
 	unsigned int m_freeMem;
+	unsigned int m_availableMem;
 	int          m_modifyMem;
 	float        m_usageCPU;
 	float        m_modifyCPU;

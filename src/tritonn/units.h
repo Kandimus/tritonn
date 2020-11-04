@@ -96,6 +96,13 @@ enum UNITID
 	U_msec    = 210,
 	U_sec     = 211,
 
+	// Байты
+	U_bytes   = 224,
+	U_KBytes  = 225,
+	U_MBytes  = 226,
+	U_GBytes  = 227,
+	U_bit     = 228,
+
 	// Прочие
 	U_DIMLESS = 512,
 	U_perc    = 513,

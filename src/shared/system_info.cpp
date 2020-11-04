@@ -26,10 +26,11 @@ bool rSystemInfo::calculate()
 
 	if(sysinfo(&sys_info) != -1)
 	{
-		__kernel_ulong_t freemem = (sys_info.freeram * sys_info.mem_unit) / 1024;
+		__kernel_ulong_t freemem      = (sys_info.freeram * sys_info.mem_unit) / 1024;
 
 		m_modifyMem = freemem - m_freeMem;
 		m_freeMem   = freemem;
+//		m_availableMem =
 	}
 
 	cpu.calculate();

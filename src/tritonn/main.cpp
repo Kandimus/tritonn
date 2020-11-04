@@ -99,7 +99,7 @@ int main(int argc, const char **argv)
 	rLogManager::Instance().StartServer();
 	rLogManager::Instance().Run(10);
 
-	rThreadMaster::instance().add(&rLogManager::Instance(), TMF_NONE, "system.logs");
+	rThreadMaster::instance().add(&rLogManager::Instance(), TMF_NONE, "logs");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ int main(int argc, const char **argv)
 	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
 	rEventManager::instance().Run(100);
 
-	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "system.events");
+	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -125,14 +125,14 @@ int main(int argc, const char **argv)
 	rDataManager::instance().LoadConfig();
 	rDataManager::instance().Run(400);
 
-	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "system.data");
+	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Стартуем обмен с модулями IO
 	rIOManager::instance().Run(400);
 
-	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "system.io");
+	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "io");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ int main(int argc, const char **argv)
 	rTermManager::Instance().Run(500);
 	rTermManager::Instance().StartServer("0.0.0.0", TCP_PORT_TERM);
 
-	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "system.config");
+	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "config");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -148,8 +148,9 @@ int main(int argc, const char **argv)
 	rJSONManager::Instance().Run(500);
 	rJSONManager::Instance().StartServer("0.0.0.0", TCP_PORT_JSON);
 
-	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "system.json");
+	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");
 
+	//
 	rDataManager::instance().StartInterfaces();
 
 	//

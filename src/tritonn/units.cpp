@@ -143,4 +143,11 @@ void rUnits::Init()
 	UNIT_INIT(U_mksec, 0, 1e-3);
 	UNIT_INIT(U_msec , 0, 1e-6);
 	UNIT_INIT(U_sec  , 0, 1e-9);
+
+	//
+	UNIT_INIT(U_bytes , 0, 1.0);
+	UNIT_INIT(U_KBytes, 0, 1024.0);
+	UNIT_INIT(U_MBytes, 0, 1024.0 * 1024.0);
+	UNIT_INIT(U_MBytes, 0, 1024.0 * 1024.0 * 1024.0);
+	UNIT_INIT(U_GBytes, 0, 1024.0 * 1024.0 * 1024.0 * 1024.0);
 }
