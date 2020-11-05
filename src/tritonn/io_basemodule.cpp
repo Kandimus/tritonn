@@ -23,8 +23,6 @@
 #include "units.h"
 
 
-std::string rIOBaseModule::m_rtti = "BaseModule";
-
 rIOBaseModule::rIOBaseModule()
 {
 	pthread_mutex_init(&m_mutex, nullptr);
@@ -72,3 +70,29 @@ UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg
 
 	return TRITONN_RESULT_OK;
 }
+
+std::string rIOBaseModule::saveKernel(const std::string& description)
+{
+	std::string   result = "";
+	rVariableList list;
+
+	generateVars("", list);
+
+	result += String_format("<!--\n%s\n-->\n"
+							"<module name=\"%s\">\n", description.c_str(), getModuleType().c_str());
+
+	result += "\t<values>\n";
+
+	for (auto var : list) {
+		if (var->isHide()) {
+			continue;
+		}
+
+		result += var->saveKernel(1, "\t\t");
+	}
+	result += "\t</values>\n"
+			  "</module>\n";
+
+	return result;
+}
+

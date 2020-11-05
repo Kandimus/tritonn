@@ -29,10 +29,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rLimit::rLimit() : AMin(0), WMin(0), WMax(0), AMax(0), Hysteresis(0.0)
+rLimit::rLimit() :
+	AMin(0), WMin(0), WMax(0), AMax(0), Hysteresis(0.0)
 {
-	Setup  = LIMIT_SETUP_OFF;
-	Status = LIMIT_STATUS_UNDEF;
 }
 
 

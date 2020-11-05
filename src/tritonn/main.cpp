@@ -87,7 +87,6 @@ int main(int argc, const char **argv)
 	//----------------------------------------------------------------------------------------------
 	// Менеджер логирования
 	UDINT logmask = 0;
-	std::string aaa = rSimpleArgs::instance().getOption(rArg::Log);
 	String_IsValidHex(rSimpleArgs::instance().getOption(rArg::Log).c_str(), logmask);
 
 	rLogManager::Instance().Enable.Set(true);
@@ -97,7 +96,7 @@ int main(int argc, const char **argv)
 	TRACEERROR("------------------------------------------");
 	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
 	rLogManager::Instance().StartServer();
-	rLogManager::Instance().Run(10);
+	rLogManager::Instance().Run(16);
 
 	rThreadMaster::instance().add(&rLogManager::Instance(), TMF_NONE, "logs");
 
@@ -182,6 +181,8 @@ int main(int argc, const char **argv)
 			TRACEW(LM_SYSTEM, "Closing...");
 			break;
 		}
+
+		mSleep(100);
 	}
 
 	mSleep(500);

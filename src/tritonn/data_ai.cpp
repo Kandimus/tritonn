@@ -49,24 +49,24 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("PHIS"  , AI_MODE_PHIS)
-				.add("KEYPAD", AI_MODE_MKEYPAD);
+				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
+				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD));
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , rAI::Setup::OFF)
-				.add("NOBUFFER" , rAI::Setup::NOBUFFER)
-				.add("VIRTUAL"  , rAI::Setup::VIRTUAL)
-				.add("NOICE"    , rAI::Setup::NOICE)
-				.add("KEYPAD"   , rAI::Setup::ERR_KEYPAD)
-				.add("LASTGOOD" , rAI::Setup::ERR_LASTGOOD);
+				.add("OFF"      , Setup::OFF)
+				.add("NOBUFFER" , Setup::NOBUFFER)
+				.add("VIRTUAL"  , Setup::VIRTUAL)
+				.add("NOICE"    , Setup::NOICE)
+				.add("KEYPAD"   , Setup::ERR_KEYPAD)
+				.add("LASTGOOD" , Setup::ERR_LASTGOOD);
 	}
 
 	LockErr  = 0;
-	m_setup  = rAI::Setup::OFF;
-	Mode     = AI_MODE_PHIS;
+	m_setup  = Setup::OFF;
+	m_mode   = Mode::PHIS;
 	Code     = AI_CODE_FAULT;
-	m_status = rAI::Status::UNDEF;
+	m_status = Status::UNDEF;
 
 	// Все элементы LastCode приравниваем к -1
 	memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
@@ -138,8 +138,8 @@ UDINT rAI::Calculate()
 		UsedCode      = AI_CODE_FAULT;
 		PhValue.Value = std::numeric_limits<LREAL>::quiet_NaN();
 		Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-		Mode          = AI_MODE_PHIS;
-		m_status      = rAI::Status::UNDEF;
+		m_mode        = Mode::PHIS;
+		m_status      = Status::UNDEF;
 
 		memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
 		return 0;
@@ -203,19 +203,19 @@ UDINT rAI::Calculate()
 			UsedCode = AI_CODE_FAULT;
 			Fault    = 1;
 
-			if(Mode == AI_MODE_PHIS)
+			if(m_mode == Mode::PHIS)
 			{
 				// если симуляция разрешена, то симулируем этот сигнал
-				if(m_setup.Value & rAI::Setup::ERR_KEYPAD)
+				if(m_setup.Value & Setup::ERR_KEYPAD)
 				{
-					Mode = AI_MODE_AKEYPAD;
+					m_mode = Mode::AKEYPAD;
 				}
-				else if(m_setup.Value & rAI::Setup::ERR_LASTGOOD)
+				else if(m_setup.Value & Setup::ERR_LASTGOOD)
 				{
-					Mode = AI_MODE_LASTGOOD;
+					m_mode = Mode::LASTGOOD;
 				}
 
-				m_status = rAI::Status::FAULT; // выставляем флаг ошибки
+				m_status = Status::FAULT; // выставляем флаг ошибки
 			}
 
 			SetFault();
@@ -234,7 +234,7 @@ UDINT rAI::Calculate()
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	if(Mode == AI_MODE_MKEYPAD && !(LockErr & AI_LE_SIM_MANUAL))
+	if(m_mode == Mode::MKEYPAD && !(LockErr & AI_LE_SIM_MANUAL))
 	{
 		LockErr |= AI_LE_SIM_MANUAL;
 		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
@@ -242,7 +242,7 @@ UDINT rAI::Calculate()
 		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_MANUAL));
 	}
 	
-	if(Mode == AI_MODE_AKEYPAD && !(LockErr & AI_LE_SIM_AUTO))
+	if(m_mode == Mode::AKEYPAD && !(LockErr & AI_LE_SIM_AUTO))
 	{
 		LockErr |= AI_LE_SIM_AUTO;
 		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_MANUAL | AI_LE_SIM_LAST);
@@ -250,7 +250,7 @@ UDINT rAI::Calculate()
 		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_AUTO));
 	}
 	
-	if(Mode == AI_MODE_LASTGOOD && !(LockErr & AI_LE_SIM_LAST))
+	if(m_mode == Mode::LASTGOOD && !(LockErr & AI_LE_SIM_LAST))
 	{
 		LockErr |= AI_LE_SIM_LAST;
 		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_MANUAL);
@@ -258,7 +258,7 @@ UDINT rAI::Calculate()
 		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_LAST));
 	}
 	
-	if(Mode == AI_MODE_PHIS && !(LockErr & AI_LE_SIM_OFF))
+	if(m_mode == Mode::PHIS && !(LockErr & AI_LE_SIM_OFF))
 	{
 		LockErr |= AI_LE_SIM_OFF;
 		LockErr &= ~(AI_LE_SIM_MANUAL | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
@@ -274,12 +274,12 @@ UDINT rAI::Calculate()
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// Если сигнал за засимулирован, то значение равно значению симуляции
-	if(Mode == AI_MODE_MKEYPAD || Mode == AI_MODE_AKEYPAD)
+	if(m_mode == Mode::MKEYPAD || m_mode == Mode::AKEYPAD)
 	{
 		Value.Value = KeypadValue.Value;
 	}
 	// Если используем последнее "хорошее" значение
-	else if(Mode == AI_MODE_LASTGOOD)
+	else if(m_mode == Mode::LASTGOOD)
 	{
 		Value.Value = LastGood;
 	}
@@ -290,7 +290,7 @@ UDINT rAI::Calculate()
 		Value.Value = PhValue.Value;
 
 		// Проверяем округление 4 и 20мА
-		if(m_setup.Value & rAI::Setup::NOICE)
+		if(m_setup.Value & Setup::NOICE)
 		{
 			LREAL d = 2.0 * Range / 100.0; // 2% зона нечуствительности
 
@@ -312,33 +312,33 @@ UDINT rAI::Calculate()
 	// ПРЕДЕЛЬНЫЕ ЗНАЧЕНИЯ
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	if(m_status != rAI::Status::FAULT)
+	if(m_status != Status::FAULT)
 	{
 		// Если значение больше чем инж. максимум
 		// ИЛИ
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
 		if(Value.Value > m_scale.Max.Value)
 		{
-			if(oldStatus != rAI::Status::MAX)
+			if(oldStatus != Status::MAX)
 			{
 				rEventManager::instance().Add(ReinitEvent(EID_AI_MAX) << Value.Unit << Value.Value << m_scale.Max.Value);
 			}
 
-			m_status = rAI::Status::MAX;
+			m_status = Status::MAX;
 		}
 		// Инженерный минимум
 		else if(Value.Value < m_scale.Min.Value)
 		{
-			if(oldStatus != rAI::Status::MIN)
+			if(oldStatus != Status::MIN)
 			{
 				rEventManager::instance().Add(ReinitEvent(EID_AI_MIN) << Value.Unit << Value.Value << m_scale.Min.Value);
 			}
 
-			m_status = rAI::Status::MIN;
+			m_status = Status::MIN;
 		}
 		else
 		{
-			m_status = rAI::Status::NORMAL;
+			m_status = Status::NORMAL;
 		}
 	}
 
@@ -353,7 +353,7 @@ UDINT rAI::Calculate()
 	// Сохраняем последнее "хорошее" значение и массив последних "хороших" кодов АЦП
 	// Получается, что если сигнал у нас в ручной симуляции, то "хорошие" значения мы не сохраняем... Хорошо это или плохо?
 	//TODO Нужно еще проверять выход за инженерные пределы!
-	if(m_status != rAI::Status::FAULT && Mode == AI_MODE_PHIS && UsedCode != AI_CODE_FAULT)
+	if(m_status != Status::FAULT && m_mode == Mode::PHIS && UsedCode != AI_CODE_FAULT)
 	{
 		LastGood = Value.Value;
 		
@@ -381,7 +381,7 @@ UDINT rAI::SetFault()
 	Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
 	Current.Value = std::numeric_limits<LREAL>::quiet_NaN();
 	UsedCode      = AI_CODE_FAULT;
-	m_status      = rAI::Status::FAULT;
+	m_status      = Status::FAULT;
 	Fault         = 1;
 
 	return Fault;
@@ -409,7 +409,7 @@ UDINT rAI::generateVars(rVariableList& list)
 	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, Value.Unit, ACCESS_SCALES);
 	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, Value.Unit, ACCESS_SCALES);
 	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS , ACCESS_SA);
-	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode             , U_DIMLESS , ACCESS_KEYPAD);
+	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS , ACCESS_KEYPAD);
 	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS , 0);
 
 	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS , 0);
@@ -422,8 +422,8 @@ UDINT rAI::generateVars(rVariableList& list)
 //
 UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 {
-	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (AI_MODE_PHIS));
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(rAI::Setup::OFF));
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
 	UDINT  err      = 0;
 	UDINT  result   = TRITONN_RESULT_OK;
 
@@ -450,7 +450,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 		return DATACFGERR_AI;
 	}
 
-	Mode = m_flagsMode.getValue(strMode, err);
+	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, err));
 
 	m_setup.Init(m_flagsSetup.getValue(strSetup, err));
 
@@ -475,13 +475,13 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 }
 
 
-UDINT rAI::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rAI::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Value.Limit.Setup.Init(0);
 	PhValue.Limit.Setup.Init(0);
 	Current.Limit.Setup.Init(0);
 
-	return rSource::saveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
 

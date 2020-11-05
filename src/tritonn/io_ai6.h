@@ -44,6 +44,7 @@ public:
 	
 	// Виртуальные функции от rBaseModule
 public:
+	virtual std::string getModuleType() { return "ai6"; }
 	virtual UDINT processing(USINT issim);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);

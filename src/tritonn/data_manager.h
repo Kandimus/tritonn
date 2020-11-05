@@ -75,7 +75,7 @@ private:
 	rDataConfig          Config;   // Конфигурация, связки объектов
 //	string              ConfName;
 
-	rSystemVariable           SysVar;     // Системные переменные
+	rSystemVariable           m_sysVar;     // Системные переменные
 	std::vector<rSource* >    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
 	std::vector<rInterface* > ListInterface;
 	std::vector<rReport* >    ListReport; // Список отчетов

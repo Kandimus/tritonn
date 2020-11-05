@@ -293,13 +293,13 @@ UDINT rThreadMaster::generateThreadVars(rInfo* ti, const std::string& alias)
 		return TRITONN_RESULT_OK;
 	}
 
-	m_varList.add("system.diag." + alias + ".Work.Max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Work.Min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Work.AvgMax" , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Work.Average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Idle.Max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Idle.Min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Idle.Average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.avgmax" , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".idle.max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".idle.min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".idle.average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }

@@ -112,9 +112,10 @@ rThreadStatus rModbusTCPSlaveManager::Proccesing()
 				link->m_item->getBuffer(&Modbus[link->Address]);
 				SwapBuffer(&Modbus[link->Address], link->m_item->getSizeVar());
 			}
-		}
 
-		rThreadClass::EndProccesing();
+			rVariableClass::processing();
+			rThreadClass::EndProccesing();
+		}
 	}
 
 	return rThreadStatus::UNDEF;

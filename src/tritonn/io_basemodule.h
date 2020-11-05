@@ -38,10 +38,12 @@ public:
 	rIOBaseModule();
 	virtual ~rIOBaseModule();
 
+	virtual std::string getModuleType() = 0;
 	virtual UDINT processing(USINT issim) = 0;
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel) = 0;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list);
+	virtual std::string saveKernel(const std::string& description);
 /*
 	Type  getType()         { return m_type; }
 	UINT  getNodeID()       { return m_nodeID; }
@@ -56,8 +58,6 @@ public:
 	UINT  getHardware()     { return m_hardware; }
 */
 public:
-	static std::string m_rtti;
-
 	Type  m_type;
 	UINT  m_nodeID;
 	UDINT m_vendorID;

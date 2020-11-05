@@ -35,13 +35,9 @@ bool rSystemInfo::calculate()
 
 	cpu.calculate();
 
-	float active = cpu.getActive() - m_CPU.getActive();
-	float idle   = cpu.getIdle()   - m_CPU.getIdle();
-	float total  = active + idle;
-	float usage  = (100.f * active / total);
+	double usage  = cpu.getUsage();
 
-	m_CPU       = cpu;
-	m_modifyCPU = usage - m_usageCPU;
+	m_modifyCPU = m_usageCPU - usage;
 	m_usageCPU  = usage;
 
 	return true;

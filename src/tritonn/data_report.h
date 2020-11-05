@@ -117,7 +117,7 @@ public:
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
 	virtual UDINT generateVars(rVariableList& list);
-	virtual UDINT saveKernel(FILE *file, UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
+	virtual std::string saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

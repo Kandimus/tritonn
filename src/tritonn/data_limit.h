@@ -60,8 +60,8 @@ public:
 	rEvent    EventChangeHyst;
 	rEvent    EventChangeSetup;
 
-	UINT      Status;
-	rCmpUINT  Setup;
+	UINT      Status = LIMIT_STATUS_UNDEF;
+	rCmpUINT  Setup  = LIMIT_SETUP_OFF;
 };
 
 

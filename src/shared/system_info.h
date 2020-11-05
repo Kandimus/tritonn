@@ -36,18 +36,18 @@ public:
 	uint64_t getActive() { return m_user + m_nice + m_system + m_IRQ + m_softIRQ + m_steal + m_guest + m_guestNice; }
 	uint64_t getIdle()   { return m_idle + m_IOWait; }
 	uint64_t getTotal()  { return getActive() + getIdle(); }
+	float    getUsage()  { return 100.f * static_cast<float>(getActive()) / static_cast<float>(getTotal()); }
 };
 
 
 class rSystemInfo
 {
 public:
-	unsigned int m_freeMem;
-	unsigned int m_availableMem;
-	int          m_modifyMem;
-	float        m_usageCPU;
-	float        m_modifyCPU;
-	rCPUState    m_CPU;
+	unsigned int m_freeMem    = 0;
+//	unsigned int m_availableMem = 0;
+	int          m_modifyMem  = 0;
+	float        m_usageCPU   = 0.0f;
+	float        m_modifyCPU  = 0.0f;
 
 	bool calculate();
 };

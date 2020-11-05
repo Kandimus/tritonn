@@ -262,7 +262,7 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 
 
-UDINT rStation::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rStation::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Temp.Limit.Setup.Init(0);
 	Pres.Limit.Setup.Init(0);
@@ -272,7 +272,7 @@ UDINT rStation::saveKernel(FILE *file, UDINT isio, const string &objname, const 
 	FlowVolume15.Limit.Setup.Init(0);
 	FlowVolume20.Limit.Setup.Init(0);
 
-	return rSource::saveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
 

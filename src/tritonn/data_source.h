@@ -73,7 +73,7 @@ public:
 	virtual STRID GetValueUnit(const string &name, UDINT &err);
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
-	virtual UDINT saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT PreCalculate();
 	virtual UDINT Calculate();

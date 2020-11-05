@@ -28,12 +28,12 @@ public:
 	rSystemVariable() {}
 	~rSystemVariable() {}
 
-	UDINT SaveKernel(FILE *file);
+	std::string saveKernel();
 	UDINT initVariables(rVariableList& list);
 
 public:
 	rVersion    Ver;
-	rState      State;
+	rState      m_state;
 	Time64_T    UnixTime;
 	STM         DateTime;
 	STM         SetDateTime;
