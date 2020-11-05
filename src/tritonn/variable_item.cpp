@@ -86,3 +86,15 @@ std::string rVariable::saveToCSV()
 
 	return String_format("%s;%s;%#06x;%08X;%#010x;\n", m_name.c_str(), NAME_TYPE[m_type].c_str(), m_flags, m_access, m_hash);
 }
+
+std::string rVariable::saveKernel(UDINT offset, const std::string prefix) const
+{
+	return String_format("%s<value name=\"%s\" type=\"%s\" readonly=\"%i\" loadable=\"%i\" unit=\"%i\" access=\"0x%08X\"/>\n",
+					prefix.c_str(),
+					getName().c_str() + offset,
+					NAME_TYPE[getType()].c_str(),
+					(isReadonly()) ? 1 : 0,
+					(isLodable()) ? 1 : 0,
+					static_cast<UDINT>(getUnit()),
+					getAccess());
+}

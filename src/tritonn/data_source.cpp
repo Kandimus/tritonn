@@ -311,39 +311,42 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rSource::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	const string Tag[2] = {"object", "io"};
+	const std::string Tag[2] = {"object", "io"};
+	std::string result = "";
 	rVariableList list;
 
 	generateVars(list);
 
-	fprintf(file, "<!--\n\t%s\n-->\n", comment.c_str());
+	result += String_format("<!--\n\t%s\n-->\n"
+							"<%s name=\"%s\"",
+							comment.c_str(),
+							Tag[isio ? 1 : 0].c_str(), objname.c_str());
 
-	fprintf(file, "<%s name=\"%s\"", Tag[isio ? 1 : 0].c_str(), objname.c_str());
-	if(!isio) fprintf(file, " global=\"%s\"", (isglobal ? "true" : "false"));
-	fprintf(file, ">\n");
+	if (!isio) {
+		result += String_format(" global=\"%s\"", (isglobal ? "true" : "false"));
+	}
+	result += ">\n\t<values>\n";
 
-	fprintf(file, "\t<values>\n");
 	for (auto var : list) {
 		if (var->isHide()) {
 			continue;
 		}
 
-		fprintf(file, "\t\t<value name=\"%s\" type=\"%s\" readonly=\"%i\" loadable=\"%i\" unit=\"%i\" access=\"0x%08X\"/>\n",
-				var->getName().c_str() + Alias.size() + 1, NAME_TYPE[var->getType()].c_str(),
-				(var->isReadonly()) ? 1 : 0, (var->isLodable()) ? 1 : 0,
-				(UDINT)var->getUnit(), var->getAccess());
+		result += var->saveKernel(Alias.size() + 1, "\t\t");
 	}
-	fprintf(file, "\t</values>\n");
+	result += "\t</values>\n";
 
 	// Входа
 	if (m_inputs.size()) {
-		fprintf(file, "\t<inputs>\n");
+
+		result += "\t<inputs>\n";
+
 		for (auto link : m_inputs) {
 			UDINT shadow_count = 0;
 
-			fprintf(file, "\t\t<input name=\"%s\" unit=\"%i\"", link->IO_Name.c_str(), (UDINT)link->Unit);
+			result += String_format("\t\t<input name=\"%s\" unit=\"%i\"", link->IO_Name.c_str(), (UDINT)link->Unit);
 
 			for (auto sublink : m_inputs) {
 				if (link == sublink) {
@@ -351,43 +354,45 @@ UDINT rSource::saveKernel(FILE *file, UDINT isio, const string &objname, const s
 				}
 
 				if (sublink->Shadow == link->IO_Name) {
-					if(0 == shadow_count) fprintf(file, ">\n");
+					if (0 == shadow_count) {
+						result += ">\n";
+					}
 
-					fprintf(file, "\t\t\t<shadow name=\"%s\"/>\n", sublink->IO_Name.c_str());
+					result += String_format("\t\t\t<shadow name=\"%s\"/>\n", sublink->IO_Name.c_str());
 					++shadow_count;
 				}
 			}
 
-			if(0 == shadow_count)
-			{
-				if(link->Shadow.size()) fprintf(file, " shadow=\"%s\"", link->Shadow.c_str());
-				fprintf(file, "/>\n");
+			if (0 == shadow_count) {
+				if (link->Shadow.size()) {
+					result += String_format(" shadow=\"%s\"", link->Shadow.c_str());
+				}
+				result += "/>\n";
 			}
 			else
 			{
-				fprintf(file, "\t\t</input>\n");
+				result += "\t\t</input>\n";
 			}
 		}
-		fprintf(file, "\t</inputs>\n");
+		result += "\t</inputs>\n";
 	}
 
 	// Outputs
 	if (m_outputs.size()) {
-		fprintf(file, "\t<outputs>\n");
+		result += "\t<outputs>\n";
 
 		for (auto link : m_outputs) {
-			fprintf(file, "\t\t<output name=\"%s\" unit=\"%i\"%s/>\n",
+			result += String_format("\t\t<output name=\"%s\" unit=\"%i\"%s/>\n",
 					link->IO_Name.c_str(), (UDINT)link->Unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
 		}
 
-		fprintf(file, "\t\t<output name=\"fault\" unit=\"512\"/>\n");
-
-		fprintf(file, "\t</outputs>\n");
+		result += "\t\t<output name=\"fault\" unit=\"512\"/>\n"
+				  "\t</outputs>\n";
 	}
 
-	fprintf(file, "</%s>\n", Tag[isio ? 1 : 0].c_str());
+	result += String_format("</%s>\n", Tag[isio ? 1 : 0].c_str());
 
-	return TRITONN_RESULT_OK;
+	return result;
 }
 
 

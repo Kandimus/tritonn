@@ -50,6 +50,15 @@ public:
 		NOICE        = 0x2000,     // Подавление шума около 4 и 20мА
 	};
 
+	// Режимы аналоговых сигналов
+	enum class Mode : UINT
+	{
+		PHIS              = 0,          // Симуляции нет, используется физический сигнал
+		MKEYPAD           = 1,          // Ручное переключение на симуляцию
+		LASTGOOD          = 2,          // Используется последнее хорошее значение
+		AKEYPAD           = 4,          // Автоматическое переключение на симуляцию
+	};
+
 	struct rScale
 	{
 		rScale() : Min(0), Max(100), Code_4mA(10923), Code_20mA(54613) {}
@@ -70,7 +79,7 @@ public:
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
 	virtual UDINT generateVars(rVariableList& list);
-	virtual UDINT saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);
@@ -92,9 +101,9 @@ public:
 	DINT        UsedCode;                // Используемый код АЦП для расчета значения
 	rCmpLREAL   KeypadValue;             // Значение ручного ввода
 	rScale      m_scale;                 // Инженерные пределы токового сигала
-	UINT        Mode;                    // Режим работы
+	Mode        m_mode;                  // Режим работы
 	rCmpUINT    m_setup;                 // Настройка сигнала
-	rAI::Status m_status;                //
+	Status      m_status;                //
 //	STRID       Unit;                    // Номер строки, которая будет использоваться в качесте единиц измерения
 	UDINT       Security;                //
 	UINT        Spline[MAX_AI_SPLINE];   // Массив последних 4 "хороших" кодов АЦП, для сглаживания

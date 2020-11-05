@@ -13,12 +13,14 @@
 //===
 //=================================================================================================
 
+#include "io_manager.h"
+#include "locker.h"
 #include "io_basechannel.h"
 #include "data_config.h"
 #include "units.h"
 #include "simpleargs.h"
 #include "def_arguments.h"
-#include "io_manager.h"
+#include "variable_item.h"
 #include "threadmaster.h"
 #include "tinyxml2.h"
 #include "xml_util.h"
@@ -62,22 +64,22 @@ rThreadStatus rIOManager::Proccesing()
 			return thread_status;
 		}
 
-		Lock();
+		{
+			rLocker lock(Mutex); UNUSED(lock);
 
-		for(auto& item : m_modules) {
-			item->processing(rSimpleArgs::instance().isSet(rArg::Simulate));
+			for(auto& item : m_modules) {
+				item->processing(rSimpleArgs::instance().isSet(rArg::Simulate));
+			}
+
+			rVariableClass::processing();
+			rThreadClass::EndProccesing();
 		}
-
-		rVariableClass::processing();
-		rThreadClass::EndProccesing();
-		Unlock();
 	}
 }
 
 
 UDINT rIOManager::generateVars(rVariableClass* parent)
 {
-	//list.push_back(new rVariable("hardware.count", TYPE_USINT , VARF_R___, &m_moduleCount, U_DIMLESS , 0));
 	for (auto module : m_modules) {
 		module->generateVars("hardware.", m_varList);
 	}
@@ -121,4 +123,21 @@ UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+std::string rIOManager::saveKernel()
+{
+	std::string   result = "";
+	rVariableList list;
+	rIOAI6        ai6;
+
+	ai6.generateVars("hardware.", list);
+
+	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
+
+	result += ai6.saveKernel("Module 6 current/voltage channels");
+
+	result += "</hardware>\n";
+
+	return result;
 }

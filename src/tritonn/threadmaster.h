@@ -45,20 +45,19 @@ protected:
 public:
 	// Работа с нитями
 	UDINT add(rThreadClass* thread, UDINT flags, const string& alias);
+	UDINT generateVars(rVariableClass* varclass);
 
 protected:
 	virtual rThreadStatus Proccesing();
 
 	void  closeAll();
 
-//	UDINT getCPUState(rCPUState& cpu);
-//	UDINT calcSysInfo(rCPUState& cpu_prev);
 	UDINT calcThreadTimeInfo(rInfo* ti);
 	UDINT saveAllTimerInfo();
-	UDINT generateVars(rInfo* ti, const std::string& alias);
+	UDINT generateThreadVars(rInfo* ti, const std::string& alias);
 
 private:
-	std::vector<rInfo*>       m_list; // Список всех нитей
+	std::vector<rInfo*>       m_threadList; // Список всех нитей
 	std::vector<rSystemInfo>  m_sysInfo;  //
 	rSystemInfo               m_curSysInfo;
 	UDINT                     m_timerNotRun = 5000;

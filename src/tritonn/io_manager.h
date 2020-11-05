@@ -38,7 +38,7 @@ public:
 public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
 	UDINT generateVars(rVariableClass* parent);
-	UDINT SaveKernel(FILE* file);
+	std::string saveKernel();
 
 	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);
 

@@ -346,7 +346,7 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 }
 
 
-UDINT rDensSol::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Period.Limit.Setup.Init(0);
 	Temp.Limit.Setup.Init(0);
@@ -361,7 +361,7 @@ UDINT rDensSol::saveKernel(FILE *file, UDINT isio, const string &objname, const 
 	B15.Limit.Setup.Init(0);
 	Y15.Limit.Setup.Init(0);
 
-	return rSource::saveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
 

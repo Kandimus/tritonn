@@ -283,12 +283,12 @@ UDINT rCounter::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 }
 
 
-UDINT rCounter::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rCounter::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Impulse.Limit.Setup.Init(0);
 	Freq.Limit.Setup.Init(0);
 	Period.Limit.Setup.Init(0);
 
-	return rSource::saveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 

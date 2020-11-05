@@ -55,34 +55,27 @@ UDINT rInterface::loadFromXML(tinyxml2::XMLElement *element, rDataConfig &/*cfg*
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rInterface::saveKernel(FILE *file, const string &objname, const string &comment)
+std::string rInterface::saveKernel(const std::string& objname, const std::string& comment)
 {
-	const string Tag[2] = {"", "io"};
+	const std::string Tag[2] = {"", "io"};
+	std::string result = "";
 
 	generateVars(nullptr);
 
-	fprintf(file, "<!--\n\t%s\n-->\n", comment.c_str());
+	result += String_format("<!--\n\t%s\n-->\n"
+							"<interface name=\"%s\">\n", comment.c_str(), objname.c_str());
 
-	fprintf(file, "<interface name=\"%s\">\n", objname.c_str());
-
-	fprintf(file, "\t<values>\n");
+	result += "\t<values>\n";
 	for (auto var : m_varList) {
 		if (var->isHide()) {
 			continue;
 		}
 
-		fprintf(file, "\t\t<value name=\"%s\" type=\"%s\" readonly=\"%i\" loadable=\"%i\" unit=\"%i\" access=\"0x%08X\"/>\n",
-				var->getName().c_str() + Alias.size() + 1, NAME_TYPE[var->getType()].c_str(),
-				(var->isReadonly()) ? 1 : 0,
-				(var->isLodable()) ? 1 : 0,
-				(UDINT)var->getUnit(), var->getAccess());
+		result += var->saveKernel(Alias.size() + 1, "\t\t");
 	}
-	fprintf(file, "\t</values>\n");
+	result += "\t</values>\n</interface>\n";
 
-
-	fprintf(file, "</interface>\n");
-
-	return TRITONN_RESULT_OK;
+	return result;
 }
 
 

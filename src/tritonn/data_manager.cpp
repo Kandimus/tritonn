@@ -50,11 +50,11 @@ extern rSafityValue<DINT> gReboot;
 
 rDataManager::rDataManager() : rVariableClass(Mutex), Live(LIVE_UNDEF), Config()
 {
-	RTTI             = "rDataManager";
-	SysVar.Ver.Major = TRITONN_VERSION_MAJOR;
-	SysVar.Ver.Minor = TRITONN_VERSION_MINOR;
-	SysVar.Ver.Patch = TRITONN_VERSION_PATCH;
-	SysVar.Ver.Build = TRITONN_VERSION_BUILD;
+	RTTI               = "rDataManager";
+	m_sysVar.Ver.Major = TRITONN_VERSION_MAJOR;
+	m_sysVar.Ver.Minor = TRITONN_VERSION_MINOR;
+	m_sysVar.Ver.Patch = TRITONN_VERSION_PATCH;
+	m_sysVar.Ver.Build = TRITONN_VERSION_BUILD;
 
 	Live.Set(LIVE_RUNNING);
 	Halt.Set(false);
@@ -166,26 +166,26 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 // Защиты по мьютексу нет, так как это статические данные и не меняются
 void rDataManager::GetVersion(rVersion &ver) const
 {
-	ver = SysVar.Ver;
+	ver = m_sysVar.Ver;
 }
 
 void rDataManager::GetState(rState &state)
 {
 	rLocker locker(Mutex); locker.Nop();
 
-	state = SysVar.State;
+	state = m_sysVar.m_state;
 }
 
 void rDataManager::GetTime(struct tm &sdt)
 {
 	rLocker locker(Mutex); locker.Nop();
 
-	sdt = SysVar.DateTime;
+	sdt = m_sysVar.DateTime;
 }
 
 void rDataManager::GetConfigInfo(rConfigInfo &conf) const
 {
-	conf = SysVar.ConfigInfo;
+	conf = m_sysVar.ConfigInfo;
 }
 
 
@@ -206,7 +206,7 @@ UDINT rDataManager::LoadConfig()
 
 	rDataConfig::InitBitFlags();
 
-	strcpy(SysVar.Lang, LANG_RU.c_str());
+	strcpy(m_sysVar.Lang, LANG_RU.c_str());
 
 	// Устанавливаем флаг, что загружаемся
 	SetLiveStatus(LIVE_STARTING);
@@ -223,7 +223,7 @@ UDINT rDataManager::LoadConfig()
 
 		//TODO проверить на валидность hash
 		TRACEI(LM_SYSTEM | LM_I, "Load config file '%s'", conf.c_str());
-		result = Config.LoadFile(conf, SysVar, ListSource, ListInterface, ListReport);
+		result = Config.LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport);
 
 		if(TRITONN_RESULT_OK != result) {
 			return CreateConfigHaltEvent(Config);
@@ -234,7 +234,7 @@ UDINT rDataManager::LoadConfig()
 
 	//--------------------------------------------
 	// Создаем переменные
-	SysVar.initVariables(m_varList);
+	m_sysVar.initVariables(m_varList);
 
 	// Добавляем интерфейсы, создаем под них переменные
 	for(auto interface : ListInterface) {
@@ -271,21 +271,12 @@ UDINT rDataManager::LoadConfig()
 		SaveKernel();                         // Сохраняем описание ядра
 	}
 
-	//TODO  Тут нужно проверить переменные в интерфейсах
-	for (auto interface : ListInterface) {
-		result = interface->CheckVars(Config);
-		if(TRITONN_RESULT_OK != result)
-		{
-			return CreateConfigHaltEvent(Config);
-		}
-	}
-
 	//--------------------------------------------
 	//TODO Нужно из rTextManager и rEventManager извлеч список языков, и сформировать единый список внутри rDataManager
 	//TODO Сохранить массивы строк для WEB
 
 	//
-	SetLang(SysVar.Lang);
+	SetLang(m_sysVar.Lang);
 
 	if(LIVE_STARTING == GetLiveStatus())
 	{
@@ -298,7 +289,7 @@ UDINT rDataManager::LoadConfig()
 
 const rConfigInfo *rDataManager::GetConfName() const
 {
-	return &SysVar.ConfigInfo;
+	return &m_sysVar.ConfigInfo;
 }
 
 
@@ -309,7 +300,7 @@ UDINT rDataManager::SetLang(const string &lang)
 	rEventManager::instance().SetCurLang(lang);
 	rTextManager::Instance().SetCurLang(lang);
 
-	strncpy(SysVar.Lang, lang.c_str(), 8);
+	strncpy(m_sysVar.Lang, lang.c_str(), 8);
 
 	return 0;
 }
@@ -319,7 +310,7 @@ UDINT rDataManager::SetLang(const string &lang)
 //TODO Переделать на SimpleFile
 UDINT rDataManager::SaveKernel()
 {
-	auto file    = fopen((DIR_FTP + "kernel.xml").c_str(), "wt");
+	std::string text = "";
 	auto stn     = new rStation();
 	auto str     = new rStream();
 	auto ssel    = new rSelector();
@@ -345,41 +336,42 @@ UDINT rDataManager::SaveKernel()
 	msel->Setup.Value |= SELECTOR_SETUP_MULTI;
 	msel->GenerateIO();
 
-	if(!file) return 1;
-	fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	fprintf(file, "<kernel ver=\"%i.%i\" xmlns=\"http://tritonn.ru\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://tritonn.ru ./kernel.xsd\">\n"
-			  , TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR);
+	text += String_format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+						  "<kernel ver=\"%i.%i\" xmlns=\"http://tritonn.ru\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://tritonn.ru ./kernel.xsd\">\n",
+						  TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR);
 
-	SysVar.SaveKernel(file);
+	text += m_sysVar.saveKernel();
 
-	rvar->saveKernel(file, false, "var", "Переменная", true);
+	text += rvar->saveKernel(false, "var", "Переменная", true);
 
-	fprintf(file, "\n<io_list>\n");
-	ai->saveKernel(file, true, "ai", "Аналоговый сигнал", true);
-	fi->saveKernel(file, true, "counter", "Частотно-импульсный сигнал", true);
-	fprintf(file, "</io_list>\n");
+	text += "\n<!-- \n\tIO objects list \n-->\n<io_list>\n";
+	text += ai->saveKernel(true, "ai", "Аналоговый сигнал", true);
+	text += fi->saveKernel(true, "counter", "Частотно-импульсный сигнал", true);
+	text += "</io_list>\n";
 
-	fprintf(file, "<objects>\n");
-	denssol->saveKernel(file, false, "densitometer", "Плотномер (Солартрон)", false);
-	rdcdens->saveKernel(file, false, "reduceddens", "Приведение плотности", true);
-	ssel->saveKernel   (file, false, "selector", "Селектор", true);
-	msel->saveKernel   (file, false, "multiselector", "Мультиселектор", true);
-	stn->saveKernel    (file, false, "station", "Станция", true);
-	str->saveKernel    (file, false, "stream", "Линия", false);
+	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
+	text += denssol->saveKernel(false, "densitometer", "Плотномер (Солартрон)", false);
+	text += rdcdens->saveKernel(false, "reduceddens", "Приведение плотности", true);
+	text += ssel->saveKernel   (false, "selector", "Селектор", true);
+	text += msel->saveKernel   (false, "multiselector", "Мультиселектор", true);
+	text += stn->saveKernel    (false, "station", "Станция", true);
+	text += str->saveKernel    (false, "stream", "Линия", false);
 	rep->Type = REPORT_PERIODIC;
-	rep->saveKernel    (file, false, "report", "Отчет (периодический)", true);
+	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
 	rep->Type = REPORT_BATCH;
-	rep->saveKernel    (file, false, "report", "Отчет (по партии)", true);
-	fprintf(file, "</objects>\n");
+	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
+	text += "</objects>\n";
 
-	fprintf(file, "<interfaces>\n");
-	mbSlTCP->saveKernel(file, "ModbusSlaveTCP", "Модбас слейв TCP");
+	text += "\n<!-- \nExternal interfaces \n-->\n<interfaces>\n";
+	text += mbSlTCP->saveKernel("ModbusSlaveTCP", "Модбас слейв TCP");
 //	opcua->SaveKernel(file, "OPCUA", "OPC UA server");
-	fprintf(file, "</interfaces>\n");
+	text += "</interfaces>\n";
 
-	fprintf(file, "</kernel>");
+	text += rIOManager::instance().saveKernel();
 
-	fclose(file);
+	text += "\n</kernel>";
+
+	UDINT result = SimpleFileSave(DIR_FTP + "kernel.xml", text);
 
 //	delete opcua;
 	delete mbSlTCP;
@@ -394,7 +386,7 @@ UDINT rDataManager::SaveKernel()
 	delete str;
 	delete stn;
 
-	return 0;
+	return result;
 }
 
 
@@ -404,7 +396,6 @@ UDINT rDataManager::SaveKernel()
 rThreadStatus rDataManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
-	UDINT ii = 0;
 
 	while(true)
 	{
@@ -416,52 +407,42 @@ rThreadStatus rDataManager::Proccesing()
 
 		Lock();
 
-		SysVar.State.EventAlarm = rEventManager::instance().GetAlarm();
-		SysVar.State.Live       = Live.Get();
+		m_sysVar.m_state.EventAlarm = rEventManager::instance().GetAlarm();
+		m_sysVar.m_state.Live       = Live.Get();
 
-		GetCurrentTime(SysVar.UnixTime, &SysVar.DateTime);
+		GetCurrentTime(m_sysVar.UnixTime, &m_sysVar.DateTime);
 
-		if(SysVar.SetDateTimeAccept)
-		{
-			SysVar.SetDateTimeAccept = 0;
+		if (m_sysVar.SetDateTimeAccept) {
+			m_sysVar.SetDateTimeAccept = 0;
 			//TODO Нужно менять время )))
-			SysVar.SetDateTime.tm_sec  = 0;
-			SysVar.SetDateTime.tm_min  = 0;
-			SysVar.SetDateTime.tm_hour = 0;
-			SysVar.SetDateTime.tm_mday = 0;
-			SysVar.SetDateTime.tm_mon  = 0;
-			SysVar.SetDateTime.tm_year = 0;
+			m_sysVar.SetDateTime.tm_sec  = 0;
+			m_sysVar.SetDateTime.tm_min  = 0;
+			m_sysVar.SetDateTime.tm_hour = 0;
+			m_sysVar.SetDateTime.tm_mday = 0;
+			m_sysVar.SetDateTime.tm_mon  = 0;
+			m_sysVar.SetDateTime.tm_year = 0;
 		}
 
-		if(SysVar.State.Live == LIVE_RUNNING)
+		if(m_sysVar.m_state.Live == LIVE_RUNNING)
 		{
-
-			//TODO Получаем данные пришедшие по CAN-шине
-
-//			++Snapshot.IO.AI[0].Code; //TODO Для теста )))
-
 			// Пердвычисления для всех объектов
-			for(ii = 0; ii < ListSource.size(); ++ii)
-			{
-				ListSource[ii]->PreCalculate();
+			for (auto item : ListSource) {
+				item->PreCalculate();
 			}
 
 			// Основной расчет всех объектов
-			for(ii = 0; ii < ListSource.size(); ++ii)
-			{
-				ListSource[ii]->Calculate();
+			for (auto item : ListSource) {
+				item->Calculate();
 			}
 
-			// Пердвычисления для всех объектов
-			for(ii = 0; ii < ListReport.size(); ++ii)
-			{
-				ListReport[ii]->PreCalculate();
+			// Пердвычисления для отчетов
+			for (auto item : ListReport) {
+				item->PreCalculate();
 			}
 
 			// Основной расчет отчетов
-			for(ii = 0; ii < ListReport.size(); ++ii)
-			{
-				ListReport[ii]->Calculate();
+			for (auto item : ListReport) {
+				item->Calculate();
 			}
 		}
 
@@ -491,6 +472,21 @@ UDINT rDataManager::CreateConfigHaltEvent(rDataConfig &cfg)
 
 UDINT rDataManager::StartInterfaces()
 {
+	UDINT result = TRITONN_RESULT_OK;
+
+	m_sysVar.m_state.m_isSimulate = rSimpleArgs::instance().isSet(rArg::Simulate);
+
+	rThreadMaster::instance().generateVars(getVariableClass());
+
+	// Проверяем переменные в интерфейсах
+	for (auto interface : ListInterface) {
+		result = interface->CheckVars(Config);
+
+		if(TRITONN_RESULT_OK != result) {
+			return CreateConfigHaltEvent(Config);
+		}
+	}
+
 	for (auto interface : ListInterface) {
 		interface->StartServer();
 	}

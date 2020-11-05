@@ -196,7 +196,7 @@ UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReducedDens::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rReducedDens::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Temp.Limit.Setup.Init(0);
 	Pres.Limit.Setup.Init(0);
@@ -209,7 +209,7 @@ UDINT rReducedDens::saveKernel(FILE *file, UDINT isio, const string &objname, co
 	B.Limit.Setup.Init(0);
 	Y.Limit.Setup.Init(0);
 
-	return rSource::saveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
 

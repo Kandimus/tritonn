@@ -54,6 +54,7 @@ struct rState
 //	USINT ColdRestart;    // Команда на "холодную" перезагрузку
 //	USINT WarmRestart;    // Команда на "горячую" перезагрузку
 	USINT StartReason;    // Причина последней перезагрузки
+	USINT m_isSimulate;
 };
 
 // Учет времени работы потоков и функций

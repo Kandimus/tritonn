@@ -30,9 +30,10 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 	list.add("system.version.build"         , TYPE_UDINT, rVariable::Flags::RS__, &Ver.Build           , U_DIMLESS, ACCESS_SA);
 	list.add("system.version.crc"           , TYPE_UDINT, rVariable::Flags::RS__, &Ver.CRC             , U_DIMLESS, ACCESS_SA);
 
-	list.add("system.state.alarm"           , TYPE_UDINT, rVariable::Flags::RS__, &State.EventAlarm    , U_DIMLESS, ACCESS_SA);
-	list.add("system.state.live"            , TYPE_USINT, rVariable::Flags::RS__, &State.Live          , U_DIMLESS, ACCESS_SA);
-	list.add("system.state.rebootreason"    , TYPE_USINT, rVariable::Flags::RS__, &State.StartReason   , U_DIMLESS, ACCESS_SA);
+	list.add("system.state.alarm"           , TYPE_UDINT, rVariable::Flags::RS__, &m_state.EventAlarm  , U_DIMLESS, ACCESS_SA);
+	list.add("system.state.live"            , TYPE_USINT, rVariable::Flags::RS__, &m_state.Live        , U_DIMLESS, ACCESS_SA);
+	list.add("system.state.rebootreason"    , TYPE_USINT, rVariable::Flags::RS__, &m_state.StartReason , U_DIMLESS, ACCESS_SA);
+	list.add("system.state.simulate"        , TYPE_USINT, rVariable::Flags::R___, &m_state.m_isSimulate, U_DIMLESS, 0);
 
 	list.add("system.datetime.present.sec"  , TYPE_INT  , rVariable::Flags::R___, &DateTime.tm_sec     , U_DIMLESS, 0);
 	list.add("system.datetime.present.min"  , TYPE_INT  , rVariable::Flags::R___, &DateTime.tm_min     , U_DIMLESS, 0);
@@ -53,30 +54,27 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 }
 
 
-UDINT rSystemVariable::SaveKernel(FILE *file)
+std::string rSystemVariable::saveKernel()
 {
+	std::string   result = "";
 	rVariableList list;
 
 	initVariables(list);
 
-	fprintf(file, "<!--\n\tСистемные переменные\n-->\n");
-
-	fprintf(file, "<sysvars>\n");
-
-	fprintf(file, "\t<values>\n");
+	result += "<!--\n\tSystem variables\n-->\n"
+			  "<sysvars>\n"
+			  "\t<values>\n";
 
 	for (auto var : list) {
 		if (var->getFlags() & rVariable::Flags::HIDE) {
 			continue;
 		}
 
-		fprintf(file, "\t\t<value name=\"%s\" type=\"%s\" readonly=\"%i\" loadable=\"%i\" unit=\"%i\" access=\"0x%08X\"/>\n",
-				var->getName().c_str(), NAME_TYPE[var->getType()].c_str(),
-				(var->isReadonly()) ? 1 : 0, (var->isLodable()) ? 1 : 0, (UDINT)var->getUnit(), var->getAccess());
+		result += var->saveKernel(0, "\t\t");
 	}
-	fprintf(file, "\t</values>\n");
-	fprintf(file, "</sysvars>\n\n");
+	result += "\t</values>\n"
+			  "</sysvars>\n\n";
 
-	return TRITONN_RESULT_OK;
+	return result;
 }
 

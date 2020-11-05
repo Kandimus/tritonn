@@ -62,7 +62,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
 		ss.add("io.ai01.keypad", testvalue);
-		ss.add("io.ai01.mode", AI_MODE_MKEYPAD);
+		ss.add("io.ai01.mode"  , static_cast<UINT>(rAI::Mode::MKEYPAD));
 		ss.set();
 		ss.clear();
 
@@ -86,7 +86,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		set_ss.add("io.ai01.present.hi"  , 40.0);
 		set_ss.add("io.ai01.present.hihi", 60.0);
 		set_ss.add("io.ai01.keypad"      , -11.0);
-		set_ss.add("io.ai01.mode"        , AI_MODE_MKEYPAD);
+		set_ss.add("io.ai01.mode"        , static_cast<UINT>(rAI::Mode::MKEYPAD));
 		set_ss.set();
 		mSleep(600);
 
@@ -97,7 +97,7 @@ S_NEW_TEST( AnalogInput, "testing analog input. IO simulate")
 		S_REQUIRE(get_ss("io.ai01.present.status") != nullptr);
 		S_REQUIRE(get_ss("io.ai01.status") != nullptr);
 		S_CHECK(get_ss("io.ai01.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
-		S_CHECK(get_ss("io.ai01.status")->getValueUINT() & static_cast<UINT>(rAI::Status::MIN));
+		S_CHECK(static_cast<rAI::Status>(get_ss("io.ai01.status")->getValueUINT()) == rAI::Status::MIN);
 
 		// LOLO
 		set_ss.clear();

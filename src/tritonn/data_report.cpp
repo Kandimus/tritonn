@@ -487,7 +487,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-UDINT rReport::saveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rReport::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
 	Present.AverageItems.push_back(new rReportTotal());
 	Present.AverageItems.back()->Name = "#totalsource_1";
@@ -504,7 +504,7 @@ UDINT rReport::saveKernel(FILE *file, UDINT isio, const string &objname, const s
 	Completed.CreateFrom(Present);
 	Archive.CreateFrom(Present);
 
-	return rSource::saveKernel(file, isio, objname, comment, isglobal);
+	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
 

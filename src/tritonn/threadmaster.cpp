@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include <sys/sysinfo.h>
+#include "reversed.h"
 #include "locker.h"
 #include "tickcount.h"
 //#include "data_manager.h"
@@ -62,9 +63,9 @@ UDINT rThreadMaster::add(rThreadClass *thread, UDINT flags, const std::string& a
 	info->m_timeAvr.IdleMin = 0xFFFFFFFF;
 	info->m_timeAvr.WorkMin = 0xFFFFFFFF;
 
-	m_list.push_back(info);
+	m_threadList.push_back(info);
 
-	generateVars(info, alias);
+	generateThreadVars(info, alias);
 
 	if(flags & TMF_NOTRUN) return TRITONN_RESULT_OK;
 
@@ -94,23 +95,22 @@ UDINT rThreadMaster::add(rThreadClass *thread, UDINT flags, const std::string& a
 //
 void rThreadMaster::closeAll()
 {
-	for (DINT ii = m_list.size() - 1; ii >= 0; --ii) {
-		std::string name = m_list[ii]->m_class->GetRTTI();
+	for (auto item : reversed(m_threadList)) {
+		std::string name = item->m_class->GetRTTI();
 
-		m_list[ii]->m_class->Finish();
-		pthread_join(*m_list[ii]->m_thread, NULL);
+		item->m_class->Finish();
+		pthread_join(*item->m_thread, NULL);
 
-		if((m_list[ii]->m_flags & TMF_DELETE) && m_list[ii]->m_class)
-		{
-			delete m_list[ii]->m_class;
+		if ((item->m_flags & TMF_DELETE) && item->m_class) {
+			delete item->m_class;
 		}
 
-		delete m_list[ii];
+		delete item;
 
 		TRACEERROR("--------- Поток %s закрыт!", name.c_str());
 	}
 
-	m_list.clear();
+	m_threadList.clear();
 
 	Finish();
 }
@@ -140,7 +140,7 @@ rThreadStatus rThreadMaster::Proccesing()
 		}
 
 		// Следим за всеми потоками
-		for (auto item : m_list) {
+		for (auto item : m_threadList) {
 			item->m_status = item->m_class->GetStatus();
 
 			if(THREAD_IS_WORK(item->m_status))
@@ -175,6 +175,12 @@ rThreadStatus rThreadMaster::Proccesing()
 
 		m_curSysInfo.calculate();
 		printf("CPU %.2f%% (%+.2f%%)\n", m_curSysInfo.m_usageCPU, m_curSysInfo.m_modifyCPU);
+
+		{
+			rLocker locker(Mutex); UNUSED(locker);
+
+			rVariableClass::processing();
+		}
 	} // while
 }
 
@@ -246,7 +252,7 @@ UDINT rThreadMaster::saveAllTimerInfo()
 	SimpleFileSave(filename, cputext + "\n" + cpumtext + "\n" + memtext + "\n" + memmtext);
 
 
-	for (auto thread : m_list) {
+	for (auto thread : m_threadList) {
 		filename = String_format("%s%s_%u.csv", DIR_TIMEINFO.c_str(), thread->m_class->GetRTTI(), utime);
 		worktext = "work;";
 		idletext = "idle;";
@@ -267,19 +273,33 @@ UDINT rThreadMaster::saveAllTimerInfo()
 }
 
 
-UDINT rThreadMaster::generateVars(rInfo* ti, const std::string& alias)
+UDINT rThreadMaster::generateVars(rVariableClass* parent)
+{
+	m_varList.add("system.diag.processor.cpu.value"    , TYPE_REAL , rVariable::Flags::R___, &m_curSysInfo.m_usageCPU , U_perc, 0);
+	m_varList.add("system.diag.processor.cpu.modify"   , TYPE_REAL , rVariable::Flags::R___, &m_curSysInfo.m_modifyCPU, U_perc, 0);
+	m_varList.add("system.diag.processor.memory.free"  , TYPE_UDINT, rVariable::Flags::R___, &m_curSysInfo.m_freeMem  , U_DIMLESS, 0);
+	m_varList.add("system.diag.processor.memory.modify", TYPE_DINT , rVariable::Flags::R___, &m_curSysInfo.m_modifyMem, U_DIMLESS, 0);
+
+	if (parent) {
+		rVariableClass::linkToExternal(parent);
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rThreadMaster::generateThreadVars(rInfo* ti, const std::string& alias)
 {
 	if (!ti || alias.empty()) {
 		return TRITONN_RESULT_OK;
 	}
 
-	m_varList.add("system.diag." + alias + ".Work.Max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Work.Min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Work.AvgMax" , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Work.Average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Idle.Max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Idle.Min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".Idle.Average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.avgmax" , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".work.average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".idle.max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".idle.min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0);
+	m_varList.add("system.diag." + alias + ".idle.average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }
