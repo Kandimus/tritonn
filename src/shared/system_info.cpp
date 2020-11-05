@@ -35,7 +35,7 @@ bool rSystemInfo::calculate()
 
 	cpu.calculate();
 
-	double usage  = cpu.getUsage();
+	float usage = cpu.getUsage();
 
 	m_modifyCPU = m_usageCPU - usage;
 	m_usageCPU  = usage;
