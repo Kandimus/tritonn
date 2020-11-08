@@ -17,7 +17,7 @@ SET(CMAKE_SYSTEM_VERSION 1)
 #	message(STATUS "Toolchain path: ${TOOLCHAIN_PATH}")
 #endif()
 
-SET(TOOLCHAIN_PATH "/opt/gcc-linaro-7.5.0-2019.12-i686_arm-linux-gnueabihf")
+SET(TOOLCHAIN_PATH "/opt/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf")
 
 # specify the cross compiler
 SET(CMAKE_C_COMPILER   ${TOOLCHAIN_PATH}/bin/arm-linux-gnueabihf-gcc)
