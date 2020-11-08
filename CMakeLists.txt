@@ -35,8 +35,8 @@ set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -Wall -Wfloat-conversion")
 set(CMAKE_C_FLAGS "-std=c99")
 
 if (${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
-	set(CMAKE_CXX_FLAGS "-m32")
-	set(CMAKE_C_FLAGS "-m32")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 	set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
 endif ()
 

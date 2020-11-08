@@ -19,6 +19,7 @@
 #include "def.h"
 #include <vector>
 #include <string>
+#include "variable_item.h"
 
 class rVariable;
 class rVariableClass;
@@ -31,7 +32,7 @@ public:
 	rVariableList();
 	virtual ~rVariableList();
 
-	void  add(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access);
+	void  add(const std::string& name, TT_TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access);
 	void  sort();
 	void  deleteAll(void);
 	UDINT saveToCSV(const std::string& path);

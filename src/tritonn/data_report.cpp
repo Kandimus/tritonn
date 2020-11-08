@@ -38,7 +38,7 @@ void rReportTime::SetCurTime()
 
 
 //
-void rReportTime::generateVars(const string &prefix, UINT flags, UDINT access, rVariableList& list)
+void rReportTime::generateVars(const string &prefix, rVariable::Flags flags, UDINT access, rVariableList& list)
 {
 	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access);
 	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access);

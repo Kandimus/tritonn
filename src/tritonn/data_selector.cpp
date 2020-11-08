@@ -96,7 +96,7 @@ UDINT rSelector::Calculate()
 	{
 		for(UDINT grp = 0; grp < CountGroups; ++grp)
 		{
-			faultGrp[ii] += FaultIn[ii][grp].Value;
+			faultGrp[ii] += FaultIn[ii][grp].Value != 0.0;
 		}
 	}
 

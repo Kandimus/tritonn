@@ -21,6 +21,7 @@
 #include "data_source.h"
 #include "total.h"
 #include "data_link.h"
+#include "variable_item.h"
 
 namespace tinyxml2
 {
@@ -34,7 +35,7 @@ struct rReportTime
 	struct tm  _TM;
 
 	void  SetCurTime();
-	void  generateVars(const std::string &prefix, UINT flags, UDINT access, rVariableList& list);
+	void  generateVars(const std::string &prefix, rVariable::Flags flags, UDINT access, rVariableList& list);
 	void  Print(tinyxml2::XMLPrinter& printer, const char *name);
 };
 

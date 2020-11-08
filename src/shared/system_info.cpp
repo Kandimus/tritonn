@@ -35,10 +35,17 @@ bool rSystemInfo::calculate()
 
 	cpu.calculate();
 
-	float usage = cpu.getUsage();
+	if (m_oldCPU.isInit()) {
+		float usage = 100.0f * (cpu.getActive() - m_oldCPU.getActive()) / static_cast<float>(cpu.getTotal() - m_oldCPU.getTotal());
 
-	m_modifyCPU = m_usageCPU - usage;
-	m_usageCPU  = usage;
+		m_modifyCPU = m_usageCPU - usage;
+		m_usageCPU  = usage;
+	} else {
+		m_modifyCPU = 0;
+		m_usageCPU  = -1;
+	}
+
+	m_oldCPU = cpu;
 
 	return true;
 }
