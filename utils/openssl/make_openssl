@@ -1,0 +1,6 @@
+#!/bin/bash
+CROSS_COMPILE=arm-linux-gnueabihf- CC="gcc" ./Configure \
+dist \
+--prefix=~/projects/openssh
+make
+sudo make install

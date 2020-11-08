@@ -34,7 +34,7 @@
 										case TYPE_DINT : *(DINT  *)m_data = static_cast< DINT>(val); return; \
 										case TYPE_REAL : *(REAL  *)m_data = static_cast< REAL>(val); return; \
 										case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>(val); return; \
-										case TYPE_STRID: *(STRID *)m_data = STRID(val); return; \
+										case TYPE_STRID: *(STRID *)m_data = STRID(static_cast<UDINT>(val)); return; \
 										default: m_status = Status::ERROR; clearData(); return; \
 									} \
 								} catch(...) { \
@@ -54,7 +54,7 @@
 										case TYPE_UDINT: return x(*(UDINT *)m_data); \
 										case TYPE_DINT : return x(*(DINT  *)m_data); \
 										case TYPE_REAL : return static_cast<x>(*(REAL  *)m_data); \
-										case TYPE_LREAL: return x(*(LREAL *)m_data); \
+										case TYPE_LREAL: return static_cast<x>(*(LREAL *)m_data); \
 										case TYPE_STRID: return x(*(STRID *)m_data); \
 										default: m_status = Status::ERROR; return static_cast<x>(0); \
 									} \

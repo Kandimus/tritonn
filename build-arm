@@ -1,0 +1,4 @@
+mkdir ~/projects/build/tritonn-arm 
+cd ~/projects/build/tritonn-arm
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=~/projects/tritonn/toolchain.cmake ~/projects/tritonn
+cmake --build . --target TT_tritonn

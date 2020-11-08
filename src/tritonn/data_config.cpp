@@ -474,7 +474,7 @@ UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 		source = nullptr;
 
 		if(XmlName::AI == name) { if(SysVar->Max.AI >= MAX_IO_AI) return DATACFGERR_MAX_AI; source = new rAI();      source->ID = SysVar->Max.AI++; }
-		if(XmlName::FI == name) { if(SysVar->Max.FI >= MAX_IO_FI) return DATACFGERR_MAX_FI; source = new rCounter(); source->ID = SysVar->Max.FI++; }
+		if(XmlName::FI == name) { if(SysVar->Max.FI >= MAX_IO_FI) return DATACFGERR_MAX_FI; source = dynamic_cast<rSource*>(new rCounter()); source->ID = SysVar->Max.FI++; }
 
 		if(nullptr == source)
 		{
@@ -747,13 +747,13 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement *root)
 	UDINT                 result    = TRITONN_RESULT_OK;
 	tinyxml2::XMLElement *custom    = root->FirstChildElement(XmlName::CUSTOM);
 	tinyxml2::XMLElement *userstr   = nullptr;
-	tinyxml2::XMLElement *userevent = nullptr;
+//	tinyxml2::XMLElement *userevent = nullptr;
 	tinyxml2::XMLElement *precision = nullptr;
 
 	if(nullptr == custom) return TRITONN_RESULT_OK;
 
 	userstr   = custom->FirstChildElement(XmlName::STRINGS);
-	userevent = custom->FirstChildElement(XmlName::EVENTS);
+//	userevent = custom->FirstChildElement(XmlName::EVENTS);
 	precision = custom->FirstChildElement(XmlName::PRECISION);
 
 	//

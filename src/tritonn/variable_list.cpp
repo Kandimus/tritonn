@@ -34,7 +34,7 @@ rVariableList::~rVariableList()
 	m_list.clear();
 }
 
-void rVariableList::add(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access)
+void rVariableList::add(const std::string& name, TT_TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access)
 {
 	const rVariable* var = find(name);
 

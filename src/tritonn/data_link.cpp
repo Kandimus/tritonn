@@ -168,12 +168,12 @@ UDINT rLink::generateVars(rVariableList& list)
 
 	if(Setup & LINK_SETUP_SIMPLE)
 	{
-		list.add(name, TYPE_LREAL, flags, &Value, Unit, 0);
+		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &Value, Unit, 0);
 	}
 	else
 	{
-		list.add(name + ".value", TYPE_LREAL, flags                  , &Value        , Unit     , 0);
-		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___,  Unit.GetPtr(), U_DIMLESS, 0);
+		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &Value        , Unit     , 0);
+		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___              ,  Unit.GetPtr(), U_DIMLESS, 0);
 
 		Limit.generateVars(list, name, Unit);
 	}
