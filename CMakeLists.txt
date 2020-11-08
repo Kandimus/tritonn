@@ -31,9 +31,14 @@ include(UsefulMacros)
 #
 set(CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED YES)
-set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -m32 -Wall -Wfloat-conversion")
-set(CMAKE_C_FLAGS "-std=c99 -m32")
-set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
+set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -Wall -Wfloat-conversion")
+set(CMAKE_C_FLAGS "-std=c99")
+
+if (${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
+	set(CMAKE_CXX_FLAGS "-m32")
+	set(CMAKE_C_FLAGS "-m32")
+	set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
+endif ()
 
 #
 add_subdirectory(src)
