@@ -1,17 +1,21 @@
 
 #include <stdarg.h>
+#include "stringex.h"
+#include "simplefile.h"
 #include "event_eid.h"
+#include "event_info.h"
 #include "tinyxml2.h"
+#include "../tritonn/tritonn_version.h"
 
 //vector<rTextLang *>  gLangs;
-vector<string>       gLangs;
-vector<rEventInfo>   gList;
+std::vector<std::string> gLangs;
+std::vector<rEventInfo>  gList;
 
 
-UDINT MakeEID(const string &name, USINT type, USINT obj, UINT id, vector<rEventInfo> *list)
+UDINT MakeEID(const string &name, USINT type, USINT obj, UINT id, std::vector<rEventInfo> *list)
 {
 	UDINT  result = MAKE_EID(type, obj, id);
-	static vector<rEventInfo> local_list;
+	static std::vector<rEventInfo> local_list;
 
 	if(list)
 	{
@@ -28,43 +32,16 @@ UDINT MakeEID(const string &name, USINT type, USINT obj, UINT id, vector<rEventI
 
 UDINT FindEID(UDINT eid)
 {
-	for(UDINT ii = 0; ii < gList.size(); ++ii)
-	{
-		if(gList[ii].EID == eid)
+	for (auto& item : gList) {
+		if(item.EID == eid)
 		{
-			gList[ii].Property |= PROP_USED;
+			item.Property |= PROP_USED;
 			return 1;
 		}
 	}
 	return 0;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-// Форматирование строки и выдача класса string
-string String_format(const char *format, ...)
-{
-	string result = "";
-	char  *buff   = nullptr;
-
-	va_list  arg;
-	va_start(arg, format);
-	buff = new char[vsnprintf(NULL, 0, format, arg) + 1];
-	if(buff)
-	{
-		vsprintf(buff, format, arg);
-	}
-	va_end(arg);
-
-	if(buff)
-	{
-		result = buff;
-
-		delete[] buff;
-	}
-
-	return result;
-}
 
 void ClearUsed()
 {
@@ -91,8 +68,8 @@ UDINT FindLang(const string &lang)
 //
 UDINT LoadLang(tinyxml2::XMLElement *root, tinyxml2::XMLDocument *doc)
 {
-	vector<UDINT> EID;
-	string langID = "";
+	std::vector<UDINT> EID;
+	std::string langID = "";
 
 	ClearUsed();
 
@@ -214,41 +191,30 @@ UDINT LoadSystem(const char *filename)
 }
 
 
-
-
-
-
-
-
-
 int main(int argc, char *argv[])
 {
-	FILE *file = fopen("./checkevent.txt", "wt");
+	UNUSED(argc);
+	UNUSED(argv);
 
-	printf("ttce ver 0.2\n");
+	printf("ttce ver 0.3\nTritonn core ver %s\n", TRITONN_VERSION);
 
 	MakeEID("", 0, 0, 0, &gList);
 
 	LoadSystem("./systemevent.xml");
 	//TODO Нужно сделать загрузку файла systemevent.xml и сравнение его и полученных EventID, с формированием одного файла
 
-	if(!file)
-	{
-		printf("Cant create file 'checkevent.txt'!\n");
-		return -1;
+	std::string text = "";
+	for (auto& item : gList) {
+		text += String_format("<!-- %s -->\n<str id=\"%i\"></str>\n", item.Name.c_str(), static_cast<DINT>(item.EID));
 	}
 
-	for(UDINT ii = 0; ii < gList.size(); ++ii)
-	{
-		DINT tmp = *(DINT *)&gList[ii].EID;
-		fprintf(file, "<!-- %s -->\n<str id=\"%i\"></str>\n", gList[ii].Name.c_str(), *(DINT *)&gList[ii].EID);
+	UDINT result = SimpleFileSave("./checkevent.txt", text);
+	if(TRITONN_RESULT_OK != result) {
+		printf("Cant create file 'checkevent.txt'. result %i!\n", result);
+		return 1;
 	}
-	fclose(file);
 
-	printf(" found %i events.\n", gList.size());
-
-
-
+	printf("\tfound %i events.\n", static_cast<DINT>(gList.size()));
 
 	return 0;
 }
