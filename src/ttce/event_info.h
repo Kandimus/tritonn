@@ -5,9 +5,6 @@
 #include "tinyxml2.h"
 #include "event_eid.h"
 
-using std::vector;
-using std::string;
-
 
 const UDINT PROP_USED = 1;
 
@@ -16,7 +13,7 @@ struct rEventInfo
 {
 	rEventInfo(const string &n, UDINT eid) : Name(n), EID(eid), Property(0) {}
 
-	string Name;
+	std::string Name;
 	UDINT  EID;
 	UDINT  Property;
 };
@@ -35,7 +32,7 @@ public:
 	}
 
 	UDINT  ID;
-	string Text;
+	std::string Text;
 	UDINT  Property;
 
 	tinyxml2::XMLElement *Element;
@@ -50,14 +47,14 @@ public:
 
 
 	tinyxml2::XMLElement *Element;
-	vector<rTextItem> Texts;
+	std::vector<rTextItem> Texts;
 
 	rTextItem *Get(UDINT sid);
 };
 
 
 //extern vector<rTextLang *>  gLangs;
-extern vector<string>  gLangs;
+extern std::vector<std::string>  gLangs;
 
 
-extern UDINT MakeEID(const string &name, USINT type, USINT obj, UINT id, vector<rEventInfo> *list);
+extern UDINT MakeEID(const string &name, USINT type, USINT obj, UINT id, std::vector<rEventInfo> *list);
