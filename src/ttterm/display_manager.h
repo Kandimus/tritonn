@@ -17,7 +17,7 @@
 
 #include <vector>
 #include <list>
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include "def.h"
 #include "thread_class.h"
 #include "structures.h"
@@ -74,7 +74,7 @@ public:
 	UDINT CallbackGetAnswe  (rPacketGetAnsweData   *data);
 
 protected:
-	virtual UDINT Proccesing();
+	virtual rThreadStatus Proccesing();
 
 	string GetCommand();
 	string GetInput();

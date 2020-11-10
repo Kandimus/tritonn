@@ -15,6 +15,7 @@
 
 #include <string.h>
 #include "safity.h"
+#include "locker.h"
 #include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
@@ -70,12 +71,12 @@ rDisplayManager::~rDisplayManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDisplayManager::Proccesing()
+rThreadStatus rDisplayManager::Proccesing()
 {
-	string     command = "";
-	UDINT      thread_status = 0;
-	rTickCount tperiod;
-	rTickCount tautocmd;
+	std::string   command = "";
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	rTickCount    tperiod;
+	rTickCount    tautocmd;
 
 //	PacketRcvd.Set(1);
 
@@ -144,7 +145,7 @@ UDINT rDisplayManager::Proccesing()
 		
 	}
 
-	return 0;
+	return rThreadStatus::CLOSED;
 }
 
 
@@ -209,7 +210,7 @@ void rDisplayManager::Draw()
 			{
 				mvwprintw(stdscr, 2 + ii / 2, x, "%s = %s (%s)",
 							 PacketGetAnsweData.Name[ii],
-							 PacketGetAnsweData.Result[ii] == SS_STATUS_ASSIGN ?  PacketGetAnsweData.Value[ii] : "?",
+							 PacketGetAnsweData.Result[ii] == 5 ?  PacketGetAnsweData.Value[ii] : "?",
 							 GetStatusError(PacketGetAnsweData.Result[ii], true).c_str());
 			}
 
@@ -430,7 +431,7 @@ UDINT rDisplayManager::CallbackSetAnswe(rPacketSetAnsweData *data)
 {
 	for(UDINT ii = 0; ii < data->Count; ++ii)
 	{
-		if(data->Result[ii] == SS_STATUS_WRITED)
+		if(data->Result[ii] == 7)
 		{
 			TRACEI(LogMask, String_format("Variable '%s' set as '%s'.", data->Name[ii], data->Value[ii]).c_str());
 		}
@@ -483,7 +484,7 @@ UDINT rDisplayManager::CallbackGetAnswe(rPacketGetAnsweData *data)
 		default:
 			for(UDINT ii = 0; ii < data->Count; ++ii)
 			{
-				if(data->Result[ii] == SS_STATUS_ASSIGN)
+				if(data->Result[ii] == 5)
 				{
 					TRACEI(LogMask, String_format("Variable '%s' = '%s'.", data->Name[ii], data->Value[ii]).c_str());
 				}

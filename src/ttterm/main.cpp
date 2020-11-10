@@ -12,16 +12,22 @@
 #include "tritonn_manager.h"
 #include "display_manager.h"
 
-using std::list;
+
+struct rThreadInfo
+{
+	rThreadStatus  m_status;
+	pthread_t*     m_thread;
+	rThreadClass*  m_class;
+};
 
 
 rPacketClient       gTritonnClient;
 rTritonnManager     gTritonnManager(gTritonnClient);
 rDisplayManager     gDisplayManager;
 rSafityValue<UDINT> gExit;
-rThreadInfo         gInfo_Tritonn;
-rThreadInfo         gInfo_Display;
-rThreadInfo         gInfo_Log;
+pthread_t*         gInfo_Tritonn;
+pthread_t*         gInfo_Display;
+pthread_t*         gInfo_Log;
 //rPacketSetData      gPeriodicSetData;
 //rPacketGetData      gPeriodicGetData;
 
@@ -100,11 +106,11 @@ int main(int argc, char **argv)
 	rLogManager::Instance().Enable.Set(true);     // Запрещаем вещание по TCP
 	rLogManager::Instance().SetAddCalback(LogCallback);
 	rLogManager::Instance().Run(0);
-	gInfo_Log.Thread = rLogManager::Instance().GetThread();
+	gInfo_Log = rLogManager::Instance().GetThread();
 
 	//
 	gTritonnManager.Run(0);
-	gInfo_Tritonn.Thread = gTritonnManager.GetThread();
+	gInfo_Tritonn = gTritonnManager.GetThread();
 
 	if(user.size())
 	{
@@ -118,7 +124,7 @@ int main(int argc, char **argv)
 
 	//
 	gDisplayManager.Run(16);
-	gInfo_Display.Thread = gDisplayManager.GetThread();
+	gInfo_Display = gDisplayManager.GetThread();
 
 
 	///////////////////////////////////////////////////////////
@@ -132,11 +138,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-	gTritonnManager.Close();
-	pthread_join(*gInfo_Tritonn.Thread, NULL);
+	gTritonnManager.Finish();
+	pthread_join(*gInfo_Tritonn, NULL);
 
-	gDisplayManager.Close();
-	pthread_join(*gInfo_Display.Thread, NULL);
+	gDisplayManager.Finish();
+	pthread_join(*gInfo_Display, NULL);
 
    return 0;
 }
@@ -173,13 +179,13 @@ string GetStatusError(USINT err, UDINT shortname)
 {
 	switch(err)
 	{
-		case SS_STATUS_ACCESSDENIED: return shortname ? "AD" : "Access denied";
-		case SS_STATUS_ASSIGN      : return shortname ? "OK" : "Assign";
-		case SS_STATUS_NOTASSIGN   : return shortname ? "NA" : "Not assign";
-		case SS_STATUS_NOTFOUND    : return shortname ? "NF" : "Variable not found";
-		case SS_STATUS_READONLY    : return shortname ? "RO" : "Variable is readonly";
-		case SS_STATUS_UNDEF       : return shortname ? "UE" : "Undefined error";
-		case SS_STATUS_WRITED      : return shortname ? "OK" : "writed";
+		case 3: return shortname ? "AD" : "Access denied";
+		case 5: return shortname ? "OK" : "Assign";
+		case 8: return shortname ? "ER" : "Error";
+		case 1: return shortname ? "NF" : "Variable not found";
+		case 2: return shortname ? "RO" : "Variable is readonly";
+		case 0: return shortname ? "UE" : "Undefined error";
+		case 7: return shortname ? "OK" : "writed";
 	}
 
 	return shortname? "??" : "<?>";

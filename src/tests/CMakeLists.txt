@@ -13,10 +13,13 @@ install(FILES ${CMAKE_SOURCE_DIR}/bin/conf/test.xml DESTINATION ${CMAKE_INSTALL_
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "test")
 
+# LIBRARIES
 add_lib(shared)
 add_lib(open62541)
 add_lib(simpleargs)
 add_lib(simpletest)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tritonn")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tests")

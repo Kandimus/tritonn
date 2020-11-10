@@ -38,7 +38,7 @@ public:
 	UDINT SendPacketGet(rPacketGetData &data);
 
 protected:
-	virtual UDINT Proccesing(void);
+	virtual rThreadStatus Proccesing(void);
 	virtual UDINT RecvFromServer(USINT *buff, UDINT size);
 
 	string GetPSGARError(USINT err);

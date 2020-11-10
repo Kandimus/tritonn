@@ -16,6 +16,7 @@
 #include <string.h>
 #include <sstream>
 #include "safity.h"
+#include "locker.h"
 #include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
