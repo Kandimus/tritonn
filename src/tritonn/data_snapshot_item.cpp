@@ -20,7 +20,10 @@
 
 
 #define SNAPSHOT_ASSIGN		{ \
-								if (!var) return; \
+								if (!var) \
+								{ \
+									m_status = Status::NOTFOUND; \
+								} \
 								m_var = var; \
 								m_status = Status::TOWRITE; \
 								try { \

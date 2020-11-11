@@ -110,7 +110,7 @@ UDINT LoadLang(tinyxml2::XMLElement *root, tinyxml2::XMLDocument *doc)
 		// Если не нашли EID среди массива MAKE_EID, то помечаем в файле как неиспользуемый
 		if(!FindEID(eid))
 		{
-			string unused = String_format(" !!  %i UNUSED !! ^^^^", eid);
+			string unused = String_format(" %i UNUSED ### UNUSED ### UNUSED ### UNUSED ### UNUSED ### UNUSED ### UNUSED ### ", eid);
 			tinyxml2::XMLComment *comment = doc->NewComment(unused.c_str());
 			root->InsertAfterChild(item, comment);
 			//root->DeleteChild(item);
@@ -191,7 +191,7 @@ UDINT LoadSystem(const char *filename)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char* argv[])
 {
 	UNUSED(argc);
 	UNUSED(argv);

@@ -14,6 +14,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ttterm")
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ncurses)
 
 add_lib(shared)
+add_lib(simpleargs)
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_BINARY_DIR}")
 

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include "safity.h"
+#include "simpleargs.h"
 #include "log_manager.h"
 #include "packet_client.h"
 #include "packet_set.h"
@@ -12,22 +13,24 @@
 #include "tritonn_manager.h"
 #include "display_manager.h"
 
-
-struct rThreadInfo
+namespace Args
 {
-	rThreadStatus  m_status;
-	pthread_t*     m_thread;
-	rThreadClass*  m_class;
-};
+
+const char* USER     = "user";
+const char* PASSWORD = "password";
+const char* HOST     = "host";
+const char* PORT     = "port";
+
+}
 
 
 rPacketClient       gTritonnClient;
 rTritonnManager     gTritonnManager(gTritonnClient);
 rDisplayManager     gDisplayManager;
 rSafityValue<UDINT> gExit;
-pthread_t*         gInfo_Tritonn;
-pthread_t*         gInfo_Display;
-pthread_t*         gInfo_Log;
+pthread_t*          gInfo_Tritonn;
+pthread_t*          gInfo_Display;
+pthread_t*          gInfo_Log;
 //rPacketSetData      gPeriodicSetData;
 //rPacketGetData      gPeriodicGetData;
 
@@ -38,92 +41,40 @@ extern UDINT PeriodicSetAdd(rPacketSetData &pset, const string &name, const stri
 
 
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
-	string user = "";
-	string pwd  = "";
-	string ip   = "";
-	UINT   port = TCP_PORT_TERM;
+	rSimpleArgs::instance()
+			.addOption("autotest"    , 'a', "")
+			.addOption(Args::USER    , 'U', "")
+			.addOption(Args::PASSWORD, 'P', "")
+			.addOption(Args::HOST    , 'h', "127.0.0.1")
+			.addOption(Args::PORT    , 'p', String_format("%u", TCP_PORT_TERM));
 
-	// Обработка параметров запуска
-	for(int ii = 1; ii < argc; ++ii)
-	{
-		if(!strcmp(argv[ii], "-a"))
-		{
-			if(ii >= argc - 1)
-			{
-				fprintf(stderr, "Invalid argument '-a'\n");
-				exit(1);
-			}
-
-			gDisplayManager.LoadAutoCommand(argv[++ii]);
-		}
-		else if(!strcmp(argv[ii], "-U"))
-		{
-			if(ii >= argc - 1)
-			{
-				fprintf(stderr, "Invalid argument '-U'\n");
-				exit(2);
-			}
-
-			user = argv[++ii];
-		}
-		else if(!strcmp(argv[ii], "-P"))
-		{
-			if(ii >= argc - 1)
-			{
-				fprintf(stderr, "Invalid argument '-P'\n");
-				exit(3);
-			}
-
-			pwd = argv[++ii];
-		}
-		else if(!strcmp(argv[ii], "-i"))
-		{
-			if(ii >= argc - 1)
-			{
-				fprintf(stderr, "Invalid argument '-i'\n");
-				exit(4);
-			}
-
-			ip = argv[++ii];
-		}
-
-		if(!strcmp(argv[ii], "-p"))
-		{
-			if(ii >= argc)
-			{
-				fprintf(stderr, "Invalid argument '-p'\n");
-				exit(5);
-			}
-
-			port = atoi(argv[++ii]);
-		}
-	}
-
+	rSimpleArgs::instance().parse(argc, argv);
 
 	rLogManager::Instance().Terminal.Set(false);  // Запрещаем вывод в терминал
 	rLogManager::Instance().Enable.Set(true);     // Запрещаем вещание по TCP
 	rLogManager::Instance().SetAddCalback(LogCallback);
-	rLogManager::Instance().Run(0);
+	rLogManager::Instance().Run(16);
 	gInfo_Log = rLogManager::Instance().GetThread();
 
 	//
-	gTritonnManager.Run(0);
+	gTritonnManager.Run(16);
 	gInfo_Tritonn = gTritonnManager.GetThread();
 
-	if(user.size())
+	if(rSimpleArgs::instance().getOption(Args::USER).size())
 	{
-		gDisplayManager.SetAutoLogin(user, pwd);
+		gDisplayManager.SetAutoLogin(rSimpleArgs::instance().getOption(Args::USER), rSimpleArgs::instance().getOption(Args::PASSWORD));
 	}
 
-	if(ip.size() && port)
+	if(rSimpleArgs::instance().getOption(Args::HOST).size() && rSimpleArgs::instance().getOption(Args::PORT).size())
 	{
-		gTritonnManager.Connect(ip, port);
+		UINT port = atol(rSimpleArgs::instance().getOption(Args::PORT).c_str());
+		gTritonnManager.Connect(rSimpleArgs::instance().getOption(Args::HOST), port);
 	}
 
 	//
-	gDisplayManager.Run(16);
+	gDisplayManager.Run(32);
 	gInfo_Display = gDisplayManager.GetThread();
 
 
@@ -136,6 +87,7 @@ int main(int argc, char **argv)
 		{
 			break;
 		}
+		mSleep(100);
 	}
 
 	gTritonnManager.Finish();
@@ -144,11 +96,13 @@ int main(int argc, char **argv)
 	gDisplayManager.Finish();
 	pthread_join(*gInfo_Display, NULL);
 
+	rLogManager::Instance().Finish();
+
    return 0;
 }
 
 
-UDINT PeriodicSetAdd(rPacketSetData &pset, const string &name, const string &val)
+UDINT PeriodicSetAdd(rPacketSetData &pset, const std::string& name, const std::string& val)
 {
 	if(pset.Count >= MAX_PACKET_SET_COUNT)
 	{
@@ -167,7 +121,7 @@ UDINT PeriodicSetAdd(rPacketSetData &pset, const string &name, const string &val
 
 //-------------------------------------------------------------------------------------------------
 // Получение логов от LogManager'а
-void LogCallback(const string &text)
+void LogCallback(const std::string &text)
 {
 	gDisplayManager.AddLog(text);
 }
@@ -175,7 +129,7 @@ void LogCallback(const string &text)
 
 //-------------------------------------------------------------------------------------------------
 //
-string GetStatusError(USINT err, UDINT shortname)
+std::string GetStatusError(USINT err, UDINT shortname)
 {
 	switch(err)
 	{
@@ -193,7 +147,7 @@ string GetStatusError(USINT err, UDINT shortname)
 
 
 
-vector<string> &split(const string &s, char delim, vector<string> &elems)
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems)
 {
 	 std::stringstream ss(s);
 	 std::string item;
@@ -204,9 +158,9 @@ vector<string> &split(const string &s, char delim, vector<string> &elems)
 	 return elems;
 }
 
-vector<string> split(const string &s, char delim)
+std::vector<std::string> split(const string &s, char delim)
 {
-	 vector<string> elems;
+	 std::vector<std::string> elems;
 	 split(s, delim, elems);
 	 return elems;
 }
