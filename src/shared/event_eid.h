@@ -35,9 +35,9 @@
 
 #define MAKE_EID(t, o, i)              ((((t) & 0x3) << 30) | (0x20000000) | (((o) & 0x03FF) << 16) | ((i) & 0xFFFF))
 
-#ifdef _TTCE_
+#ifdef TRITONN_TTCE
 
-	#include "event_info.h"
+	#include "../ttce/event_info.h"
 
 	#define CREATE_EID(n, t, o, i)         const UDINT n = MakeEID(#n, t, o, i, nullptr);
 

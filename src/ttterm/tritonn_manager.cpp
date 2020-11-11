@@ -14,7 +14,7 @@
 //=================================================================================================
 
 //#include <string.h>
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include "log_manager.h"
 #include "packet_client.h"
 #include "display_manager.h"
@@ -33,8 +33,8 @@ extern rDisplayManager gDisplayManager;
 // КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rTritonnManager::rTritonnManager(rClientTCP &client) : rTCPClientClass(client)
 {
-	RTName   += "::rTritonnManager";
-	LogMask  |= 0;
+	RTTI    += "::rTritonnManager";
+	LogMask |= 0;
 
 	Setup.Set(TCPCLIENT_SETUP_NORECONNECT);
 }
@@ -62,9 +62,9 @@ UDINT rTritonnManager::Connect(const string &ip, UINT port)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rTritonnManager::Proccesing()
+rThreadStatus rTritonnManager::Proccesing()
 {
-	UDINT thread_status = 0;
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
 
 	while(1)
 	{
@@ -78,7 +78,7 @@ UDINT rTritonnManager::Proccesing()
 		}
 	}
 
-	return 0;
+	return rThreadStatus::CLOSED;
 }
 
 

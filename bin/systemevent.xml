@@ -76,13 +76,13 @@
         <!-- EID_AI_CH_OK -->
         <str id="537264133">$2. Статус канала - в норме</str>
         <!-- EID_AI_SIM_MANUAL - $1 ID, $2 Descr  -->
-        <str id="-1610219514">$2. Установлен режим KEYPAD</str>
+        <str id="-1610219514">$2. Установлен режим имитации KEYPAD</str>
         <!-- EID_AI_SIM_AUTO - $1 ID, $2 Descr -->
-        <str id="-1610219513">$2. Автоматически установлен режим KEYPAD</str>
-        <!-- EID_AI_SIM_LAST -->
-        <str id="-1610219512"/>
-        <!-- EID_AI_SIM_OFF -->
-        <str id="-1610219511"/>
+        <str id="-1610219513">$2. Автоматически установлен режим имитации KEYPAD</str>
+        <!-- EID_AI_SIM_LAST - $1 ID, $2 Descr -->
+        <str id="-1610219512">$2. Автоматически установлен режим имитации LASTGOOD</str>
+        <!-- EID_AI_SIM_OFF - $1 ID, $2 Descr -->
+        <str id="-1610219511">$2. Режим имитации отключен</str>
         <!-- EID_AI_MIN - $1 ID, $2 Descr, $3 unit, $4 value, $5 max -->
         <str id="-536477686">$2. Выход за инженерный минимум (значение $4 $3, уставка $5 $3).</str>
         <!-- EID_AI_MAX - $1 ID, $2 Descr, $3 unit, $4 value, $5 max -->
@@ -114,6 +114,10 @@
         <!-- EID_AI_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
         <str id="-536477581">$2 ($3). Не действительное значение</str>
         
+        <!--EID_COUNTER_CH_FAULT-->
+        <str id="-536412159"/>
+        <!--EID_COUNTER_CH_OK-->
+        <str id="537329666"/>
         <!-- EID_COUNTER_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
         <str id="537329764">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4</str>
         <!-- EID_COUNTER_NEW_WMIN -->
