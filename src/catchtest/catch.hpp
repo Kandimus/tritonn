@@ -207,7 +207,29 @@
 #include <string>
 #include <cstdint>
 
+#define DOUBLE_EPSILON(x) { Catch::instance().setDouble(x); }
+#define FLOAT_EPSILON(x)  { Catch::instance().setFloat (x); }
+
 namespace Catch {
+
+	class Epsilon
+	{
+	public:
+		virtual ~Epsilon(){}
+		static Epsilon& instance() { static Epsilon Singleton; return Singleton; }
+
+		double getDouble() const { return m_double; }
+		float  getFloat () const { return m_float;  }
+		void   setDouble(double epsilon) { m_double = epsilon; }
+		void   setFloat (float  epsilon) { m_float  = epsilon; }
+	private:
+		Epsilon() {}
+		Epsilon(const Epsilon&);
+		Epsilon& operator=(Epsilon&);
+	private:
+		double m_double = 0.000001;
+		float  m_float  = 0.000001f;
+	};
 
     struct CaseSensitive { enum Choice {
         Yes,
@@ -1071,6 +1093,12 @@ namespace Catch {
         auto operator == ( bool rhs ) -> BinaryExpr<LhsT, bool> const {
             return BinaryExpr<LhsT, bool>( m_lhs == rhs, m_lhs, "==", rhs );
         }
+		auto operator == ( double const& rhs ) -> BinaryExpr<LhsT, double const&> const {
+			return BinaryExpr<LhsT, double const&>( std::abs(m_lhs - rhs) <= Epsilon::instance().getDouble(), m_lhs, "==", rhs );
+		}
+		auto operator == ( float const& rhs ) -> BinaryExpr<LhsT, float const&> const {
+			return BinaryExpr<LhsT, float const&>( std::abs(m_lhs - rhs) <= Epsilon::instance().getFloat(), m_lhs, "==", rhs );
+		}
 
         template<typename RhsT>
         auto operator != ( RhsT const& rhs ) -> BinaryExpr<LhsT, RhsT const&> const {
@@ -1079,6 +1107,12 @@ namespace Catch {
         auto operator != ( bool rhs ) -> BinaryExpr<LhsT, bool> const {
             return BinaryExpr<LhsT, bool>( m_lhs != rhs, m_lhs, "!=", rhs );
         }
+		auto operator != ( double const& rhs ) -> BinaryExpr<LhsT, double const&> const {
+		   return BinaryExpr<LhsT, double const&>( std::abs(m_lhs - rhs) > Epsilon::instance().getDouble(), m_lhs, "!=", rhs );
+		}
+		auto operator != ( float const& rhs ) -> BinaryExpr<LhsT, float const&> const {
+		   return BinaryExpr<LhsT, float const&>( std::abs(m_lhs - rhs) > Epsilon::instance().getFloat(), m_lhs, "!=", rhs );
+		}
 
         template<typename RhsT>
         auto operator > ( RhsT const& rhs ) -> BinaryExpr<LhsT, RhsT const&> const {

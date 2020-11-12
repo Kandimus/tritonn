@@ -25,7 +25,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.get();
 
 		REQUIRE(ss("io.ai_virt.present.value"));
-		CHECK  (S_DBL_EQ(ss("io.ai_virt.present.value")->getValueLREAL(), test_val));
+		CHECK  (ss("io.ai_virt.present.value")->getValueLREAL() == test_val);
 	}
 
 	SECTION("Set simulate IO") {
@@ -48,7 +48,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.get();
 
 		REQUIRE(ss("io.ai00.present.value"));
-		CHECK  (S_DBL_EQ(ss("io.ai00.present.value")->getValueLREAL(), min_val));
+		CHECK  (ss("io.ai00.present.value")->getValueLREAL() == min_val);
 
 		printf("hardware.ai6_1.ch_01.type = %i\n", ss("hardware.ai6_1.ch_01.type")->getValueUSINT());
 		printf("hardware.ai6_1.ch_01.simulate.value = %i\n", ss("hardware.ai6_1.ch_01.simulate.value")->getValueUINT());
@@ -70,7 +70,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.get();
 
 		REQUIRE(ss("io.ai00.present.value"));
-		CHECK  (S_DBL_EQ(ss("io.ai00.present.value")->getValueLREAL(), testvalue));
+		CHECK  (ss("io.ai00.present.value")->getValueLREAL() == testvalue);
 	}
 
 	SECTION("Scales & limits (hihi, hi, lo, lolo)") {
@@ -95,7 +95,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
 		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
-		CHECK  (get_ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::MIN));
+		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::MIN));
 
 		// LOLO
 		set_ss.clear();
@@ -107,7 +107,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
 		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
-		CHECK  (get_ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// LO
 		set_ss.clear();
@@ -119,7 +119,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
 		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_WMIN);
-		CHECK  (get_ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
+		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// NORMAL
 		set_ss.clear();
@@ -209,7 +209,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 
 		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
 		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
-		ss.add("hardware.ai6_1.ch_01.simulate.value", rIOAIChannel::Scale_mA_4_20::Min + 100);
+		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<USINT>(rIOAIChannel::Scale_mA_4_20::Min) + 100);
 		ss.add("io.ai00.scales.min"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.max"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Max));
 		ss.add("io.ai00.keypad"                     , 50.0);
@@ -239,8 +239,8 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		REQUIRE(ss("io.ai00.present.value"));
 		REQUIRE(ss("io.ai00.keypad"));
 		REQUIRE(ss("io.ai00.mode"));
-		CHECK  (S_DBL_EQ(ss("io.ai00.present.value")->getValueLREAL() == ss("io.ai00.keypad")->getValueLREAL()));
-		CHECK  (ss("io.ai00.mode")->getValueUINT() == static_cast<UINT>(rAI::Mode::PHIS));
+		CHECK  (ss("io.ai00.present.value")->getValueLREAL() == ss("io.ai00.keypad")->getValueLREAL());
+		CHECK  (ss("io.ai00.mode")->getValueUINT()           == static_cast<UINT>(rAI::Mode::PHIS));
 	}
 
 	// Set mode

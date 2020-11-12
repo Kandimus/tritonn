@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::ForceConf, 'c', "test_sikn.xml");
 
-	rSimpleArgs::instance().parse(argc, argv);
+	rSimpleArgs::instance().parse(argc, (const char**)argv);
 #endif
 
 	rThreadMaster::instance().Run(1000);
