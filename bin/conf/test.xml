@@ -11,7 +11,7 @@
 	    <contracthour>0</contracthour>
 	  </settings>
 	  <io>
-	    <ai name="ai_virt" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+		<ai name="ai_virt" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
         <unit>16</unit>
         <keypad>10</keypad>
         <scale>
@@ -28,7 +28,7 @@
           </limit>
         </limits>
       </ai>
-      <ai name="ai00" mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4001">
+	  <ai name="ai00" mode="PHIS" setup="NOICE | KEYPAD | NOBUFFER" description="4001">
         <iolink module="0" channel="0"/>
         <unit>16</unit>
         <keypad>12.5</keypad>
@@ -51,6 +51,29 @@
           </limit>
         </limits>
       </ai>
+	  <ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4001">
+		<iolink module="0" channel="0"/>
+		<unit>16</unit>
+		<keypad>12.5</keypad>
+		<scale>
+		  <min>-10</min>
+		  <max>100</max>
+		</scale>
+		<limits>
+		  <limit name="present" setup="HIHI | HI | LO | LOLO">
+			<hihi>60</hihi>
+			<hi>40</hi>
+			<lo>20</lo>
+			<lolo>5</lolo>
+			<hysteresis>0.1</hysteresis>
+		  </limit>
+		  <limit name="current" setup="HIHI | LOLO">
+			<hihi>20</hihi>
+			<lolo>4</lolo>
+			<hysteresis>0.01</hysteresis>
+		  </limit>
+		</limits>
+	  </ai>
     </io>
 	  <stations>
 	    <station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">

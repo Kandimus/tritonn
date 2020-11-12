@@ -16,7 +16,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "test")
 add_lib(shared)
 add_lib(open62541)
 add_lib(simpleargs)
-add_lib(simpletest)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tritonn")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tests")

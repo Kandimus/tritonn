@@ -14,7 +14,8 @@
 //=================================================================================================
 
 #include "test_thread.h"
-#include "simpletest.h"
+#define CATCH_CONFIG_RUNNER
+#include "../catchtest/catch.hpp"
 
 rTestThread::rTestThread()
 {
@@ -25,11 +26,20 @@ rTestThread::~rTestThread()
 {
 }
 
+void rTestThread::setArgs(int argc, char* argv[])
+{
+	m_argc = argc;
+	m_argv = argv;
+}
+
 //-------------------------------------------------------------------------------------------------
 //
 rThreadStatus rTestThread::Proccesing()
 {
-	rSimpleTest::instance().run();
+	rThreadClass::Proccesing();
+
+	Catch::Session().run(m_argc, m_argv);
+
 	Finish();
 	rThreadClass::Proccesing();
 
