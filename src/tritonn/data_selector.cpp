@@ -327,7 +327,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			{
 				if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][0], ValueIn[ii][0], "fault")) return cfg.ErrorID;
 				// Принудительно выключаем пределы
-				FaultIn[ii][0].Limit.Setup.Init(LIMIT_SETUP_OFF);
+				FaultIn[ii][0].Limit.m_setup.Init(rLimit::Setup::OFF);
 
 				if(++ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
 			}
@@ -401,7 +401,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 				{
 					if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][grp], ValueIn[ii][grp], XmlName::FAULT)) return cfg.ErrorID;
 
-					FaultIn[ii][grp].Limit.Setup.Init(LIMIT_SETUP_OFF);
+					FaultIn[ii][grp].Limit.m_setup.Init(rLimit::Setup::OFF);
 
 					if(++grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
 				}

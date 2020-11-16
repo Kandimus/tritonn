@@ -7,7 +7,7 @@
 #include "data_snapshot.h"
 #include "io_ai_channel.h"
 
-const UDINT SleepValue = 800;
+const UDINT SleepValue = 1200;
 
 TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 {
@@ -94,7 +94,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::LOLO));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::MIN));
 
 		// LOLO
@@ -103,10 +103,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.set();
 		mSleep(SleepValue);
 
+		get_ss.resetAssign();
 		get_ss.get();
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_AMIN);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::LOLO));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// LO
@@ -115,10 +116,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.set();
 		mSleep(SleepValue);
 
+		get_ss.resetAssign();
 		get_ss.get();
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_WMIN);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::LO));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// NORMAL
@@ -127,10 +129,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.set();
 		mSleep(SleepValue);
 
+		get_ss.resetAssign();
 		get_ss.get();
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_NORMAL);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::NORMAL));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// HI
@@ -139,10 +142,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.set();
 		mSleep(SleepValue);
 
+		get_ss.resetAssign();
 		get_ss.get();
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_WMAX);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::HI));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// HIHI
@@ -151,10 +155,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.set();
 		mSleep(SleepValue);
 
+		get_ss.resetAssign();
 		get_ss.get();
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_AMAX);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::HIHI));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
 		// MAX
@@ -163,10 +168,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.set();
 		mSleep(SleepValue);
 
+		get_ss.resetAssign();
 		get_ss.get();
 		REQUIRE(get_ss("io.ai00.present.status"));
 		REQUIRE(get_ss("io.ai00.status"));
-		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == LIMIT_STATUS_AMAX);
+		CHECK  (get_ss("io.ai00.present.status")->getValueUINT() == static_cast<UINT>(rLimit::Status::HIHI));
 		CHECK  (get_ss("io.ai00.status")->getValueUINT()         == static_cast<UINT>(rAI::Status::MAX));
 	}
 
@@ -209,10 +215,11 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 
 		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
 		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
-		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<USINT>(rIOAIChannel::Scale_mA_4_20::Min) + 100);
+		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 100);
 		ss.add("io.ai00.scales.min"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.max"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Max));
 		ss.add("io.ai00.keypad"                     , 50.0);
+		ss.add("io.ai00.mode"                       , 0);
 		ss.set();
 		mSleep(SleepValue * 2);
 

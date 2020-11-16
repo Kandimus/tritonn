@@ -141,7 +141,7 @@ UDINT rRVar::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 std::string rRVar::saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal)
 {
-	Value.Limit.Setup.Init(0);
+	Value.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

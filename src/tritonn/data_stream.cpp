@@ -354,20 +354,20 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 std::string rStream::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	Counter.Limit.Setup.Init(0);
-	Freq.Limit.Setup.Init(0);
-	Temp.Limit.Setup.Init(0);
-	Pres.Limit.Setup.Init(0);
-	Dens.Limit.Setup.Init(0);
-	Dens15.Limit.Setup.Init(0);
-	Dens20.Limit.Setup.Init(0);
-	B15.Limit.Setup.Init(0);
-	Y15.Limit.Setup.Init(0);
+	Counter.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Freq.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Temp.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Pres.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Dens.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Dens15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Dens20.Limit.m_setup.Init(rLimit::Setup::NONE);
+	B15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Y15.Limit.m_setup.Init(rLimit::Setup::NONE);
 
-	FlowMass.Limit.Setup.Init(0);
-	FlowVolume.Limit.Setup.Init(0);
-	FlowVolume15.Limit.Setup.Init(0);
-	FlowVolume20.Limit.Setup.Init(0);
+	FlowMass.Limit.m_setup.Init(rLimit::Setup::NONE);
+	FlowVolume.Limit.m_setup.Init(rLimit::Setup::NONE);
+	FlowVolume15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	FlowVolume20.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

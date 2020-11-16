@@ -226,6 +226,10 @@ UDINT rAI::Calculate()
 		//aidata->StatusCh = OFAISTATUSCH_OK;
 		//SetFault();
 	}
+
+	if (Alias == "io.ai00" && Value.Value == -5) {
+		int a = 111;
+	}
 	
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -477,9 +481,9 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 std::string rAI::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	Value.Limit.Setup.Init(0);
-	PhValue.Limit.Setup.Init(0);
-	Current.Limit.Setup.Init(0);
+	Value.Limit.m_setup.Init(rLimit::Setup::NONE);
+	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Current.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

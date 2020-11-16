@@ -47,7 +47,6 @@ std::vector<rBitFlag> rDataConfig::STNProductValues;
 std::vector<rBitFlag> rDataConfig::STRFMeterFlags;
 std::vector<rBitFlag> rDataConfig::SelectorSetupFlags;
 std::vector<rBitFlag> rDataConfig::SelectorModeFlags;
-std::vector<rBitFlag> rDataConfig::LimitSetupFlags;
 std::vector<rBitFlag> rDataConfig::ReportTypeFlags;
 std::vector<rBitFlag> rDataConfig::ReportPeriodFlags;
 
@@ -83,12 +82,6 @@ rDataConfig::~rDataConfig()
 
 void rDataConfig::InitBitFlags()
 {
-	rDataConfig::LimitSetupFlags.push_back(rBitFlag("OFF" , LIMIT_SETUP_OFF));
-	rDataConfig::LimitSetupFlags.push_back(rBitFlag("LOLO", LIMIT_SETUP_AMIN));
-	rDataConfig::LimitSetupFlags.push_back(rBitFlag("LO"  , LIMIT_SETUP_WMIN));
-	rDataConfig::LimitSetupFlags.push_back(rBitFlag("HI"  , LIMIT_SETUP_WMAX));
-	rDataConfig::LimitSetupFlags.push_back(rBitFlag("HIHI", LIMIT_SETUP_AMAX));
-
 	rDataConfig::STNProductValues.push_back(rBitFlag("PETROLEUM"   , PRODUCT_PETROLEUM));
 	rDataConfig::STNProductValues.push_back(rBitFlag("GAZOLENE"    , PRODUCT_GAZOLENE));
 	rDataConfig::STNProductValues.push_back(rBitFlag("TRANSITION"  , PRODUCT_TRANSITION));

@@ -63,7 +63,6 @@ public:
 	static std::vector<rBitFlag> STRFMeterFlags;
 	static std::vector<rBitFlag> SelectorSetupFlags;
 	static std::vector<rBitFlag> SelectorModeFlags;
-	static std::vector<rBitFlag> LimitSetupFlags;
 	static std::vector<rBitFlag> ReportTypeFlags;
 	static std::vector<rBitFlag> ReportPeriodFlags;
 
