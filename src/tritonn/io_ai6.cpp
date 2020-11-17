@@ -32,7 +32,7 @@ rIOAI6::rIOAI6()
 	}
 
 	while(m_channel.size() < CHANNEL_COUNT) {
-		m_channel.push_back(rIOAIChannel);
+		m_channel.push_back(rIOAIChannel());
 	}
 
 	m_channel[0].m_simSpeed = 1111;

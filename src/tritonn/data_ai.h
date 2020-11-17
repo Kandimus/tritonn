@@ -92,22 +92,18 @@ public:
 
 	// Outputs
 	rLink       PhValue;                 // Текущее физическое значение
-	rLink       Value;                   // Результирующие значение
+	rLink       m_present;               // Результирующие значение
 	rLink       Current;                 // Значение тока/напряжения, пересчитанное из кода АЦП
 
 	// Внутренние переменные
 	UINT        ChFault;                 //TODO Временное решение
-	UINT        Code;                    //TODO Временное решение, пока небудет реализован класс rAI_io
-//	DINT        UsedCode;                // Используемый код АЦП для расчета значения
 	rCmpLREAL   KeypadValue;             // Значение ручного ввода
 	rScale      m_scale;                 // Инженерные пределы токового сигала
 	Mode        m_mode;                  // Режим работы
 	rCmpUINT    m_setup;                 // Настройка сигнала
 	Status      m_status;                //
-//	STRID       Unit;                    // Номер строки, которая будет использоваться в качесте единиц измерения
 	UDINT       Security;                //
-	UINT        Spline[MAX_AI_SPLINE];   // Массив последних 4 "хороших" кодов АЦП, для сглаживания
-	LREAL       LastGood;                // Последнее "хорошее" значение
+	LREAL       m_lastGood;              // Последнее "хорошее" значение
 
 private:
 	static rBitsArray m_flagsMode;

@@ -103,7 +103,6 @@ public:
 	INT     m_simSpeed     = 1;
 
 private:
-	UINT    m_hardADC      = 0;             // Текущий код ацп (с железа)
 	USINT   m_hardState    = 0;             // Статус канала с модуля
 
 	std::list<UINT> m_average;

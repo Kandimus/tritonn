@@ -19,7 +19,6 @@
 #include "reversed.h"
 #include "locker.h"
 #include "tickcount.h"
-//#include "data_manager.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "variable_class.h"
@@ -69,14 +68,12 @@ UDINT rThreadMaster::add(rThreadClass *thread, UDINT flags, const std::string& a
 
 	if(flags & TMF_NOTRUN) return TRITONN_RESULT_OK;
 
-	do
-	{
+	do {
 		mSleep(50);
 
 		info->m_status = info->m_class->GetStatus();
 
-		if(info->m_status == rThreadStatus::FINISHED)
-		{
+		if (info->m_status == rThreadStatus::FINISHED) {
 			TRACEERROR("Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
 			return 1;
@@ -121,7 +118,6 @@ void rThreadMaster::closeAll()
 //
 rThreadStatus rThreadMaster::Proccesing()
 {
-	rCPUState  cpu_start;
 	rTickCount savetimer;
 	rTickCount *notruntimer = new rTickCount(); // Таймер, для нитей, которые запускаются через TMF_NOTRUN
 
@@ -174,7 +170,7 @@ rThreadStatus rThreadMaster::Proccesing()
 		}
 
 		m_curSysInfo.calculate();
-		printf("CPU %.2f%% (%+.2f%%)\n", m_curSysInfo.m_usageCPU, m_curSysInfo.m_modifyCPU);
+//		printf("CPU %.2f%% (%+.2f%%)\n", m_curSysInfo.m_usageCPU, m_curSysInfo.m_modifyCPU);
 
 		{
 			rLocker locker(Mutex); UNUSED(locker);

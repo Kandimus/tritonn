@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <tritonn cfgver="1.0" kernel="0.17" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
-          xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
+			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module ver="1.0" name="ai6_1" type="AI6">
-		  <channel number="0" setup="NOICE | SMOOTH" />
+			<channel number="0" setup="NOICE | AVERAGE" />
 		</module>
 	</hardware>
 	<config>
-	  <settings>
-	    <contracthour>0</contracthour>
-	  </settings>
-	  <io>
-      <ai      name="GlobalTemp"    mode="PHIS" setup="NOICE | LASTGOOD"     description="4000">
-        <unit>16</unit>
+		<settings>
+			<contracthour>0</contracthour>
+		</settings>
+		<io>
+			<ai name="GlobalTemp"    mode="PHIS" setup="NOICE | LASTGOOD"     description="4000">
+				<unit>16</unit>
         <keypad>12.5</keypad>
         <scale>
           <min>-10</min>
