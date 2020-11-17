@@ -71,16 +71,52 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rIOAIChannel::processing()
+{
+	m_state = false;
+
+	// Изменяем статус
+	if (m_ADC < getMinValue() || m_ADC > getMaxValue() || m_hardState) {
+		m_state = true;
+		m_average.clear();
+		m_ADC = m_hardADC;
+
+		//TODO send on to RedLED
+		return TRITONN_RESULT_OK;
+	}
+
+	if (m_setup & AVERAGE) {
+		m_average.push_back(m_hardADC);
+
+		LREAL sum = 0.0;
+		for (auto adc : m_average) {
+			sum += static_cast<LREAL>(adc);
+		}
+		sum /= m_average.size();
+
+		while (m_average.size > MAX_AVERAGE) {
+			m_average.pop_front();
+		}
+
+		m_ADC = static_cast<UINT>(sum);
+	} else {
+		m_ADC = m_hardADC;
+		m_average.clear();
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
 UDINT rIOAIChannel::simulate()
 {
-	m_state = 0;
+	m_hardState = false;
 
 	switch(m_simType) {
 		case SimType::None:
 			return TRITONN_RESULT_OK;
 
 		case SimType::Const: {
-			m_ADC = m_simValue;
+			m_hardADC = m_simValue;
 			return TRITONN_RESULT_OK;
 		}
 
@@ -96,7 +132,7 @@ UDINT rIOAIChannel::simulate()
 					tmp = m_simMax;
 				}
 			}
-			m_ADC = m_simValue = static_cast<UINT>(tmp);
+			m_hardADC = m_simValue = static_cast<UINT>(tmp);
 			return TRITONN_RESULT_OK;
 		}
 
@@ -107,13 +143,13 @@ UDINT rIOAIChannel::simulate()
 			}
 			LREAL tmp = (sin(static_cast<LREAL>(m_simValue) * 0.017453293) + 1.0) / 2.0;
 			tmp   = m_simMin + static_cast<LREAL>(m_simMax - m_simMin) * tmp;
-			m_ADC = static_cast<UINT>(tmp);
+			m_hardADC = static_cast<UINT>(tmp);
 			return TRITONN_RESULT_OK;
 		}
 
 		case SimType::Random: {
 			LREAL tmp = m_simMin + static_cast<LREAL>(m_simMax - m_simMin) * (rand() / static_cast<LREAL>(RAND_MAX));
-			m_ADC = static_cast<UINT>(tmp);
+			m_hardADC = static_cast<UINT>(tmp);
 			return TRITONN_RESULT_OK;
 		}
 	}

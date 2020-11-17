@@ -26,9 +26,13 @@ rIOAI6::rIOAI6()
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , rIOAIChannel::Setup::OFF)
-				.add("SMOOTH"   , rIOAIChannel::Setup::SMOOTH)
-				.add("NOICE"    , rIOAIChannel::Setup::NOICE);
+				.add("OFF"    , rIOAIChannel::Setup::OFF)
+				.add("AVERAGE", rIOAIChannel::Setup::AVERAGE)
+				.add("NOICE"  , rIOAIChannel::Setup::NOICE);
+	}
+
+	while(m_channel.size() < CHANNEL_COUNT) {
+		m_channel.push_back(rIOAIChannel);
 	}
 
 	m_channel[0].m_simSpeed = 1111;
@@ -44,12 +48,12 @@ rIOAI6::~rIOAI6()
 
 UDINT rIOAI6::processing(USINT issim)
 {
-	if (issim) {
-		for(auto ii = 0; ii < CHANNEL_COUNT; ++ii) {
-			m_channel[ii].simulate();
+	for (auto& channel : m_channel) {
+		if (issim) {
+			channel.simulate();
 		}
 
-		return TRITONN_RESULT_OK;
+		channel.processing();
 	}
 
 	return TRITONN_RESULT_OK;

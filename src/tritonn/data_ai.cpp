@@ -122,11 +122,11 @@ UDINT rAI::InitLimitEvent(rLink &link)
 //
 UDINT rAI::Calculate()
 {
-	UDINT       ii        = 0;
-	LREAL       Range     = 0; // Значение "чистого" диапазона от Min до Max
-	rAI::Status oldStatus = m_status;
-	rEvent      event_success;
-	rEvent      event_fault;
+	UDINT  ii        = 0;
+	LREAL  Range     = 0; // Значение "чистого" диапазона от Min до Max
+	Status oldStatus = m_status;
+	rEvent event_success;
+	rEvent event_fault;
 	
 	if(rSource::Calculate()) return 0;
 
@@ -156,6 +156,8 @@ UDINT rAI::Calculate()
 	// Вычисляем диапазон по инж. величинам (для ускорения расчетов). Вычисляем тут, потому-что это значение еще пригодится при расчете шума
 	Range = m_scale.Max.Value - m_scale.Min.Value;
 
+	m_status = rAI::Status::UNDEF;
+
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
 	if(isSetModule())
@@ -171,37 +173,13 @@ UDINT rAI::Calculate()
 		}
 
 		CheckExpr(channel->m_state, AI_LE_CODE_FAULT, event_fault.Reinit(EID_AI_CH_OK) << ID << Descr, event_success.Reinit(EID_AI_CH_OK) << ID << Descr);
-			
-		//TODO Если считали успешно, то обрабатываем полученный код АЦП
-		if(!channel->m_state)
+
+		PhValue.Value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
+		Current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
+
+		if(channel->m_state)
 		{
-			// Используем текущий код АЦП
-			// UsedCode 32 битное, а Code 16 битное, это сделано для нормального усредения кода ацп ниже.
-			UsedCode = channel->m_ADC;
-
-			if(rAI::Status::FAULT == m_status)
-			{
-				m_status = rAI::Status::UNDEF;
-			}
-
-			//TODO Перенести в канал!
-			if(!(m_setup.Value & rAI::Setup::NOBUFFER))
-			{
-				// Устредняем по последним "хорошим" значениям
-				for(ii = 0; ii < MAX_AI_SPLINE; ++ii)
-				{
-					UsedCode  += ((Spline[ii] == 0xFFFF) ? Code : Spline[ii]);
-				}
-				UsedCode /= MAX_AI_SPLINE + 1;
-			}
-
-			PhValue.Value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(UsedCode - channel->getMinValue());
-			Current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
-		}
-		else
-		{
-			UsedCode = AI_CODE_FAULT;
-			Fault    = 1;
+			Fault = true;
 
 			if(m_mode == Mode::PHIS)
 			{
@@ -238,6 +216,8 @@ UDINT rAI::Calculate()
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
+	// можно сделать через m_oldMode, но это не красиво
 	if(m_mode == Mode::MKEYPAD && !(LockErr & AI_LE_SIM_MANUAL))
 	{
 		LockErr |= AI_LE_SIM_MANUAL;
@@ -287,13 +267,14 @@ UDINT rAI::Calculate()
 	{
 		Value.Value = LastGood;
 	}
-	// Если используем "физическое" значение, у НЕ виртуального сигнала
+	// Если используем "физическое" значение
 	else if(isSetModule())
 	{
 		// Получаем значение с датчика
 		Value.Value = PhValue.Value;
 
 		// Проверяем округление 4 и 20мА
+		//TODO перенести в Module
 		if(m_setup.Value & Setup::NOICE)
 		{
 			LREAL d = 2.0 * Range / 100.0; // 2% зона нечуствительности
@@ -384,7 +365,6 @@ UDINT rAI::SetFault()
 	PhValue.Value = std::numeric_limits<LREAL>::quiet_NaN();
 	Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
 	Current.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	UsedCode      = AI_CODE_FAULT;
 	m_status      = Status::FAULT;
 	Fault         = 1;
 

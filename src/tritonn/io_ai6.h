@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <vector>
 #include "def.h"
 #include "bits_array.h"
 #include "io_basemodule.h"
@@ -32,9 +33,7 @@ friend class rIOManager;
 
 public:
 
-	enum {
-		CHANNEL_COUNT = 6
-	};
+	const UDINT CHANNEL_COUNT = 6;
 
 	rIOAI6();
 	virtual ~rIOAI6();
@@ -58,7 +57,7 @@ public:
 
 private:
 	static rBitsArray m_flagsSetup;
-	rIOAIChannel      m_channel[CHANNEL_COUNT];
+	std::vector<rIOAIChannel> m_channel;
 };
 
 
