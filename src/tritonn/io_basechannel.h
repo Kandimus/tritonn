@@ -27,6 +27,7 @@ public:
 	virtual ~rIOBaseChannel();
 
 	virtual UDINT generateVars(const std::string& name, rVariableList& list);
+	virtual UDINT processing() = 0;
 	virtual UDINT simulate() = 0;
 
 public:

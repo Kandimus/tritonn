@@ -218,7 +218,7 @@ UDINT rLink::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			return DATACFGERR_AI;
 		}
 	} else {
-		Limit.Setup.Init(LIMIT_SETUP_OFF);
+		Limit.m_setup.Init(rLimit::Setup::OFF);
 	}
 
 	return TRITONN_RESULT_OK;

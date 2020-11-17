@@ -348,18 +348,18 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	Period.Limit.Setup.Init(0);
-	Temp.Limit.Setup.Init(0);
-	Pres.Limit.Setup.Init(0);
-	Dens.Limit.Setup.Init(0);
-	Dens15.Limit.Setup.Init(0);
-	Dens20.Limit.Setup.Init(0);
-	B.Limit.Setup.Init(0);
-	Y.Limit.Setup.Init(0);
-	CTL.Limit.Setup.Init(0);
-	CPL.Limit.Setup.Init(0);
-	B15.Limit.Setup.Init(0);
-	Y15.Limit.Setup.Init(0);
+	Period.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Temp.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Pres.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Dens.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Dens15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Dens20.Limit.m_setup.Init(rLimit::Setup::NONE);
+	B.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Y.Limit.m_setup.Init(rLimit::Setup::NONE);
+	CTL.Limit.m_setup.Init(rLimit::Setup::NONE);
+	CPL.Limit.m_setup.Init(rLimit::Setup::NONE);
+	B15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Y15.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

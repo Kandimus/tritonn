@@ -20,12 +20,11 @@
 
 #ifdef TRITONN_TEST
 #include "test_thread.h"
-#include "simpletest.h"
 #endif
 
 #include "hash.h"
 
-int main(int argc, const char **argv)
+int main(int argc, char* argv[])
 {
 	rEvent event;
 
@@ -51,7 +50,7 @@ int main(int argc, const char **argv)
 	// Разбираем командную строку
 #ifdef TRITONN_TEST
 
-	rSimpleTest::instance().args(argc, argv);
+	rTestThread::instance().setArgs(argc, argv);
 
 	rSimpleArgs::instance()
 			.setSwitch(rArg::ForceRun , true)
@@ -67,7 +66,7 @@ int main(int argc, const char **argv)
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::ForceConf, 'c', "test_sikn.xml");
 
-	rSimpleArgs::instance().parse(argc, argv);
+	rSimpleArgs::instance().parse(argc, (const char**)argv);
 #endif
 
 	rThreadMaster::instance().Run(1000);

@@ -27,11 +27,21 @@
 #include "data_limit.h"
 #include "xml_util.h"
 
+rBitsArray rLimit::m_flagsSetup;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 rLimit::rLimit() :
-	AMin(0), WMin(0), WMax(0), AMax(0), Hysteresis(0.0)
+	m_lolo(0), m_lo(0), m_hi(0), m_hihi(0), Hysteresis(0.0)
 {
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"  , Setup::OFF)
+				.add("LOLO" , Setup::LOLO)
+				.add("LO"   , Setup::LO)
+				.add("HI"   , Setup::HI)
+				.add("HIHI" , Setup::HIHI);
+	}
 }
 
 
@@ -49,68 +59,64 @@ rLimit::~rLimit()
 //
 UINT rLimit::Calculate(LREAL val, UDINT check)
 {
-	UINT   oldStatus = Status;
+	Status oldStatus = m_status;
 
-	// Если аналоговый сигнал выключен, то выходим
-	if(Setup.Value & LIMIT_SETUP_OFF)
-	{
-		Status = LIMIT_STATUS_UNDEF;
+	// Если лимиты выключены, то выходим
+	if(m_setup.Value & Setup::OFF) {
+		m_status = Status::UNDEF;
 		return 0;
 	}
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
-	AMin.Compare      (COMPARE_LREAL_PREC, EventChangeAMin);
-	WMin.Compare      (COMPARE_LREAL_PREC, EventChangeWMin);
-	WMax.Compare      (COMPARE_LREAL_PREC, EventChangeWMax);
-	AMax.Compare      (COMPARE_LREAL_PREC, EventChangeAMax);
+	m_lolo.Compare    (COMPARE_LREAL_PREC, EventChangeAMin);
+	m_lo.Compare      (COMPARE_LREAL_PREC, EventChangeWMin);
+	m_hi.Compare      (COMPARE_LREAL_PREC, EventChangeWMax);
+	m_hihi.Compare    (COMPARE_LREAL_PREC, EventChangeAMax);
 	Hysteresis.Compare(COMPARE_LREAL_PREC, EventChangeHyst);
-	Setup.Compare     (                    EventChangeSetup);
-
-	// Очистим текущий статус
-	Status &= ~LIMIT_STATUS_MASK;
+	m_setup.Compare   (                    EventChangeSetup);
 
 	// Проверка на недопустимое число
-	if(val == std::numeric_limits<LREAL>::infinity() || std::isnan(val))
-	{
-		SendEvent(EventNan, nullptr, nullptr, oldStatus & LIMIT_STATUS_NAN);
-		Status |= LIMIT_STATUS_NAN;
-	}
-	else
-	{
-		if(!check) return Status;
+	if (std::isinf(val) || std::isnan(val)) {
+		SendEvent(EventNan, nullptr, nullptr, oldStatus == Status::ISNAN);
+		m_status = Status::ISNAN;
+
+	} else {
+		if (!check) {
+			return static_cast<UINT>(m_status);
+		}
 
 		// Если значение больше чем аварийный максимум
 		// ИЛИ
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
-		else if((Setup.Value & LIMIT_SETUP_AMAX) && ((val > AMax.Value) || ((val > AMax.Value - Hysteresis.Value) && (LIMIT_STATUS_AMAX & oldStatus))))
+		else if((m_setup.Value & Setup::HIHI) && ((val > m_hihi.Value) || ((val > m_hihi.Value - Hysteresis.Value) && (oldStatus == Status::HIHI))))
 		{
-			SendEvent(EventAMax, &val, &AMax.Value, oldStatus & LIMIT_STATUS_AMAX);
-			Status |= LIMIT_STATUS_AMAX;
+			SendEvent(EventAMax, &val, &m_hihi.Value, oldStatus == Status::HIHI);
+			m_status = Status::HIHI;
 		}
-		else if((Setup.Value & LIMIT_SETUP_AMIN) && ((val < AMin.Value) || ((val < AMin.Value + Hysteresis.Value) && (LIMIT_STATUS_AMIN & oldStatus))))
+		else if((m_setup.Value & Setup::LOLO) && ((val < m_lolo.Value) || ((val < m_lolo.Value + Hysteresis.Value) && (oldStatus == Status::LOLO))))
 		{
-			SendEvent(EventAMin, &val, &AMin.Value, oldStatus & LIMIT_STATUS_AMIN);
-			Status = LIMIT_STATUS_AMIN;
+			SendEvent(EventAMin, &val, &m_lolo.Value, oldStatus == Status::LOLO);
+			m_status = Status::LOLO;
 		}
-		else if((Setup.Value & LIMIT_SETUP_WMAX) && ((val > WMax.Value) || ((val > WMax.Value - Hysteresis.Value) && (LIMIT_STATUS_WMAX & oldStatus))))
+		else if((m_setup.Value & Setup::HI) && ((val > m_hi.Value) || ((val > m_hi.Value - Hysteresis.Value) && (oldStatus == Status::HI))))
 		{
-			SendEvent(EventWMax, &val, &WMax.Value, oldStatus & LIMIT_STATUS_WMAX);
-			Status = LIMIT_STATUS_WMAX;
+			SendEvent(EventWMax, &val, &m_hi.Value, oldStatus == Status::HI);
+			m_status = Status::HI;
 		}
-		else if((Setup.Value & LIMIT_SETUP_WMIN) && ((val < WMin.Value) || ((val < WMin.Value + Hysteresis.Value) && (LIMIT_STATUS_WMIN & oldStatus))))
+		else if((m_setup.Value & Setup::LO) && ((val < m_lo.Value) || ((val < m_lo.Value + Hysteresis.Value) && (oldStatus == Status::LO))))
 		{
-			SendEvent(EventWMin, &val, &WMin.Value, oldStatus & LIMIT_STATUS_WMIN);
-			Status = LIMIT_STATUS_WMIN;
+			SendEvent(EventWMin, &val, &m_lo.Value, oldStatus == Status::LO);
+			m_status = Status::LO;
 		}
 		else
 		{
-			SendEvent(EventNormal, &val, nullptr, oldStatus & LIMIT_STATUS_NORMAL);
-			Status = LIMIT_STATUS_NORMAL;
+			SendEvent(EventNormal, &val, nullptr, oldStatus == Status::NORMAL);
+			m_status = Status::NORMAL;
 		}
 	}
 	
-	return Status;
+	return static_cast<UINT>(m_status);
 }
 
 
@@ -121,15 +127,17 @@ UINT rLimit::Calculate(LREAL val, UDINT check)
 //
 UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit)
 {
-	if(Setup.Value & LIMIT_SETUP_OFF) return 0;
+	if (m_setup.Value & Setup::OFF) {
+		return TRITONN_RESULT_OK;
+	}
 
-	list.add(owner_name + ".LoLo"      , TYPE_LREAL, rVariable::Flags::___L, &AMin.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".Lo"        , TYPE_LREAL, rVariable::Flags::___L, &WMin.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".Hi"        , TYPE_LREAL, rVariable::Flags::___L, &WMax.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".HiHi"      , TYPE_LREAL, rVariable::Flags::___L, &AMax.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".Hysteresis", TYPE_LREAL, rVariable::Flags::___L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R___, &Status          , U_DIMLESS , 0);
-	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value     , U_DIMLESS , ACCESS_LIMITS);
+	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___L, &m_lolo.Value    , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___L, &m_lo.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___L, &m_hi.Value      , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___L, &m_hihi.Value    , owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS);
+	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status        , U_DIMLESS , 0);
+	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS);
 
 	return 0;
 }
@@ -139,19 +147,18 @@ UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID 
 //
 UDINT rLimit::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &/*cfg*/)
 {
-	string defSetup = rDataConfig::GetFlagNameByBit(rDataConfig::LimitSetupFlags, LIMIT_SETUP_OFF);
-	string strSetup = (element->Attribute("setup")) ? element->Attribute("setup") : defSetup.c_str();
-	UDINT  err      = 0;
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
+	UDINT       err      = 0;
 
-	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::LimitSetupFlags, strSetup, err));
+	m_setup.Init(m_flagsSetup.getValue(strSetup, err));
 
-	Hysteresis.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::HYSTER), 0.0, err));
-	AMin.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::LOLO)  , 0.0, err));
-	WMin.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::LO)    , 0.0, err));
-	WMax.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::HI)    , 0.0, err));
-	AMax.Init      (rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::HIHI)  , 0.0, err));
+	Hysteresis.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HYSTER), 0.0, err));
+	m_lolo.Init    (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::LOLO)  , 0.0, err));
+	m_lo.Init      (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::LO)    , 0.0, err));
+	m_hi.Init      (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HI)    , 0.0, err));
+	m_hihi.Init    (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HIHI)  , 0.0, err));
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

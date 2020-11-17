@@ -188,22 +188,6 @@ const string LINK_SHADOW_NONE          = "";
 
 //-------------------------------------------------------------------------------------------------
 // LIMIT
-const UINT   LIMIT_SETUP_OFF           = 0x0001;     // Сигнализация по пределам отключена
-const UINT   LIMIT_SETUP_AMIN          = 0x0002;     // Выдавать сообщение AMIN
-const UINT   LIMIT_SETUP_WMIN          = 0x0004;     // Выдавать сообщение WMIN
-const UINT   LIMIT_SETUP_WMAX          = 0x0008;     // Выдавать сообщение WMAX
-const UINT   LIMIT_SETUP_AMAX          = 0x0010;     // Выдавать сообщение AMAX
-
-// Статусы пределов
-const UINT   LIMIT_STATUS_UNDEF        = 0x0000;     // Статус неопределен
-const UINT   LIMIT_STATUS_NAN          = 0x0001;     // Не действительное значение числа
-const UINT   LIMIT_STATUS_AMIN         = 0x0002;     // Значение ниже аварийного минимума
-const UINT   LIMIT_STATUS_WMIN         = 0x0004;     // Значение ниже предаварийного минимума
-const UINT   LIMIT_STATUS_NORMAL       = 0x0008;     // Значение в нормальном диапазоне
-const UINT   LIMIT_STATUS_WMAX         = 0x0010;     // Значение выше предаварийного максимума
-const UINT   LIMIT_STATUS_AMAX         = 0x0020;     // Значение выше аварийного максимума
-
-const UINT   LIMIT_STATUS_MASK         = 0x00FF;     // Маска для извлечения статуса пределов
 
 
 //-------------------------------------------------------------------------------------------------

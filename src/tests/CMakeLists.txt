@@ -17,7 +17,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "test")
 add_lib(shared)
 add_lib(open62541)
 add_lib(simpleargs)
-add_lib(simpletest)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
 
@@ -29,11 +28,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE TRITONN_TEST=1)
 find_package( PythonInterp 3.0 REQUIRED )
 
 # Генерация исходного кода
-add_custom_target(generating_cpp ALL
-	COMMAND python3 ${CMAKE_SOURCE_DIR}/src/simpletest/simpletest.py --output ${CMAKE_SOURCE_DIR}/src/tests/simpletest.gen.cpp --dir ${CMAKE_SOURCE_DIR}/src/tests --files test_ai.cpp
-	BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/tests/simpletest.gen.cpp & sleep 0.5
-	COMMENT "Generating simple test file")
-add_dependencies(${PROJECT_NAME} generating_cpp)
+#add_custom_target(generating_cpp ALL
+#	COMMAND python3 ${CMAKE_SOURCE_DIR}/src/simpletest/simpletest.py --output ${CMAKE_SOURCE_DIR}/src/tests/simpletest.gen.cpp --dir ${CMAKE_SOURCE_DIR}/src/tests --files test_ai.cpp
+#	BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/tests/simpletest.gen.cpp & sleep 0.5
+#	COMMENT "Generating simple test file")
+#add_dependencies(${PROJECT_NAME} generating_cpp)
 
 
 list(APPEND ${SIMPLETEST_ADDDIR} "${CMAKE_SOURCE_DIR}/src/simpleargs")

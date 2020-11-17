@@ -7,6 +7,7 @@ set(PROJECT_NAME_PREFIX TT_)
 
 option(TRITONN_TESTS "Make tests" ON)
 option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
+option(TRITONN_X64 "Make 64 bits version" OFF)
 
 #
 if(NOT DEFINED TRITONN_VER_MAJOR)
@@ -34,10 +35,13 @@ set(CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -Wall -Wfloat-conversion")
 set(CMAKE_C_FLAGS "-std=c99")
 
-if (${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-	set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
+if(${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
+	if(NOT TRITONN_X64)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+
+		set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu")
+	endif()
 endif()
 
 #

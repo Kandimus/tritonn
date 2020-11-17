@@ -53,7 +53,7 @@ const rVariable* rSnapshot::add(const rSnapshotItem& snapshot)
 	return m_list.back()->getVariable();
 }
 
-const rVariable *rSnapshot::add(const std::string& name                        ) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var     )); return var; }
+const rVariable *rSnapshot::add(const std::string& name                        ) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var)); return var; }
 const rVariable *rSnapshot::add(const std::string& name, SINT               val) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var, val)); return var; }
 const rVariable *rSnapshot::add(const std::string& name, USINT              val) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var, val)); return var; }
 const rVariable *rSnapshot::add(const std::string& name, INT                val) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var, val)); return var; }
@@ -65,7 +65,6 @@ const rVariable *rSnapshot::add(const std::string& name, LREAL              val)
 const rVariable *rSnapshot::add(const std::string& name, STRID              val) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var, val)); return var; }
 const rVariable *rSnapshot::add(const std::string& name, const std::string& val) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var, val)); return var; }
 const rVariable *rSnapshot::add(const std::string& name, void*              buf) { const rVariable* var = findVar(name); m_list.push_back(new rSnapshotItem(var, buf)); return var; }
-
 
 rSnapshotItem *rSnapshot::operator[](const UDINT index)
 {

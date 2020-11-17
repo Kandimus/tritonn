@@ -23,4 +23,11 @@ class rTestThread : public rThreadClass
 
 public:
 	virtual rThreadStatus Proccesing();
+
+public:
+	void setArgs(int argc, char* argv[]);
+
+private:
+	int    m_argc = 0;
+	char** m_argv = nullptr;
 };

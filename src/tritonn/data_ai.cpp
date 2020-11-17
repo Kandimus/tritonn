@@ -30,9 +30,6 @@
 #include "xml_util.h"
 #include "data_ai.h"
 
-
-const DINT  AI_CODE_FAULT    = -1;
-
 const UDINT AI_LE_SIM_AUTO   = 0x00000002;
 const UDINT AI_LE_SIM_MANUAL = 0x00000004;
 const UDINT AI_LE_SIM_OFF    = 0x00000008;
@@ -65,16 +62,12 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 	LockErr  = 0;
 	m_setup  = Setup::OFF;
 	m_mode   = Mode::PHIS;
-	Code     = AI_CODE_FAULT;
 	m_status = Status::UNDEF;
 
-	// Все элементы LastCode приравниваем к -1
-	memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
-
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(LINK_SETUP_OUTPUT, Value  , U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, PhValue, U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Current, U_mA , SID_CURRENT , XmlName::CURRENT , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
+	InitLink(LINK_SETUP_OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , LINK_SHADOW_NONE);
 }
 
 
@@ -122,39 +115,35 @@ UDINT rAI::InitLimitEvent(rLink &link)
 //
 UDINT rAI::Calculate()
 {
-	UDINT       ii        = 0;
-	LREAL       Range     = 0; // Значение "чистого" диапазона от Min до Max
-	rAI::Status oldStatus = m_status;
-	rEvent      event_success;
-	rEvent      event_fault;
+	LREAL  Range     = 0; // Значение "чистого" диапазона от Min до Max
+	Status oldStatus = m_status;
+	rEvent event_success;
+	rEvent event_fault;
 	
 	if(rSource::Calculate()) return 0;
 
 	// Если аналоговый сигнал выключен, то выходим
 	if(m_setup.Value & rAI::Setup::OFF)
 	{
-		//lStatusCh = OFAISTATUSCH_OK;		
-		Code          = 0xFFFF;
-		UsedCode      = AI_CODE_FAULT;
-		PhValue.Value = std::numeric_limits<LREAL>::quiet_NaN();
-		Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-		m_mode        = Mode::PHIS;
-		m_status      = Status::UNDEF;
-
-		memset(Spline, 0xFF, sizeof(Spline[0]) * MAX_AI_SPLINE);
+		PhValue.Value   = std::numeric_limits<LREAL>::quiet_NaN();
+		m_present.Value = std::numeric_limits<LREAL>::quiet_NaN();
+		m_mode          = Mode::PHIS;
+		m_status        = Status::UNDEF;
 		return 0;
 	}
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
-	m_scale.Min.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_MIN)      << Value.Unit);
-	m_scale.Max.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_MAX)      << Value.Unit);
-	KeypadValue.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_SIMULATE) << Value.Unit);
+	m_scale.Min.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_MIN)      << m_present.Unit);
+	m_scale.Max.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_MAX)      << m_present.Unit);
+	KeypadValue.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_SIMULATE) << m_present.Unit);
 	m_setup.Compare(ReinitEvent(EID_AI_NEW_SETUP));
 	// Сообщения об изменении Mode формируем в ручную
 	
 	// Вычисляем диапазон по инж. величинам (для ускорения расчетов). Вычисляем тут, потому-что это значение еще пригодится при расчете шума
 	Range = m_scale.Max.Value - m_scale.Min.Value;
+
+	m_status = rAI::Status::UNDEF;
 
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
@@ -170,38 +159,14 @@ UDINT rAI::Calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		CheckExpr(channel->m_state, AI_LE_CODE_FAULT, event_fault.Reinit(EID_AI_CH_OK) << ID << Descr, event_success.Reinit(EID_AI_CH_OK) << ID << Descr);
-			
-		//TODO Если считали успешно, то обрабатываем полученный код АЦП
-		if(!channel->m_state)
+		CheckExpr(channel->m_state, AI_LE_CODE_FAULT, event_fault.Reinit(EID_AI_CH_FAULT) << ID << Descr, event_success.Reinit(EID_AI_CH_OK) << ID << Descr);
+
+		PhValue.Value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
+		Current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
+
+		if(channel->m_state)
 		{
-			// Используем текущий код АЦП
-			// UsedCode 32 битное, а Code 16 битное, это сделано для нормального усредения кода ацп ниже.
-			UsedCode = channel->m_ADC;
-
-			if(rAI::Status::FAULT == m_status)
-			{
-				m_status = rAI::Status::UNDEF;
-			}
-
-			//TODO Перенести в канал!
-			if(!(m_setup.Value & rAI::Setup::NOBUFFER))
-			{
-				// Устредняем по последним "хорошим" значениям
-				for(ii = 0; ii < MAX_AI_SPLINE; ++ii)
-				{
-					UsedCode  += ((Spline[ii] == 0xFFFF) ? Code : Spline[ii]);
-				}
-				UsedCode /= MAX_AI_SPLINE + 1;
-			}
-
-			PhValue.Value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(UsedCode - channel->getMinValue());
-			Current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
-		}
-		else
-		{
-			UsedCode = AI_CODE_FAULT;
-			Fault    = 1;
+			Fault = true;
 
 			if(m_mode == Mode::PHIS)
 			{
@@ -226,14 +191,15 @@ UDINT rAI::Calculate()
 		//aidata->StatusCh = OFAISTATUSCH_OK;
 		//SetFault();
 	}
-	
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	// РЕЖИМЫ РАБОТЫ
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
+	// можно сделать через m_oldMode, но это не красиво
 	if(m_mode == Mode::MKEYPAD && !(LockErr & AI_LE_SIM_MANUAL))
 	{
 		LockErr |= AI_LE_SIM_MANUAL;
@@ -276,31 +242,32 @@ UDINT rAI::Calculate()
 	// Если сигнал за засимулирован, то значение равно значению симуляции
 	if(m_mode == Mode::MKEYPAD || m_mode == Mode::AKEYPAD)
 	{
-		Value.Value = KeypadValue.Value;
+		m_present.Value = KeypadValue.Value;
 	}
 	// Если используем последнее "хорошее" значение
 	else if(m_mode == Mode::LASTGOOD)
 	{
-		Value.Value = LastGood;
+		m_present.Value = m_lastGood;
 	}
-	// Если используем "физическое" значение, у НЕ виртуального сигнала
+	// Если используем "физическое" значение
 	else if(isSetModule())
 	{
 		// Получаем значение с датчика
-		Value.Value = PhValue.Value;
+		m_present.Value = PhValue.Value;
 
 		// Проверяем округление 4 и 20мА
+		//TODO перенести в Module
 		if(m_setup.Value & Setup::NOICE)
 		{
 			LREAL d = 2.0 * Range / 100.0; // 2% зона нечуствительности
 
-			if(PhValue.Value < m_scale.Min.Value && Value.Value >= m_scale.Min.Value - d)
+			if(PhValue.Value < m_scale.Min.Value && m_present.Value >= m_scale.Min.Value - d)
 			{
-				Value.Value = m_scale.Min.Value;
+				m_present.Value = m_scale.Min.Value;
 			}
-			if(PhValue.Value > m_scale.Max.Value && Value.Value <= m_scale.Max.Value + d)
+			if(PhValue.Value > m_scale.Max.Value && m_present.Value <= m_scale.Max.Value + d)
 			{
-				Value.Value = m_scale.Max.Value;
+				m_present.Value = m_scale.Max.Value;
 			}
 		}
 	}
@@ -317,21 +284,21 @@ UDINT rAI::Calculate()
 		// Если значение больше чем инж. максимум
 		// ИЛИ
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
-		if(Value.Value > m_scale.Max.Value)
+		if(m_present.Value > m_scale.Max.Value)
 		{
 			if(oldStatus != Status::MAX)
 			{
-				rEventManager::instance().Add(ReinitEvent(EID_AI_MAX) << Value.Unit << Value.Value << m_scale.Max.Value);
+				rEventManager::instance().Add(ReinitEvent(EID_AI_MAX) << m_present.Unit << m_present.Value << m_scale.Max.Value);
 			}
 
 			m_status = Status::MAX;
 		}
 		// Инженерный минимум
-		else if(Value.Value < m_scale.Min.Value)
+		else if(m_present.Value < m_scale.Min.Value)
 		{
 			if(oldStatus != Status::MIN)
 			{
-				rEventManager::instance().Add(ReinitEvent(EID_AI_MIN) << Value.Unit << Value.Value << m_scale.Min.Value);
+				rEventManager::instance().Add(ReinitEvent(EID_AI_MIN) << m_present.Unit << m_present.Value << m_scale.Min.Value);
 			}
 
 			m_status = Status::MIN;
@@ -339,31 +306,12 @@ UDINT rAI::Calculate()
 		else
 		{
 			m_status = Status::NORMAL;
+
+			if (m_mode == Mode::PHIS) {
+				m_lastGood = m_present.Value;
+			}
 		}
 	}
-
-	
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	// ЗАВЕРШАЮЩИЕ РАСЧЕТЫ
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-		
-	//----------------------------------------------------------------------------------------------
-	// Сохраняем последнее "хорошее" значение и массив последних "хороших" кодов АЦП
-	// Получается, что если сигнал у нас в ручной симуляции, то "хорошие" значения мы не сохраняем... Хорошо это или плохо?
-	//TODO Нужно еще проверять выход за инженерные пределы!
-	if(m_status != Status::FAULT && m_mode == Mode::PHIS && UsedCode != AI_CODE_FAULT)
-	{
-		LastGood = Value.Value;
-		
-		for(ii = MAX_AI_SPLINE - 1; ii >= 1; --ii)
-		{
-			Spline[ii] = Spline[ii - 1];
-		}
-		Spline[0] = Code;
-	}
-
 
 	//----------------------------------------------------------------------------------------------
 	// Обрабатываем Limits для выходных значений
@@ -377,12 +325,11 @@ UDINT rAI::Calculate()
 //
 UDINT rAI::SetFault()
 {
-	PhValue.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	Value.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-	Current.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	UsedCode      = AI_CODE_FAULT;
-	m_status      = Status::FAULT;
-	Fault         = 1;
+	PhValue.Value   = std::numeric_limits<LREAL>::quiet_NaN();
+	m_present.Value = std::numeric_limits<LREAL>::quiet_NaN();
+	Current.Value   = std::numeric_limits<LREAL>::quiet_NaN();
+	m_status        = Status::FAULT;
+	Fault           = 1;
 
 	return Fault;
 }
@@ -404,15 +351,14 @@ UDINT rAI::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".code"      , TYPE_UINT , rVariable::Flags::R__L, &Code             , U_DIMLESS , 0);
-	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, Value.Unit, ACCESS_KEYPAD);
-	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, Value.Unit, ACCESS_SCALES);
-	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, Value.Unit, ACCESS_SCALES);
-	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS , ACCESS_SA);
-	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS , ACCESS_KEYPAD);
-	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS , 0);
+	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.Unit, ACCESS_KEYPAD);
+	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.Unit, ACCESS_SCALES);
+	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.Unit, ACCESS_SCALES);
+	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS     , ACCESS_SA);
+	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS     , ACCESS_KEYPAD);
+	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS     , 0);
 
-	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS , 0);
+	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
 
 	return TRITONN_RESULT_OK;
 }
@@ -442,7 +388,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			return result;
 		}
 	} else {
-		Value.Setup |= LINK_SETUP_WRITABLE;
+		m_present.Setup |= LINK_SETUP_WRITABLE;
 	}
 
 	if(nullptr == limits || nullptr == unit || nullptr == scale)
@@ -466,8 +412,8 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	}
 
 	// Подправляем единицы измерения, исходя из конфигурации AI
-	Value.Unit   = Unit;
-	PhValue.Unit = Unit;
+	m_present.Unit = Unit;
+	PhValue.Unit   = Unit;
 
 	ReinitLimitEvents();
 
@@ -477,9 +423,9 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 std::string rAI::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	Value.Limit.Setup.Init(0);
-	PhValue.Limit.Setup.Init(0);
-	Current.Limit.Setup.Init(0);
+	m_present.Limit.m_setup.Init(rLimit::Setup::NONE);
+	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Current.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
