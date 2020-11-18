@@ -255,32 +255,32 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".K0"             , TYPE_LREAL, rVariable::Flags::R___, &K0                 , U_DIMLESS, 0);
-	list.add(Alias + ".K1"             , TYPE_LREAL, rVariable::Flags::R___, &K1                 , U_DIMLESS, 0);
-	list.add(Alias + ".K2"             , TYPE_LREAL, rVariable::Flags::R___, &K2                 , U_DIMLESS, 0);
-	list.add(Alias + ".SetFactor.K0"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K0.Value      , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K1"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K1.Value      , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K2"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K2.Value      , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K18"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K18.Value     , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K19"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K19.Value     , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K20A" , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K20B" , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K21A" , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".SetFactor.K21B" , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".Factor.K0"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K0.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K1"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K1.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K2"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K2.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K18"     , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K18.Value , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K19"     , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K19.Value , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K20A"    , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K20A.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K20B"    , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K20B.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K21A"    , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K21A.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Factor.K21B"    , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K21B.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".Calibration"    , TYPE_LREAL, rVariable::Flags::___L, &Calibr.Value       , U_C      , ACCESS_FACTORS);
-	list.add(Alias + ".AcceptFactor"   , TYPE_USINT, rVariable::Flags::___L, &Accept             , U_DIMLESS, ACCESS_FACTORS);
-	list.add(Alias + ".Setup"          , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value        , U_DIMLESS, ACCESS_FACTORS);
+	list.add(Alias + ".k0"               , TYPE_LREAL, rVariable::Flags::R___, &K0                 , U_DIMLESS, 0);
+	list.add(Alias + ".k1"               , TYPE_LREAL, rVariable::Flags::R___, &K1                 , U_DIMLESS, 0);
+	list.add(Alias + ".k2"               , TYPE_LREAL, rVariable::Flags::R___, &K2                 , U_DIMLESS, 0);
+	list.add(Alias + ".factor.k0"        , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K0.Value  , U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k1"        , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K1.Value  , U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k2"        , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K2.Value  , U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k18"       , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K18.Value , U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k19"       , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K19.Value , U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k20a"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K20A.Value, U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k20b"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K20B.Value, U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k21a"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K21A.Value, U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.k21b"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K21B.Value, U_COEFSOL, ACCESS_SA);
+	list.add(Alias + ".factor.set.k0"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K0.Value      , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k1"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K1.Value      , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K2.Value      , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K18.Value     , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K19.Value     , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k20A"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k20B"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k21A"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k21B"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &Accept             , U_DIMLESS, ACCESS_FACTORS);
+	list.add(Alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &Calibr.Value       , U_C      , ACCESS_FACTORS);
+	list.add(Alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value        , U_DIMLESS, ACCESS_FACTORS);
 
-	list.add(Alias + ".fault"          , TYPE_UDINT, rVariable::Flags::R___, &Fault              , U_DIMLESS, 0);
+	list.add(Alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R___, &Fault              , U_DIMLESS, 0);
 
 	return 0;
 }
