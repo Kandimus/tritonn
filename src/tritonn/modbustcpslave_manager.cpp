@@ -419,6 +419,7 @@ UDINT rModbusTCPSlaveManager::CheckVars(rDataConfig &cfg)
 		link.m_item  = m_snapshot.last();
 		address     += TypeCountReg(link.m_item->getVariable()->getType());
 
+		// check block start + count > 65535
 		if(address > 0x0000FFFF)
 		{
 			cfg.ErrorLine = tlink.LineNum;
