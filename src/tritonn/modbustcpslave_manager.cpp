@@ -528,9 +528,9 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 	Security = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY, 0);
 	MaxError = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNTERR, 3);
 
-	tinyxml2::XMLElement *xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
-	tinyxml2::XMLElement *xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
-	tinyxml2::XMLElement *xml_wlist  = xml_root->FirstChildElement(XmlName::WHITELIST);
+	tinyxml2::XMLElement* xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
+	tinyxml2::XMLElement* xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
+	tinyxml2::XMLElement* xml_wlist  = xml_root->FirstChildElement(XmlName::WHITELIST);
 
 	if(nullptr == xml_adrmap)
 	{
@@ -552,8 +552,7 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 	// Загружаем список "белых" адрессов
 	if(nullptr != xml_wlist)
 	{
-		for(tinyxml2::XMLElement *xml_item = xml_wlist->FirstChildElement(XmlName::IP); nullptr != xml_item; xml_item = xml_item->NextSiblingElement(XmlName::IP))
-		{
+		XML_FOR(xml_item, xml_wlist, XmlName::IP) {
 			if(xml_item->GetText())
 			{
 				if(!AddWhiteIP(xml_item->GetText()))
@@ -568,19 +567,18 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 
 
 	// Перебираем указанные блоки
-	for(tinyxml2::XMLElement *xml_item = xml_adrmap->FirstChildElement(XmlName::ADDRESSBLOCK); nullptr != xml_item; xml_item = xml_item->NextSiblingElement(XmlName::ADDRESSBLOCK))
-	{
+	XML_FOR(xml_item, xml_adrmap, XmlName::ADDRESSBLOCK) {
 		// Считываем блок модбаса
 		UDINT  err       = 0;
 		UDINT  address   = XmlUtils::getAttributeUDINT(xml_item, XmlName::BEGIN, 0xFFFFFFFF);
 		string blockname = XmlUtils::getTextString    (xml_item, "", err);
 
-		if(address > 0x0000FFFF)
-		{
+		if (address < 400000 || address > 465535) {
 			cfg.ErrorLine = xml_item->GetLineNum();
 
 			return DATACFGERR_INTERFACES_BADADDR;
 		}
+		address -= 400000;
 
 		if(err)
 		{
@@ -599,8 +597,7 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 		}
 
 		//
-		for(tinyxml2::XMLElement *xml_var = xml_block->FirstChildElement(XmlName::VARIABLE); xml_var != nullptr; xml_var = xml_var->NextSiblingElement(XmlName::VARIABLE))
-		{
+		XML_FOR (xml_var, xml_block, XmlName::VARIABLE) {
 			rTempLink tlink;
 
 			err           = 0;

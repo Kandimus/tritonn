@@ -241,7 +241,7 @@
 						<temperature><link alias="sikn1.Obj.StnDensTemp:temp"/></temperature>
 						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
 						<density>    <link alias="sikn1.Obj.StnDensTemp:dens"/></density>
-						<factors >
+						<factors>
 							<keypad_mf>1</keypad_mf>
 							<keypad_kf>36000</keypad_kf>
 						</factors>
@@ -272,288 +272,286 @@
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
-                    <hihi>5</hihi>
-                    <hi>10</hi>
-                    <lo>25</lo>
-                    <lolo>35</lolo>
-                    <hysteresis>0.1</hysteresis>
-                  </limit>
-                </limits>
-              </ai>
-              <ai      name="Water1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4015">
-                <unit>520</unit>
-                <keypad>0.5</keypad>
-                <scale>
-                  <min>0</min>
-                  <max>2.0</max>
-                </scale>
-                <limits>
-                  <limit name="present" setup="HIHI | HI">
-                    <hihi>1.0</hihi>
-                    <hi>0.5</hi>
-                    <lo>0</lo>
-                    <lolo>0</lolo>
-                    <hysteresis>0.01</hysteresis>
-                  </limit>
-                </limits>
-              </ai>
-              <ai      name="Water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
-                <unit>520</unit>
-                <keypad>0.5</keypad>
-                <scale>
-                  <min>0</min>
-                  <max>2.0</max>
-                </scale>
-                <limits>
-                  <limit name="present" setup="HIHI | HI">
-                    <hihi>1.0</hihi>
-                    <hi>0.5</hi>
-                    <lo>0</lo>
-                    <lolo>0</lolo>
-                    <hysteresis>0.01</hysteresis>
-                  </limit>
-                </limits>
-              </ai>
-              <ai      name="Visc"    mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
-                <unit>64</unit>
-                <keypad>0.5</keypad>
-                <scale>
-                  <min>0</min>
-                  <max>100</max>
-                </scale>
-                <limits>
-                  <limit name="present" setup="HIHI | HI">
-                    <hihi>40</hihi>
-                    <hi>30</hi>
-                    <lo>10</lo>
-                    <lolo>5</lolo>
-                    <hysteresis>0.01</hysteresis>
-                  </limit>
-                </limits>
-              </ai>
-              <ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
-                <unit>32</unit>
-			        	<keypad>0.5</keypad>
-			        	<scale>
-                  <min>0</min>
-                  <max>6.3</max>
-                </scale>
-      	  			<limits>
-      	  			  <limit name="present" setup="HIHI | HI | LO | LOLO">
-                    <hihi>4</hihi>
-                    <hi>3.5</hi>
-                    <lo>0.5</lo>
-                    <lolo>0.1</lolo>
-                    <hysteresis>0.01</hysteresis>
-                  </limit>
-		  	      	</limits>
-              </ai>
-              <counter name="Counter"             setup=""                 description="4019">
-              </counter>
-              <counter name="Period1"             setup="NOBUFFER"         description="4020"> <!-- Виртуальный, для тестов -->
-              </counter>
-              <counter name="Period2"             setup="NOBUFFER"         description="4021">
-              </counter>
-            </io>
-            <limits>
-              <limit name="flowrate.volume" setup="HIHI | LOLO">
-                <hihi>1000</hihi>
-                <lolo>10</lolo>
-                <hysteresis>1</hysteresis>
-              </limit>
-            </limits>
-          </stream>
-        </streams>
-	      <calculate>
-	        <densitometer  name="Dens1" description="4022">
-	          <period>     <link alias="sikn1.bik.io.period1:period"/></period>
-	          <temperature><link alias="sikn1.BIK.IO.Temp1"/></temperature>
-	          <pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
-	          <calibration>20</calibration>
-	          <factors>
-	            <k0>-1.27753000E+03</k0>
-	            <k1>-2.99673000E-01</k1>
-	            <k2>1.35555000E-03</k2>
-	            <k18>-1.90175000E-05</k18>
-	            <k19>1.54297000E-02</k19>
-	            <k20a>-2.31789000E-04</k20a>
-	            <k20b>1.24990000E-06</k20b>
-	            <k21a>1.98986000E-01</k21a>
-	            <k21b>-3.19623000E-03</k21b>
-	          </factors>
-	          <limits>
-              <limit name="density" setup="hihi | hi | lo | lolo">
-                <hihi>900</hihi>
-                <hi>880</hi>
-                <lo>810</lo>
-                <lolo>800</lolo>
-                <hysteresis>0.5</hysteresis>
-              </limit>
-            </limits>
-	        </densitometer>
-	        <densitometer  name="Dens2" description="4023">
-	          <period>     <link alias="sikn1.BIK.IO.Period2:period"/></period>
-	          <temperature><link alias="sikn1.BIK.IO.Temp2"/></temperature>
-	          <pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
-	          <calibration>20</calibration>
-	          <factors>
-	            <k0>-1.27753000E+03</k0>
-	            <k1>-2.99673000E-01</k1>
-	            <k2>1.35555000E-03</k2>
-	            <k18>-1.90175000E-05</k18>
-	            <k19>1.54297000E-02</k19>
-	            <k20a>-2.31789000E-04</k20a>
-	            <k20b>1.24990000E-06</k20b>
-	            <k21a>1.98986000E-01</k21a>
-	            <k21b>-3.19623000E-03</k21b>
-	          </factors>
-	          <limits>
-              <limit name="density" setup="hihi | hi | lo | lolo">
-                <hihi>900</hihi>
-                <hi>880</hi>
-                <lo>810</lo>
-                <lolo>800</lolo>
-                <hysteresis>0.5</hysteresis>
-              </limit>
-            </limits>
-	        </densitometer>
-	        <multiselector name="StnDensTemp" setup="" mode="NEXT" select="0" description="4024">
-	          <names>
-	            <name>Dens</name>
-	            <name>Dens15</name>
-	            <name>Dens20</name>
-	            <name>B15</name>
-	            <name>Y15</name>
-	            <name>temp</name>
-	          </names>
-	          <inputs>
-	            <group>
-	              <link alias="sikn1.Obj.Dens1:Density"/>
-	              <link alias="sikn1.Obj.Dens1:Density15"/>
-	              <link alias="sikn1.Obj.Dens1:Density20"/>
-	              <link alias="sikn1.Obj.Dens1:B15"/>
-	              <link alias="sikn1.Obj.Dens1:Y15"/>
-	              <link alias="sikn1.BIK.IO.Temp1"/> 
-	            </group>
-	            <group>
-	              <link alias="sikn1.Obj.Dens2:Density"/>
-	              <link alias="sikn1.Obj.Dens2:Density15"/>
-	              <link alias="sikn1.Obj.Dens2:Density20"/>
-	              <link alias="sikn1.Obj.Dens2:B15"/>
-	              <link alias="sikn1.Obj.Dens2:Y15"/>
-	              <link alias="sikn1.BIK.IO.Temp2"/>
-	            </group>
-	          </inputs>
-	          <faults>
-	            <group>
-	              <link alias="sikn1.Obj.Dens1"/>
-	              <link alias="sikn1.Obj.Dens1"/>
-	              <link alias="sikn1.Obj.Dens1"/>
-	              <link alias="sikn1.Obj.Dens1"/>
-	              <link alias="sikn1.Obj.Dens1"/>
-	              <link alias="sikn1.BIK.IO.Temp1"/> 
-	            </group>
-	            <group>
-	              <link alias="sikn1.Obj.Dens2"/>
-	              <link alias="sikn1.Obj.Dens2"/>
-	              <link alias="sikn1.Obj.Dens2"/>
-	              <link alias="sikn1.Obj.Dens2"/>
-	              <link alias="sikn1.Obj.Dens2"/>
-	              <link alias="sikn1.BIK.IO.Temp2"/>
-	            </group>
-	          </faults>
-	          <keypads>
-	            <keypad>
-	              <unit>48</unit>
-	              <value>800</value>
-              </keypad>
-	            <keypad>
-	              <unit>48</unit>
-	              <value>800</value>
-              </keypad>
-	            <keypad>
-	              <unit>48</unit>
-	              <value>800</value>
-              </keypad>
-	            <keypad>
-	              <unit>517</unit>
-	              <value>1</value>
-              </keypad>
-	            <keypad>
-	              <unit>518</unit>
-	              <value>1</value>
-              </keypad>
-	            <keypad>
-	              <unit>16</unit>
-	              <value>12.0</value>
-              </keypad>
-	          </keypads>
-	        </multiselector>
-	        <selector      name="StnWater"    setup="NOEVENT" mode="NEXT" select="0" description="4025">
-	          <inputs>
-	            <link alias="sikn1.BIK.IO.Water1"/>
-	            <link alias="sikn1.BIK.IO.Water2"/>
-	          </inputs>
-	          <keypad>
-	            <unit>520</unit>
-	            <value>0</value>
-            </keypad>
-	        </selector>
-	        <sampler       name="Sampler1" method="PERIOD" setup="" description="4026">
-	          <reserved><link alias="sikn1.Sampler2"/></reserved>
-	          <pulse>1000</pulse>
-	          <grabvol>1.2</grabvol>
-	          <canvol>3900</canvol>
-	          <inputs>
-	            <error><link alias=""/></error>
-	            <canfilled><link alias=""/></canfilled>
-	          </inputs>
-	          <outputs>
-	            <filled><link alias=""/></filled>
-	          </outputs>
-	        </sampler>
-	        <sampler       name="Sampler2" method="VOLUME" setup="" description="4027">
-	          <reserved><link alias="sikn1.Sampler1"/></reserved>
-	          <pulse>1000</pulse>
-	          <grabvol>1.2</grabvol>
-	          <canvol>3900</canvol>
-	          <inputs>
-	            <error><link alias=""/></error>
-	            <canfilled><link alias=""/></canfilled>
-	          </inputs>
-	          <outputs>
-	            <filled><link alias=""/></filled>
-	          </outputs>
-	        </sampler>
-        </calculate>
-	    </station>
-	  </stations>
-	  <!---
-	      
-        ПЕРЕМЕННЫЕ
-	        
-      -->
-	  <variables>
-	    <variable name="var1const" setup="CONST" description="0">
-        <value>11.11</value>
-	      <unit>0</unit>
-      </variable>
-	    <variable name="var2" setup="" description="0">
-        <value>22.22</value>
-	      <unit>16</unit>
-      </variable>
-	    <variable name="var3lim" setup="" description="0">
-	      <limits>
-          <limit name="value" setup="hihi | hi | lo | lolo">
-            <hihi>50</hihi>
-            <hi>10</hi>
-            <lo>0</lo>
-            <lolo>-10</lolo>
-            <hysteresis>1</hysteresis>
-          </limit>
-        </limits>
-        <value>33.33</value>
-	      <unit>512</unit>
+										<hihi>5</hihi>
+										<hi>10</hi>
+										<lo>25</lo>
+										<lolo>35</lolo>
+										<hysteresis>0.1</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<ai name="Water1" mode="PHIS" setup="NOICE | LASTGOOD" description="4015">
+								<unit>520</unit>
+								<keypad>0.5</keypad>
+								<scale>
+									<min>0</min>
+									<max>2.0</max>
+								</scale>
+								<limits>
+									<limit name="present" setup="HIHI | HI">
+										<hihi>1.0</hihi>
+										<hi>0.5</hi>
+										<lo>0</lo>
+										<lolo>0</lolo>
+										<hysteresis>0.01</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<ai name="Water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
+								<unit>520</unit>
+								<keypad>0.5</keypad>
+								<scale>
+									<min>0</min>
+									<max>2.0</max>
+								</scale>
+								<limits>
+									<limit name="present" setup="HIHI | HI">
+										<hihi>1.0</hihi>
+										<hi>0.5</hi>
+										<lo>0</lo>
+										<lolo>0</lolo>
+										<hysteresis>0.01</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<ai name="Visc"    mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
+								<unit>64</unit>
+								<keypad>0.5</keypad>
+								<scale>
+									<min>0</min>
+									<max>100</max>
+								</scale>
+								<limits>
+									<limit name="present" setup="HIHI | HI">
+										<hihi>40</hihi>
+										<hi>30</hi>
+										<lo>10</lo>
+										<lolo>5</lolo>
+										<hysteresis>0.01</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<ai name="pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
+								<unit>32</unit>
+								<keypad>0.5</keypad>
+								<scale>
+									<min>0</min>
+									<max>6.3</max>
+								</scale>
+								<limits>
+									<limit name="present" setup="HIHI | HI | LO | LOLO">
+										<hihi>4</hihi>
+										<hi>3.5</hi>
+										<lo>0.5</lo>
+										<lolo>0.1</lolo>
+										<hysteresis>0.01</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<counter name="Counter" setup="" description="4019">
+							</counter>
+							<counter name="Period1" setup="NOBUFFER" description="4020"> <!-- Виртуальный, для тестов -->
+							</counter>
+							<counter name="Period2" setup="NOBUFFER" description="4021">
+							</counter>
+						</io>
+						<limits>
+							<limit name="flowrate.volume" setup="HIHI | LOLO">
+								<hihi>1000</hihi>
+								<lolo>10</lolo>
+								<hysteresis>1</hysteresis>
+							</limit>
+						</limits>
+					</stream>
+				</streams>
+				<calculate>
+					<densitometer  name="Dens1" description="4022">
+						<period>     <link alias="sikn1.bik.io.period1:period"/></period>
+						<temperature><link alias="sikn1.BIK.IO.Temp1"/></temperature>
+						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
+						<calibration>20</calibration>
+						<factors>
+							<k0>-1.27753000E+03</k0>
+							<k1>-2.99673000E-01</k1>
+							<k2>1.35555000E-03</k2>
+							<k18>-1.90175000E-05</k18>
+							<k19>1.54297000E-02</k19>
+							<k20a>-2.31789000E-04</k20a>
+							<k20b>1.24990000E-06</k20b>
+							<k21a>1.98986000E-01</k21a>
+							<k21b>-3.19623000E-03</k21b>
+						</factors>
+						<limits>
+							<limit name="density" setup="hihi | hi | lo | lolo">
+								<hihi>900</hihi>
+								<hi>880</hi>
+								<lo>810</lo>
+								<lolo>800</lolo>
+								<hysteresis>0.5</hysteresis>
+							</limit>
+						</limits>
+					</densitometer>
+					<densitometer  name="Dens2" description="4023">
+						<period>     <link alias="sikn1.BIK.IO.Period2:period"/></period>
+						<temperature><link alias="sikn1.BIK.IO.Temp2"/></temperature>
+						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
+						<calibration>20</calibration>
+						<factors>
+							<k0>-1.27753000E+03</k0>
+							<k1>-2.99673000E-01</k1>
+							<k2>1.35555000E-03</k2>
+							<k18>-1.90175000E-05</k18>
+							<k19>1.54297000E-02</k19>
+							<k20a>-2.31789000E-04</k20a>
+							<k20b>1.24990000E-06</k20b>
+							<k21a>1.98986000E-01</k21a>
+							<k21b>-3.19623000E-03</k21b>
+						</factors>
+						<limits>
+							<limit name="density" setup="hihi | hi | lo | lolo">
+								<hihi>900</hihi>
+								<hi>880</hi>
+								<lo>810</lo>
+								<lolo>800</lolo>
+								<hysteresis>0.5</hysteresis>
+							</limit>
+						</limits>
+					</densitometer>
+					<multiselector name="StnDensTemp" setup="" mode="NEXT" select="0" description="4024">
+						<names>
+							<name>Dens</name>
+							<name>Dens15</name>
+							<name>Dens20</name>
+							<name>B15</name>
+							<name>Y15</name>
+							<name>temp</name>
+						</names>
+						<inputs>
+							<group>
+								<link alias="sikn1.Obj.Dens1:Density"/>
+								<link alias="sikn1.Obj.Dens1:Density15"/>
+								<link alias="sikn1.Obj.Dens1:Density20"/>
+								<link alias="sikn1.Obj.Dens1:B15"/>
+								<link alias="sikn1.Obj.Dens1:Y15"/>
+								<link alias="sikn1.BIK.IO.Temp1"/>
+							</group>
+							<group>
+								<link alias="sikn1.Obj.Dens2:Density"/>
+								<link alias="sikn1.Obj.Dens2:Density15"/>
+								<link alias="sikn1.Obj.Dens2:Density20"/>
+								<link alias="sikn1.Obj.Dens2:B15"/>
+								<link alias="sikn1.Obj.Dens2:Y15"/>
+								<link alias="sikn1.BIK.IO.Temp2"/>
+							</group>
+						</inputs>
+						<faults>
+							<group>
+								<link alias="sikn1.Obj.Dens1"/>
+								<link alias="sikn1.Obj.Dens1"/>
+								<link alias="sikn1.Obj.Dens1"/>
+								<link alias="sikn1.Obj.Dens1"/>
+								<link alias="sikn1.Obj.Dens1"/>
+								<link alias="sikn1.BIK.IO.Temp1"/>
+							</group>
+							<group>
+								<link alias="sikn1.Obj.Dens2"/>
+								<link alias="sikn1.Obj.Dens2"/>
+								<link alias="sikn1.Obj.Dens2"/>
+								<link alias="sikn1.Obj.Dens2"/>
+								<link alias="sikn1.Obj.Dens2"/>
+								<link alias="sikn1.BIK.IO.Temp2"/>
+							</group>
+						</faults>
+						<keypads>
+							<keypad>
+								<unit>48</unit>
+								<value>800</value>
+							</keypad>
+							<keypad>
+								<unit>48</unit>
+								<value>800</value>
+							</keypad>
+							<keypad>
+								<unit>48</unit>
+								<value>800</value>
+							</keypad>
+							<keypad>
+								<unit>517</unit>
+								<value>1</value>
+							</keypad>
+							<keypad>
+								<unit>518</unit>
+								<value>1</value>
+							</keypad>
+							<keypad>
+								<unit>16</unit>
+								<value>12.0</value>
+							</keypad>
+						</keypads>
+					</multiselector>
+					<selector name="StnWater" setup="NOEVENT" mode="NEXT" select="0" description="4025">
+						<inputs>
+							<link alias="sikn1.BIK.IO.Water1"/>
+							<link alias="sikn1.BIK.IO.Water2"/>
+						</inputs>
+						<keypad>
+							<unit>520</unit>
+							<value>0</value>
+						</keypad>
+					</selector>
+					<sampler name="Sampler1" method="PERIOD" setup="" description="4026">
+						<reserved><link alias="sikn1.Sampler2"/></reserved>
+						<pulse>1000</pulse>
+						<grabvol>1.2</grabvol>
+						<canvol>3900</canvol>
+						<inputs>
+							<error><link alias=""/></error>
+							<canfilled><link alias=""/></canfilled>
+						</inputs>
+						<outputs>
+							<filled><link alias=""/></filled>
+						</outputs>
+					</sampler>
+					<sampler name="Sampler2" method="VOLUME" setup="" description="4027">
+						<reserved><link alias="sikn1.Sampler1"/></reserved>
+						<pulse>1000</pulse>
+						<grabvol>1.2</grabvol>
+						<canvol>3900</canvol>
+						<inputs>
+							<error><link alias=""/></error>
+							<canfilled><link alias=""/></canfilled>
+						</inputs>
+						<outputs>
+							<filled><link alias=""/></filled>
+						</outputs>
+					</sampler>
+				</calculate>
+			</station>
+		</stations>
+		<!---
+		ПЕРЕМЕННЫЕ
+		-->
+		<variables>
+			<variable name="var1const" setup="CONST" description="0">
+				<value>11.11</value>
+				<unit>0</unit>
+			</variable>
+			<variable name="var2" setup="" description="0">
+				<value>22.22</value>
+				<unit>16</unit>
+			</variable>
+			<variable name="var3lim" setup="" description="0">
+				<limits>
+					<limit name="value" setup="hihi | hi | lo | lolo">
+						<hihi>50</hihi>
+						<hi>10</hi>
+						<lo>0</lo>
+						<lolo>-10</lolo>
+						<hysteresis>1</hysteresis>
+					</limit>
+				</limits>
+				<value>33.33</value>
+				<unit>512</unit>
 			</variable>
 		</variables>
 		<reportsystem>
@@ -723,10 +721,10 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 					<dword>1</dword>
 				</swap>
 				<addressmap>
-					<addressblock begin="100">systime</addressblock>
-					<addressblock begin="150">sysver</addressblock>
-					<addressblock begin="200">block_ai01</addressblock>
-					<addressblock begin="300">slave1_info</addressblock>
+					<addressblock begin="400100">systime</addressblock>
+					<addressblock begin="400150">sysver</addressblock>
+					<addressblock begin="400200">block_ai01</addressblock>
+					<addressblock begin="400300">slave1_info</addressblock>
 				</addressmap>
 			</slavetcp>
 			<slavertu name="slave2" id="1" modulenum="0" port="2" boudreate="9600" bit="1" parity="0" counterror="3" security="0" maxclient="0">
@@ -736,8 +734,8 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 					<dword>1</dword>
 				</swap>
 				<addressmap>
-					<addressblock begin="200">systime</addressblock>
-					<addressblock begin="250">block_ai01</addressblock>
+					<addressblock begin="400200">systime</addressblock>
+					<addressblock begin="400250">block_ai01</addressblock>
 				</addressmap>
 			</slavertu>
 		</modbus>
