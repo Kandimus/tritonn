@@ -223,6 +223,7 @@ UDINT rStream::generateVars(rVariableList& list)
 	list.add(Alias + ".Setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value             , U_DIMLESS          , ACCESS_SA);
 	list.add(Alias + ".FlowMeter"             , TYPE_USINT, rVariable::Flags::R__L, &FlowMeter               , U_DIMLESS          , 0);
 	list.add(Alias + ".Maintenance"           , TYPE_UDINT, rVariable::Flags::___L, &Maintenance             , U_DIMLESS          , ACCESS_MAINTENANCE);
+	list.add(Alias + ".linearization"         , TYPE_UDINT, rVariable::Flags::___L, &Linearization           , U_DIMLESS          , ACCESS_FACTORS);
 	list.add(Alias + ".total.present.Volume"  , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume    , Station->UnitVolume, 0);
 	list.add(Alias + ".total.present.Volume15", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume15  , Station->UnitVolume, 0);
 	list.add(Alias + ".total.present.Volume20", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume20  , Station->UnitVolume, 0);
@@ -243,21 +244,20 @@ UDINT rStream::generateVars(rVariableList& list)
 	list.add(Alias + ".total.past.Volume20"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume20     , Station->UnitVolume, 0);
 	list.add(Alias + ".total.past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Mass         , Station->UnitMass  , 0);
 	list.add(Alias + ".total.past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH_, &Total.Past.Count        , U_imp              , 0);
-	list.add(Alias + ".acceptfactor"          , TYPE_UDINT, rVariable::Flags::___L, &AcceptKF                , U_DIMLESS          , ACCESS_FACTORS);
 	list.add(Alias + ".presentkf"             , TYPE_LREAL, rVariable::Flags::R___, &CurKF                   , GetUnitKF()        , 0);
 	list.add(Alias + ".factor.kf"             , TYPE_LREAL, rVariable::Flags::R___, &Factor.KeypadKF.Value   , GetUnitKF()        , 0);
 	list.add(Alias + ".factor.mf"             , TYPE_LREAL, rVariable::Flags::R__L, &Factor.KeypadMF.Value   , U_DIMLESS          , 0);
-	list.add(Alias + ".linearization"         , TYPE_UDINT, rVariable::Flags::___L, &Linearization           , U_DIMLESS          , ACCESS_FACTORS);
-	list.add(Alias + ".setfactor.kf"          , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadKF.Value, GetUnitKF()        , ACCESS_FACTORS);
-	list.add(Alias + ".setfactor.mf"          , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadMF.Value, U_DIMLESS          , ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.kf"         , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadKF.Value, GetUnitKF()        , ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.mf"         , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadMF.Value, U_DIMLESS          , ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.accept"     , TYPE_UDINT, rVariable::Flags::___L, &AcceptKF                , U_DIMLESS          , ACCESS_FACTORS);
 
 
 	for(UDINT ii = 0; ii < MAX_FACTOR_POINT; ++ii)
 	{
-		string name_kf     = String_format("%s.factor.Point_%i.kf"   , Alias.c_str(), ii + 1);
-		string name_hz     = String_format("%s.factor.Point_%i.hz"   , Alias.c_str(), ii + 1);
-		string name_set_kf = String_format("%s.setfactor.point_%i.kf", Alias.c_str(), ii + 1);
-		string name_set_hz = String_format("%s.setfactor.point_%i.hz", Alias.c_str(), ii + 1);
+		string name_kf     = String_format("%s.factor.point_%i.kf"    , Alias.c_str(), ii + 1);
+		string name_hz     = String_format("%s.factor.point_%i.hz"    , Alias.c_str(), ii + 1);
+		string name_set_kf = String_format("%s.factor.set.point_%i.kf", Alias.c_str(), ii + 1);
+		string name_set_hz = String_format("%s.factor.set.point_%i.hz", Alias.c_str(), ii + 1);
 
 		list.add(name_kf    , TYPE_LREAL, rVariable::Flags::R__L, &Factor.Point[ii].Kf   , GetUnitKF(), 0);
 		list.add(name_set_kf, TYPE_LREAL, rVariable::Flags::____, &SetFactor.Point[ii].Kf, GetUnitKF(), ACCESS_FACTORS);
