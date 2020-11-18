@@ -306,7 +306,7 @@ UDINT rEventManager::ParseNumber(const char *str, UDINT &num, UDINT &prec, UDINT
 					num     = (str_num.size()) ? atoi(str_num.c_str()) : num;
 					str_num = "";
 
-						  return UDINT(curch) - UDINT(str);
+						  return static_cast<UDINT>(curch - str);
 				}
 				break;
 			}
@@ -326,7 +326,7 @@ UDINT rEventManager::ParseNumber(const char *str, UDINT &num, UDINT &prec, UDINT
 				else
 				{
 					--curch;
-					return (UDINT)curch - (UDINT)str;
+					return static_cast<UDINT>(curch - str);
 				}
 				break;
 			}
@@ -344,7 +344,7 @@ UDINT rEventManager::ParseNumber(const char *str, UDINT &num, UDINT &prec, UDINT
 				}
 				else
 				{
-					return (UDINT)curch - (UDINT)str;
+					return static_cast<UDINT>(curch - str);
 				}
 				break;
 			}
@@ -360,7 +360,7 @@ UDINT rEventManager::ParseNumber(const char *str, UDINT &num, UDINT &prec, UDINT
 				{
 					prec = (str_num.size()) ? atoi(str_num.c_str()) : prec;
 
-					return (UDINT)curch - (UDINT)str;
+					return static_cast<UDINT>(curch - str);
 				}
 				break;
 			}
@@ -379,7 +379,7 @@ UDINT rEventManager::ParseNumber(const char *str, UDINT &num, UDINT &prec, UDINT
 		prec = (str_num.size()) ? atoi(str_num.c_str()) : prec;
 	}
 
-	return (UDINT)curch - (UDINT)str;
+	return static_cast<UDINT>(curch - str);
 }
 
 
