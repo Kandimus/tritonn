@@ -16,7 +16,7 @@ if(NOT DEFINED TRITONN_VER_MAJOR)
 endif()
 
 if(NOT DEFINED TRITONN_VER_MINOR)
-	set(TRITONN_VER_MINOR 17)
+	set(TRITONN_VER_MINOR 18)
 	message(AUTHOR_WARNING "Set minor version: ${TRITONN_VER_MINOR}")
 endif()
 
@@ -44,6 +44,28 @@ if(${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
 	endif()
 endif()
 
+#generate version
+find_package(Git)
+if(GIT_FOUND)
+	execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --long
+				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+				OUTPUT_VARIABLE TRITONN_VER_GIT
+				OUTPUT_STRIP_TRAILING_WHITESPACE)
+	if( TRITONN_VER_GIT )
+		set(TRITONN_VER_BUILD "")
+		set(VER_POS -1)
+		string( FIND ${TRITONN_VER_GIT} "g" VER_POS)
+		math(EXPR VER_POS "${VER_POS} + 1")
+		string( SUBSTRING ${TRITONN_VER_GIT} ${VER_POS} "255" TRITONN_VER_BUILD)
+		#string( REGEX REPLACE "\\-g" "." TRITONN_VER_GIT ${TRITONN_VER_GIT} )
+		string( REGEX REPLACE "\\-" "." TRITONN_VER_GIT ${TRITONN_VER_GIT} )
+	else()
+		set(TRITONN_VER_GIT "undef")
+	endif()
+else()
+	set(TRITONN_VER_GIT "00000000")
+endif()
+
 #
 add_subdirectory(src)
 
@@ -66,7 +88,7 @@ add_subdirectory(src)
 message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")
-message(STATUS "Version: ${TRITONN_VER_MAJOR}.${TRITONN_VER_MINOR}")
+message(STATUS "Version: ${TRITONN_VER_MAJOR}.${TRITONN_VER_MINOR}.${TRITONN_VER_BUILD}")
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
