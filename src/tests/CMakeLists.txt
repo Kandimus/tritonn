@@ -33,11 +33,3 @@ find_package( PythonInterp 3.0 REQUIRED )
 #	BYPRODUCTS ${CMAKE_SOURCE_DIR}/src/tests/simpletest.gen.cpp & sleep 0.5
 #	COMMENT "Generating simple test file")
 #add_dependencies(${PROJECT_NAME} generating_cpp)
-
-
-list(APPEND ${SIMPLETEST_ADDDIR} "${CMAKE_SOURCE_DIR}/src/simpleargs")
-if(SIMPLETEST_USING_SIMPLEARGS)
-	list(APPEND ${SIMPLETEST_ADDDEF} "SIMPLETEST_USING_SIMPLEARGS=1")
-endif()
-
-compile_submodule("simpletest" SIMPLETEST_ADDDIR SIMPLETEST_ADDDEF)
