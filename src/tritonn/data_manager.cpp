@@ -36,7 +36,7 @@
 #include "data_rvar.h"
 #include "text_manager.h"
 #include "event_manager.h"
-#include "io_manager.h"
+#include "io/manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
 

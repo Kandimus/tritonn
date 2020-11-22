@@ -13,16 +13,15 @@
 //===
 //=================================================================================================
 
+#include "module_ai6.h"
 #include "locker.h"
-#include "io_ai6.h"
-#include "data_config.h"
 #include "tinyxml2.h"
-#include "xml_util.h"
+#include "../data_config.h"
+#include "../xml_util.h"
 
-std::string rIOAI6::m_rtti = "ai6";
-rBitsArray  rIOAI6::m_flagsSetup;
+rBitsArray  rModuleAI6::m_flagsSetup;
 
-rIOAI6::rIOAI6()
+rModuleAI6::rModuleAI6()
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
@@ -40,13 +39,13 @@ rIOAI6::rIOAI6()
 }
 
 
-rIOAI6::~rIOAI6()
+rModuleAI6::~rModuleAI6()
 {
 
 }
 
 
-UDINT rIOAI6::processing(USINT issim)
+UDINT rModuleAI6::processing(USINT issim)
 {
 	for (auto& channel : m_channel) {
 		if (issim) {
@@ -60,7 +59,7 @@ UDINT rIOAI6::processing(USINT issim)
 }
 
 
-std::unique_ptr<rIOBaseChannel> rIOAI6::getChannel(USINT num)
+std::unique_ptr<rIOBaseChannel> rModuleAI6::getChannel(USINT num)
 {
 	if (num >= CHANNEL_COUNT) {
 		return nullptr;
@@ -73,19 +72,19 @@ std::unique_ptr<rIOBaseChannel> rIOAI6::getChannel(USINT num)
 	return module_ptr;
 }
 
-UDINT rIOAI6::generateVars(const std::string& prefix, rVariableList& list)
+UDINT rModuleAI6::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
-	rIOBaseModule::generateVars(prefix, list);
+	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	for (int ii = 0; ii < CHANNEL_COUNT; ++ii) {
+	for (UDINT ii = 0; ii < CHANNEL_COUNT; ++ii) {
 		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
-		m_channel[ii].generateVars(p, list);
+		m_channel[ii].generateVars(p, list, issimulate);
 	}
 	return TRITONN_RESULT_OK;
 }
 
 
-UDINT rIOAI6::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rModuleAI6::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 {
 	UDINT result = rIOBaseModule::loadFromXML(element, cfg);
 

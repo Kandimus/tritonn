@@ -26,7 +26,7 @@
 #include "users.h"
 #include "hash.h"
 #include "threadmaster.h"
-#include "io_manager.h"
+#include "io/manager.h"
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_ai.h"

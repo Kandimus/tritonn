@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== io_manager.h
+//=== io/manager.h
 //===
 //=== Copyright (c) 2019 by RangeSoft.
 //=== All rights reserved.
@@ -13,18 +13,19 @@
 //===
 //=================================================================================================
 
-#include "io_manager.h"
+#include "manager.h"
 #include "locker.h"
-#include "io_basechannel.h"
-#include "data_config.h"
-#include "units.h"
-#include "simpleargs.h"
-#include "def_arguments.h"
-#include "variable_item.h"
-#include "threadmaster.h"
 #include "tinyxml2.h"
-#include "xml_util.h"
-#include "io_ai6.h"
+#include "basechannel.h"
+#include "../data_config.h"
+#include "../units.h"
+#include "simpleargs.h"
+#include "../def_arguments.h"
+#include "../variable_item.h"
+#include "../threadmaster.h"
+#include "../xml_util.h"
+#include "module_ai6.h"
+#include "module_di8do8.h"
 
 
 rIOManager::rIOManager() : rVariableClass(Mutex)
@@ -81,7 +82,7 @@ rThreadStatus rIOManager::Proccesing()
 UDINT rIOManager::generateVars(rVariableClass* parent)
 {
 	for (auto module : m_modules) {
-		module->generateVars("hardware.", m_varList);
+		module->generateVars("hardware.", m_varList, rSimpleArgs::instance().isSet(rArg::Simulate));
 	}
 
 	if (parent) {
@@ -105,8 +106,8 @@ UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 		}
 
 		type = String_tolower(type);
-		if (type == rIOAI6::m_rtti) {
-			module = new rIOAI6();
+		if (type == rModuleAI6::getRTTI()) {
+			module = new rModuleAI6();
 		} else {
 			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
 			cfg.ErrorLine = module_xml->GetLineNum();
@@ -129,9 +130,9 @@ std::string rIOManager::saveKernel()
 {
 	std::string   result = "";
 	rVariableList list;
-	rIOAI6        ai6;
+	rModuleAI6    ai6;
 
-	ai6.generateVars("hardware.", list);
+	ai6.generateVars("hardware.", list, true);
 
 	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
 

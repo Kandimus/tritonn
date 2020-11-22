@@ -5,7 +5,7 @@
 #include "data_manager.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
-#include "io_ai_channel.h"
+#include "io/ai_channel.h"
 
 const UDINT SleepValue = 700;
 

@@ -25,8 +25,8 @@
 #include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
-#include "io_manager.h"
-#include "io_ai_channel.h"
+#include "io/manager.h"
+#include "io/ai_channel.h"
 #include "xml_util.h"
 #include "data_ai.h"
 

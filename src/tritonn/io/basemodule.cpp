@@ -13,14 +13,12 @@
 //===
 //=================================================================================================
 
-#include "io_basemodule.h"
-#include "xml_util.h"
-#include "data_config.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "simpleargs.h"
-#include "def_arguments.h"
-#include "units.h"
+#include "basemodule.h"
+#include "../xml_util.h"
+#include "../data_config.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../units.h"
 
 
 rIOBaseModule::rIOBaseModule()
@@ -40,8 +38,9 @@ UDINT rIOBaseModule::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list)
+UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
+	UNUSED(issimulate);
 	std::string p = prefix + m_name + ".";
 
 	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R___, &m_type        , U_DIMLESS , 0);
@@ -76,7 +75,7 @@ std::string rIOBaseModule::saveKernel(const std::string& description)
 	std::string   result = "";
 	rVariableList list;
 
-	generateVars("", list);
+	generateVars("", list, true);
 
 	result += String_format("<!--\n%s\n-->\n"
 							"<module name=\"%s\">\n", description.c_str(), getModuleType().c_str());
