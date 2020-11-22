@@ -8,9 +8,6 @@ file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/src")
-message(STATUS ">>>>>>>>>>>>>>>>>>>>>>>>>" ${CMAKE_BINARY_DIR}/src)
-
 # OUTPUTNAME
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tritonn")
 
