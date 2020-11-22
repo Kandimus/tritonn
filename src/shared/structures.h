@@ -20,12 +20,12 @@
 
 struct rVersion
 {
-	USINT Major;
-	USINT Minor;
-	USINT Patch;
-	USINT Status; // Стату сборки 0 - betta, 1 - nonstable, 2 - stable
-	UDINT Build;
-	UDINT CRC;    // Контрольная сумма
+	USINT m_major;
+	USINT m_minor;
+	UINT  m_build;
+	UDINT m_hash;
+	USINT m_status; // Стату сборки 0 - betta, 1 - nonstable, 2 - stable
+	UDINT m_crc;    // Контрольная сумма
 };
 
 

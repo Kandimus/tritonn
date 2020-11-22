@@ -19,7 +19,7 @@
 #include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
-#include "ttterm_version.h"
+#include "tritonn_version.h"
 #include "packet_login.h"
 #include "packet_loginanswe.h"
 #include "packet_set.h"
@@ -175,11 +175,10 @@ void rDisplayManager::Draw()
 
 	if(RedrawInfo)
 	{
-		mvwprintw(stdscr, 0, 0/*х*/, "ttterm %i.%i.%i.%i", TTTERM_VERSION_MAJOR, TTTERM_VERSION_MINOR, TTTERM_VERSION_PATCH, TTTERM_VERSION_BUILD);
+		mvwprintw(stdscr, 0, 0/*х*/, "ttterm %i.%i.%i.%x", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 
-		if(TritonnVer.Build || TritonnVer.Major || TritonnVer.Minor || TritonnVer.Patch)
-		{
-			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%i <%s>", TritonnVer.Major, TritonnVer.Minor, TritonnVer.Patch, TritonnVer.Build,
+		if (TritonnVer.m_build || TritonnVer.m_major || TritonnVer.m_minor || TritonnVer.m_hash) {
+			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%x <%s>", TritonnVer.m_major, TritonnVer.m_minor, TritonnVer.m_build, TritonnVer.m_hash,
 						 TritonnConf.File[0] ? TritonnConf.File : "?");
 		}
 		else

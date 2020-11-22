@@ -13,5 +13,7 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ttce")
 
+#target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/src")
+
 add_lib(shared)
 

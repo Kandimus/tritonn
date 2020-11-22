@@ -5,7 +5,7 @@
 #include "event_eid.h"
 #include "event_info.h"
 #include "tinyxml2.h"
-#include "../tritonn/tritonn_version.h"
+#include "tritonn_version.h"
 
 //vector<rTextLang *>  gLangs;
 std::vector<std::string> gLangs;
