@@ -20,7 +20,7 @@
 #include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
-#include "ttterm_version.h"
+#include "tritonn_version.h"
 #include "packet_login.h"
 #include "packet_loginanswe.h"
 #include "packet_set.h"

@@ -720,12 +720,12 @@ string rJSONManager::Packet_Conf(cJSON */*root*/)
 
 	// Выдаем уровень доступа
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS, cJSON_CreateTrue());
-	cJSON_AddItemToObject(jver    , JSONSTR_MAJOR  , cJSON_CreateNumber(ver.Major     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_MINOR  , cJSON_CreateNumber(ver.Minor     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_PATCH  , cJSON_CreateNumber(ver.Patch     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_STATUS , cJSON_CreateNumber(ver.Status    ));
-	cJSON_AddItemToObject(jver    , JSONSTR_BUILD  , cJSON_CreateNumber(ver.Build     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_CRC    , cJSON_CreateNumber(ver.CRC       ));
+	cJSON_AddItemToObject(jver    , JSONSTR_MAJOR  , cJSON_CreateNumber(ver.m_major     ));
+	cJSON_AddItemToObject(jver    , JSONSTR_MINOR  , cJSON_CreateNumber(ver.m_minor     ));
+	cJSON_AddItemToObject(jver    , JSONSTR_BUILD  , cJSON_CreateNumber(ver.m_build     ));
+	cJSON_AddItemToObject(jver    , JSONSTR_HASH   , cJSON_CreateNumber(ver.m_hash     ));
+	cJSON_AddItemToObject(jver    , JSONSTR_STATUS , cJSON_CreateNumber(ver.m_status    ));
+	cJSON_AddItemToObject(jver    , JSONSTR_CRC    , cJSON_CreateNumber(ver.m_crc       ));
 	cJSON_AddItemToObject(jconf   , JSONSTR_FILE   , cJSON_CreateString(conf.File     ));
 	cJSON_AddItemToObject(jconf   , JSONSTR_NAME   , cJSON_CreateString(conf.Name     ));
 	cJSON_AddItemToObject(jconf   , JSONSTR_VERSION, cJSON_CreateString(conf.Version  ));

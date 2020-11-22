@@ -50,11 +50,12 @@ extern rSafityValue<DINT> gReboot;
 
 rDataManager::rDataManager() : rVariableClass(Mutex), Live(LIVE_UNDEF), Config()
 {
-	RTTI               = "rDataManager";
-	m_sysVar.Ver.Major = TRITONN_VERSION_MAJOR;
-	m_sysVar.Ver.Minor = TRITONN_VERSION_MINOR;
-	m_sysVar.Ver.Patch = TRITONN_VERSION_PATCH;
-	m_sysVar.Ver.Build = TRITONN_VERSION_BUILD;
+	RTTI                 = "rDataManager";
+	m_sysVar.Ver.m_major = TRITONN_VERSION_MAJOR;
+	m_sysVar.Ver.m_minor = TRITONN_VERSION_MINOR;
+	m_sysVar.Ver.m_build = TRITONN_VERSION_BUILD;
+	m_sysVar.Ver.m_hash  = TRITONN_VERSION_HASH;
+
 
 	Live.Set(LIVE_RUNNING);
 	Halt.Set(false);

@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 	rLogManager::Instance().Terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 
 	TRACEERROR("------------------------------------------");
-	TRACEERROR("Tritonn %i.%i.%i.%i (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_PATCH, TRITONN_VERSION_BUILD);
+	TRACEERROR("Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 	rLogManager::Instance().StartServer();
 	rLogManager::Instance().Run(16);
 

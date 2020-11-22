@@ -23,12 +23,12 @@
 //
 UDINT rSystemVariable::initVariables(rVariableList& list)
 {
-	list.add("system.version.major"      , TYPE_USINT, rVariable::Flags::RS__, &Ver.Major           , U_DIMLESS, ACCESS_SA);
-	list.add("system.version.minor"      , TYPE_USINT, rVariable::Flags::RS__, &Ver.Minor           , U_DIMLESS, ACCESS_SA);
-	list.add("system.version.patch"      , TYPE_USINT, rVariable::Flags::RS__, &Ver.Patch           , U_DIMLESS, ACCESS_SA);
-	list.add("system.version.status"     , TYPE_USINT, rVariable::Flags::RS__, &Ver.Status          , U_DIMLESS, ACCESS_SA);
-	list.add("system.version.build"      , TYPE_UDINT, rVariable::Flags::RS__, &Ver.Build           , U_DIMLESS, ACCESS_SA);
-	list.add("system.version.crc"        , TYPE_UDINT, rVariable::Flags::RS__, &Ver.CRC             , U_DIMLESS, ACCESS_SA);
+	list.add("system.version.major"      , TYPE_USINT, rVariable::Flags::RS__, &Ver.m_major         , U_DIMLESS, ACCESS_SA);
+	list.add("system.version.minor"      , TYPE_USINT, rVariable::Flags::RS__, &Ver.m_minor         , U_DIMLESS, ACCESS_SA);
+	list.add("system.version.build"      , TYPE_UINT , rVariable::Flags::RS__, &Ver.m_build         , U_DIMLESS, ACCESS_SA);
+	list.add("system.version.hash"       , TYPE_UDINT, rVariable::Flags::RS__, &Ver.m_hash          , U_DIMLESS, ACCESS_SA);
+//	list.add("system.version.status"     , TYPE_USINT, rVariable::Flags::RS__, &Ver.Status          , U_DIMLESS, ACCESS_SA);
+	list.add("system.version.crc"        , TYPE_UDINT, rVariable::Flags::RS__, &Ver.m_crc           , U_DIMLESS, ACCESS_SA);
 
 	list.add("system.state.alarm"        , TYPE_UDINT, rVariable::Flags::RS__, &m_state.EventAlarm  , U_DIMLESS, ACCESS_SA);
 	list.add("system.state.live"         , TYPE_USINT, rVariable::Flags::RS__, &m_state.Live        , U_DIMLESS, ACCESS_SA);

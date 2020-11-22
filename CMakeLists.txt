@@ -10,14 +10,14 @@ option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
 
 #
-if(NOT DEFINED TRITONN_VER_MAJOR)
-	set(TRITONN_VER_MAJOR 0)
-	message(AUTHOR_WARNING "Set major version: ${TRITONN_VER_MAJOR}")
+if(NOT DEFINED PROJECT_VERSION_MAJOR)
+	set(PROJECT_VERSION_MAJOR 0)
+	message(AUTHOR_WARNING "Set major version: ${PROJECT_VERSION_MAJOR}")
 endif()
 
-if(NOT DEFINED TRITONN_VER_MINOR)
-	set(TRITONN_VER_MINOR 17)
-	message(AUTHOR_WARNING "Set minor version: ${TRITONN_VER_MINOR}")
+if(NOT DEFINED PROJECT_VERSION_MINOR)
+	set(PROJECT_VERSION_MINOR 18)
+	message(AUTHOR_WARNING "Set minor version: ${PROJECT_VERSION_MINOR}")
 endif()
 
 #
@@ -44,6 +44,9 @@ if(${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
 	endif()
 endif()
 
+#generate version
+set_project_version("src/tritonn_version.h.in")
+include_directories("${CMAKE_BINARY_DIR}/src")
 #
 add_subdirectory(src)
 
@@ -66,8 +69,9 @@ add_subdirectory(src)
 message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")
-message(STATUS "Version: ${TRITONN_VER_MAJOR}.${TRITONN_VER_MINOR}")
-message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Version: ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH} ${PROJECT_VERSION_DATE} ${PROJECT_VERSION_TIME} (${PROJECT_VERSION_UNIXTIME})")
+message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 
