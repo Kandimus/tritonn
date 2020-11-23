@@ -149,5 +149,24 @@ USINT getTextUSINT(tinyxml2::XMLElement *element, USINT def, UDINT &err)
 }
 
 
+USINT getTextBOOL(tinyxml2::XMLElement *element, bool def, UDINT &err)
+{
+	bool  result = def;
+	UDINT value  = getTextUDINT(element, (UDINT)def, err);
+
+	if(err) return result;
+
+	if(value > 1)
+	{
+		err = 1;
+		return result;
+	}
+
+	result = value == true;
+
+	return result;
+}
+
+
 }
 
