@@ -28,7 +28,7 @@ rModuleDI8DO8::rModuleDI8DO8()
 		m_flagsDISetup
 				.add("OFF"     , rIODIChannel::Setup::OFF)
 				.add("BOUNCE"  , rIODIChannel::Setup::BOUNCE)
-				.add("INVERTED", rIODIChannel::Setup::INVERTED);
+				.add("INVERSED", rIODIChannel::Setup::INVERSED);
 	}
 
 	if (m_flagsDOSetup.empty()) {

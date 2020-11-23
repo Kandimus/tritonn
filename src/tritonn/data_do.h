@@ -51,8 +51,8 @@ public:
 		KEYPAD = 1,          // Ручное переключение на симуляцию
 	};
 
-	rDI();
-	virtual ~rDI();
+	rDO();
+	virtual ~rDO();
 	
 	// Виртуальные функции от rSource
 public:

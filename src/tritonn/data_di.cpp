@@ -42,12 +42,18 @@ rDI::rDI() : rSource(), m_keypadValue(0), m_setup(0)
 	if (m_flagsMode.empty()) {
 		m_flagsMode
 				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
-				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD));
+				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD));
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"   , Setup::OFF)
-				.add("KEYPAD", Setup::ERR_KEYPAD);
+				.add("OFF"     , Setup::OFF)
+				.add("KEYPAD"  , Setup::ERR_KEYPAD)
+				.add("SUCCESS1", Setup::SUCCESS_ON)
+				.add("SUCCESS0", Setup::SUCCESS_OFF)
+				.add("WARNING1", Setup::WARNING_ON)
+				.add("WARNING0", Setup::WARNING_OFF)
+				.add("ALARM1"  , Setup::ALARM_ON)
+				.add("ALARM0"  , Setup::ALARM_OFF);
 	}
 
 	LockErr  = 0;
@@ -78,10 +84,6 @@ UDINT rDI::InitLimitEvent(rLink& link)
 //
 UDINT rDI::Calculate()
 {
-	Status oldStatus = m_status;
-	rEvent event_success;
-	rEvent event_fault;
-	
 	if(rSource::Calculate()) return 0;
 
 	// Если аналоговый сигнал выключен, то выходим
@@ -116,6 +118,8 @@ UDINT rDI::Calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
+		rEvent event_success;
+		rEvent event_fault;
 		CheckExpr(channel->m_state, DI_LE_CODE_FAULT, event_fault.Reinit(EID_DI_CH_FAULT) << ID << Descr, event_success.Reinit(EID_DI_CH_OK) << ID << Descr);
 
 		m_physical.Value = channel->getValue();
@@ -171,6 +175,8 @@ UDINT rDI::Calculate()
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	LREAL oldvalue = m_present.Value;
+
 	// Если сигнал за засимулирован, то значение равно значению симуляции
 	if(m_mode == Mode::KEYPAD)
 	{
@@ -180,6 +186,35 @@ UDINT rDI::Calculate()
 	else if(isSetModule())
 	{
 		m_present.Value = m_physical.Value;
+	}
+
+
+	if (m_present.Value != oldvalue && m_present.Value != 0.0) {
+		if (m_setup.Value & Setup::SUCCESS_ON) {
+			rEventManager::instance().Add(ReinitEvent(EID_DI_SUCCESS_ON));
+		}
+
+		if (m_setup.Value & Setup::WARNING_ON) {
+			rEventManager::instance().Add(ReinitEvent(EID_DI_WARNING_ON));
+		}
+
+		if (m_setup.Value & Setup::ALARM_ON) {
+			rEventManager::instance().Add(ReinitEvent(EID_DI_ALARM_ON));
+		}
+	}
+
+	if (m_present.Value != oldvalue && m_present.Value == 0) {
+		if (m_setup.Value & Setup::SUCCESS_OFF) {
+			rEventManager::instance().Add(ReinitEvent(EID_DI_SUCCESS_OFF));
+		}
+
+		if (m_setup.Value & Setup::WARNING_OFF) {
+			rEventManager::instance().Add(ReinitEvent(EID_DI_WARNING_OFF));
+		}
+
+		if (m_setup.Value & Setup::ALARM_OFF) {
+			rEventManager::instance().Add(ReinitEvent(EID_DI_ALARM_OFF));
+		}
 	}
 
 	PostCalculate();
@@ -261,6 +296,8 @@ UDINT rDI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 std::string rDI::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
+	UNUSED(isio);
+
 	m_physical.Limit.m_setup.Init(rLimit::Setup::NONE);
 	m_present.Limit.m_setup.Init (rLimit::Setup::NONE);
 

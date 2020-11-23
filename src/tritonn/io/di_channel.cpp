@@ -77,7 +77,7 @@ UDINT rIODIChannel::processing()
 		m_value = m_hardValue;
 	}
 
-	if (m_setup & INVERTED) {
+	if (m_setup & INVERSED) {
 		m_value = !m_value;
 	}
 

@@ -42,7 +42,7 @@ rDO::rDO() : rSource(), m_keypadValue(0), m_setup(0)
 	if (m_flagsMode.empty()) {
 		m_flagsMode
 				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
-				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD));
+				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD));
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
@@ -146,9 +146,9 @@ UDINT rDO::Calculate()
 	
 	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
 	// можно сделать через m_oldMode, но это не красиво
-	if(m_mode == Mode::KEYPAD && !(LockErr & DI_LE_KEYPAD_ON))
+	if(m_mode == Mode::KEYPAD && !(LockErr & DO_LE_KEYPAD_ON))
 	{
-		LockErr |= DI_LE_KEYPAD_ON;
+		LockErr |= DO_LE_KEYPAD_ON;
 		LockErr &= ~DI_LE_KEYPAD_OFF;
 		
 		rEventManager::instance().Add(ReinitEvent(EID_DI_KEYPAD_ON));

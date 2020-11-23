@@ -37,12 +37,14 @@ public:
 		UNDEF    = 0x0000,     // Статуст не определен
 		OFF      = 0x0001,     // Канал выключен
 		BOUNCE   = 0x0002,     // Защита от дребезга канала
-		INVERTED = 0x0004,
+		INVERSED = 0x0004,
 	};
 
 public:
 	rIODIChannel();
 	virtual ~rIODIChannel() {}
+
+	USINT getValue() const { return m_value; }
 
 public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);

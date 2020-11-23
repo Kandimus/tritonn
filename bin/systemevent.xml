@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<strings kernel="0.17" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./systemtext.xsd">
+<strings kernel="0.18" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./systemtext.xsd">
 	<lang value="ru">
 		<!-- EID_SYSTEM_START_WARM -->
 		<str id="1610678273">Загрузка в режиме WARM</str>

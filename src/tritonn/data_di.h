@@ -40,8 +40,14 @@ public:
 	// Настройка
 	enum Setup
 	{
-		OFF        = 0x0001,     // Cигнал выключен из обработки
-		ERR_KEYPAD = 0x0002,     // Разрешение при обрыве переводить сигнал в KEYPAD
+		OFF         = 0x0001,     // Cигнал выключен из обработки
+		ERR_KEYPAD  = 0x0002,     // Разрешение при обрыве переводить сигнал в KEYPAD
+		SUCCESS_ON  = 0x0004,
+		SUCCESS_OFF = 0x0008,
+		WARNING_ON  = 0x0010,
+		WARNING_OFF = 0x0020,
+		ALARM_ON    = 0x0040,
+		ALARM_OFF   = 0x0080,
 	};
 
 	// Режимы

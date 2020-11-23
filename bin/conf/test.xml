@@ -1,10 +1,16 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<tritonn cfgver="1.0" kernel="0.17" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
+<tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
-		<module ver="1.0" name="ai6_1" type="AI6">
+		<module type="AI6" name="ai6_1" ver="1.0">
 			<channel number="0" setup="NOICE" type=""/>
 			<channel number="1" setup="NOICE | AVERAGE" type=""/>
+		</module>
+		<module type="di8do8" name="di8do8_1">
+			<channel number="0" setup=""/>
+			<channel number="1" setup="INVERSED"/>
+			<channel number="8" setup=""/>
+			<channel number="9" setup="INVERSED"/>
 		</module>
 	</hardware>
 	<config>
@@ -52,7 +58,7 @@
 					</limit>
 				</limits>
 			</ai>
-			<ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD" description="4001">
+			<ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD" description="4002">
 				<iolink module="0" channel="1"/>
 				<unit>16</unit>
 				<keypad>12.5</keypad>
@@ -75,6 +81,13 @@
 					</limit>
 				</limits>
 			</ai>
+			<di name="di00" mode="PHIS" setup="KEYPAD" description="4003">
+				<iolink module="1" channel="0"/>
+			</di>
+			<di name="di01" mode="PHIS" setup="KEYPAD" description="4004">
+				<iolink module="1" channel="0"/>
+			</di>
+			<di name="di_virt" mode="PHIS" setup="" description="4005">
 		</io>
 		<stations>
 			<station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">
@@ -601,10 +614,10 @@
 			<lang value="ru">
 				<str id="4000">Виртуальный ai_virt</str>
 				<str id="4001">Тестовый ai_00</str>
-				<str id="4002">СИКН 1. Линия 1</str>
-				<str id="4003">Температура на линии 1 СИКН 1</str>
-				<str id="4004">Давление на линии 1 СИКН 1</str>
-				<str id="4005">Счетчик 1 СИКН 1</str>
+				<str id="4002">Тестовый ai_01</str>
+				<str id="4003">Тестовый di_00</str>
+				<str id="4004">Тестовый di_01</str>
+				<str id="4005">Виртуальный di_virt</str>
 				<str id="4007">СИКН 1. Линия 2</str>
 				<str id="4008">Температура на линии 2 СИКН 1</str>
 				<str id="4009">Давление на линии 2 СИКН 1</str>

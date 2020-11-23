@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 	// Менеджер сообщений
 	rEventManager::instance().LoadText(FILE_SYSTEMEVENT); // Системные события
 	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
-	rEventManager::instance().Run(100);
+	rEventManager::instance().Run(16);
 
 	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
 
@@ -121,14 +121,14 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
 	rDataManager::instance().LoadConfig();
-	rDataManager::instance().Run(400);
+	rDataManager::instance().Run(100);
 
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Стартуем обмен с модулями IO
-	rIOManager::instance().Run(400);
+	rIOManager::instance().Run(100);
 
 	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "io");
 
