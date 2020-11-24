@@ -474,39 +474,42 @@ enum rTritonn_Error
 	DATACFGERR_CHECKLINK,                   // 122
 	DATACFGERR_SAMPLER,                     //
 	DATACFGERR_MAX_AI,                      // 124
-	DATACFGERR_MAX_FI,                      //
-	DATACFGERR_MAX_DENSSOL,                 // 126
-	DATACFGERR_MAX_RDCDENS,                 //
-	DATACFGERR_MAX_SELECTOR,                // 128
-	DATACFGERR_MAX_STREAM,                  //
-	DATACFGERR_MAX_STATION,                 // 130
-	DATACFGERR_LIMIT,                       //
-	DATACFGERR_REPORT,                      // 132
-	DATACFGERR_NOREPORTS,                   //
-	DATACFGERR_RESOLVETOTAL,                // 134
-	DATACFGERR_VAR,                         //
-	DATACFGERR_USERS_NF,                    // 136
-	DATACFGERR_INTERNAL,                    //
-	DATACFGERR_USERS_PARSE,                 // 138
-	DATACFGERR_INTERFACES_NF_TBLOKS,        //     Not Found Template BLOCKS
-	DATACFGERR_INTERFACES_NF_BLOCKS,        // 140
-	DATACFGERR_INTERFACES_BADADDR,          //
-	DATACFGERR_INTERFACES_BADBLOCK,         // 142
-	DATACFGERR_INTERFACES_BADVAR,           //
-	DATACFGERR_INTERFACES_NF_VAR,           // 144
-	DATACFGERR_INTERFACES_ADDROVERFLOW,     //
-	DATACFGERR_INCORRECT_IP,                // 146
-	DATACFGERR_SECURITY_PARSE,              //
-	DATACFGERR_SECURITY_DESCRYPT,           // 148
-	DATACFGERR_SECURITY_NF,                 //
-	DATACFGERR_OPCUA_USER_NF,               // 150
-	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 152
-	DATACFGERR_UNKNOWN_MODULE,              //
-	DATACFGERR_IO_CHANNEL,                  // 154
-	DATACFGERR_INVALID_NAME,                //
-	DATACFGERR_INVALID_MODULELINK,          // 156
-	DATACFGERR_REALTIME_MODULELINK,         //
+	DATACFGERR_MAX_AO,                      //
+	DATACFGERR_MAX_FI,                      // 126
+	DATACFGERR_MAX_DI,                      //
+	DATACFGERR_MAX_DO,                      // 128
+	DATACFGERR_MAX_DENSSOL,                 //
+	DATACFGERR_MAX_RDCDENS,                 // 130
+	DATACFGERR_MAX_SELECTOR,                //
+	DATACFGERR_MAX_STREAM,                  // 132
+	DATACFGERR_MAX_STATION,                 //
+	DATACFGERR_LIMIT,                       // 134
+	DATACFGERR_REPORT,                      //
+	DATACFGERR_NOREPORTS,                   // 136
+	DATACFGERR_RESOLVETOTAL,                //
+	DATACFGERR_VAR,                         // 138
+	DATACFGERR_USERS_NF,                    //
+	DATACFGERR_INTERNAL,                    // 140
+	DATACFGERR_USERS_PARSE,                 //
+	DATACFGERR_INTERFACES_NF_TBLOKS,        // 142     Not Found Template BLOCKS
+	DATACFGERR_INTERFACES_NF_BLOCKS,        //
+	DATACFGERR_INTERFACES_BADADDR,          // 144
+	DATACFGERR_INTERFACES_BADBLOCK,         //
+	DATACFGERR_INTERFACES_BADVAR,           // 146
+	DATACFGERR_INTERFACES_NF_VAR,           //
+	DATACFGERR_INTERFACES_ADDROVERFLOW,     // 148
+	DATACFGERR_INCORRECT_IP,                //
+	DATACFGERR_SECURITY_PARSE,              // 150
+	DATACFGERR_SECURITY_DESCRYPT,           //
+	DATACFGERR_SECURITY_NF,                 // 152
+	DATACFGERR_OPCUA_USER_NF,               //
+	DATACFGERR_OPCUA_BAD_USER,              // 154
+	DATACFGERR_OPCUA_VAR_NF,                //
+	DATACFGERR_UNKNOWN_MODULE,              // 156
+	DATACFGERR_IO_CHANNEL,                  //
+	DATACFGERR_INVALID_NAME,                // 158
+	DATACFGERR_INVALID_MODULELINK,          //
+	DATACFGERR_REALTIME_MODULELINK,         // 160
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,

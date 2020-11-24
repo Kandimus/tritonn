@@ -39,10 +39,12 @@ public:
 
 	rModuleDI8DO8();
 	virtual ~rModuleDI8DO8();
+
+	static std::string getRTTI() { return "di8do8"; }
 	
 	// Виртуальные функции от rBaseModule
 public:
-	virtual std::string getModuleType() { return "di8do8"; }
+	virtual std::string getModuleType() { return rModuleDI8DO8::getRTTI(); }
 	virtual UDINT processing(USINT issim);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);

@@ -107,7 +107,11 @@ UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 
 		type = String_tolower(type);
 		if (type == rModuleAI6::getRTTI()) {
-			module = new rModuleAI6();
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6());
+
+		} else if (type == rModuleDI8DO8::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
+
 		} else {
 			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
 			cfg.ErrorLine = module_xml->GetLineNum();

@@ -56,51 +56,51 @@
 							</points>
 						</factors>
 						<io>
-              <ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4003">
-	             <iolink module="0" channel="0"/>
-			  	      <unit>16</unit>
-			  	      <keypad>12.5</keypad>
-			  	      <scale>
-                  <min>-10</min>
-                  <max>100</max>
-                </scale>
-                <limits>
-			  	        <limit name="present" setup="HIHI | HI | LO | LOLO">
-                    <hihi>80</hihi>
-                    <hi>60</hi>
-                    <lo>20</lo>
-                    <lolo>5</lolo>
-                    <hysteresis>0.1</hysteresis>
-                  </limit>
-                </limits>
-			        </ai>
-              <ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
-                <iolink module="0" channel="1"/>
-		  		      <unit>32</unit>
-			        	<keypad>0.5</keypad>
-			        	<scale>
-                  <min>0</min>
-                  <max>6.3</max>
-                </scale>
-                <limits>
-      	  			  <limit name="present" setup="HIHI | HI | LO | LOLO">
-                    <hihi>4</hihi>
-                    <hi>3.5</hi>
-                    <lo>0.5</lo>
-                    <lolo>0.1</lolo>
-                    <hysteresis>0.01</hysteresis>
-		  	      	  </limit>
-                </limits>
-        			</ai>
-        			<counter name="Counter"             setup="NOBUFFER"         description="4005">
-        			  <_iolink module="1" channel="0"/>
-        			</counter>
-	          </io>
-	          <calculate>
-	            <reduceddens name="StnDens" description="4006">
-                <temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
-                <pressure>   <link alias="SIKN_123.Line1.IO.Pres"/></pressure>
-                <density15>  <link alias="SIKN_123.Obj.StnDensTemp:dens15"/></density15>
+							<ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4003">
+								<iolink module="0" channel="0"/>
+								<unit>16</unit>
+								<keypad>12.5</keypad>
+								<scale>
+									<min>-10</min>
+									<max>100</max>
+								</scale>
+								<limits>
+									<limit name="present" setup="HIHI | HI | LO | LOLO">
+										<hihi>80</hihi>
+										<hi>60</hi>
+										<lo>20</lo>
+										<lolo>5</lolo>
+										<hysteresis>0.1</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
+								<iolink module="0" channel="1"/>
+								<unit>32</unit>
+								<keypad>0.5</keypad>
+								<scale>
+									<min>0</min>
+									<max>6.3</max>
+								</scale>
+								<limits>
+									<limit name="present" setup="HIHI | HI | LO | LOLO">
+										<hihi>4</hihi>
+										<hi>3.5</hi>
+										<lo>0.5</lo>
+										<lolo>0.1</lolo>
+										<hysteresis>0.01</hysteresis>
+									</limit>
+								</limits>
+							</ai>
+							<counter name="Counter"             setup="NOBUFFER"         description="4005">
+								<_iolink module="1" channel="0"/>
+							</counter>
+						</io>
+						<calculate>
+							<reduceddens name="StnDens" description="4006">
+								<temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
+								<pressure>   <link alias="SIKN_123.Line1.IO.Pres"/></pressure>
+								<density15>  <link alias="SIKN_123.Obj.StnDensTemp:dens15"/></density15>
                 <limits>
                   <limit name="density" setup="hihi | hi | lo | lolo">
                     <hihi>900</hihi>
@@ -154,63 +154,63 @@
                     <hysteresis>0.1</hysteresis>
                   </limit>
                 </limits>
-              </ai>
-              <ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
-                <iolink module="0" channel="3"/>
-                <unit>32</unit>
-			        	<keypad>0.5</keypad>
-			        	<scale>
-                  <min>0</min>
-                  <max>6.3</max>
-                </scale>
-                <limits>
-      	  			  <limit name="present" setup="HIHI | HI | LO | LOLO">
-                    <hihi>4</hihi>
-                    <hi>3.5</hi>
-                    <lo>0.5</lo>
-                    <lolo>0.1</lolo>
-                    <hysteresis>0.01</hysteresis>
-                  </limit>
-		  	      	</limits>
-              </ai>
-              <counter name="Counter"             setup="NOBUFFER"         description="4010">
-                <_iolink module="1" channel="1"/>
-              </counter>
-            </io>
-            <calculate>
-              <reduceddens name="StnDens" description="4011">
-                <temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
-                <pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
-                <density15>  <link alias="SIKN_123.Obj.StnDensTemp:dens15"/></density15>
-                <limits>
-                  <limit name="density" setup="hihi | hi | lo | lolo">
-                    <hihi>900</hihi>
-                    <hi>880</hi>
-                    <lo>810</lo>
-                    <lolo>800</lolo>
-                    <hysteresis>0.5</hysteresis>
-                  </limit>
-                </limits>
-              </reduceddens>
-            </calculate>
-            <limits>
-              <limit name="flowrate.mass" setup="HIHI | LOLO">
-                <hihi>1000</hihi>
-                <lolo>10</lolo>
-                <hysteresis>1</hysteresis>
-              </limit>
-            </limits>
-          </stream>
-	        <stream name="BIK"   flowmeter="TURBINE"  linearization="0" maintenance="1" description="4012">
-            <impulse>    <link alias="SIKN_123.BIK.IO.Counter:impulse"/></impulse>
-            <temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
-            <pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
-            <density>    <link alias="SIKN_123.Obj.StnDensTemp:dens"/></density>
-            <factors >
-              <keypad_mf>1</keypad_mf>
-              <keypad_kf>36000</keypad_kf>
-            </factors>
-            <io>
+					</ai>
+					<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
+						<iolink module="0" channel="3"/>
+						<unit>32</unit>
+						<keypad>0.5</keypad>
+						<scale>
+							<min>0</min>
+							<max>6.3</max>
+						</scale>
+						<limits>
+							<limit name="present" setup="HIHI | HI | LO | LOLO">
+								<hihi>4</hihi>
+								<hi>3.5</hi>
+								<lo>0.5</lo>
+								<lolo>0.1</lolo>
+								<hysteresis>0.01</hysteresis>
+							</limit>
+						</limits>
+					</ai>
+					<counter name="Counter"             setup="NOBUFFER"         description="4010">
+						<_iolink module="1" channel="1"/>
+					</counter>
+				</io>
+				<calculate>
+					<reduceddens name="StnDens" description="4011">
+						<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
+						<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
+						<density15>  <link alias="SIKN_123.Obj.StnDensTemp:dens15"/></density15>
+						<limits>
+							<limit name="density" setup="hihi | hi | lo | lolo">
+								<hihi>900</hihi>
+								<hi>880</hi>
+								<lo>810</lo>
+								<lolo>800</lolo>
+								<hysteresis>0.5</hysteresis>
+							</limit>
+						</limits>
+					</reduceddens>
+				</calculate>
+				<limits>
+					<limit name="flowrate.mass" setup="HIHI | LOLO">
+						<hihi>1000</hihi>
+						<lolo>10</lolo>
+						<hysteresis>1</hysteresis>
+					</limit>
+				</limits>
+			</stream>
+					<stream name="BIK"   flowmeter="TURBINE"  linearization="0" maintenance="1" description="4012">
+						<impulse>    <link alias="SIKN_123.BIK.IO.Counter:impulse"/></impulse>
+				<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
+				<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
+				<density>    <link alias="SIKN_123.Obj.StnDensTemp:dens"/></density>
+				<factors>
+					<keypad_mf>1</keypad_mf>
+					<keypad_kf>36000</keypad_kf>
+				</factors>
+				<io>
               <ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4013">
                 <iolink module="0" channel="4"/>
                 <unit>16</unit>
@@ -506,167 +506,167 @@
 	        Вторая станция
 	        
       -->
-	    <station name="SIKN_321" product="LUBRICANT" setup="" precision="3" description="4028">
-	      <streams>
-          <stream name="Line" flowmeter="TURBINE" linearization="1" maintenance="0" description="4029">
-            <impulse>    <link alias="SIKN_321.IO.Counter:impulse"/></impulse>
-            <temperature><link alias="SIKN_321.IO.Temp"/>           </temperature>
-            <pressure>   <link alias="SIKN_321.IO.Pres"/>           </pressure>
-            <density>    <link alias="SIKN_321.Obj.Dens"/>          </density>
-            <factors>
-              <keypad_mf>1</keypad_mf>
-              <keypad_kf>36000</keypad_kf>
-              <points>
-                <point><hz>111</hz><kf>1111</kf></point>
-                <point><hz>222</hz><kf>2222</kf></point>
-              </points>
-            </factors>
-            <limits>
-              <limit name="flowrate.mass" setup="HIHI | LOLO">
-                <hihi>1000</hihi>
-                <lolo>10</lolo>
-                <hysteresis>1</hysteresis>
-              </limit>
-              <limit name="pressure" setup="HIHI | HI | LO | LOLO">
-                <hihi>4</hihi>
-                <hi>3.5</hi>
-                <lo>0.5</lo>
-                <lolo>0.1</lolo>
-                <hysteresis>0.01</hysteresis>
-                </limit>
-            </limits>
-          </stream>
-        </streams>
-        <io>
-          <ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4030">
-            <_iolink module="3" channel="3"/>
-			    	<unit>16</unit>
-			  	  <keypad>12.5</keypad>
-			  	  <scale>
-              <min>-10</min>
-              <max>100</max>
-            </scale>
-			  	  <limits>
-              <limit name="present" setup="HIHI | HI | LO | LOLO">
-                <hihi>5</hihi>
-                <hi>10</hi>
-                <lo>25</lo>
-                <lolo>35</lolo>
-                <hysteresis>0.1</hysteresis>
-              </limit>
-            </limits>
-			    </ai>
-			    <ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4031">
-			      <_iolink module="3" channel="4"/>
-    				<unit>33</unit>
-            <keypad>0.5</keypad>
-            <scale>
-              <min>0</min>
-              <max>4000</max>
-            </scale>
-            <limits>
-              <limit name="present" setup="HIHI | HI | LO | LOLO">
-                <hihi>4000</hihi>
-                <hi>3500</hi>
-                <lo>500</lo>
-                <lolo>100</lolo>
-                <hysteresis>1</hysteresis>
-              </limit>
-            </limits>
-	    		</ai>
-	    		<counter name="Counter"             setup="NOBUFFER"         description="4032">
-	    		  <_iolink module="1" channel="3"/>
-          </counter>
-	    		<counter name="Period"              setup=""                 description="4033">
-	    		  <_iolink module="2" channel="2"/>
-          </counter>
-        </io>
-        <calculate>
-          <densitometer name="Dens" description="4034">
-	          <period>     <link alias="SIKN_321.IO.Period:period"/></period>
-	          <temperature><link alias="SIKN_321.IO.Temp"/></temperature>
-	          <pressure>   <link alias="SIKN_321.IO.Pres"/></pressure>
-	          <calibration>20</calibration>
-	          <factors>
-	            <k0>1</k0>
-	            <k1>1</k1>
-	            <k2>1</k2>
-	            <k18>1</k18>
-	            <k19>1</k19>
-	            <k20a>1</k20a>
-	            <k20b>1</k20b>
-	            <k21a>1</k21a>
-	            <k21b>1</k21b>
-            </factors>
-            <limits>
-              <limit name="density" setup="hihi | hi | lo | lolo">
-                <hihi>900</hihi>
-                <hi>880</hi>
-                <lo>810</lo>
-                <lolo>800</lolo>
-                <hysteresis>0.5</hysteresis>
-              </limit>
-            </limits>
-          </densitometer>
-          <sampler      name="Sampler1" method="PERIOD" setup="" description="4035">
-            <reserved><link alias="SIKN_321.Sampler2"/></reserved>
-	          <pulse>1000</pulse>
-	          <grabvol>1.2</grabvol>
-	          <canvol>3900</canvol>
-	          <inputs>
-	            <error><link alias=""/></error>
-	            <canfilled><link alias=""/></canfilled>
-	          </inputs>
-	          <outputs>
-	            <filled><link alias=""/></filled>
-	          </outputs>
-	        </sampler>
-	        <sampler      name="Sampler2" method="PERIOD" setup="" description="4036">
-	          <reserved><link alias="SIKN_321.Sampler1"/></reserved>
-	          <pulse>1000</pulse>
-	          <grabvol>1.2</grabvol>
-	          <canvol>3900</canvol>
-	          <inputs>
-	            <error><link alias=""/></error>
-	            <canfilled><link alias=""/></canfilled>
-	          </inputs>
-	          <outputs>
-	            <filled><link alias=""/></filled>
-	          </outputs>
-	        </sampler>
-        </calculate>
-	    </station>
-	  </stations>
-	  <!---
-	      
-        ПЕРЕМЕННЫЕ
-	        
-      -->
-	  <variables>
-	    <variable name="var1const" setup="CONST" description="0">
-        <value>11.11</value>
-	      <unit>0</unit>
-      </variable>
-	    <variable name="var2" setup="" description="0">
-        <value>22.22</value>
-	      <unit>16</unit>
-      </variable>
-	    <variable name="var3lim" setup="" description="0">
-	      <limits>
-          <limit name="value" setup="hihi | hi | lo | lolo">
-            <hihi>50</hihi>
-            <hi>10</hi>
-            <lo>0</lo>
-            <lolo>-10</lolo>
-            <hysteresis>1</hysteresis>
-          </limit>
-        </limits>
-        <value>33.33</value>
-	      <unit>512</unit>
-	    </variable>
-	  </variables>
-	  <reportsystem>
-	    <datasets>
+			<station name="SIKN_321" product="LUBRICANT" setup="" precision="3" description="4028">
+				<streams>
+					<stream name="Line" flowmeter="TURBINE" linearization="1" maintenance="0" description="4029">
+						<impulse>    <link alias="SIKN_321.IO.Counter:impulse"/></impulse>
+						<temperature><link alias="SIKN_321.IO.Temp"/>           </temperature>
+						<pressure>   <link alias="SIKN_321.IO.Pres"/>           </pressure>
+						<density>    <link alias="SIKN_321.Obj.Dens"/>          </density>
+						<factors>
+							<keypad_mf>1</keypad_mf>
+							<keypad_kf>36000</keypad_kf>
+							<points>
+								<point><hz>111</hz><kf>1111</kf></point>
+								<point><hz>222</hz><kf>2222</kf></point>
+							</points>
+						</factors>
+						<limits>
+							<limit name="flowrate.mass" setup="HIHI | LOLO">
+								<hihi>1000</hihi>
+								<lolo>10</lolo>
+								<hysteresis>1</hysteresis>
+							</limit>
+							<limit name="pressure" setup="HIHI | HI | LO | LOLO">
+								<hihi>4</hihi>
+								<hi>3.5</hi>
+								<lo>0.5</lo>
+								<lolo>0.1</lolo>
+								<hysteresis>0.01</hysteresis>
+							</limit>
+						</limits>
+					</stream>
+				</streams>
+				<io>
+					<ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4030">
+						<_iolink module="3" channel="3"/>
+						<unit>16</unit>
+						<keypad>12.5</keypad>
+						<scale>
+							<min>-10</min>
+							<max>100</max>
+						</scale>
+						<limits>
+							<limit name="present" setup="HIHI | HI | LO | LOLO">
+								<hihi>5</hihi>
+								<hi>10</hi>
+								<lo>25</lo>
+								<lolo>35</lolo>
+								<hysteresis>0.1</hysteresis>
+							</limit>
+						</limits>
+					</ai>
+					<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4031">
+						<_iolink module="3" channel="4"/>
+						<unit>33</unit>
+						<keypad>0.5</keypad>
+						<scale>
+							<min>0</min>
+							<max>4000</max>
+						</scale>
+						<limits>
+							<limit name="present" setup="HIHI | HI | LO | LOLO">
+								<hihi>4000</hihi>
+								<hi>3500</hi>
+								<lo>500</lo>
+								<lolo>100</lolo>
+								<hysteresis>1</hysteresis>
+							</limit>
+						</limits>
+					</ai>
+					<counter name="counter"             setup="NOBUFFER"         description="4032">
+						<_iolink module="1" channel="3"/>
+					</counter>
+					<counter name="Period"              setup=""                 description="4033">
+						<_iolink module="2" channel="2"/>
+					</counter>
+				</io>
+				<calculate>
+					<densitometer name="Dens" description="4034">
+						<period>     <link alias="SIKN_321.IO.Period:period"/></period>
+						<temperature><link alias="SIKN_321.IO.Temp"/></temperature>
+						<pressure>   <link alias="SIKN_321.IO.Pres"/></pressure>
+						<calibration>20</calibration>
+						<factors>
+							<k0>1</k0>
+							<k1>1</k1>
+							<k2>1</k2>
+							<k18>1</k18>
+							<k19>1</k19>
+							<k20a>1</k20a>
+							<k20b>1</k20b>
+							<k21a>1</k21a>
+							<k21b>1</k21b>
+						</factors>
+						<limits>
+							<limit name="density" setup="hihi | hi | lo | lolo">
+								<hihi>900</hihi>
+								<hi>880</hi>
+								<lo>810</lo>
+								<lolo>800</lolo>
+								<hysteresis>0.5</hysteresis>
+							</limit>
+						</limits>
+					</densitometer>
+					<sampler      name="Sampler1" method="PERIOD" setup="" description="4035">
+						<reserved><link alias="SIKN_321.Sampler2"/></reserved>
+						<pulse>1000</pulse>
+						<grabvol>1.2</grabvol>
+						<canvol>3900</canvol>
+						<inputs>
+							<error><link alias=""/></error>
+							<canfilled><link alias=""/></canfilled>
+						</inputs>
+						<outputs>
+							<filled><link alias=""/></filled>
+						</outputs>
+					</sampler>
+					<sampler      name="Sampler2" method="PERIOD" setup="" description="4036">
+						<reserved><link alias="SIKN_321.Sampler1"/></reserved>
+						<pulse>1000</pulse>
+						<grabvol>1.2</grabvol>
+						<canvol>3900</canvol>
+						<inputs>
+							<error><link alias=""/></error>
+							<canfilled><link alias=""/></canfilled>
+						</inputs>
+						<outputs>
+							<filled><link alias=""/></filled>
+						</outputs>
+					</sampler>
+				</calculate>
+			</station>
+		</stations>
+		<!---
+
+		ПЕРЕМЕННЫЕ
+
+		-->
+		<variables>
+			<variable name="var1const" setup="CONST" description="0">
+				<value>11.11</value>
+				<unit>0</unit>
+			</variable>
+			<variable name="var2" setup="" description="0">
+				<value>22.22</value>
+				<unit>16</unit>
+			</variable>
+			<variable name="var3lim" setup="" description="0">
+				<limits>
+					<limit name="value" setup="hihi | hi | lo | lolo">
+						<hihi>50</hihi>
+						<hi>10</hi>
+						<lo>0</lo>
+						<lolo>-10</lolo>
+						<hysteresis>1</hysteresis>
+					</limit>
+				</limits>
+				<value>33.33</value>
+				<unit>512</unit>
+			</variable>
+		</variables>
+		<reportsystem>
+			<datasets>
 	      <dataset name="std_report">
 	        <total name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
 	          <item name="item_1"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
@@ -687,7 +687,7 @@
 	          <item name="item_4"><link alias="SIKN_123.obj.StnWater:output"/></item>
 	        </total>
 	        <snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
-	          <item name="ss_1"><link alias="SIKN_321.io.counter:frequency"/></item>
+			  <item name="ss_1"><link alias="sikn_321.io.counter:frequency"/></item>
 	        </snapshots>
 	      </dataset>
 	    </datasets>

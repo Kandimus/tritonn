@@ -30,6 +30,8 @@
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_ai.h"
+#include "data_di.h"
+#include "data_do.h"
 #include "data_counter.h"
 #include "data_denssol.h"
 #include "data_reduceddensity.h"
@@ -466,8 +468,10 @@ UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 		name   = obj->Name();
 		source = nullptr;
 
-		if(XmlName::AI == name) { if(SysVar->Max.AI >= MAX_IO_AI) return DATACFGERR_MAX_AI; source = new rAI();      source->ID = SysVar->Max.AI++; }
-		if(XmlName::FI == name) { if(SysVar->Max.FI >= MAX_IO_FI) return DATACFGERR_MAX_FI; source = dynamic_cast<rSource*>(new rCounter()); source->ID = SysVar->Max.FI++; }
+		if(XmlName::AI == name) { if(SysVar->Max.m_ai >= MAX_IO_AI) return DATACFGERR_MAX_AI; source = dynamic_cast<rSource*>(new rAI());      source->ID = SysVar->Max.m_fi++; }
+		if(XmlName::FI == name) { if(SysVar->Max.m_fi >= MAX_IO_FI) return DATACFGERR_MAX_FI; source = dynamic_cast<rSource*>(new rCounter()); source->ID = SysVar->Max.m_fi++; }
+		if(XmlName::DI == name) { if(SysVar->Max.m_di >= MAX_IO_DI) return DATACFGERR_MAX_DI; source = dynamic_cast<rSource*>(new rDI());      source->ID = SysVar->Max.m_di++; }
+		if(XmlName::DO == name) { if(SysVar->Max.m_do >= MAX_IO_DO) return DATACFGERR_MAX_DO; source = dynamic_cast<rSource*>(new rDO());      source->ID = SysVar->Max.m_do++; }
 
 		if(nullptr == source)
 		{
@@ -518,10 +522,10 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement *root, cJSON *jroot, rStation *
 		name   = obj->Name();
 		source = nullptr;
 
-		if(XmlName::DENSSOL     == name) { if(SysVar->Max.DensSol     >= MAX_DENSSOL    ) return DATACFGERR_MAX_DENSSOL;  source = new rDensSol();     source->ID = SysVar->Max.DensSol++;     }
-		if(XmlName::REDUCEDDENS == name) { if(SysVar->Max.ReducedDens >= MAX_REDUCEDDENS) return DATACFGERR_MAX_RDCDENS;  source = new rReducedDens(); source->ID = SysVar->Max.ReducedDens++; }
-		if(XmlName::MSELECTOR   == name) { if(SysVar->Max.Selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = new rSelector();    source->ID = SysVar->Max.Selector++;    }
-		if(XmlName::SELECTOR    == name) { if(SysVar->Max.Selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = new rSelector();    source->ID = SysVar->Max.Selector++;    }
+		if(XmlName::DENSSOL     == name) { if(SysVar->Max.m_densSol     >= MAX_DENSSOL    ) return DATACFGERR_MAX_DENSSOL;  source = dynamic_cast<rSource*>(new rDensSol());     source->ID = SysVar->Max.m_densSol++;     }
+		if(XmlName::REDUCEDDENS == name) { if(SysVar->Max.m_reducedDens >= MAX_REDUCEDDENS) return DATACFGERR_MAX_RDCDENS;  source = dynamic_cast<rSource*>(new rReducedDens()); source->ID = SysVar->Max.m_reducedDens++; }
+		if(XmlName::MSELECTOR   == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = dynamic_cast<rSource*>(new rSelector());    source->ID = SysVar->Max.m_selector++;    }
+		if(XmlName::SELECTOR    == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return DATACFGERR_MAX_SELECTOR; source = dynamic_cast<rSource*>(new rSelector());    source->ID = SysVar->Max.m_selector++;    }
 		if(XmlName::SAMPLER     == name) continue;
 
 		if(nullptr == source)
@@ -574,7 +578,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 	{
 		rStation *stn = nullptr;
 
-		if(SysVar->Max.Station >= MAX_STATION)
+		if(SysVar->Max.m_station++ >= MAX_STATION)
 		{
 			ErrorID   = DATACFGERR_MAX_STATION;
 			ErrorLine = stncfg->GetLineNum();
@@ -584,7 +588,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 
 		stn    = new rStation();
 		Prefix = "";
-		SysVar->Max.Station++;
+
 		if(tinyxml2::XML_SUCCESS != stn->LoadFromXML(stncfg, *this))
 		{
 			ErrorID   = DATACFGERR_STATION;
@@ -645,7 +649,7 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 	{
 		rStream *str = nullptr;
 
-		if(SysVar->Max.Stream >= MAX_STREAM)
+		if(SysVar->Max.m_stream++ >= MAX_STREAM)
 		{
 			ErrorLine = root->GetLineNum();
 			ErrorID   = DATACFGERR_MAX_STREAM;
@@ -656,7 +660,6 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 		str          = new rStream();
 		str->Station = owner;
 		Prefix       = oldprefix;
-		SysVar->Max.Stream++;
 
 		if(tinyxml2::XML_SUCCESS != str->LoadFromXML(strcfg, *this))
 		{
@@ -1094,23 +1097,11 @@ UDINT rDataConfig::LoadShadowLink(tinyxml2::XMLElement *element, rLink &link, rL
 //
 UDINT rDataConfig::ResolveLinks(void)
 {
-	UDINT    ii   = 0;
-	UDINT    jj   = 0;
-	rLink   *link = nullptr;
-	rSource *src  = nullptr;
-
-	for(ii = 0; ii < ListLink.size(); ++ii)
-	{
-		link = ListLink[ii];
-
+	for (auto link : ListLink) {
 		// Проходим все загруженные объекты
-		for(jj = 0; jj < ListSource->size(); ++jj)
-		{
-			src = (*ListSource)[jj];
-
-			// Нашли нужный объект
-			if(!strcasecmp(link->Alias.c_str(), src->Alias.c_str()))
-			{
+		for (auto src : *ListSource) {
+			if (!strcasecmp(link->Alias.c_str(), src->Alias.c_str())) {
+				std::string aa = src->Alias;
 				// Проверка на наличие требуемого параметра
 				if(link->Param.size())
 				{
@@ -1119,6 +1110,8 @@ UDINT rDataConfig::ResolveLinks(void)
 						ErrorStr  = link->FullTag;
 						ErrorLine = link->m_lineNum;
 						ErrorID   = DATACFGERR_CHECKLINK;
+
+						return ErrorID;
 					}
 				}
 

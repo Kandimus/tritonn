@@ -78,13 +78,15 @@ public:
 
 struct rMaxCount
 {
-	USINT AI;
-	USINT FI;
-	USINT Station;
-	USINT Stream;
-	USINT DensSol;
-	USINT ReducedDens;
-	USINT Selector;
+	USINT m_ai          = 0;
+	USINT m_fi          = 0;
+	USINT m_di          = 0;
+	USINT m_do          = 0;
+	USINT m_station     = 0;
+	USINT m_stream      = 0;
+	USINT m_densSol     = 0;
+	USINT m_reducedDens = 0;
+	USINT m_selector    = 0;
 };
 
 

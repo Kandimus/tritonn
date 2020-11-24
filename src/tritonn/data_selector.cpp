@@ -358,8 +358,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 		// Загружаем имена выходов
 		UDINT grp = 0;
-		for(tinyxml2::XMLElement *name = names->FirstChildElement(XmlName::NAME); name != nullptr; name = name->NextSiblingElement(XmlName::NAME))
-		{
+		XML_FOR(name, names, XmlName::NAME) {
 			NameInput[grp] = name->GetText();
 
 			if(NameInput[grp].empty()) return DATACFGERR_SELECTOR;

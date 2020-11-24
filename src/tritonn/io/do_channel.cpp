@@ -54,7 +54,7 @@ UDINT rIODOChannel::processing()
 	m_hardValue = m_value;
 	m_oldValue  = m_value;
 
-	if (m_setup & Setup::INVERTED)
+	if (m_setup & Setup::INVERSED)
 	{
 		m_hardValue = !m_hardValue;
 	}

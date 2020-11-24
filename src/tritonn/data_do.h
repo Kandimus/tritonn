@@ -41,7 +41,6 @@ public:
 	enum Setup
 	{
 		OFF        = 0x0001,     // Cигнал выключен из обработки
-		ERR_KEYPAD = 0x0002,     // Разрешение при обрыве переводить сигнал в KEYPAD
 	};
 
 	// Режимы
@@ -66,17 +65,13 @@ protected:
 	virtual UDINT InitLimitEvent(rLink &link);
 
 public:
-	UDINT SetFault();
-
-public:
 	// Inputs, Inoutputs
-
-	// Outputs
-	rLink       m_physical;              // Текущее физическое значение
 	rLink       m_present;               // Результирующие значение
 
+	// Output
+
 	// Внутренние переменные
-	rCmpUSINT   m_keypadValue;           // Значение ручного ввода
+	USINT       m_physical;              // Текущее физическое значение
 	Mode        m_mode;                  // Режим работы
 	rCmpUINT    m_setup;                 // Настройка сигнала
 	Status      m_status;                //

@@ -34,7 +34,7 @@ rModuleDI8DO8::rModuleDI8DO8()
 	if (m_flagsDOSetup.empty()) {
 		m_flagsDOSetup
 				.add("OFF"     , rIODOChannel::Setup::OFF)
-				.add("INVERTED", rIODOChannel::Setup::INVERTED);
+				.add("INVERSED", rIODOChannel::Setup::INVERSED);
 	}
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
