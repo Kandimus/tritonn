@@ -49,18 +49,18 @@ rDensSol::rDensSol() : Setup(0)
 //	Setup       = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
-	InitLink(LINK_SETUP_INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Pres  , U_bar    , SID_PRESSURE   , XmlName::PRES     , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INPUT   , Period, U_mksec  , SID_PERIOD     , XmlName::PERIOD   , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , B15   , U_1_C    , SID_B15        , XmlName::B15      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Y15   , U_1_MPa  , SID_Y15        , XmlName::Y15      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Pres  , U_bar    , SID_PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Period, U_mksec  , SID_PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , B15   , U_1_C    , SID_B15        , XmlName::B15      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Y15   , U_1_MPa  , SID_Y15        , XmlName::Y15      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , rLink::SHADOW_NONE);
 }
 
 

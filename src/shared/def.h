@@ -176,21 +176,6 @@ const UDINT  TMF_NOTRUN                = 0x00000004;       // Нить еще н
 
 
 //-------------------------------------------------------------------------------------------------
-// LINK
-const UINT   LINK_SETUP_INPUT          = 0x0001;
-const UINT   LINK_SETUP_OUTPUT         = 0x0002;
-const UINT   LINK_SETUP_SIMPLE         = 0x0004;
-const UINT   LINK_SETUP_NONAME         = 0x0008;
-const UINT   LINK_SETUP_WRITABLE       = 0x0010;
-const UINT   LINK_SETUP_INOUTPUT       = LINK_SETUP_INPUT | LINK_SETUP_OUTPUT;
-const string LINK_SHADOW_NONE          = "";
-
-
-//-------------------------------------------------------------------------------------------------
-// LIMIT
-
-
-//-------------------------------------------------------------------------------------------------
 // Настройка FI
 const UINT   FI_SETUP_OFF              = 0x0001;      // Сигнал выключен (устарело?)
 const UINT   FI_SETUP_NOBUFFER         = 0x0002;      // Отключение буфферизации значений (сглаживание)

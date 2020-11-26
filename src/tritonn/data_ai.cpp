@@ -65,9 +65,9 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 	m_status = Status::UNDEF;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(LINK_SETUP_OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
 
 
@@ -388,7 +388,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			return result;
 		}
 	} else {
-		m_present.Setup |= LINK_SETUP_WRITABLE;
+		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
 	if(nullptr == limits || nullptr == unit || nullptr == scale)

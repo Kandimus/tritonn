@@ -34,7 +34,7 @@ rRVar::rRVar() : rSource(), Setup(0)
 				.add("CONST", VAR_SETUP_CONST);
 	}
 
-	InitLink(LINK_SETUP_INOUTPUT | LINK_SETUP_NONAME | LINK_SETUP_WRITABLE, Value, U_any, SID_VALUE, XmlName::VALUE, LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, Value, U_any, SID_VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
 }
 
 
@@ -130,7 +130,7 @@ UDINT rRVar::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	// Если переменная константа, то снимаем флаг записи
 	if(Setup & VAR_SETUP_CONST)
 	{
-		Value.Setup &= ~LINK_SETUP_WRITABLE;
+		Value.m_setup &= ~rLink::Setup::WRITABLE;
 	}
 
 	ReinitLimitEvents();

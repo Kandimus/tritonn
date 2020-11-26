@@ -45,19 +45,19 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 	Linearization = false;
 //	rTotal   Total;
 
-	InitLink(LINK_SETUP_INPUT   , Counter     , U_imp   , SID_IMPULSE          , XmlName::IMPULSE      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INPUT   , Freq        , U_Hz    , SID_FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
-	InitLink(LINK_SETUP_INOUTPUT, Temp        , U_C     , SID_TEMPERATURE      , XmlName::TEMP         , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Pres        , U_MPa   , SID_PRESSURE         , XmlName::PRES         , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Dens        , U_kg_m3 , SID_DENSITY          , XmlName::DENSITY      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Dens15      , U_kg_m3 , SID_DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
-	InitLink(LINK_SETUP_INOUTPUT, Dens20      , U_kg_m3 , SID_DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
-	InitLink(LINK_SETUP_INOUTPUT, B15         , U_1_C   , SID_B15              , XmlName::B15          , XmlName::DENSITY);
-	InitLink(LINK_SETUP_INOUTPUT, Y15         , U_1_MPa , SID_Y15              , XmlName::Y15          , XmlName::DENSITY);
-	InitLink(LINK_SETUP_OUTPUT  , FlowMass    , U_t_h   , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume  , U_m3_h  , SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume15, U_m3_h  , SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , FlowVolume20, U_m3_h  , SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Counter     , U_imp   , SID_IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Freq        , U_Hz    , SID_FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
+	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C     , SID_TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa   , SID_PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3 , SID_DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens15      , U_kg_m3 , SID_DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, Dens20      , U_kg_m3 , SID_DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, B15         , U_1_C   , SID_B15              , XmlName::B15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, Y15         , U_1_MPa , SID_Y15              , XmlName::Y15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::OUTPUT  , FlowMass    , U_t_h   , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , U_m3_h  , SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, U_m3_h  , SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, U_m3_h  , SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
 }
 
 
@@ -279,7 +279,11 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	string strFlowMeter = (element->Attribute("flowmeter")) ? element->Attribute("flowmeter") : defFlowMeter;
 	UDINT  err = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_STREAM;
+	if (tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) {
+		cfg.ErrorLine = element->GetLineNum();
+		cfg.ErrorID   = DATACFGERR_STREAM;
+		return cfg.ErrorID;
+	}
 
 	tinyxml2::XMLElement *impulse = element->FirstChildElement(XmlName::IMPULSE);
 	tinyxml2::XMLElement *freq    = element->FirstChildElement(XmlName::FREQ);
@@ -298,19 +302,21 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	if(nullptr == impulse || nullptr == temp || nullptr == pres || nullptr == dens || nullptr == factors || err)
 	{
-		return DATACFGERR_STREAM;
+		cfg.ErrorLine = element->GetLineNum();
+		cfg.ErrorID   = DATACFGERR_STREAM;
+		return cfg.ErrorID;
 	}
 
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(impulse->FirstChildElement(XmlName::LINK), Counter)) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement   (XmlName::LINK), Pres))    return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement   (XmlName::LINK), Dens))    return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement   (XmlName::LINK), Temp))    return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(impulse->FirstChildElement(XmlName::LINK), Counter)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement   (XmlName::LINK), Pres))    { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement   (XmlName::LINK), Dens))    { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement   (XmlName::LINK), Temp))    { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
 
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(freq  , Freq  , Counter, XmlName::FREQ)     ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens15, Dens15, Dens   , XmlName::DENSITY15)) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens20, Dens20, Dens   , XmlName::DENSITY20)) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15   , B15   , Dens   , XmlName::B15)      ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15   , Y15   , Dens   , XmlName::B15)      ) return cfg.ErrorID;
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(freq  , Freq  , Counter, XmlName::FREQ)     ) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens15, Dens15, Dens   , XmlName::DENSITY15)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens20, Dens20, Dens   , XmlName::DENSITY20)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15   , B15   , Dens   , XmlName::B15)      ) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15   , Y15   , Dens   , XmlName::B15)      ) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
 
 	//----------------------------------------------------------------------------------------------
 	// Загрузка факторов

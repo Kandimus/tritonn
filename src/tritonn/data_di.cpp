@@ -61,8 +61,8 @@ rDI::rDI() : rSource(), m_keypadValue(0), m_setup(0)
 	m_mode   = Mode::PHIS;
 	m_status = Status::UNDEF;
 
-	InitLink(LINK_SETUP_OUTPUT, m_present , U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, m_physical, U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_present , U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_physical, U_any, SID_PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
 }
 
 
@@ -273,7 +273,7 @@ UDINT rDI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			return result;
 		}
 	} else {
-		m_present.Setup |= LINK_SETUP_WRITABLE;
+		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, err));

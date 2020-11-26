@@ -167,7 +167,7 @@ UDINT rSource::Calculate()
 UDINT rSource::PostCalculate()
 {
 	for (auto link : m_outputs) {
-		if (link->Setup & LINK_SETUP_INPUT) {
+		if (link->m_setup & rLink::Setup::INPUT) {
 			continue;
 		}
 
@@ -204,8 +204,8 @@ UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, STRID nameid, const
 	link.Shadow = shadow;
 	link.Descr  = nameid;
 
-	if(setup & LINK_SETUP_INPUT ) m_inputs.push_back (&link);
-	if(setup & LINK_SETUP_OUTPUT) m_outputs.push_back(&link);
+	if(setup & rLink::Setup::INPUT ) m_inputs.push_back (&link);
+	if(setup & rLink::Setup::OUTPUT) m_outputs.push_back(&link);
 
 	// Вызываем функцию конечного класса
 	InitLimitEvent(link);
@@ -221,7 +221,7 @@ UDINT rSource::ReinitLimitEvents()
 	}
 
 	for (auto link : m_outputs) {
-		if (!(link->Setup & LINK_SETUP_INPUT)) {
+		if (!(link->m_setup & rLink::Setup::INPUT)) {
 			InitLimitEvent(*link);
 		}
 	}
@@ -239,7 +239,7 @@ UDINT rSource::generateVars(rVariableList& list)
 	}
 
 	for (auto link : m_outputs) {
-		if (link->Setup & LINK_SETUP_INPUT) {
+		if (link->m_setup & rLink::Setup::INPUT) {
 			continue;
 		}
 

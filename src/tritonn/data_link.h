@@ -25,6 +25,19 @@
 class rLink : public rSource
 {
 public:
+	enum Setup
+	{
+		INPUT    = 0x0001,
+		OUTPUT   = 0x0002,
+		SIMPLE   = 0x0004,
+		NONAME   = 0x0008,
+		WRITABLE = 0x0010,
+		VARNAME  = 0x0020,
+		INOUTPUT = INPUT | OUTPUT,
+	};
+
+	static const std::string SHADOW_NONE;
+
 	virtual ~rLink();
 	
 	// Виртуальные функции от rSource
@@ -49,6 +62,7 @@ public:
 	std::string FullTag = "";         // Полное имя тега-источника (пример "sikn.line.io.temp:present")
 	std::string Param   = "";         // Имя параметра-источника (из примера "present")
 	std::string IO_Name = "";         // Собственное имя источника данных
+	std::string m_varName = "";       // Имя для генерации переменных
 	rSource*    Source  = nullptr;    // Источник данных
 	rSource*    Owner   = nullptr;    // Куда привязаны
 
@@ -56,7 +70,7 @@ public:
 	LREAL       Value   = 0.0;        // Полученное значение
 	rLimit      Limit;
 
-	UINT        Setup   = 0;
+	UINT        m_setup = 0;
 	std::string Shadow  = "";
 
 	UDINT       m_lineNum;

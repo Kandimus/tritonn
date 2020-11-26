@@ -54,7 +54,7 @@ rDO::rDO() : rSource(), m_setup(0)
 	m_mode   = Mode::PHIS;
 	m_status = Status::UNDEF;
 
-	InitLink(LINK_SETUP_INOUTPUT, m_present , U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_present , U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 }
 
 
@@ -187,7 +187,7 @@ UDINT rDO::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			return result;
 		}
 	} else {
-		m_present.Setup |= LINK_SETUP_WRITABLE;
+		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, err));

@@ -663,9 +663,6 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 
 		if(tinyxml2::XML_SUCCESS != str->LoadFromXML(strcfg, *this))
 		{
-			ErrorLine = root->GetLineNum();
-			ErrorID   = DATACFGERR_STREAM;
-
 			return ErrorID;
 		}
 
@@ -1057,7 +1054,7 @@ UDINT rDataConfig::LoadLink(tinyxml2::XMLElement* element, rLink& link)
 		return ErrorID;
 	}
 
-	if(tinyxml2::XML_SUCCESS != link.LoadFromXML(element, *this))
+	if(tinyxml2::XML_SUCCESS != link.LoadFromXML(element, *this)) тут нужно передавать указатель на линк
 	{
 		link.Source = nullptr;
 		ErrorLine   = element->GetLineNum();
@@ -1084,9 +1081,10 @@ UDINT rDataConfig::LoadShadowLink(tinyxml2::XMLElement *element, rLink &link, rL
 		return LoadLink(element, link);
 	}
 
-	link.Alias   = mainlink.Alias;
-	link.FullTag = mainlink.Alias + ":" + name;
-	link.Param   = name;
+	link.Alias     = mainlink.Alias;
+	link.FullTag   = mainlink.Alias + ":" + name;
+	link.Param     = name;
+	link.m_lineNum = mainlink.m_lineNum;
 
 	ListLink.push_back(&link);
 
@@ -1107,6 +1105,7 @@ UDINT rDataConfig::ResolveLinks(void)
 				{
 					if(src->CheckOutput(link->Param))
 					{
+						src->CheckOutput(link->Param);
 						ErrorStr  = link->FullTag;
 						ErrorLine = link->m_lineNum;
 						ErrorID   = DATACFGERR_CHECKLINK;

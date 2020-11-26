@@ -61,9 +61,9 @@ rCounter::rCounter() : Setup(FI_SETUP_OFF)
 		Spline[ii] = FI_BAD_SPLINE;
 	}
 
-	InitLink(LINK_SETUP_OUTPUT, Impulse, U_imp  , SID_IMPULSE  , XmlName::IMPULSE, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Freq   , U_Hz   , SID_FREQUENCY, XmlName::FREQ   , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Period , U_mksec, SID_PERIOD   , XmlName::PERIOD , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Impulse, U_imp  , SID_IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Freq   , U_Hz   , SID_FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Period , U_mksec, SID_PERIOD   , XmlName::PERIOD , rLink::SHADOW_NONE);
 }
 
 
