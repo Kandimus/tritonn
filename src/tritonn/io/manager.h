@@ -25,6 +25,7 @@
 
 class rDataConfig;
 class rIOBaseChannel;
+class rError;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -36,7 +37,7 @@ public:
 
 // Методы
 public:
-	UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
+	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
 	std::string saveKernel();
 

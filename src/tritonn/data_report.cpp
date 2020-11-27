@@ -387,24 +387,25 @@ tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	string defType  = rDataConfig::GetFlagNameByValue(rDataConfig::ReportTypeFlags , REPORT_PERIODIC);
-	string strType  = XmlUtils::getAttributeString(element, XmlName::TYPE, defType);
-	UDINT  err      = 0;
+	std::string defType = rDataConfig::GetFlagNameByValue(rDataConfig::ReportTypeFlags , REPORT_PERIODIC);
+	std::string strType = XmlUtils::getAttributeString(element, XmlName::TYPE, defType);
+	UDINT fault = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_REPORT;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	tinyxml2::XMLElement *period  = element->FirstChildElement(XmlName::PERIOD);
-	tinyxml2::XMLElement *storage = element->FirstChildElement(XmlName::STORAGE);
-	tinyxml2::XMLElement *dsname  = element->FirstChildElement(XmlName::DATASET);
+	tinyxml2::XMLElement* period  = element->FirstChildElement(XmlName::PERIOD);
+	tinyxml2::XMLElement* storage = element->FirstChildElement(XmlName::STORAGE);
+	tinyxml2::XMLElement* dsname  = element->FirstChildElement(XmlName::DATASET);
 
 	// Тип отчета
-	Type = rDataConfig::GetFlagFromStr(rDataConfig::ReportTypeFlags, strType, err);
+	Type = rDataConfig::GetFlagFromStr(rDataConfig::ReportTypeFlags, strType, fault);
 
-	if((Type == REPORT_PERIODIC && nullptr == period) || nullptr == dsname || err)
-	{
-		return DATACFGERR_REPORT;
+	if ((Type == REPORT_PERIODIC && !period) || !dsname || fault) {
+		return err.set(DATACFGERR_REPORT, element->GetLineNum());
 	}
 
 	// Время хранения отчета

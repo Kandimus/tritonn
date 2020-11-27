@@ -24,6 +24,7 @@
 #include "../variable_item.h"
 #include "../threadmaster.h"
 #include "../xml_util.h"
+#include "../error.h"
 #include "module_ai6.h"
 #include "module_di8do8.h"
 
@@ -93,16 +94,14 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 }
 
 
-UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
 	XML_FOR(module_xml, element, XmlName::MODULE) {
 		rIOBaseModule* module = nullptr;
-		string type = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
+		std::string    type   = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
 
 		if (type == "") {
-			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
-			cfg.ErrorLine = module_xml->GetLineNum();
-			return cfg.ErrorID;
+			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
 		}
 
 		type = String_tolower(type);
@@ -113,15 +112,11 @@ UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
 			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
 
 		} else {
-			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
-			cfg.ErrorLine = module_xml->GetLineNum();
-			return cfg.ErrorID;
+			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
 		}
 
-		cfg.ErrorID = module->loadFromXML(module_xml, cfg);
-
-		if (cfg.ErrorID != TRITONN_RESULT_OK) {
-			return cfg.ErrorID;
+		if (module->loadFromXML(module_xml, err) != TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 
 		m_modules.push_back(module);

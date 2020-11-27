@@ -20,11 +20,11 @@
 #include "units.h"
 #include "event_class.h"
 
-class  rDataConfig;
 class  rVariableList;
 class  rStation;
 class  rLink;
 class  rTotal;
+class  rError;
 
 namespace tinyxml2 {
 	class XMLElement;
@@ -72,7 +72,7 @@ public:
 	virtual LREAL GetValue(const string &name, UDINT unit, UDINT &err);
 	virtual STRID GetValueUnit(const string &name, UDINT &err);
 	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT PreCalculate();

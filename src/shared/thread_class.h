@@ -19,17 +19,9 @@
 #include <vector>
 #include "safity.h"
 #include "thread_time.h"
+#include "singlenton.h"
 
 #define THREAD_IS_WORK(x)       (((x) == rThreadStatus::RUNNING) || ((x) == rThreadStatus::PAUSED))
-
-#define SINGLETON(singletonclass) \
-	public: \
-		virtual ~singletonclass(); \
-		static singletonclass& instance() { static singletonclass Singleton; return Singleton; } \
-	private: \
-		singletonclass(); \
-		singletonclass(const singletonclass&); \
-		singletonclass& operator=(singletonclass&); \
 
 
 // Статусы нити

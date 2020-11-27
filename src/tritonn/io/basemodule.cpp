@@ -19,6 +19,7 @@
 #include "../variable_item.h"
 #include "../variable_list.h"
 #include "../units.h"
+#include "../error.h"
 
 
 rIOBaseModule::rIOBaseModule()
@@ -57,14 +58,12 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
 	m_name = XmlUtils::getAttributeString(element, XmlName::NAME, "");
 
 	if (m_name.empty()) {
-		cfg.ErrorLine = element->GetLineNum();
-		cfg.ErrorID   = DATACFGERR_INVALID_NAME;
-		return cfg.ErrorID;
+		return err.set(DATACFGERR_INVALID_NAME, element->GetLineNum());
 	}
 
 	return TRITONN_RESULT_OK;

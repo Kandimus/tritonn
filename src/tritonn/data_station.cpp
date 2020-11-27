@@ -22,7 +22,6 @@
 #include "event_manager.h"
 #include "precision.h"
 #include "data_manager.h"
-#include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "data_stream.h"
@@ -233,27 +232,31 @@ UDINT rStation::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rStation::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	string defProduct = rDataConfig::GetFlagNameByValue(rDataConfig::STNProductValues, PRODUCT_PETROLEUM);
 	string strProduct = XmlUtils::getAttributeString(element, XmlName::PRODUCT, defProduct);
-	UDINT  err = 0;
+	UDINT  fault = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return 1;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
 	tinyxml2::XMLElement *temp = element->FirstChildElement(XmlName::TEMP);
 	tinyxml2::XMLElement *pres = element->FirstChildElement(XmlName::PRES);
 	tinyxml2::XMLElement *dens = element->FirstChildElement(XmlName::DENSITY);
 
-	Product   = (TYPE_PRODUCT)rDataConfig::GetFlagFromStr(rDataConfig::STNProductValues , strProduct , err);
-	if(err) return DATACFGERR_STATION;
+	Product = (TYPE_PRODUCT)rDataConfig::GetFlagFromStr(rDataConfig::STNProductValues , strProduct, fault);
+	if (fault) {
+		return err.set(DATACFGERR_STATION, element->GetLineNum(), strProduct);
+	}
 
 	Setup.Init(0);
 
 	// Параметры ниже могут отсутствовать в конфигурации, в этом случае они будут вычисляться как средневзвешанные
-	if(temp) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement(XmlName::LINK), Temp)) return cfg.ErrorID;
-	if(pres) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement(XmlName::LINK), Pres)) return cfg.ErrorID;
-	if(dens) if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement(XmlName::LINK), Dens)) return cfg.ErrorID;
+	if (temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(temp->FirstChildElement(XmlName::LINK), Temp)) return err.getError();
+	if (pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(pres->FirstChildElement(XmlName::LINK), Pres)) return err.getError();
+	if (dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(dens->FirstChildElement(XmlName::LINK), Dens)) return err.getError();
 
 	ReinitLimitEvents();
 

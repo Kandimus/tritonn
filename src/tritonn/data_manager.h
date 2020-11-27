@@ -18,13 +18,15 @@
 #include <vector>
 #include "safity.h"
 #include "thread_class.h"
-#include "data_config.h"
+//#include "data_config.h"
 #include "variable_class.h"
 #include "data_sysvar.h"
 
 
 class rSnapshot;
 class rInterface;
+class rSource;
+class rReport;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -70,16 +72,14 @@ protected:
 
 
 private:
-	rSafityValue<USINT>  Live;     // Текущий статус жизни процесса
-	rSafityValue<USINT>  Halt;     // Флаг, перехода в HALT режим
-	rDataConfig          Config;   // Конфигурация, связки объектов
-//	string              ConfName;
+	rSafityValue<USINT> Live;     // Текущий статус жизни процесса
+	rSafityValue<USINT> Halt;     // Флаг, перехода в HALT режим
 
-	rSystemVariable           m_sysVar;     // Системные переменные
-	std::vector<rSource* >    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
-	std::vector<rInterface* > ListInterface;
-	std::vector<rReport* >    ListReport; // Список отчетов
-	std::vector<string>       ListLang;
+	rSystemVariable          m_sysVar;     // Системные переменные
+	std::vector<rSource*>    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
+	std::vector<rInterface*> ListInterface;
+	std::vector<rReport*>    ListReport; // Список отчетов
+	std::vector<string>      ListLang;
 
 	int LoadEEPROM();
 	int SaveEEPROM();

@@ -18,6 +18,8 @@
 
 #include <vector>
 #include "def.h"
+#include "singlenton.h"
+#include "error.h"
 
 namespace tinyxml2
 {
@@ -46,19 +48,15 @@ struct rBitFlag
 class rDataConfig
 {
 public:
-	rDataConfig();
-	virtual ~rDataConfig();
+	SINGLETON(rDataConfig)
 
 	std::string FileName;
-	std::string ErrorStr;
-	UDINT       ErrorID;
-	UDINT       ErrorLine;
-	std::string Prefix;
+	rError      m_error;
 
-	UDINT LoadFile(const std::string &filename, rSystemVariable &sysvar, std::vector<rSource *> &listsrc, std::vector<rInterface *> &listiface, std::vector<rReport *> &listrpt);
+	UDINT LoadFile(const std::string& filename, rSystemVariable& sysvar, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);
 
 
-public:
+public: //TODO вся секция на удаление
 	static std::vector<rBitFlag> STNProductValues;
 	static std::vector<rBitFlag> STRFMeterFlags;
 	static std::vector<rBitFlag> SelectorSetupFlags;
@@ -67,10 +65,10 @@ public:
 	static std::vector<rBitFlag> ReportPeriodFlags;
 
 	static void        InitBitFlags();
-	static std::string GetFlagNameByBit  (std::vector<rBitFlag> &arr, UDINT value);
-	static std::string GetFlagNameByValue(std::vector<rBitFlag> &arr, UDINT value);
-	static UDINT       GetFlagBitByStr   (std::vector<rBitFlag> &arr, const string &name, UDINT &err);
-	static UDINT       GetFlagFromStr    (std::vector<rBitFlag> &arr, const string &str, UDINT &err);
+	static std::string GetFlagNameByBit  (std::vector<rBitFlag>& arr, UDINT value);
+	static std::string GetFlagNameByValue(std::vector<rBitFlag>& arr, UDINT value);
+	static UDINT       GetFlagBitByStr   (std::vector<rBitFlag>& arr, const string &name, UDINT &err);
+	static UDINT       GetFlagFromStr    (std::vector<rBitFlag>& arr, const string &str, UDINT &err);
 
 	static USINT  GetAttributeUSINT (tinyxml2::XMLElement *element, const string &name, const USINT def);
 	static UDINT  GetAttributeUDINT (tinyxml2::XMLElement *element, const string &name, const UDINT def);
@@ -88,8 +86,8 @@ protected:
 	cJSON                *CfgJSON_OBJ;
 	cJSON                *CfgJSON_VAR;
 	cJSON                *CfgJSON_USR;
-	tinyxml2::XMLElement *XMLRootSecurity;
-	rSystemVariable      *SysVar;
+	tinyxml2::XMLElement* XMLRootSecurity;
+	rSystemVariable*      SysVar;
 	std::vector<rSource* >    *ListSource;
 	std::vector<rInterface* > *ListInterface;
 	std::vector<rReport* >    *ListReport;
@@ -98,10 +96,10 @@ protected:
 	UDINT LoadSecurity  (tinyxml2::XMLElement *root, tinyxml2::XMLDocument &doc_security);
 	UDINT LoadHardware  (tinyxml2::XMLElement *root);
 	UDINT LoadConfig    (tinyxml2::XMLElement *root);
-	UDINT LoadIO        (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner);
-	UDINT LoadCalc      (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner);
 	UDINT LoadStation   (tinyxml2::XMLElement *root, cJSON *jroot);
-	UDINT LoadStream    (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner);
+	UDINT LoadStream    (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix);
+	UDINT LoadIO        (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix);
+	UDINT LoadCalc      (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix);
 	UDINT LoadReport    (tinyxml2::XMLElement *root);
 	UDINT LoadCustom    (tinyxml2::XMLElement *root);
 	UDINT LoadVariable  (tinyxml2::XMLElement *root);
@@ -117,10 +115,10 @@ protected:
 	void  SaveWeb();
 
 public:
-	UDINT LoadLink(tinyxml2::XMLElement *element, rLink &link);
-	UDINT LoadShadowLink(tinyxml2::XMLElement *element, rLink &link, rLink &mainlink, const string &name);
+	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link);
+	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
 
 
-	tinyxml2::XMLElement *GetRootSecurity();
+	tinyxml2::XMLElement* GetRootSecurity();
 };
 

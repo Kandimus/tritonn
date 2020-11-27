@@ -273,16 +273,14 @@ UDINT rStream::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	string defFlowMeter = rDataConfig::GetFlagNameByValue(rDataConfig::STRFMeterFlags, STR_FLOWMETER_CARIOLIS);
-	string strFlowMeter = (element->Attribute("flowmeter")) ? element->Attribute("flowmeter") : defFlowMeter;
-	UDINT  err = 0;
+	std::string defFlowMeter = rDataConfig::GetFlagNameByValue(rDataConfig::STRFMeterFlags, STR_FLOWMETER_CARIOLIS);
+	std::string strFlowMeter = (element->Attribute("flowmeter")) ? element->Attribute("flowmeter") : defFlowMeter;
+	UDINT  fault = 0;
 
-	if (tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) {
-		cfg.ErrorLine = element->GetLineNum();
-		cfg.ErrorID   = DATACFGERR_STREAM;
-		return cfg.ErrorID;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
 	}
 
 	tinyxml2::XMLElement *impulse = element->FirstChildElement(XmlName::IMPULSE);
@@ -298,13 +296,10 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	Linearization = XmlUtils::getAttributeUSINT(element, XmlName::LINEARIZATION, 0);
 	Maintenance   = XmlUtils::getAttributeUSINT(element, XmlName::MAINTENANCE  , 0);
-	FlowMeter     = rDataConfig::GetFlagFromStr(rDataConfig::STRFMeterFlags, strFlowMeter, err);
+	FlowMeter     = rDataConfig::GetFlagFromStr(rDataConfig::STRFMeterFlags, strFlowMeter, fault);
 
-	if(nullptr == impulse || nullptr == temp || nullptr == pres || nullptr == dens || nullptr == factors || err)
-	{
-		cfg.ErrorLine = element->GetLineNum();
-		cfg.ErrorID   = DATACFGERR_STREAM;
-		return cfg.ErrorID;
+	if (!impulse || !temp || !pres || !dens || !factors || fault) {
+		return err.set(DATACFGERR_STREAM, element->GetLineNum(), "undefened links");
 	}
 
 	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(impulse->FirstChildElement(XmlName::LINK), Counter)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
