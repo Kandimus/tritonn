@@ -130,12 +130,15 @@ std::string rIOManager::saveKernel()
 	std::string   result = "";
 	rVariableList list;
 	rModuleAI6    ai6;
+	rModuleDI8DO8 di8do8;
 
 	ai6.generateVars("hardware.", list, true);
+	di8do8.generateVars("hardware.", list, true);
 
 	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
 
 	result += ai6.saveKernel("Module 6 current/voltage channels");
+	result += di8do8.saveKernel("Module 8 discrete input and 8 discrete output");
 
 	result += "</hardware>\n";
 

@@ -18,7 +18,6 @@
 #include <vector>
 #include "safity.h"
 #include "thread_class.h"
-//#include "data_config.h"
 #include "variable_class.h"
 #include "data_sysvar.h"
 
@@ -27,6 +26,7 @@ class rSnapshot;
 class rInterface;
 class rSource;
 class rReport;
+class rError;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ protected:
 	UDINT DeleteWebFiles();
 	UDINT CreateWebLang();
 
-	UDINT CreateConfigHaltEvent(rDataConfig &cfg);
+	UDINT CreateHaltEvent(rError& err);
 
 	UDINT getConfFile(std::string& conf);
 

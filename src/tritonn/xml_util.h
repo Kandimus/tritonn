@@ -84,6 +84,7 @@ const char FAULT[]         = "fault";
 const char FAULTS[]        = "faults";
 const char FAULTVAL[]      = "faultvalue";
 const char FAULTVALS[]     = "faultvalues";
+const char FLOWMETER[]     = "flowmeter";
 const char FLOWRATEMASS[]  = "flowrate.mass";
 const char FLOWRATEVOL[]   = "flowrate.volume";
 const char FLOWRATEVOL15[] = "flowrate.volume15";

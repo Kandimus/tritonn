@@ -46,14 +46,14 @@ rDI::rDI() : rSource(), m_keypadValue(0), m_setup(0)
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"     , Setup::OFF)
-				.add("KEYPAD"  , Setup::ERR_KEYPAD)
-				.add("SUCCESS1", Setup::SUCCESS_ON)
-				.add("SUCCESS0", Setup::SUCCESS_OFF)
-				.add("WARNING1", Setup::WARNING_ON)
-				.add("WARNING0", Setup::WARNING_OFF)
-				.add("ALARM1"  , Setup::ALARM_ON)
-				.add("ALARM0"  , Setup::ALARM_OFF);
+				.add("OFF"     , static_cast<UINT>(Setup::OFF))
+				.add("KEYPAD"  , static_cast<UINT>(Setup::ERR_KEYPAD))
+				.add("SUCCESS1", static_cast<UINT>(Setup::SUCCESS_ON))
+				.add("SUCCESS0", static_cast<UINT>(Setup::SUCCESS_OFF))
+				.add("WARNING1", static_cast<UINT>(Setup::WARNING_ON))
+				.add("WARNING0", static_cast<UINT>(Setup::WARNING_OFF))
+				.add("ALARM1"  , static_cast<UINT>(Setup::ALARM_ON))
+				.add("ALARM0"  , static_cast<UINT>(Setup::ALARM_OFF));
 	}
 
 	LockErr  = 0;
@@ -255,34 +255,32 @@ UDINT rDI::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rDI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
-	UDINT  err      = 0;
-	UDINT  result   = TRITONN_RESULT_OK;
 
-	if ((result = rSource::LoadFromXML(element, cfg)) != TRITONN_RESULT_OK) {
-		return result;
+	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
 	tinyxml2::XMLElement* module = element->FirstChildElement(XmlName::IOLINK);
 
 	if (module) {
-		if ((result = rDataModule::loadFromXML(module, cfg)) != TRITONN_RESULT_OK) {
-			return result;
+		if (rDataModule::loadFromXML(module, err) != TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 	} else {
 		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
-	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, err));
-	m_setup.Init(m_flagsSetup.getValue(strSetup, err));
-	m_keypadValue.Init(XmlUtils::getTextBOOL(element->FirstChildElement(XmlName::KEYPAD), false, err));
+	UDINT fault = 0;
+	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	m_keypadValue.Init(XmlUtils::getTextBOOL(element->FirstChildElement(XmlName::KEYPAD), false, fault));
 
-	if(err)
-	{
-		return DATACFGERR_AI;
+	if (fault) {
+		return err.set(DATACFGERR_DI, element->GetLineNum(), "fault mode or setup or keypad");
 	}
 
 	m_physical.Limit.m_setup.Init(rLimit::Setup::OFF);
@@ -298,8 +296,8 @@ std::string rDI::saveKernel(UDINT isio, const string &objname, const string &com
 {
 	UNUSED(isio);
 
-	m_physical.Limit.m_setup.Init(rLimit::Setup::NONE);
-	m_present.Limit.m_setup.Init (rLimit::Setup::NONE);
+	m_physical.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_present.Limit.m_setup.Init (rLimit::Setup::OFF);
 
 	return rSource::saveKernel(true, objname, comment, isglobal);
 }

@@ -35,7 +35,7 @@ public:
 	virtual const char *RTTI() { return "sampler"; }
 
 	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT Calculate();
 protected:

@@ -23,6 +23,8 @@
 #include "simpleargs.h"
 #include "variable_item.h"
 #include "threadmaster.h"
+#include "error.h"
+#include "data_config.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "data_station.h"
@@ -31,6 +33,8 @@
 #include "data_denssol.h"
 #include "data_reduceddensity.h"
 #include "data_ai.h"
+#include "data_di.h"
+#include "data_do.h"
 #include "data_counter.h"
 #include "data_report.h"
 #include "data_rvar.h"
@@ -48,7 +52,7 @@
 extern rSafityValue<DINT> gReboot;
 
 
-rDataManager::rDataManager() : rVariableClass(Mutex), Live(LIVE_UNDEF), Config()
+rDataManager::rDataManager() : rVariableClass(Mutex), Live(LIVE_UNDEF)
 {
 	RTTI                 = "rDataManager";
 	m_sysVar.Ver.m_major = TRITONN_VERSION_MAJOR;
@@ -205,8 +209,6 @@ UDINT rDataManager::LoadConfig()
 	string text   = "";
 	string conf   = "";
 
-	rDataConfig::InitBitFlags();
-
 	strcpy(m_sysVar.Lang, LANG_RU.c_str());
 
 	// Устанавливаем флаг, что загружаемся
@@ -224,10 +226,9 @@ UDINT rDataManager::LoadConfig()
 
 		//TODO проверить на валидность hash
 		TRACEI(LM_SYSTEM | LM_I, "Load config file '%s'", conf.c_str());
-		result = Config.LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport);
 
-		if(TRITONN_RESULT_OK != result) {
-			return CreateConfigHaltEvent(Config);
+		if(rDataConfig::instance().LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
+			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
 
 		//TODO После нужно загрузить данные из EEPROM и сравнить с конфигой
@@ -299,7 +300,7 @@ const rConfigInfo *rDataManager::GetConfName() const
 UDINT rDataManager::SetLang(const string &lang)
 {
 	rEventManager::instance().SetCurLang(lang);
-	rTextManager::Instance().SetCurLang(lang);
+	rTextManager::instance().SetCurLang(lang);
 
 	strncpy(m_sysVar.Lang, lang.c_str(), 8);
 
@@ -318,18 +319,18 @@ UDINT rDataManager::SaveKernel()
 	auto msel    = new rSelector();
 	auto denssol = new rDensSol();
 	auto rdcdens = new rReducedDens();
-	auto ai      = new rAI();
-	auto fi      = new rCounter();
+	rAI ai;
+	rDI di;
+	rDO do_;
+	rCounter fi;
 	auto rep     = new rReport();
 	auto rvar    = new rRVar();
 	auto mbSlTCP = new rModbusTCPSlaveManager();
 //	auto opcua   = new rOPCUAManager();
 
-//	stn.Alias      = "#totalsource_1";
 	stn->UnitVolume = U_m3;
 	stn->UnitMass   = U_t;
 
-//	str.Alias      = "#totalsource_2";
 	str->Station    = stn;
 
 	ssel->GenerateIO();
@@ -346,8 +347,10 @@ UDINT rDataManager::SaveKernel()
 	text += rvar->saveKernel(false, "var", "Переменная", true);
 
 	text += "\n<!-- \n\tIO objects list \n-->\n<io_list>\n";
-	text += ai->saveKernel(true, "ai", "Аналоговый сигнал", true);
-	text += fi->saveKernel(true, "counter", "Частотно-импульсный сигнал", true);
+	text += ai.saveKernel (true, "ai", "Аналоговый сигнал", true);
+	text += fi.saveKernel (true, "counter", "Частотно-импульсный сигнал", true);
+	text += di.saveKernel (true, "di", "Дискретный входной сигнал", true);
+	text += do_.saveKernel(true, "do", "Дискретный выходной сигнал", true);
 	text += "</io_list>\n";
 
 	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
@@ -378,8 +381,6 @@ UDINT rDataManager::SaveKernel()
 	delete mbSlTCP;
 	delete rvar;
 	delete rep;
-	delete fi;
-	delete ai;
 	delete rdcdens;
 	delete denssol;
 	delete msel;
@@ -455,25 +456,26 @@ rThreadStatus rDataManager::Proccesing()
 
 
 
-UDINT rDataManager::CreateConfigHaltEvent(rDataConfig &cfg)
+UDINT rDataManager::CreateHaltEvent(rError& err)
 {
 	rEvent event(EID_SYSTEM_CFGERROR);
 
-	event << (HALT_REASON_CONFIGFILE | cfg.ErrorID) << cfg.ErrorLine;
+	event << (HALT_REASON_CONFIGFILE | err.getError()) << err.getLineno();
 
 	rEventManager::instance().Add(event);
 
-	DoHalt(HALT_REASON_CONFIGFILE | cfg.ErrorID);
+	DoHalt(HALT_REASON_CONFIGFILE | err.getError());
 
-	TRACEERROR("Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.", cfg.FileName.c_str(), cfg.ErrorID, cfg.ErrorLine, cfg.ErrorStr.c_str());
+	TRACEERROR("Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.",
+			   rDataConfig::instance().FileName.c_str(), err.getError(), err.getLineno(), err.getText().c_str());
 
-	return cfg.ErrorID;
+	return err.getError();
 }
 
 
 UDINT rDataManager::StartInterfaces()
 {
-	UDINT result = TRITONN_RESULT_OK;
+	rError err;
 
 	m_sysVar.m_state.m_isSimulate = rSimpleArgs::instance().isSet(rArg::Simulate);
 
@@ -481,10 +483,8 @@ UDINT rDataManager::StartInterfaces()
 
 	// Проверяем переменные в интерфейсах
 	for (auto interface : ListInterface) {
-		result = interface->CheckVars(Config);
-
-		if(TRITONN_RESULT_OK != result) {
-			return CreateConfigHaltEvent(Config);
+		if (interface->CheckVars(err) != TRITONN_RESULT_OK) {
+			return CreateHaltEvent(err);
 		}
 	}
 
@@ -530,8 +530,8 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	// удаляем файл
 	SimpleFileDelete(FILE_RESTART);
 
-	if (rSimpleArgs::instance().isSet(rArg::ForceConf)) {
-		conf = rSimpleArgs::instance().getOption(rArg::ForceConf);
+	if (rSimpleArgs::instance().isSet(rArg::Config)) {
+		conf = rSimpleArgs::instance().getOption(rArg::Config);
 		return TRITONN_RESULT_OK;
 	}
 

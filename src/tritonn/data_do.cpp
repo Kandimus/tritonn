@@ -44,9 +44,10 @@ rDO::rDO() : rSource(), m_setup(0)
 				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
 				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD));
 	}
+
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"   , Setup::OFF);
+				.add("OFF"   , static_cast<UINT>(Setup::OFF));
 	}
 
 	LockErr  = 0;
@@ -76,7 +77,6 @@ UDINT rDO::InitLimitEvent(rLink& link)
 //
 UDINT rDO::Calculate()
 {
-	Status oldStatus = m_status;
 	rEvent event_success;
 	rEvent event_fault;
 	
@@ -169,33 +169,31 @@ UDINT rDO::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDO::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rDO::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
-	UDINT  err      = 0;
-	UDINT  result   = TRITONN_RESULT_OK;
 
-	if ((result = rSource::LoadFromXML(element, cfg)) != TRITONN_RESULT_OK) {
-		return result;
+	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
 	tinyxml2::XMLElement* module = element->FirstChildElement(XmlName::IOLINK);
 
 	if (module) {
-		if ((result = rDataModule::loadFromXML(module, cfg)) != TRITONN_RESULT_OK) {
-			return result;
+		if (rDataModule::loadFromXML(module, err) != TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 	} else {
 		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
-	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, err));
-	m_setup.Init(m_flagsSetup.getValue(strSetup, err));
+	UDINT fault = 0;
+	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 
-	if(err)
-	{
-		return DATACFGERR_AI;
+	if (fault) {
+		return err.set(DATACFGERR_DO, element->GetLineNum(), "");
 	}
 
 	m_present.Limit.m_setup.Init (rLimit::Setup::OFF);
@@ -210,7 +208,7 @@ std::string rDO::saveKernel(UDINT isio, const string &objname, const string &com
 {
 	UNUSED(isio);
 
-	m_present.Limit.m_setup.Init (rLimit::Setup::NONE);
+	m_present.Limit.m_setup.Init (rLimit::Setup::OFF);
 
 	return rSource::saveKernel(true, objname, comment, isglobal);
 }

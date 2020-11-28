@@ -194,22 +194,6 @@ const UINT   SELECTOR_MODE_CHANGENEXT  = 4;           // В случае ава�
 
 
 //-------------------------------------------------------------------------------------------------
-//
-enum TYPE_PRODUCT
-{
-	PRODUCT_PETROLEUM = 0,
-	PRODUCT_GAZOLENE,
-	PRODUCT_TRANSITION,
-	PRODUCT_JETFUEL,
-	PRODUCT_FUELOIL,
-	PRODUCT_SMARTBENZENE,
-	PRODUCT_LUBRICANT,
-};
-//-------------------------------------------------------------------------------------------------
-// Station
-
-
-//-------------------------------------------------------------------------------------------------
 // Тип отчета
 const UINT   REPORT_UNDEF              = 0;
 const UINT   REPORT_PERIODIC           = 1;
@@ -495,6 +479,10 @@ enum rTritonn_Error
 	DATACFGERR_INVALID_NAME,                // 158
 	DATACFGERR_INVALID_MODULELINK,          //
 	DATACFGERR_REALTIME_MODULELINK,         // 160
+	DATACFGERR_NOTSYSTEXTFILE,              //
+	DATACFGERR_INTERFACES_BADNAME,          // 162
+	DATACFGERR_DI,                          //
+	DATACFGERR_DO,                          // 164
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,

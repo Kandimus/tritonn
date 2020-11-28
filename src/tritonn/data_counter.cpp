@@ -267,19 +267,23 @@ UDINT rCounter::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rCounter::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(FI_SETUP_OFF));
-	UDINT  err      = 0;
 
-	if(TRITONN_RESULT_OK != rSource::LoadFromXML(element, cfg)) return 1;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	Setup.Init(m_flagsSetup.getValue(strSetup, err));
-	if(err) return 1;
+	UDINT fault = 0;
+	Setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	if (fault) {
+		return err.set(DATACFGERR_FI, element->GetLineNum(), "setup fault");
+	}
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

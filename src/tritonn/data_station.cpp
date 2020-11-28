@@ -21,14 +21,17 @@
 #include "text_id.h"
 #include "event_manager.h"
 #include "precision.h"
+#include "data_config.h"
 #include "data_manager.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "data_stream.h"
 #include "data_station.h"
 #include "xml_util.h"
+#include "error.h"
 
-using std::vector;
+rBitsArray rStation::m_flagsProduct;
+
 
 /*
 const UDINT FI_BAD_COUNT     = 0x10000000;
@@ -46,8 +49,18 @@ const UDINT FI_LE_CODE_FAULT = 0x00000020;
 //
 rStation::rStation() : Setup(0)
 {
-	LockErr    = 0;
-	Product    = PRODUCT_PETROLEUM;
+	if (m_flagsProduct.empty()) {
+		m_flagsProduct
+				.add("PETROLEUM"   , static_cast<USINT>(rDensity::Product::PETROLEUM))
+				.add("GAZOLENE"    , static_cast<USINT>(rDensity::Product::GAZOLENE))
+				.add("TRANSITION"  , static_cast<USINT>(rDensity::Product::TRANSITION))
+				.add("JETFUEL"     , static_cast<USINT>(rDensity::Product::JETFUEL))
+				.add("FUELOIL"     , static_cast<USINT>(rDensity::Product::FUELOIL))
+				.add("SMARTBENZENE", static_cast<USINT>(rDensity::Product::SMARTBENZENE))
+				.add("LUBRICANT"   , static_cast<USINT>(rDensity::Product::LUBRICANT));
+	}
+
+	m_product  = rDensity::Product::PETROLEUM;
 	UnitVolume = U_m3;
 	UnitMass   = U_t;
 
@@ -102,8 +115,7 @@ UDINT rStation::GetFault(void)
 //
 UDINT rStation::Calculate()
 {
-	rStream      *str = nullptr;
-	UDINT         err = 0;
+	UDINT err = 0;
 
 	if(rSource::Calculate()) return 0;
 
@@ -114,10 +126,7 @@ UDINT rStation::Calculate()
 	FlowVolume20.Value = 0.0;
 
 	// Расчет весов по линиям и нарастающих
-	for(UDINT ii = 0; ii < Stream.size(); ++ii)
-	{
-		str = Stream[ii];
-
+	for (auto str : Stream) {
 		str->Calculate();
 
 		if(str->Maintenance) continue; // Линия в ремонте (не в учете)
@@ -144,18 +153,15 @@ UDINT rStation::Calculate()
 	// Расчет параметров станции
 	err = 0;
 
-	for(UDINT ii = 0; ii < Stream.size(); ++ii)
-	{
-		str = Stream[ii];
-
+	for (auto str : Stream) {
 		if(str->Maintenance) continue;
 
-		if(nullptr == Temp.Source) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(nullptr == Pres.Source) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(nullptr == Dens.Source) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!Temp.Source) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!Pres.Source) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!Dens.Source) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -205,7 +211,7 @@ UDINT rStation::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(Alias + ".Product"               , TYPE_UDINT, rVariable::Flags::RS_L, &Product               , U_DIMLESS , ACCESS_SA);
+	list.add(Alias + ".Product"               , TYPE_USINT, rVariable::Flags::RS_L, &m_product             , U_DIMLESS , ACCESS_SA);
 	list.add(Alias + ".Setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value           , U_DIMLESS , ACCESS_SA);
 	list.add(Alias + ".total.present.volume"  , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume  , UnitVolume, 0);
 	list.add(Alias + ".total.present.volume15", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume15, UnitVolume, 0);
@@ -234,19 +240,18 @@ UDINT rStation::generateVars(rVariableList& list)
 //
 UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	string defProduct = rDataConfig::GetFlagNameByValue(rDataConfig::STNProductValues, PRODUCT_PETROLEUM);
-	string strProduct = XmlUtils::getAttributeString(element, XmlName::PRODUCT, defProduct);
-	UDINT  fault = 0;
+	std::string strProduct = XmlUtils::getAttributeString(element, XmlName::PRODUCT, m_flagsProduct.getNameByBits(static_cast<USINT>(rDensity::Product::PETROLEUM)));
 
 	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
 		return err.getError();
 	}
 
-	tinyxml2::XMLElement *temp = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement *pres = element->FirstChildElement(XmlName::PRES);
-	tinyxml2::XMLElement *dens = element->FirstChildElement(XmlName::DENSITY);
+	tinyxml2::XMLElement* xml_temp = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement* xml_pres = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement* xml_dens = element->FirstChildElement(XmlName::DENSITY);
 
-	Product = (TYPE_PRODUCT)rDataConfig::GetFlagFromStr(rDataConfig::STNProductValues , strProduct, fault);
+	UDINT fault = 0;
+	m_product = static_cast<rDensity::Product>(m_flagsProduct.getValue(strProduct, fault));
 	if (fault) {
 		return err.set(DATACFGERR_STATION, element->GetLineNum(), strProduct);
 	}
@@ -254,9 +259,9 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	Setup.Init(0);
 
 	// Параметры ниже могут отсутствовать в конфигурации, в этом случае они будут вычисляться как средневзвешанные
-	if (temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(temp->FirstChildElement(XmlName::LINK), Temp)) return err.getError();
-	if (pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(pres->FirstChildElement(XmlName::LINK), Pres)) return err.getError();
-	if (dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(dens->FirstChildElement(XmlName::LINK), Dens)) return err.getError();
+	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), Temp)) return err.getError();
+	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement(XmlName::LINK), Pres)) return err.getError();
+	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens->FirstChildElement(XmlName::LINK), Dens)) return err.getError();
 
 	ReinitLimitEvents();
 

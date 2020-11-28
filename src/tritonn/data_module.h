@@ -22,7 +22,7 @@ namespace tinyxml2
 	class XMLElement;
 };
 
-class rDataConfig;
+class rError;
 
 
 class rDataModule
@@ -32,7 +32,7 @@ public:
 	virtual ~rDataModule();
 
 	bool  isSetModule() const;
-	UDINT loadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	
 public:
 	USINT m_module;

@@ -14,6 +14,7 @@
 //=================================================================================================
 
 #include "precision.h"
+#include "error.h"
 #include "xml_util.h"
 
 
@@ -65,23 +66,26 @@ UDINT rPrecision::Reset(USINT def)
 }
 
 
-UDINT rPrecision::Load(tinyxml2::XMLElement *element)
+UDINT rPrecision::Load(tinyxml2::XMLElement* element, rError& err)
 {
-	UDINT err = 0;
+	UDINT fault = 0;
 
-	if(nullptr == element) return TRITONN_RESULT_OK;
+	if (!element) {
+		return TRITONN_RESULT_OK;
+	}
 
 	DefPrec = XmlUtils::getAttributeUSINT(element, XmlName::DEFAULT, DefPrec);
 
-	for(tinyxml2::XMLElement *prec = element->FirstChildElement(XmlName::UNIT); prec != nullptr; prec = prec->NextSiblingElement(XmlName::UNIT))
-	{
-		UDINT id  = rDataConfig::GetAttributeUDINT(prec, XmlName::ID, MAX_UNITS_COUNT);
-		USINT val = rDataConfig::GetTextUSINT(prec, DefPrec, err);
+	XML_FOR(xml_prec, element, XmlName::UNIT) {
+		UDINT id  = XmlUtils::getAttributeUDINT(xml_prec, XmlName::ID, MAX_UNITS_COUNT);
+		USINT val = XmlUtils::getTextUSINT(xml_prec, DefPrec, fault);
 
-		if(id >= MAX_UNITS_COUNT || err) return DATACFGERR_PREC_ID;
+		if (id >= MAX_UNITS_COUNT || fault) {
+			return err.set(DATACFGERR_PREC_ID, xml_prec->GetLineNum(), "");
+		}
 
 		UnitPrec[id] = val;
 	}
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }

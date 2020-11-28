@@ -16,7 +16,7 @@
 #include "module_di8do8.h"
 #include "locker.h"
 #include "tinyxml2.h"
-#include "../data_config.h"
+#include "../error.h"
 #include "../xml_util.h"
 
 rBitsArray  rModuleDI8DO8::m_flagsDISetup;
@@ -26,15 +26,15 @@ rModuleDI8DO8::rModuleDI8DO8()
 {
 	if (m_flagsDISetup.empty()) {
 		m_flagsDISetup
-				.add("OFF"     , rIODIChannel::Setup::OFF)
-				.add("BOUNCE"  , rIODIChannel::Setup::BOUNCE)
-				.add("INVERSED", rIODIChannel::Setup::INVERSED);
+				.add("OFF"     , static_cast<UINT>(rIODIChannel::Setup::OFF))
+				.add("BOUNCE"  , static_cast<UINT>(rIODIChannel::Setup::BOUNCE))
+				.add("INVERSED", static_cast<UINT>(rIODIChannel::Setup::INVERSED));
 	}
 
 	if (m_flagsDOSetup.empty()) {
 		m_flagsDOSetup
-				.add("OFF"     , rIODOChannel::Setup::OFF)
-				.add("INVERSED", rIODOChannel::Setup::INVERSED);
+				.add("OFF"     , static_cast<UINT>(rIODOChannel::Setup::OFF))
+				.add("INVERSED", static_cast<UINT>(rIODOChannel::Setup::INVERSED));
 	}
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
@@ -44,6 +44,8 @@ rModuleDI8DO8::rModuleDI8DO8()
 	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
 		m_channelDO.push_back(rIODOChannel());
 	}
+
+	m_type = Type::DI8DO8;
 }
 
 
@@ -110,35 +112,29 @@ UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list
 }
 
 
-UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	UDINT result = rIOBaseModule::loadFromXML(element, cfg);
-
-	if (result != TRITONN_RESULT_OK) {
-		return result;
+	if (rIOBaseModule::loadFromXML(element, err) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
-		UDINT       err      = 0;
 		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
 		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
 
 		if (number >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
-			cfg.ErrorLine = channel_xml->GetLineNum();
-			cfg.ErrorID   = DATACFGERR_IO_CHANNEL;
-			return cfg.ErrorID;
+			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide number");
 		}
 
+		UDINT fault = 0;
 		if (number < CHANNEL_DI_COUNT) {
-			m_channelDI[number].m_setup = m_flagsDISetup.getValue(strSetup, err);
+			m_channelDI[number].m_setup = m_flagsDISetup.getValue(strSetup, fault);
 		} else {
-			m_channelDO[number - CHANNEL_DI_COUNT].m_setup = m_flagsDOSetup.getValue(strSetup, err);
+			m_channelDO[number - CHANNEL_DI_COUNT].m_setup = m_flagsDOSetup.getValue(strSetup, fault);
 		}
 
-		if (err) {
-			cfg.ErrorLine = channel_xml->GetLineNum();
-			cfg.ErrorID   = DATACFGERR_IO_CHANNEL;
-			return cfg.ErrorID;
+		if (fault) {
+			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide setup");
 		}
 	}
 

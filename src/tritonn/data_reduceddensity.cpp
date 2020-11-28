@@ -88,10 +88,9 @@ UDINT rReducedDens::InitLimitEvent(rLink &link)
 //
 UDINT rReducedDens::Calculate()
 {
-	rEvent       event_f;
-	rEvent       event_s;
-	UDINT        limit   = 0;
-	TYPE_PRODUCT product = Station->Product;
+	rEvent event_f;
+	rEvent event_s;
+	UDINT  limit = 0;
 
 	if(rSource::Calculate()) return 0;
 
@@ -102,7 +101,8 @@ UDINT rReducedDens::Calculate()
 //	}
 
 	// Проверка на корректность плотности
-	limit = Dens_Limit[0][product] <= Dens15.Value && Dens15.Value < Dens_Limit[1][product];
+	USINT product_id = static_cast<USINT>(Station->m_product);
+	limit = rDensity::Limit[0][product_id] <= Dens15.Value && Dens15.Value < rDensity::Limit[1][product_id];
 
 	if(CheckExpr(!limit, REDUCEDDENS_LE_DENSITY, ReinitEvent(event_f, EID_RDCDDENS_FAULT_DENSITY)<< Dens15.Value, ReinitEvent(event_s, EID_RDCDDENS_GOOD_DENSITY ) << Dens15.Value))
 	{
@@ -116,7 +116,7 @@ UDINT rReducedDens::Calculate()
 	CPL.Value    = 1.0 / (1.0 - Y.Value * Pres.Value);
 	CTL.Value    = exp(-B15.Value * dTemp * (1 + 0.8 * B15.Value * dTemp));
 	Dens.Value   = Dens15.Value * CTL.Value * CPL.Value;
-	Dens20.Value = GetDens20(Dens15.Value, B15.Value);
+	Dens20.Value = rDensity::getDens20(Dens15.Value, B15.Value);
 
 	PostCalculate();
 	
@@ -164,33 +164,34 @@ UDINT rReducedDens::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_REDUCEDDENS;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	tinyxml2::XMLElement *dens15 = element->FirstChildElement(XmlName::DENSITY15);
-	tinyxml2::XMLElement *b15    = element->FirstChildElement(XmlName::B15);
-//	tinyxml2::XMLElement *y15    = element->FirstChildElement(CFGNAME_Y15);
-	tinyxml2::XMLElement *temp   = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement *pres   = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement* xml_dens15 = element->FirstChildElement(XmlName::DENSITY15);
+	tinyxml2::XMLElement* xml_b15    = element->FirstChildElement(XmlName::B15);
+	tinyxml2::XMLElement* xml_temp   = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement* xml_pres   = element->FirstChildElement(XmlName::PRES);
 
-	if(nullptr == temp || nullptr == pres || nullptr == dens15)
-	{
-		return DATACFGERR_REDUCEDDENS;
+	if(!xml_temp || !xml_pres || !xml_dens15) {
+		return err.set(DATACFGERR_REDUCEDDENS, element->GetLineNum(), "fault input");
 	}
 
 	// Обязательные линки и параметры, без которых работа не возможна
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement  (XmlName::LINK), Temp)  ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement  (XmlName::LINK), Pres)  ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens15->FirstChildElement(XmlName::LINK), Dens15)) return cfg.ErrorID;
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement  (XmlName::LINK), Temp)  ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement  (XmlName::LINK), Pres)  ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens15->FirstChildElement(XmlName::LINK), Dens15)) return err.getError();
 
 	// Теневые линки
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15 ? b15->FirstChildElement(XmlName::LINK) : nullptr, B15, Dens15, XmlName::B15)) return cfg.ErrorID;
-//	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15 ? y15->FirstChildElement(XmlName::LINK) : nullptr, Y15, Dens15, XmlName::Y15)) return cfg.ErrorID;
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_b15, B15, Dens15, XmlName::B15)) {
+		return err.getError();
+	}
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

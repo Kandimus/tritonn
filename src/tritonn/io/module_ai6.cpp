@@ -16,7 +16,7 @@
 #include "module_ai6.h"
 #include "locker.h"
 #include "tinyxml2.h"
-#include "../data_config.h"
+#include "../error.h"
 #include "../xml_util.h"
 
 rBitsArray  rModuleAI6::m_flagsSetup;
@@ -25,14 +25,16 @@ rModuleAI6::rModuleAI6()
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , rIOAIChannel::Setup::OFF)
-				.add("AVERAGE", rIOAIChannel::Setup::AVERAGE)
-				.add("NOICE"  , rIOAIChannel::Setup::NOICE);
+				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF))
+				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE))
+				.add("NOICE"  , static_cast<UINT>(rIOAIChannel::Setup::NOICE));
 	}
 
 	while(m_channel.size() < CHANNEL_COUNT) {
 		m_channel.push_back(rIOAIChannel());
 	}
+
+	m_type = Type::AI6;
 
 	m_channel[0].m_simSpeed = 1111;
 	m_channel[0].m_simType  = rIOAIChannel::SimType::Linear;
@@ -84,31 +86,25 @@ UDINT rModuleAI6::generateVars(const std::string& prefix, rVariableList& list, b
 }
 
 
-UDINT rModuleAI6::loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rModuleAI6::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	UDINT result = rIOBaseModule::loadFromXML(element, cfg);
-
-	if (result != TRITONN_RESULT_OK) {
-		return result;
+	if (rIOBaseModule::loadFromXML(element, err) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
-		UDINT       err      = 0;
 		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
 		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
 
 		if (number >= CHANNEL_COUNT) {
-			cfg.ErrorLine = channel_xml->GetLineNum();
-			cfg.ErrorID   = DATACFGERR_IO_CHANNEL;
-			return cfg.ErrorID;
+			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide number");
 		}
 
-		m_channel[number].m_setup = m_flagsSetup.getValue(strSetup, err);
+		UDINT fault = 0;
+		m_channel[number].m_setup = m_flagsSetup.getValue(strSetup, fault);
 
-		if (err) {
-			cfg.ErrorLine = channel_xml->GetLineNum();
-			cfg.ErrorID   = DATACFGERR_IO_CHANNEL;
-			return cfg.ErrorID;
+		if (fault) {
+			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide setup");
 		}
 	}
 

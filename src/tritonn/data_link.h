@@ -45,7 +45,7 @@ public:
 	virtual const char *RTTI() { return "link"; }
 
 	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT Calculate();
 	virtual UDINT generateVars(rVariableList& list);
 

@@ -36,11 +36,11 @@ rLimit::rLimit() :
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"  , Setup::OFF)
-				.add("LOLO" , Setup::LOLO)
-				.add("LO"   , Setup::LO)
-				.add("HI"   , Setup::HI)
-				.add("HIHI" , Setup::HIHI);
+				.add("OFF"  , static_cast<UINT>(Setup::OFF))
+				.add("LOLO" , static_cast<UINT>(Setup::LOLO))
+				.add("LO"   , static_cast<UINT>(Setup::LO))
+				.add("HI"   , static_cast<UINT>(Setup::HI))
+				.add("HIHI" , static_cast<UINT>(Setup::HIHI));
 	}
 }
 
@@ -145,18 +145,20 @@ UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLimit::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &/*cfg*/)
+UDINT rLimit::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
+	UNUSED(err); UNUSED(prefix);
+
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
-	UDINT       err      = 0;
+	UDINT       fault    = 0;
 
-	m_setup.Init(m_flagsSetup.getValue(strSetup, err));
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 
-	Hysteresis.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HYSTER), 0.0, err));
-	m_lolo.Init    (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::LOLO)  , 0.0, err));
-	m_lo.Init      (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::LO)    , 0.0, err));
-	m_hi.Init      (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HI)    , 0.0, err));
-	m_hihi.Init    (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HIHI)  , 0.0, err));
+	Hysteresis.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HYSTER), 0.0, fault));
+	m_lolo.Init    (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::LOLO)  , 0.0, fault));
+	m_lo.Init      (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::LO)    , 0.0, fault));
+	m_hi.Init      (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HI)    , 0.0, fault));
+	m_hihi.Init    (XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::HIHI)  , 0.0, fault));
 
 	return TRITONN_RESULT_OK;
 }

@@ -1,0 +1,1510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kernel ver="0.18" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./kernel.xsd">
+<!--
+	System variables
+-->
+<sysvars>
+	<values>
+		<value name="system.version.major" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.version.minor" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.version.build" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.version.hash" type="UDINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.version.crc" type="UDINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.state.alarm" type="UDINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.state.live" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.state.rebootreason" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="system.state.simulate" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.sec" type="INT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.min" type="INT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.hour" type="INT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.day" type="INT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.month" type="INT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.year" type="INT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="system.datetime.set.sec" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+		<value name="system.datetime.set.min" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+		<value name="system.datetime.set.hour" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+		<value name="system.datetime.set.day" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+		<value name="system.datetime.set.month" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+		<value name="system.datetime.set.year" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+		<value name="system.datetime.set.accept" type="INT" readonly="0" loadable="0" unit="512" access="0x00020000"/>
+	</values>
+</sysvars>
+
+<!--
+	Переменная
+-->
+<object name="var" global="true">
+	<values>
+		<value name="value" type="LREAL" readonly="0" loadable="0" unit="0" access="0x00000000"/>
+		<value name="unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="lolo" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="lo" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="hi" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="hihi" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="hysteresis" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+	</values>
+	<inputs>
+		<input name="value" unit="0"/>
+	</inputs>
+	<outputs>
+		<output name="value" unit="0" default="1"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+
+<!-- 
+	IO objects list 
+-->
+<io_list>
+<!--
+	Аналоговый сигнал
+-->
+<io name="ai">
+	<values>
+		<value name="present.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="present.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="present.lolo" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="present.lo" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="present.hi" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="present.hihi" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="present.hysteresis" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="present.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="present.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="physical.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="physical.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="physical.lolo" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="physical.lo" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="physical.hi" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="physical.hihi" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="physical.hysteresis" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000200"/>
+		<value name="physical.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="physical.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="current.value" type="LREAL" readonly="1" loadable="0" unit="515" access="0x00000000"/>
+		<value name="current.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="current.lolo" type="LREAL" readonly="0" loadable="1" unit="515" access="0x00000200"/>
+		<value name="current.lo" type="LREAL" readonly="0" loadable="1" unit="515" access="0x00000200"/>
+		<value name="current.hi" type="LREAL" readonly="0" loadable="1" unit="515" access="0x00000200"/>
+		<value name="current.hihi" type="LREAL" readonly="0" loadable="1" unit="515" access="0x00000200"/>
+		<value name="current.hysteresis" type="LREAL" readonly="0" loadable="1" unit="515" access="0x00000200"/>
+		<value name="current.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="current.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="keypad" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="scales.min" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000400"/>
+		<value name="scales.max" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000400"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="mode" type="UINT" readonly="0" loadable="1" unit="512" access="0x00000800"/>
+		<value name="status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<outputs>
+		<output name="present" unit="0" default="1"/>
+		<output name="physical" unit="0"/>
+		<output name="current" unit="515"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</io>
+<!--
+	Частотно-импульсный сигнал
+-->
+<io name="counter">
+	<values>
+		<value name="impulse.value" type="LREAL" readonly="1" loadable="0" unit="514" access="0x00000000"/>
+		<value name="impulse.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="impulse.lolo" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.lo" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.hi" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.hihi" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.hysteresis" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="impulse.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="frequency.value" type="LREAL" readonly="1" loadable="0" unit="192" access="0x00000000"/>
+		<value name="frequency.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="frequency.lolo" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.lo" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.hi" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.hihi" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.hysteresis" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="frequency.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="period.value" type="LREAL" readonly="1" loadable="0" unit="209" access="0x00000000"/>
+		<value name="period.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="period.lolo" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.lo" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.hi" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.hihi" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.hysteresis" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="period.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<outputs>
+		<output name="impulse" unit="514" default="1"/>
+		<output name="frequency" unit="192"/>
+		<output name="period" unit="209"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</io>
+<!--
+	Дискретный входной сигнал
+-->
+<io name="di">
+	<values>
+		<value name="present.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="present.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="physical.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="physical.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="keypad" type="USINT" readonly="0" loadable="1" unit="512" access="0x00000800"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="mode" type="UINT" readonly="0" loadable="1" unit="512" access="0x00000800"/>
+		<value name="status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<outputs>
+		<output name="present" unit="0" default="1"/>
+		<output name="physical" unit="0"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</io>
+<!--
+	Дискретный выходной сигнал
+-->
+<io name="do">
+	<values>
+		<value name="present.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="present.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="mode" type="UINT" readonly="0" loadable="1" unit="512" access="0x00000800"/>
+		<value name="status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<inputs>
+		<input name="present" unit="0"/>
+	</inputs>
+	<outputs>
+		<output name="present" unit="0" default="1"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</io>
+</io_list>
+
+<!-- 
+	Station/stream objects list 
+-->
+<objects>
+<!--
+	Плотномер (Солартрон)
+-->
+<object name="densitometer" global="false">
+	<values>
+		<value name="temperature.value" type="LREAL" readonly="1" loadable="0" unit="16" access="0x00000000"/>
+		<value name="temperature.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.lolo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.lo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hihi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hysteresis" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="pressure.value" type="LREAL" readonly="1" loadable="0" unit="35" access="0x00000000"/>
+		<value name="pressure.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.lolo" type="LREAL" readonly="0" loadable="1" unit="35" access="0x00000200"/>
+		<value name="pressure.lo" type="LREAL" readonly="0" loadable="1" unit="35" access="0x00000200"/>
+		<value name="pressure.hi" type="LREAL" readonly="0" loadable="1" unit="35" access="0x00000200"/>
+		<value name="pressure.hihi" type="LREAL" readonly="0" loadable="1" unit="35" access="0x00000200"/>
+		<value name="pressure.hysteresis" type="LREAL" readonly="0" loadable="1" unit="35" access="0x00000200"/>
+		<value name="pressure.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="period.value" type="LREAL" readonly="1" loadable="0" unit="209" access="0x00000000"/>
+		<value name="period.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="period.lolo" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.lo" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.hi" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.hihi" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.hysteresis" type="LREAL" readonly="0" loadable="1" unit="209" access="0x00000200"/>
+		<value name="period.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="period.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density15.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density15.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density20.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density20.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density20.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density20.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="b.value" type="LREAL" readonly="1" loadable="0" unit="517" access="0x00000000"/>
+		<value name="b.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b.lolo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.lo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.hi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.hihi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.hysteresis" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="b15.value" type="LREAL" readonly="1" loadable="0" unit="517" access="0x00000000"/>
+		<value name="b15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b15.lolo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.lo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hihi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="y.value" type="LREAL" readonly="1" loadable="0" unit="518" access="0x00000000"/>
+		<value name="y.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y.lolo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.lo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.hi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.hihi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.hysteresis" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="y15.value" type="LREAL" readonly="1" loadable="0" unit="518" access="0x00000000"/>
+		<value name="y15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y15.lolo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.lo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.hi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.hihi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.value" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ctl.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ctl.lolo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.lo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.hi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.hihi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.hysteresis" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ctl.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.value" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="cpl.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="cpl.lolo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.lo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.hi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.hihi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.hysteresis" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="cpl.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="k0" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="k1" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="k2" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="factor.k0" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k1" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k2" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k18" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k19" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k20a" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k20b" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k21a" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.k21b" type="LREAL" readonly="1" loadable="0" unit="521" access="0x80000000"/>
+		<value name="factor.set.k0" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k1" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k2" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k18" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k19" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k20a" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k20b" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k21a" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.k21b" type="LREAL" readonly="0" loadable="1" unit="521" access="0x00001000"/>
+		<value name="factor.set.accept" type="USINT" readonly="0" loadable="1" unit="512" access="0x00001000"/>
+		<value name="calibration" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00001000"/>
+		<value name="setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00001000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<inputs>
+		<input name="temperature" unit="16"/>
+		<input name="pressure" unit="35"/>
+		<input name="period" unit="209"/>
+	</inputs>
+	<outputs>
+		<output name="temperature" unit="16" default="1"/>
+		<output name="pressure" unit="35"/>
+		<output name="density" unit="48"/>
+		<output name="density15" unit="48"/>
+		<output name="density20" unit="48"/>
+		<output name="b" unit="517"/>
+		<output name="b15" unit="517"/>
+		<output name="y" unit="518"/>
+		<output name="y15" unit="518"/>
+		<output name="ctl" unit="512"/>
+		<output name="cpl" unit="512"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+<!--
+	Приведение плотности
+-->
+<object name="reduceddens" global="true">
+	<values>
+		<value name="temperature.value" type="LREAL" readonly="1" loadable="0" unit="16" access="0x00000000"/>
+		<value name="temperature.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.lolo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.lo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hihi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hysteresis" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="pressure.value" type="LREAL" readonly="1" loadable="0" unit="32" access="0x00000000"/>
+		<value name="pressure.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.lolo" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.lo" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hi" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hihi" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hysteresis" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density15.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density15.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="b15.value" type="LREAL" readonly="1" loadable="0" unit="517" access="0x00000000"/>
+		<value name="b15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b15.lolo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.lo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hihi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density20.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density20.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density20.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density20.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.value" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ctl.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ctl.lolo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.lo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.hi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.hihi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.hysteresis" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="ctl.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ctl.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.value" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="cpl.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="cpl.lolo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.lo" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.hi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.hihi" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.hysteresis" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00000200"/>
+		<value name="cpl.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="cpl.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="b.value" type="LREAL" readonly="1" loadable="0" unit="517" access="0x00000000"/>
+		<value name="b.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b.lolo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.lo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.hi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.hihi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.hysteresis" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="y.value" type="LREAL" readonly="1" loadable="0" unit="518" access="0x00000000"/>
+		<value name="y.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y.lolo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.lo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.hi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.hihi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.hysteresis" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<inputs>
+		<input name="temperature" unit="16"/>
+		<input name="pressure" unit="32"/>
+		<input name="density15" unit="48">
+			<shadow name="b15"/>
+		</input>
+		<input name="b15" unit="517" shadow="density15"/>
+	</inputs>
+	<outputs>
+		<output name="temperature" unit="16" default="1"/>
+		<output name="pressure" unit="32"/>
+		<output name="density15" unit="48"/>
+		<output name="b15" unit="517"/>
+		<output name="density" unit="48"/>
+		<output name="density20" unit="48"/>
+		<output name="ctl" unit="512"/>
+		<output name="cpl" unit="512"/>
+		<output name="b" unit="517"/>
+		<output name="y" unit="518"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+<!--
+	Селектор
+-->
+<object name="selector" global="true">
+	<values>
+		<value name="input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="select" type="INT" readonly="0" loadable="1" unit="512" access="0x00004000"/>
+		<value name="inputcount" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="mode" type="UINT" readonly="0" loadable="1" unit="512" access="0x00004000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+	</values>
+	<inputs>
+		<input name="input_1" unit="0">
+			<shadow name="input_1.fault"/>
+		</input>
+		<input name="input_1.fault" unit="512" shadow="input_1"/>
+		<input name="input_2" unit="0">
+			<shadow name="input_2.fault"/>
+		</input>
+		<input name="input_2.fault" unit="512" shadow="input_2"/>
+		<input name="input_3" unit="0">
+			<shadow name="input_3.fault"/>
+		</input>
+		<input name="input_3.fault" unit="512" shadow="input_3"/>
+		<input name="input_4" unit="0">
+			<shadow name="input_4.fault"/>
+		</input>
+		<input name="input_4.fault" unit="512" shadow="input_4"/>
+	</inputs>
+	<outputs>
+		<output name="output" unit="0" default="1"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+<!--
+	Мультиселектор
+-->
+<object name="multiselector" global="true">
+	<values>
+		<value name="#username_1.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_1.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_1.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_1.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_1.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_2.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_2.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_2.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_2.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_3.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_3.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_3.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_3.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_4.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_4.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_4.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_4.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_5.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_5.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_5.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_5.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_6.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_6.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_6.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_6.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_7.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_7.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_7.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_7.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_1.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_8.input_1.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_1.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_2.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_8.input_2.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_2.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_3.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_8.input_3.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_3.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_4.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_8.input_4.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.input_4.fault" type="LREAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_1.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_2.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_2.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_3.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_3.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_4.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_4.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_5.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_5.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_6.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_6.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_7.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_7.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_8.output.value" type="LREAL" readonly="1" loadable="0" unit="0" access="0x00000000"/>
+		<value name="#username_8.output.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="select" type="INT" readonly="0" loadable="1" unit="512" access="0x00004000"/>
+		<value name="inputcount" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="mode" type="UINT" readonly="0" loadable="1" unit="512" access="0x00004000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="selectorcount" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="#username_1.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_1.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_2.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_2.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_3.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_3.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_4.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_4.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_5.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_5.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_6.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_6.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_7.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_7.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+		<value name="#username_8.keypad.unit" type="UDINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="#username_8.keypad.value" type="LREAL" readonly="0" loadable="1" unit="0" access="0x00000800"/>
+	</values>
+	<inputs>
+		<input name="#username_1.input_1" unit="0">
+			<shadow name="#username_1.input_1.fault"/>
+		</input>
+		<input name="#username_1.input_1.fault" unit="512" shadow="#username_1.input_1"/>
+		<input name="#username_1.input_2" unit="0">
+			<shadow name="#username_1.input_2.fault"/>
+		</input>
+		<input name="#username_1.input_2.fault" unit="512" shadow="#username_1.input_2"/>
+		<input name="#username_1.input_3" unit="0">
+			<shadow name="#username_1.input_3.fault"/>
+		</input>
+		<input name="#username_1.input_3.fault" unit="512" shadow="#username_1.input_3"/>
+		<input name="#username_1.input_4" unit="0">
+			<shadow name="#username_1.input_4.fault"/>
+		</input>
+		<input name="#username_1.input_4.fault" unit="512" shadow="#username_1.input_4"/>
+		<input name="#username_2.input_1" unit="0">
+			<shadow name="#username_2.input_1.fault"/>
+		</input>
+		<input name="#username_2.input_1.fault" unit="512" shadow="#username_2.input_1"/>
+		<input name="#username_2.input_2" unit="0">
+			<shadow name="#username_2.input_2.fault"/>
+		</input>
+		<input name="#username_2.input_2.fault" unit="512" shadow="#username_2.input_2"/>
+		<input name="#username_2.input_3" unit="0">
+			<shadow name="#username_2.input_3.fault"/>
+		</input>
+		<input name="#username_2.input_3.fault" unit="512" shadow="#username_2.input_3"/>
+		<input name="#username_2.input_4" unit="0">
+			<shadow name="#username_2.input_4.fault"/>
+		</input>
+		<input name="#username_2.input_4.fault" unit="512" shadow="#username_2.input_4"/>
+		<input name="#username_3.input_1" unit="0">
+			<shadow name="#username_3.input_1.fault"/>
+		</input>
+		<input name="#username_3.input_1.fault" unit="512" shadow="#username_3.input_1"/>
+		<input name="#username_3.input_2" unit="0">
+			<shadow name="#username_3.input_2.fault"/>
+		</input>
+		<input name="#username_3.input_2.fault" unit="512" shadow="#username_3.input_2"/>
+		<input name="#username_3.input_3" unit="0">
+			<shadow name="#username_3.input_3.fault"/>
+		</input>
+		<input name="#username_3.input_3.fault" unit="512" shadow="#username_3.input_3"/>
+		<input name="#username_3.input_4" unit="0">
+			<shadow name="#username_3.input_4.fault"/>
+		</input>
+		<input name="#username_3.input_4.fault" unit="512" shadow="#username_3.input_4"/>
+		<input name="#username_4.input_1" unit="0">
+			<shadow name="#username_4.input_1.fault"/>
+		</input>
+		<input name="#username_4.input_1.fault" unit="512" shadow="#username_4.input_1"/>
+		<input name="#username_4.input_2" unit="0">
+			<shadow name="#username_4.input_2.fault"/>
+		</input>
+		<input name="#username_4.input_2.fault" unit="512" shadow="#username_4.input_2"/>
+		<input name="#username_4.input_3" unit="0">
+			<shadow name="#username_4.input_3.fault"/>
+		</input>
+		<input name="#username_4.input_3.fault" unit="512" shadow="#username_4.input_3"/>
+		<input name="#username_4.input_4" unit="0">
+			<shadow name="#username_4.input_4.fault"/>
+		</input>
+		<input name="#username_4.input_4.fault" unit="512" shadow="#username_4.input_4"/>
+		<input name="#username_5.input_1" unit="0">
+			<shadow name="#username_5.input_1.fault"/>
+		</input>
+		<input name="#username_5.input_1.fault" unit="512" shadow="#username_5.input_1"/>
+		<input name="#username_5.input_2" unit="0">
+			<shadow name="#username_5.input_2.fault"/>
+		</input>
+		<input name="#username_5.input_2.fault" unit="512" shadow="#username_5.input_2"/>
+		<input name="#username_5.input_3" unit="0">
+			<shadow name="#username_5.input_3.fault"/>
+		</input>
+		<input name="#username_5.input_3.fault" unit="512" shadow="#username_5.input_3"/>
+		<input name="#username_5.input_4" unit="0">
+			<shadow name="#username_5.input_4.fault"/>
+		</input>
+		<input name="#username_5.input_4.fault" unit="512" shadow="#username_5.input_4"/>
+		<input name="#username_6.input_1" unit="0">
+			<shadow name="#username_6.input_1.fault"/>
+		</input>
+		<input name="#username_6.input_1.fault" unit="512" shadow="#username_6.input_1"/>
+		<input name="#username_6.input_2" unit="0">
+			<shadow name="#username_6.input_2.fault"/>
+		</input>
+		<input name="#username_6.input_2.fault" unit="512" shadow="#username_6.input_2"/>
+		<input name="#username_6.input_3" unit="0">
+			<shadow name="#username_6.input_3.fault"/>
+		</input>
+		<input name="#username_6.input_3.fault" unit="512" shadow="#username_6.input_3"/>
+		<input name="#username_6.input_4" unit="0">
+			<shadow name="#username_6.input_4.fault"/>
+		</input>
+		<input name="#username_6.input_4.fault" unit="512" shadow="#username_6.input_4"/>
+		<input name="#username_7.input_1" unit="0">
+			<shadow name="#username_7.input_1.fault"/>
+		</input>
+		<input name="#username_7.input_1.fault" unit="512" shadow="#username_7.input_1"/>
+		<input name="#username_7.input_2" unit="0">
+			<shadow name="#username_7.input_2.fault"/>
+		</input>
+		<input name="#username_7.input_2.fault" unit="512" shadow="#username_7.input_2"/>
+		<input name="#username_7.input_3" unit="0">
+			<shadow name="#username_7.input_3.fault"/>
+		</input>
+		<input name="#username_7.input_3.fault" unit="512" shadow="#username_7.input_3"/>
+		<input name="#username_7.input_4" unit="0">
+			<shadow name="#username_7.input_4.fault"/>
+		</input>
+		<input name="#username_7.input_4.fault" unit="512" shadow="#username_7.input_4"/>
+		<input name="#username_8.input_1" unit="0">
+			<shadow name="#username_8.input_1.fault"/>
+		</input>
+		<input name="#username_8.input_1.fault" unit="512" shadow="#username_8.input_1"/>
+		<input name="#username_8.input_2" unit="0">
+			<shadow name="#username_8.input_2.fault"/>
+		</input>
+		<input name="#username_8.input_2.fault" unit="512" shadow="#username_8.input_2"/>
+		<input name="#username_8.input_3" unit="0">
+			<shadow name="#username_8.input_3.fault"/>
+		</input>
+		<input name="#username_8.input_3.fault" unit="512" shadow="#username_8.input_3"/>
+		<input name="#username_8.input_4" unit="0">
+			<shadow name="#username_8.input_4.fault"/>
+		</input>
+		<input name="#username_8.input_4.fault" unit="512" shadow="#username_8.input_4"/>
+	</inputs>
+	<outputs>
+		<output name="#username_1" unit="0" default="1"/>
+		<output name="#username_2" unit="0"/>
+		<output name="#username_3" unit="0"/>
+		<output name="#username_4" unit="0"/>
+		<output name="#username_5" unit="0"/>
+		<output name="#username_6" unit="0"/>
+		<output name="#username_7" unit="0"/>
+		<output name="#username_8" unit="0"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+<!--
+	Станция
+-->
+<object name="station" global="true">
+	<values>
+		<value name="temperature.value" type="LREAL" readonly="1" loadable="0" unit="16" access="0x00000000"/>
+		<value name="temperature.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.lolo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.lo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hihi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hysteresis" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="pressure.value" type="LREAL" readonly="1" loadable="0" unit="32" access="0x00000000"/>
+		<value name="pressure.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.lolo" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.lo" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hi" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hihi" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hysteresis" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.mass.value" type="LREAL" readonly="1" loadable="0" unit="96" access="0x00000000"/>
+		<value name="flowrate.mass.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.mass.lolo" type="LREAL" readonly="0" loadable="1" unit="96" access="0x00000200"/>
+		<value name="flowrate.mass.lo" type="LREAL" readonly="0" loadable="1" unit="96" access="0x00000200"/>
+		<value name="flowrate.mass.hi" type="LREAL" readonly="0" loadable="1" unit="96" access="0x00000200"/>
+		<value name="flowrate.mass.hihi" type="LREAL" readonly="0" loadable="1" unit="96" access="0x00000200"/>
+		<value name="flowrate.mass.hysteresis" type="LREAL" readonly="0" loadable="1" unit="96" access="0x00000200"/>
+		<value name="flowrate.mass.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.mass.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.volume.value" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="flowrate.volume.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume.lolo" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume.lo" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume.hi" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume.hihi" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume.hysteresis" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.volume15.value" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="flowrate.volume15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume15.lolo" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume15.lo" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume15.hi" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume15.hihi" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.volume20.value" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="flowrate.volume20.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume20.lolo" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume20.lo" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume20.hi" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume20.hihi" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume20.hysteresis" type="LREAL" readonly="0" loadable="1" unit="112" access="0x00000200"/>
+		<value name="flowrate.volume20.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume20.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="product" type="USINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="total.present.volume" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="total.present.volume15" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="total.present.volume20" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="total.present.mass" type="LREAL" readonly="1" loadable="0" unit="96" access="0x00000000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<inputs>
+		<input name="temperature" unit="16"/>
+		<input name="pressure" unit="32"/>
+		<input name="density" unit="48"/>
+	</inputs>
+	<outputs>
+		<output name="temperature" unit="16" default="1"/>
+		<output name="pressure" unit="32"/>
+		<output name="density" unit="48"/>
+		<output name="flowrate.mass" unit="96"/>
+		<output name="flowrate.volume" unit="112"/>
+		<output name="flowrate.volume15" unit="112"/>
+		<output name="flowrate.volume20" unit="112"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+<!--
+	Линия
+-->
+<object name="stream" global="false">
+	<values>
+		<value name="impulse.value" type="LREAL" readonly="1" loadable="0" unit="514" access="0x00000000"/>
+		<value name="impulse.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="impulse.lolo" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.lo" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.hi" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.hihi" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.hysteresis" type="LREAL" readonly="0" loadable="1" unit="514" access="0x00000200"/>
+		<value name="impulse.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="impulse.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="frequency.value" type="LREAL" readonly="1" loadable="0" unit="192" access="0x00000000"/>
+		<value name="frequency.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="frequency.lolo" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.lo" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.hi" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.hihi" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.hysteresis" type="LREAL" readonly="0" loadable="1" unit="192" access="0x00000200"/>
+		<value name="frequency.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="frequency.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="temperature.value" type="LREAL" readonly="1" loadable="0" unit="16" access="0x00000000"/>
+		<value name="temperature.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.lolo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.lo" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hihi" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.hysteresis" type="LREAL" readonly="0" loadable="1" unit="16" access="0x00000200"/>
+		<value name="temperature.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="pressure.value" type="LREAL" readonly="1" loadable="0" unit="32" access="0x00000000"/>
+		<value name="pressure.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.lolo" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.lo" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hi" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hihi" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.hysteresis" type="LREAL" readonly="0" loadable="1" unit="32" access="0x00000200"/>
+		<value name="pressure.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="pressure.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density15.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density15.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="density20.value" type="LREAL" readonly="1" loadable="0" unit="48" access="0x00000000"/>
+		<value name="density20.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density20.lolo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.lo" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hihi" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.hysteresis" type="LREAL" readonly="0" loadable="1" unit="48" access="0x00000200"/>
+		<value name="density20.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="density20.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="b15.value" type="LREAL" readonly="1" loadable="0" unit="517" access="0x00000000"/>
+		<value name="b15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b15.lolo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.lo" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hihi" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="517" access="0x00000200"/>
+		<value name="b15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="b15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="y15.value" type="LREAL" readonly="1" loadable="0" unit="518" access="0x00000000"/>
+		<value name="y15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y15.lolo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.lo" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.hi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.hihi" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="518" access="0x00000200"/>
+		<value name="y15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="y15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.mass.value" type="LREAL" readonly="1" loadable="0" unit="128" access="0x00000000"/>
+		<value name="flowrate.mass.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.mass.lolo" type="LREAL" readonly="0" loadable="1" unit="128" access="0x00000200"/>
+		<value name="flowrate.mass.lo" type="LREAL" readonly="0" loadable="1" unit="128" access="0x00000200"/>
+		<value name="flowrate.mass.hi" type="LREAL" readonly="0" loadable="1" unit="128" access="0x00000200"/>
+		<value name="flowrate.mass.hihi" type="LREAL" readonly="0" loadable="1" unit="128" access="0x00000200"/>
+		<value name="flowrate.mass.hysteresis" type="LREAL" readonly="0" loadable="1" unit="128" access="0x00000200"/>
+		<value name="flowrate.mass.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.mass.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.volume.value" type="LREAL" readonly="1" loadable="0" unit="144" access="0x00000000"/>
+		<value name="flowrate.volume.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume.lolo" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume.lo" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume.hi" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume.hihi" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume.hysteresis" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.volume15.value" type="LREAL" readonly="1" loadable="0" unit="144" access="0x00000000"/>
+		<value name="flowrate.volume15.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume15.lolo" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume15.lo" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume15.hi" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume15.hihi" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume15.hysteresis" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume15.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume15.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="flowrate.volume20.value" type="LREAL" readonly="1" loadable="0" unit="144" access="0x00000000"/>
+		<value name="flowrate.volume20.unit" type="STRID" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume20.lolo" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume20.lo" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume20.hi" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume20.hihi" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume20.hysteresis" type="LREAL" readonly="0" loadable="1" unit="144" access="0x00000200"/>
+		<value name="flowrate.volume20.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="flowrate.volume20.setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x00000200"/>
+		<value name="setup" type="UINT" readonly="1" loadable="1" unit="512" access="0x80000000"/>
+		<value name="flowmeter" type="USINT" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="maintenance" type="UDINT" readonly="0" loadable="1" unit="512" access="0x00002000"/>
+		<value name="linearization" type="UDINT" readonly="0" loadable="1" unit="512" access="0x00001000"/>
+		<value name="total.present.volume" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="total.present.volume15" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="total.present.volume20" type="LREAL" readonly="1" loadable="0" unit="112" access="0x00000000"/>
+		<value name="total.present.mass" type="LREAL" readonly="1" loadable="0" unit="96" access="0x00000000"/>
+		<value name="total.present.impulse" type="UDINT" readonly="1" loadable="0" unit="514" access="0x00000000"/>
+		<value name="presentkf" type="LREAL" readonly="1" loadable="0" unit="176" access="0x00000000"/>
+		<value name="factor.kf" type="LREAL" readonly="1" loadable="0" unit="176" access="0x00000000"/>
+		<value name="factor.mf" type="LREAL" readonly="1" loadable="1" unit="512" access="0x00000000"/>
+		<value name="factor.set.kf" type="LREAL" readonly="0" loadable="1" unit="176" access="0x00001000"/>
+		<value name="factor.set.mf" type="LREAL" readonly="0" loadable="1" unit="512" access="0x00001000"/>
+		<value name="factor.set.accept" type="UDINT" readonly="0" loadable="1" unit="512" access="0x00001000"/>
+		<value name="factor.point_1.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_1.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_1.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_1.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_2.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_2.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_2.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_2.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_3.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_3.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_3.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_3.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_4.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_4.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_4.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_4.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_5.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_5.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_5.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_5.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_6.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_6.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_6.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_6.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_7.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_7.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_7.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_7.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_8.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_8.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_8.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_8.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_9.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_9.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_9.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_9.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_10.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_10.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_10.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_10.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_11.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_11.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_11.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_11.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="factor.point_12.kf" type="LREAL" readonly="1" loadable="1" unit="176" access="0x00000000"/>
+		<value name="factor.set.point_12.kf" type="LREAL" readonly="0" loadable="0" unit="176" access="0x00001000"/>
+		<value name="factor.point_12.hz" type="LREAL" readonly="1" loadable="1" unit="192" access="0x00000000"/>
+		<value name="factor.set.point_12.hz" type="LREAL" readonly="0" loadable="0" unit="192" access="0x00001000"/>
+		<value name="fault" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+	<inputs>
+		<input name="impulse" unit="514">
+			<shadow name="frequency"/>
+		</input>
+		<input name="frequency" unit="192" shadow="impulse"/>
+		<input name="temperature" unit="16"/>
+		<input name="pressure" unit="32"/>
+		<input name="density" unit="48">
+			<shadow name="density15"/>
+			<shadow name="density20"/>
+			<shadow name="b15"/>
+			<shadow name="y15"/>
+		</input>
+		<input name="density15" unit="48" shadow="density"/>
+		<input name="density20" unit="48" shadow="density"/>
+		<input name="b15" unit="517" shadow="density"/>
+		<input name="y15" unit="518" shadow="density"/>
+	</inputs>
+	<outputs>
+		<output name="temperature" unit="16" default="1"/>
+		<output name="pressure" unit="32"/>
+		<output name="density" unit="48"/>
+		<output name="density15" unit="48"/>
+		<output name="density20" unit="48"/>
+		<output name="b15" unit="517"/>
+		<output name="y15" unit="518"/>
+		<output name="flowrate.mass" unit="128"/>
+		<output name="flowrate.volume" unit="144"/>
+		<output name="flowrate.volume15" unit="144"/>
+		<output name="flowrate.volume20" unit="144"/>
+		<output name="fault" unit="512"/>
+	</outputs>
+</object>
+<!--
+	Отчет (периодический)
+-->
+<object name="report" global="true">
+	<values>
+		<value name="type" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="archive.load.accept" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.sec" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.min" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.hour" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.day" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.month" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.year" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="period" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="present.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.snapshot.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.snapshot.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.snapshot.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.snapshot.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.snapshot.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.snapshot.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+	</values>
+</object>
+<!--
+	Отчет (по партии)
+-->
+<object name="report" global="true">
+	<values>
+		<value name="type" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="archive.load.accept" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.sec" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.min" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.hour" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.day" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.month" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="archive.load.year" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000002"/>
+		<value name="command" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000020"/>
+		<value name="status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="present.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.begin.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.datetime.end.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.begin.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.total.end.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.#totalsource_1.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.snapshot.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="present.snapshot.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.begin.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.datetime.end.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.begin.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.total.end.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.#totalsource_1.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.snapshot.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="completed.snapshot.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.status" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.begin.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.sec" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.min" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.hour" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.day" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.month" type="USINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.datetime.end.year" type="UINT" readonly="1" loadable="0" unit="512" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.begin.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.mass" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.volume" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.volume15" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.total.end.volume20" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.#totalsource_1.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.snapshot.#item_1" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+		<value name="archive.snapshot.#item_2" type="LREAL" readonly="1" loadable="0" unit="0" access="0x80000000"/>
+	</values>
+</object>
+</objects>
+
+<!-- 
+External interfaces 
+-->
+<interfaces>
+<!--
+	Модбас слейв TCP
+-->
+<interface name="ModbusSlaveTCP">
+	<values>
+		<value name="status" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="tx" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="rx" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="errorrx" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="clients" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+</interface>
+</interfaces>
+
+<!--
+	Hardware io modules
+-->
+<hardware>
+<!--
+Module 6 current/voltage channels
+-->
+<module name="ai6">
+	<values>
+		<value name="type" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="node" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="vendor" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="productcode" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="revision" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="serialnumber" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="can" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="firmware" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="hardware" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.adc" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.current" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.max" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.min" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.value" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.speed" type="INT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.adc" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.current" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.simulate.max" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.simulate.min" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.simulate.value" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.simulate.speed" type="INT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.adc" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.current" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.simulate.max" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.simulate.min" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.simulate.value" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.simulate.speed" type="INT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.adc" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.current" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.simulate.max" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.simulate.min" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.simulate.value" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.simulate.speed" type="INT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.adc" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.current" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.simulate.max" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.simulate.min" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.simulate.value" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.simulate.speed" type="INT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.adc" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.current" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.simulate.max" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.simulate.min" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.simulate.value" type="UINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.simulate.speed" type="INT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+</module>
+<!--
+Module 8 discrete input and 8 discrete output
+-->
+<module name="di8do8">
+	<values>
+		<value name="type" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="node" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="vendor" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="productcode" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="revision" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="serialnumber" type="UDINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="temperature" type="REAL" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="can" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="firmware" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="hardware" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_01.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_01.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_02.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_02.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_02.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_03.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_03.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_03.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_04.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_04.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_04.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_05.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_05.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_05.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_06.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_06.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_06.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_07.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_07.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_07.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_07.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_07.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_07.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_07.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_08.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_08.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_08.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_08.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_08.bounce" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_08.simulate.value" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_08.simulate.blink" type="UDINT" readonly="0" loadable="0" unit="210" access="0x00000000"/>
+		<value name="ch_09.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_09.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_09.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_09.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_10.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_10.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_10.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_10.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_11.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_11.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_11.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_11.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_12.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_12.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_12.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_12.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_13.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_13.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_13.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_13.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_14.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_14.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_14.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_14.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_15.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_15.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_15.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_15.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_16.simulate.type" type="USINT" readonly="0" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_16.setup" type="UINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_16.value" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+		<value name="ch_16.state" type="USINT" readonly="1" loadable="0" unit="512" access="0x00000000"/>
+	</values>
+</module>
+</hardware>
+
+</kernel>

@@ -47,38 +47,13 @@ struct rBitFlag
 
 class rDataConfig
 {
-public:
 	SINGLETON(rDataConfig)
 
+public:
 	std::string FileName;
 	rError      m_error;
 
 	UDINT LoadFile(const std::string& filename, rSystemVariable& sysvar, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);
-
-
-public: //TODO вся секция на удаление
-	static std::vector<rBitFlag> STNProductValues;
-	static std::vector<rBitFlag> STRFMeterFlags;
-	static std::vector<rBitFlag> SelectorSetupFlags;
-	static std::vector<rBitFlag> SelectorModeFlags;
-	static std::vector<rBitFlag> ReportTypeFlags;
-	static std::vector<rBitFlag> ReportPeriodFlags;
-
-	static void        InitBitFlags();
-	static std::string GetFlagNameByBit  (std::vector<rBitFlag>& arr, UDINT value);
-	static std::string GetFlagNameByValue(std::vector<rBitFlag>& arr, UDINT value);
-	static UDINT       GetFlagBitByStr   (std::vector<rBitFlag>& arr, const string &name, UDINT &err);
-	static UDINT       GetFlagFromStr    (std::vector<rBitFlag>& arr, const string &str, UDINT &err);
-
-	static USINT  GetAttributeUSINT (tinyxml2::XMLElement *element, const string &name, const USINT def);
-	static UDINT  GetAttributeUDINT (tinyxml2::XMLElement *element, const string &name, const UDINT def);
-	static string GetAttributeString(tinyxml2::XMLElement *element, const string &name, const string &def);
-
-	static string GetTextString(tinyxml2::XMLElement *element, const string &def, UDINT &err);
-	static LREAL  GetTextLREAL (tinyxml2::XMLElement *element, LREAL         def, UDINT &err);
-	static UDINT  GetTextUDINT (tinyxml2::XMLElement *element, UDINT         def, UDINT &err);
-	static UINT   GetTextUINT  (tinyxml2::XMLElement *element, UINT          def, UDINT &err);
-	static USINT  GetTextUSINT (tinyxml2::XMLElement *element, USINT         def, UDINT &err);
 
 protected:
 	cJSON                *CfgJSON;

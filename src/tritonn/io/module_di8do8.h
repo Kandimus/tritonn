@@ -47,7 +47,7 @@ public:
 	virtual std::string getModuleType() { return rModuleDI8DO8::getRTTI(); }
 	virtual UDINT processing(USINT issim);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 
 public:

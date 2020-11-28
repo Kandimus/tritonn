@@ -24,7 +24,6 @@
 #include "variable_class.h"
 
 class rVariableList;
-class rDataConfig;
 
 struct rOPCVarLink
 {
@@ -48,9 +47,9 @@ public:
 
 // Наследование от rInterface
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
 	virtual UDINT generateVars(rVariableClass* parent);
-	virtual UDINT CheckVars(rDataConfig &cfg);
+	virtual UDINT CheckVars(rError& err);
 	virtual UDINT StartServer();
 	virtual rThreadClass *GetThreadClass();
 

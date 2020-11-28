@@ -21,4 +21,5 @@
 	private: \
 		singletonclass(); \
 		singletonclass(const singletonclass&); \
-		singletonclass& operator=(singletonclass&); \
+		singletonclass& operator=(singletonclass&);
+

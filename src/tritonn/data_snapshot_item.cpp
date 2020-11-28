@@ -22,7 +22,9 @@
 #define SNAPSHOT_ASSIGN		{ \
 								if (!var) \
 								{ \
+									m_var    = nullptr; \
 									m_status = Status::NOTFOUND; \
+									return; \
 								} \
 								m_var = var; \
 								m_status = Status::TOWRITE; \

@@ -63,9 +63,9 @@ protected:
 
 // Наследование от rInterface
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
 	virtual UDINT generateVars(rVariableClass* parent);
-	virtual UDINT CheckVars(rDataConfig &cfg);
+	virtual UDINT CheckVars(rError& err);
 	virtual UDINT StartServer();
 	virtual rThreadClass *GetThreadClass();
 
@@ -103,7 +103,7 @@ protected:
 	UDINT TypeCountReg(TT_TYPE type);
 
 
-	UDINT LoadStandartModbus();
+	UDINT LoadStandartModbus(rError& err);
 };
 
 

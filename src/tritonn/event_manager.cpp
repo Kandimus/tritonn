@@ -19,6 +19,7 @@
 #include "log_manager.h"
 #include "text_manager.h"
 #include "precision.h"
+#include "error.h"
 #include "event_manager.h"
 
 
@@ -253,7 +254,7 @@ string rEventManager::ParseParameter(rEvent &event, const char *str, UDINT &offs
 		case TYPE_LREAL: return String_format(floatformat[exp].c_str(), prec, *(LREAL *)data);
 		case TYPE_STRID:
 		{
-			const string *str = rTextManager::Instance().GetPtr(*(UDINT *)data);
+			const string *str = rTextManager::instance().GetPtr(*(UDINT *)data);
 			return (str == nullptr) ? String_format("<unknow sid %u>", *(UDINT *)data) : *str;
 		}
 
@@ -421,13 +422,14 @@ rThreadStatus rEventManager::Proccesing()
 //
 UDINT rEventManager::LoadText(const string& filename)
 {
-	if(tinyxml2::XML_SUCCESS != Texts.LoadSystem(filename))
-	{
-		TRACEERROR("Can't load system event. Error %i, line %i", Texts.ErrorID, Texts.ErrorLine);
+	rError err;
+
+	if (TRITONN_RESULT_OK != Texts.LoadSystem(filename, err)) {
+		TRACEERROR("Can't load system event. Error %i, line %i", err.getError(), err.getLineno());
 		exit(0);
 	}
 
-	return 0;
+	return err.getError();
 }
 
 

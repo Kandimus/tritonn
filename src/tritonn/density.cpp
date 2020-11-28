@@ -16,32 +16,35 @@
 #include <math.h>
 #include "density.h"
 
-
+namespace rDensity
+{
 
 // Определение типа бензина, по плотности
-USINT GetTypeProduct(LREAL dens, TYPE_PRODUCT product)
+USINT getTypeProduct(LREAL dens, Product product)
 {
 	switch(product)
 	{
-		case PRODUCT_PETROLEUM   : return 0;
-		case PRODUCT_GAZOLENE    : return 1;
-		case PRODUCT_TRANSITION  : return 2;
-		case PRODUCT_JETFUEL     : return 3;
-		case PRODUCT_FUELOIL     : return 4;
-		case PRODUCT_SMARTBENZENE:
+		case Product::PETROLEUM   : return 0;
+		case Product::GAZOLENE    : return 1;
+		case Product::TRANSITION  : return 2;
+		case Product::JETFUEL     : return 3;
+		case Product::FUELOIL     : return 4;
+		case Product::SMARTBENZENE:
 			if(dens < 770.9) return 1;
 			if(dens < 788.0) return 2;
 			if(dens < 838.7) return 3;
 			return 4;
-		case PRODUCT_LUBRICANT   : return 5;
+		case Product::LUBRICANT   : return 5;
 	}
 
 	return 0xFF;
 }
 
 
-LREAL GetDens20(LREAL dens15, LREAL b15)
+LREAL getDens20(LREAL dens15, LREAL b15)
 {
 	// Расчитаем плотность при 20 *С
 	return dens15 * exp(-5.0 * b15 * (1.0 + 4.0 * b15));
 }
+
+};

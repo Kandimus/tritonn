@@ -33,6 +33,16 @@ rBitsArray& rBitsArray::add(const std::string &name, UDINT value)
 	return *this;
 }
 
+rBitsArray& rBitsArray::add(const std::string &name, UINT value)
+{
+	return add(name, static_cast<UDINT>(value));
+}
+
+rBitsArray& rBitsArray::add(const std::string &name, USINT value)
+{
+	return add(name, static_cast<UDINT>(value));
+}
+
 bool rBitsArray::empty() const
 {
 	return m_list.empty();

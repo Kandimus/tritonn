@@ -8,7 +8,7 @@
 #include "io/manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
-//#include "data_variable.h"
+#include "error.h"
 #include "text_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"
@@ -57,14 +57,14 @@ int main(int argc, char* argv[])
 			.setSwitch(rArg::Terminal , false)
 			.setSwitch(rArg::Simulate , true)
 			.setOption(rArg::Log      , "FFFFFFFF")
-			.setOption(rArg::ForceConf, "test.xml");
+			.setOption(rArg::Config   , "test.xml");
 #else
 	rSimpleArgs::instance()
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
-			.addOption(rArg::ForceConf, 'c', "test_sikn.xml");
+			.addOption(rArg::Config   , 'c', "test_sikn.xml");
 
 	rSimpleArgs::instance().parse(argc, (const char**)argv);
 #endif
@@ -102,9 +102,10 @@ int main(int argc, char* argv[])
 
 	//----------------------------------------------------------------------------------------------
 	// Системные строки
-	if(tinyxml2::XML_SUCCESS != rTextManager::Instance().LoadSystem(FILE_SYSTEMTEXT))
+	rError err;
+	if(TRITONN_RESULT_OK != rTextManager::instance().LoadSystem(FILE_SYSTEMTEXT, err))
 	{
-		TRACEERROR("Can't load system string. Error %i, line %i", rTextManager::Instance().ErrorID, rTextManager::Instance().ErrorLine);
+		TRACEERROR("Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
 		exit(0);
 	}
 

@@ -16,7 +16,8 @@
 #include <limits>
 #include <cmath>
 #include "tinyxml2.h"
-#include "data_config.h"
+#include "error.h"
+//#include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "log_manager.h"
@@ -186,39 +187,40 @@ UDINT rLink::generateVars(rVariableList& list)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-UDINT rLink::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rLink::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	string* curstr = &Alias;
+	UNUSED(prefix);
+
+	std::string* curstr = &Alias;
 
 	FullTag   = XmlUtils::getAttributeString(element, XmlName::ALIAS, "");
 	m_lineNum = element->GetLineNum();
 
-	if(FullTag.empty()) return DATACFGERR_LINK;
+	if (FullTag.empty()) {
+		return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag is empty");
+	}
 
 	// Делим полное имя на имя объекта и имя параметра (разбираем строчку "xxx:yyy")
-	for(UDINT ii = 0; ii < FullTag.size(); ++ii)
-	{
-		if(':' == FullTag[ii])
-		{
+	for (auto ch : FullTag) {
+		if (ch == ':') {
 			// Двоеточие встретилось повторно
-			if(curstr == &Param)
-			{
-				return DATACFGERR_LINK;
+			if (curstr == &Param) {
+				return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag name is fault");
 			}
 
 			curstr = &Param;
 			continue;
 		}
 
-		*curstr += FullTag[ii];
+		*curstr += ch;
 	}
 
 	// Загружаем пределы
-	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS);
+	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS);
 
 	if (limits) {
-		if (tinyxml2::XML_SUCCESS != Limit.LoadFromXML(limits, cfg)) {
-			return DATACFGERR_AI;
+		if (TRITONN_RESULT_OK != Limit.LoadFromXML(limits, err, "")) {
+			return err.getError();
 		}
 	} else {
 		Limit.m_setup.Init(rLimit::Setup::OFF);

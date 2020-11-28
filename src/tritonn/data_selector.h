@@ -16,6 +16,7 @@
 #pragma once
 
 #include "data_link.h"
+#include "bits_array.h"
 #include "compared_values.h"
 
 
@@ -33,7 +34,7 @@ public:
 public:
 	virtual const char *RTTI() { return (Setup.Value & SELECTOR_SETUP_MULTI) ? "mselector" : "selector"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT Calculate();
 protected:
@@ -56,6 +57,9 @@ public:
 public:
 	void GenerateIO();
 
+private:
+	static rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsMode;
 };
 
 

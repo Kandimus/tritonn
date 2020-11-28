@@ -195,8 +195,9 @@ UDINT rSampler::Calculate()
 
 
 
-UDINT rSampler::LoadFromXML(tinyxml2::XMLElement */*element*/, rDataConfig &/*cfg*/)
+UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
+	UNUSED(element); UNUSED(err); UNUSED(prefix);
 	return TRITONN_RESULT_OK;
 /*
 	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::SelectorSetupFlags, SELECTOR_SETUP_OFF);

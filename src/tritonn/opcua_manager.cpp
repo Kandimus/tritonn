@@ -20,10 +20,12 @@
 #include "locker.h"
 #include "tickcount.h"
 #include "stringex.h"
+#include "error.h"
 #include "opcua_manager.h"
 #include "log_manager.h"
 #include "data_snapshot_item.h"
 #include "data_manager.h"
+#include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "xml_util.h"
@@ -476,49 +478,47 @@ const UA_DataType *rOPCUAManager::GetTypeUA(const rVariable *var)
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rOPCUAManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
+UDINT rOPCUAManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError& err)
 {
-	tinyxml2::XMLElement *xml_properties = nullptr;
-	UDINT                 err          = 0;
+	tinyxml2::XMLElement* xml_properties = nullptr;
 
-	rInterface::loadFromXML(xml_root, cfg);
+	rInterface::loadFromXML(xml_root, err);
 
 	Alias = "comms.opcua";
 
-	if(nullptr == xml_root) return TRITONN_RESULT_OK;
+	if (!xml_root) {
+		return TRITONN_RESULT_OK;
+	}
 
 	xml_properties = xml_root->FirstChildElement(XmlName::PROPERTIES);
 
-	if(nullptr != xml_properties)
-	{
-		LoginAnonymous = XmlUtils::getTextUDINT(xml_properties->FirstChildElement(XmlName::ANONYMOUS), 1, err);
+	if (xml_properties) {
+		UDINT fault = 0;
+		LoginAnonymous = XmlUtils::getTextUDINT(xml_properties->FirstChildElement(XmlName::ANONYMOUS), 1, fault);
 	}
 
 	// Считываем пользователей
-	tinyxml2::XMLElement *xml_security_root = cfg.GetRootSecurity();
+	tinyxml2::XMLElement *xml_security_root = rDataConfig::instance().GetRootSecurity();
 	tinyxml2::XMLElement *xml_opcua         = nullptr;
 
-	if(nullptr == xml_security_root)
-	{
-		return DATACFGERR_OPCUA_USER_NF;
+	if (!xml_security_root) {
+		return err.set(DATACFGERR_OPCUA_USER_NF, 0, "");
 	}
 
 	xml_opcua = xml_security_root->FirstChildElement(XmlName::OPCUA);
 
-	if(nullptr == xml_opcua)
-	{
-		return DATACFGERR_OPCUA_USER_NF;
+	if (!xml_opcua) {
+		return err.set(DATACFGERR_OPCUA_USER_NF, xml_security_root->GetLineNum(), "");
 	}
 
 	LoginsCount = 0;
-	for(tinyxml2::XMLElement *xml_user = xml_opcua->FirstChildElement(XmlName::USER); xml_user != nullptr; xml_user = xml_user->NextSiblingElement(XmlName::USER))
-	{
-		string login    = XmlUtils::getTextString(xml_user->FirstChildElement(XmlName::LOGIN)   , "", err);
-		string password = XmlUtils::getTextString(xml_user->FirstChildElement(XmlName::PASSWORD), "", err);
+	XML_FOR(xml_user, xml_opcua, XmlName::USER) {
+		UDINT       fault    = 0;
+		std::string login    = XmlUtils::getTextString(xml_user->FirstChildElement(XmlName::LOGIN)   , "", fault);
+		std::string password = XmlUtils::getTextString(xml_user->FirstChildElement(XmlName::PASSWORD), "", fault);
 
-		if("" == login || "" == password)
-		{
-			return DATACFGERR_OPCUA_BAD_USER;
+		if("" == login || "" == password) {
+			return err.set(DATACFGERR_OPCUA_BAD_USER, xml_security_root->GetLineNum(), "");
 		}
 
 		Logins[LoginsCount].username = UA_STRING_ALLOC(login.c_str());
@@ -597,9 +597,9 @@ UDINT rOPCUAManager::generateVars(rVariableClass* parent)
 }
 
 
-UDINT rOPCUAManager::CheckVars(rDataConfig &cfg)
+UDINT rOPCUAManager::CheckVars(rError& err)
 {
-	UNUSED(cfg);
+	UNUSED(err);
 	return TRITONN_RESULT_OK;
 }
 

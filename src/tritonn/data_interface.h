@@ -24,7 +24,7 @@
 using std::vector;
 
 class  rThreadClass;
-class  rDataConfig;
+class  rError;
 class  rVariableList;
 
 
@@ -37,10 +37,10 @@ public:
 	virtual ~rInterface();
 
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &) = 0;
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
 	virtual std::string saveKernel(const std::string& objname, const std::string& comment);
 	virtual UDINT generateVars(rVariableClass* parent) = 0; // Генерация собственных переменных
-	virtual UDINT CheckVars(rDataConfig &cfg) = 0;             // Проверка переменных, поиск переменных, сгенерированных другими интерфейсами
+	virtual UDINT CheckVars(rError& err) = 0; // Проверка переменных, поиск переменных, сгенерированных другими интерфейсами
 	virtual UDINT StartServer() = 0;
 	virtual rThreadClass* GetThreadClass() = 0;
 

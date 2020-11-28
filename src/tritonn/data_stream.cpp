@@ -28,18 +28,25 @@
 #include "data_station.h"
 #include "data_stream.h"
 
-//using std::vector;
-
 
 const UDINT STREAM_LE_INPUTS     = 0x00000001;
 const UDINT STREAM_LE_ACCOUNTING = 0x00000002;
 const UDINT STREAM_LE_KEYPADKF   = 0x00000004;
 
 
+rBitsArray rStream::m_flagsFlowmeter;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 rStream::rStream() : Setup(STR_SETUP_OFF)
 {
+	if (m_flagsFlowmeter.empty()) {
+		m_flagsFlowmeter
+				.add("TURBINE"   , static_cast<UINT>(Type::TURBINE))
+				.add("CARIOLIS"  , static_cast<UINT>(Type::CARIOLIS))
+				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC));
+	}
+
 //	Unit       = U_UNDEF;
 	Maintenance   = true;
 	Linearization = false;
@@ -154,13 +161,10 @@ UDINT rStream::Calculate()
 	if(check & TOTAL_MAX_VOLUME20) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME20));
 
 	// Расчитаем расход исходя из частоты
-	if(FlowMeter == STR_FLOWMETER_CARIOLIS)
-	{
+	if (m_flowmeter == Type::CARIOLIS) {
 		FlowMass.Value   = Freq.Value     / CurKF      * 3600.0 * Factor.KeypadMF.Value;
 		FlowVolume.Value = FlowMass.Value / Dens.Value * 1000.0 * Factor.KeypadMF.Value;
-	}
-	else
-	{
+	} else {
 		FlowVolume.Value = Freq.Value       / CurKF      * 3600.0 * Factor.KeypadMF.Value;
 		FlowMass.Value   = FlowVolume.Value * Dens.Value / 1000.0 * Factor.KeypadMF.Value;
 	}
@@ -175,19 +179,14 @@ UDINT rStream::GetUnitKF()
 {
 	if(Station == nullptr) return U_UNDEF;
 
-	if(FlowMeter == STR_FLOWMETER_CARIOLIS)
-	{
-		switch(Station->UnitMass)
-		{
+	if (m_flowmeter == Type::CARIOLIS) {
+		switch (Station->UnitMass) {
 			case U_t : return U_imp_t;
 			case U_kg: return U_imp_kg;
 			default  : return U_UNDEF;
 		}
-	}
-	else
-	{
-		switch(Station->UnitVolume)
-		{
+	} else {
+		switch (Station->UnitVolume) {
 			case U_m3   : return U_imp_m3;
 			case U_liter: return U_imp_ltr;
 			default     : return U_UNDEF;
@@ -208,11 +207,6 @@ const rTotal *rStream::GetTotal(void)
 //
 
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-
 //-------------------------------------------------------------------------------------------------
 //
 UDINT rStream::generateVars(rVariableList& list)
@@ -220,9 +214,9 @@ UDINT rStream::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(Alias + ".Setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value             , U_DIMLESS          , ACCESS_SA);
-	list.add(Alias + ".FlowMeter"             , TYPE_USINT, rVariable::Flags::R__L, &FlowMeter               , U_DIMLESS          , 0);
-	list.add(Alias + ".Maintenance"           , TYPE_UDINT, rVariable::Flags::___L, &Maintenance             , U_DIMLESS          , ACCESS_MAINTENANCE);
+	list.add(Alias + ".setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value             , U_DIMLESS          , ACCESS_SA);
+	list.add(Alias + ".flowmeter"             , TYPE_USINT, rVariable::Flags::R__L, &m_flowmeter             , U_DIMLESS          , 0);
+	list.add(Alias + ".maintenance"           , TYPE_UDINT, rVariable::Flags::___L, &Maintenance             , U_DIMLESS          , ACCESS_MAINTENANCE);
 	list.add(Alias + ".linearization"         , TYPE_UDINT, rVariable::Flags::___L, &Linearization           , U_DIMLESS          , ACCESS_FACTORS);
 	list.add(Alias + ".total.present.Volume"  , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume    , Station->UnitVolume, 0);
 	list.add(Alias + ".total.present.Volume15", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume15  , Station->UnitVolume, 0);
@@ -275,67 +269,63 @@ UDINT rStream::generateVars(rVariableList& list)
 //
 UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string defFlowMeter = rDataConfig::GetFlagNameByValue(rDataConfig::STRFMeterFlags, STR_FLOWMETER_CARIOLIS);
-	std::string strFlowMeter = (element->Attribute("flowmeter")) ? element->Attribute("flowmeter") : defFlowMeter;
-	UDINT  fault = 0;
+	std::string strFlowMeter = XmlUtils::getAttributeString(element, XmlName::FLOWMETER, m_flagsFlowmeter.getNameByBits(static_cast<USINT>(Type::CARIOLIS)));
 
 	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
 		return err.getError();
 	}
 
-	tinyxml2::XMLElement *impulse = element->FirstChildElement(XmlName::IMPULSE);
-	tinyxml2::XMLElement *freq    = element->FirstChildElement(XmlName::FREQ);
-	tinyxml2::XMLElement *temp    = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement *pres    = element->FirstChildElement(XmlName::PRES);
-	tinyxml2::XMLElement *dens    = element->FirstChildElement(XmlName::DENSITY);
-	tinyxml2::XMLElement *dens15  = element->FirstChildElement(XmlName::DENSITY15);
-	tinyxml2::XMLElement *dens20  = element->FirstChildElement(XmlName::DENSITY20);
-	tinyxml2::XMLElement *b15     = element->FirstChildElement(XmlName::B15);
-	tinyxml2::XMLElement *y15     = element->FirstChildElement(XmlName::Y15);
-	tinyxml2::XMLElement *factors = element->FirstChildElement(XmlName::FACTORS);
+	tinyxml2::XMLElement* xml_impulse = element->FirstChildElement(XmlName::IMPULSE);
+	tinyxml2::XMLElement* xml_freq    = element->FirstChildElement(XmlName::FREQ);
+	tinyxml2::XMLElement* xml_temp    = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement* xml_pres    = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement* xml_dens    = element->FirstChildElement(XmlName::DENSITY);
+	tinyxml2::XMLElement* xml_dens15  = element->FirstChildElement(XmlName::DENSITY15);
+	tinyxml2::XMLElement* xml_dens20  = element->FirstChildElement(XmlName::DENSITY20);
+	tinyxml2::XMLElement* xml_b15     = element->FirstChildElement(XmlName::B15);
+	tinyxml2::XMLElement* xml_y15     = element->FirstChildElement(XmlName::Y15);
+	tinyxml2::XMLElement* xml_factors = element->FirstChildElement(XmlName::FACTORS);
 
+	UDINT fault = 0;
 	Linearization = XmlUtils::getAttributeUSINT(element, XmlName::LINEARIZATION, 0);
 	Maintenance   = XmlUtils::getAttributeUSINT(element, XmlName::MAINTENANCE  , 0);
-	FlowMeter     = rDataConfig::GetFlagFromStr(rDataConfig::STRFMeterFlags, strFlowMeter, fault);
+	m_flowmeter   = static_cast<Type>(m_flagsFlowmeter.getValue(strFlowMeter, fault));
 
-	if (!impulse || !temp || !pres || !dens || !factors || fault) {
+	if (!xml_impulse || !xml_temp || !xml_pres || !xml_dens || !xml_factors || fault) {
 		return err.set(DATACFGERR_STREAM, element->GetLineNum(), "undefened links");
 	}
 
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(impulse->FirstChildElement(XmlName::LINK), Counter)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement   (XmlName::LINK), Pres))    { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens->FirstChildElement   (XmlName::LINK), Dens))    { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement   (XmlName::LINK), Temp))    { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_impulse->FirstChildElement(XmlName::LINK), Counter)) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement   (XmlName::LINK), Pres))    return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens->FirstChildElement   (XmlName::LINK), Dens))    return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement   (XmlName::LINK), Temp))    return err.getError();
 
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(freq  , Freq  , Counter, XmlName::FREQ)     ) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens15, Dens15, Dens   , XmlName::DENSITY15)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(dens20, Dens20, Dens   , XmlName::DENSITY20)) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15   , B15   , Dens   , XmlName::B15)      ) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15   , Y15   , Dens   , XmlName::B15)      ) { if (!cfg.ErrorLine) cfg.ErrorLine = element->GetLineNum(); return cfg.ErrorID; }
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_freq  , Freq  , Counter, XmlName::FREQ)     ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_dens15, Dens15, Dens   , XmlName::DENSITY15)) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_dens20, Dens20, Dens   , XmlName::DENSITY20)) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_b15   , B15   , Dens   , XmlName::B15)      ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_y15   , Y15   , Dens   , XmlName::B15)      ) return err.getError();
 
 	//----------------------------------------------------------------------------------------------
 	// Загрузка факторов
-	tinyxml2::XMLElement *points = factors->FirstChildElement(XmlName::POINTS);
+	tinyxml2::XMLElement* points = xml_factors->FirstChildElement(XmlName::POINTS);
 
-	SetFactor.KeypadKF.Init(rDataConfig::GetTextLREAL(factors->FirstChildElement(XmlName::KEYPAD_KF), 0.0, err));
-	SetFactor.KeypadMF.Init(rDataConfig::GetTextLREAL(factors->FirstChildElement(XmlName::KEYPAD_MF), 0.0, err));
+	SetFactor.KeypadKF.Init(XmlUtils::getTextLREAL(xml_factors->FirstChildElement(XmlName::KEYPAD_KF), 0.0, fault));
+	SetFactor.KeypadMF.Init(XmlUtils::getTextLREAL(xml_factors->FirstChildElement(XmlName::KEYPAD_MF), 0.0, fault));
 
-	if(nullptr != points)
-	{
-		for(UDINT ii = 0; ii < MAX_FACTOR_POINT; ++ii)
-		{
-			tinyxml2::XMLElement *point = factors->FirstChildElement(XmlName::POINT);
+	if (points) {
+		for (UDINT ii = 0; ii < MAX_FACTOR_POINT; ++ii) {
+			tinyxml2::XMLElement* point = xml_factors->FirstChildElement(XmlName::POINT);
 
-			if(nullptr == point) break;
+			if(!point) break;
 
-			SetFactor.Point[ii].Hz.Init(rDataConfig::GetTextLREAL(point->FirstChildElement(XmlName::HERTZ), 0.0, err));
-			SetFactor.Point[ii].Kf.Init(rDataConfig::GetTextLREAL(point->FirstChildElement(XmlName::KF   ), 0.0, err));
+			SetFactor.Point[ii].Hz.Init(XmlUtils::getTextLREAL(point->FirstChildElement(XmlName::HERTZ), 0.0, fault));
+			SetFactor.Point[ii].Kf.Init(XmlUtils::getTextLREAL(point->FirstChildElement(XmlName::KF   ), 0.0, fault));
 		}
 	}
 
-	if(err)
-	{
-		return DATACFGERR_STREAM;
+	if (fault) {
+		return err.set(DATACFGERR_STREAM, xml_factors->GetLineNum(), "fault load factors");
 	}
 
 	//
@@ -349,7 +339,7 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -433,15 +423,12 @@ UDINT rStream::CalcTotal()
 		return 0;
 	}
 
-	if(FlowMeter == STR_FLOWMETER_CARIOLIS)
-	{
+	if(m_flowmeter == Type::CARIOLIS) {
 		Total.Inc.Mass     = Total.Inc.Count  / CurKF        * Factor.KeypadMF.Value;
 		Total.Inc.Volume   = Total.Inc.Mass   / Dens.Value   * 1000.0;
 		Total.Inc.Volume15 = Total.Inc.Mass   / Dens15.Value * 1000.0;
 		Total.Inc.Volume20 = Total.Inc.Mass   / Dens20.Value * 1000.0;
-	}
-	else
-	{
+	} else {
 		Total.Inc.Volume   = Total.Inc.Count  / CurKF      * Factor.KeypadMF.Value;
 		Total.Inc.Mass     = Total.Inc.Volume * Dens.Value                / 1000.0;
 		Total.Inc.Volume15 = Total.Inc.Volume * Dens.Value / Dens15.Value / 1000.0;

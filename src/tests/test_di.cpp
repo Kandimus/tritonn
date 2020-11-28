@@ -11,25 +11,25 @@ const UDINT SleepValue = 700;
 
 // Set mode
 
-TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
+TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 {
-	SECTION("Virtual analog. Set present value") {
+	SECTION("Virtual discrete. Set present value") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
-		LREAL test_val = 22.0;
+		LREAL test_val = 1.0;
 
-		ss.add("io.ai_virt.present.value", test_val);
+		ss.add("io.di_virt.present.value", test_val);
 		ss.set();
 
 		mSleep(SleepValue);
 
 		ss.clear();
-		ss.add("io.ai_virt.present.value");
+		ss.add("io.di_virt.present.value");
 		ss.get();
 
-		REQUIRE(ss("io.ai_virt.present.value"));
-		CHECK  (ss("io.ai_virt.present.value")->getValueLREAL() == test_val);
+		REQUIRE(ss("io.di_virt.present.value"));
+		CHECK  (ss("io.di_virt.present.value")->getValueLREAL() == test_val);
 	}
-
+/*
 	SECTION("Set simulate IO") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL min_val = -10.0;
@@ -348,4 +348,5 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		CHECK  (ss("io.ai_virt.mode")->getValueUINT() == static_cast<UINT>(rAI::Mode::PHIS));
 		CHECK  (ss("io.ai_virt.status")->getValueUINT() == static_cast<UINT>(rAI::Status::MAX));
 	}
+*/
 }
