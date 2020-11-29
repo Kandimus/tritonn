@@ -106,7 +106,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	//TODO Нужно передавать не имя, а указатель на xml_root, так как в rDataManager::LoadConfig мы уже разобрали этот файл
 
 	if (tinyxml2::XML_SUCCESS != doc.LoadFile(fullname.c_str())) {
-		return m_error.getError();
+		return m_error.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
 	}
 
 	root = doc.FirstChildElement(XmlName::TRITONN);

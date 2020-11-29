@@ -17,6 +17,8 @@
 #define CATCH_CONFIG_RUNNER
 #include "../catchtest/catch.hpp"
 
+const UDINT rTestThread::SleepValue = 500;
+
 rTestThread::rTestThread()
 {
 	RTTI = "rTestThread";

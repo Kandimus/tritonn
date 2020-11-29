@@ -1,6 +1,6 @@
 //=================================================================================================
 //===
-//=== test_thread.h
+//=== test.cpp
 //===
 //=== Copyright (c) 2020 by RangeSoft.
 //=== All rights reserved.
@@ -9,28 +9,16 @@
 //===
 //=================================================================================================
 //===
-//=== Класс-нить для тестов
 //===
 //=================================================================================================
 
 #pragma once
 
-#include "thread_class.h"
+#include "test.h"
 
-class rTestThread : public rThreadClass
+namespace rTest
 {
-	SINGLETON(rTestThread)
 
-public:
-	virtual rThreadStatus Proccesing();
+const UDINT sleepValue = 500;
 
-public:
-	void setArgs(int argc, char* argv[]);
-
-public:
-	static const UDINT SleepValue;
-
-private:
-	int    m_argc = 0;
-	char** m_argv = nullptr;
-};
+}
