@@ -16,21 +16,12 @@
 #pragma once
 
 #include "text_class.h"
+#include "singlenton.h"
 
 
 class rTextManager : public rTextClass
 {
-public:
-	virtual ~rTextManager();
-
-// Singleton
-private:
-	rTextManager();
-	rTextManager(const rTextManager &);
-	rTextManager& operator=(rTextManager &);
-
-public:
-	static rTextManager &Instance();
+	SINGLETON(rTextManager);
 };
 
 

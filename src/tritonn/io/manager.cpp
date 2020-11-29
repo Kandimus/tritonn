@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== io_manager.h
+//=== io/manager.h
 //===
 //=== Copyright (c) 2019 by RangeSoft.
 //=== All rights reserved.
@@ -13,18 +13,20 @@
 //===
 //=================================================================================================
 
-#include "io_manager.h"
+#include "manager.h"
 #include "locker.h"
-#include "io_basechannel.h"
-#include "data_config.h"
-#include "units.h"
-#include "simpleargs.h"
-#include "def_arguments.h"
-#include "variable_item.h"
-#include "threadmaster.h"
 #include "tinyxml2.h"
-#include "xml_util.h"
-#include "io_ai6.h"
+#include "basechannel.h"
+#include "../data_config.h"
+#include "../units.h"
+#include "simpleargs.h"
+#include "../def_arguments.h"
+#include "../variable_item.h"
+#include "../threadmaster.h"
+#include "../xml_util.h"
+#include "../error.h"
+#include "module_ai6.h"
+#include "module_di8do8.h"
 
 
 rIOManager::rIOManager() : rVariableClass(Mutex)
@@ -81,7 +83,7 @@ rThreadStatus rIOManager::Proccesing()
 UDINT rIOManager::generateVars(rVariableClass* parent)
 {
 	for (auto module : m_modules) {
-		module->generateVars("hardware.", m_varList);
+		module->generateVars("hardware.", m_varList, rSimpleArgs::instance().isSet(rArg::Simulate));
 	}
 
 	if (parent) {
@@ -92,31 +94,29 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 }
 
 
-UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg)
+UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
 	XML_FOR(module_xml, element, XmlName::MODULE) {
 		rIOBaseModule* module = nullptr;
-		string type = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
+		std::string    type   = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
 
 		if (type == "") {
-			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
-			cfg.ErrorLine = module_xml->GetLineNum();
-			return cfg.ErrorID;
+			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
 		}
 
 		type = String_tolower(type);
-		if (type == rIOAI6::m_rtti) {
-			module = new rIOAI6();
+		if (type == rModuleAI6::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6());
+
+		} else if (type == rModuleDI8DO8::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
+
 		} else {
-			cfg.ErrorID   = DATACFGERR_UNKNOWN_MODULE;
-			cfg.ErrorLine = module_xml->GetLineNum();
-			return cfg.ErrorID;
+			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
 		}
 
-		cfg.ErrorID = module->loadFromXML(module_xml, cfg);
-
-		if (cfg.ErrorID != TRITONN_RESULT_OK) {
-			return cfg.ErrorID;
+		if (module->loadFromXML(module_xml, err) != TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 
 		m_modules.push_back(module);
@@ -129,13 +129,16 @@ std::string rIOManager::saveKernel()
 {
 	std::string   result = "";
 	rVariableList list;
-	rIOAI6        ai6;
+	rModuleAI6    ai6;
+	rModuleDI8DO8 di8do8;
 
-	ai6.generateVars("hardware.", list);
+	ai6.generateVars("hardware.", list, true);
+	di8do8.generateVars("hardware.", list, true);
 
 	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
 
 	result += ai6.saveKernel("Module 6 current/voltage channels");
+	result += di8do8.saveKernel("Module 8 discrete input and 8 discrete output");
 
 	result += "</hardware>\n";
 

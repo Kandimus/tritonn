@@ -1,10 +1,16 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<tritonn cfgver="1.0" kernel="0.17" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
+<tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
-		<module ver="1.0" name="ai6_1" type="AI6">
+		<module type="AI6" name="ai6_1" ver="1.0">
 			<channel number="0" setup="NOICE" type=""/>
 			<channel number="1" setup="NOICE | AVERAGE" type=""/>
+		</module>
+		<module type="di8do8" name="di8do8_1">
+			<channel number="0" setup=""/>
+			<channel number="1" setup="INVERSED"/>
+			<channel number="8" setup=""/>
+			<channel number="9" setup="INVERSED"/>
 		</module>
 	</hardware>
 	<config>
@@ -52,7 +58,7 @@
 					</limit>
 				</limits>
 			</ai>
-			<ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD" description="4001">
+			<ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD" description="4002">
 				<iolink module="0" channel="1"/>
 				<unit>16</unit>
 				<keypad>12.5</keypad>
@@ -75,6 +81,17 @@
 					</limit>
 				</limits>
 			</ai>
+			<di name="di00" mode="PHIS" setup="KEYPAD | SUCCESS0 | WARNING1" description="4003">
+				<iolink module="1" channel="0"/>
+				<keypad>0</keypad>
+			</di>
+			<di name="di01" mode="PHIS" setup="KEYPAD | SUCCESS1 | ALARM0" description="4004">
+				<iolink module="1" channel="0"/>
+				<keypad>0</keypad>
+			</di>
+			<di name="di_virt" mode="PHIS" setup="" description="4005">
+				<keypad>0</keypad>
+			</di>
 		</io>
 		<stations>
 			<station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">
@@ -241,6 +258,8 @@
 						<temperature><link alias="sikn1.Obj.StnDensTemp:temp"/></temperature>
 						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
 						<density>    <link alias="sikn1.Obj.StnDensTemp:dens"/></density>
+						<density15>  <link alias="sikn1.Obj.StnDensTemp:dens15"/></density15>
+						<density20>  <link alias="sikn1.Obj.StnDensTemp:dens20"/></density20>
 						<factors>
 							<keypad_mf>1</keypad_mf>
 							<keypad_kf>36000</keypad_kf>
@@ -601,10 +620,10 @@
 			<lang value="ru">
 				<str id="4000">Виртуальный ai_virt</str>
 				<str id="4001">Тестовый ai_00</str>
-				<str id="4002">СИКН 1. Линия 1</str>
-				<str id="4003">Температура на линии 1 СИКН 1</str>
-				<str id="4004">Давление на линии 1 СИКН 1</str>
-				<str id="4005">Счетчик 1 СИКН 1</str>
+				<str id="4002">Тестовый ai_01</str>
+				<str id="4003">Тестовый di_00</str>
+				<str id="4004">Тестовый di_01</str>
+				<str id="4005">Виртуальный di_virt</str>
 				<str id="4007">СИКН 1. Линия 2</str>
 				<str id="4008">Температура на линии 2 СИКН 1</str>
 				<str id="4009">Давление на линии 2 СИКН 1</str>
@@ -669,12 +688,12 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 		<modbus>
 			<datamap>
 				<datablock name="systime">
-					<variable>system.datetime.present.sec</variable>
-					<variable>system.datetime.present.min</variable>
-					<variable>system.datetime.present.hour</variable>
-					<variable>system.datetime.present.day</variable>
-					<variable>system.datetime.present.month</variable>
-					<variable>system.datetime.present.year</variable>
+					<variable>system.datetime.sec</variable>
+					<variable>system.datetime.min</variable>
+					<variable>system.datetime.hour</variable>
+					<variable>system.datetime.day</variable>
+					<variable>system.datetime.month</variable>
+					<variable>system.datetime.year</variable>
 					<variable>system.state.alarm</variable>
 					<variable>system.state.live</variable>
 					<variable>system.state.rebootreason</variable>
@@ -682,9 +701,8 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<datablock name="sysver">
 					<variable>system.version.minor</variable>
 					<variable>system.version.major</variable>
-					<variable>system.version.patch</variable>
-					<variable>system.version.status</variable>
 					<variable>system.version.build</variable>
+					<variable>system.version.hash</variable>
 					<variable>system.version.crc</variable>
 				</datablock>
 				<datablock name="block_ai01">

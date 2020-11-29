@@ -1,13 +1,12 @@
 #include <limits>
 #include <cmath>
 #include "../catchtest/catch.hpp"
+#include "test.h"
 #include "data_ai.h"
 #include "data_manager.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
-#include "io_ai_channel.h"
-
-const UDINT SleepValue = 700;
+#include "io/ai_channel.h"
 
 // Set mode
 
@@ -20,7 +19,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("io.ai_virt.present.value", test_val);
 		ss.set();
 
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("io.ai_virt.present.value");
@@ -41,13 +40,13 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("io.ai00.scales.max"                 , 100.0);
 		ss.set();
 
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("io.ai00.mode"                       , static_cast<UINT>(rAI::Mode::PHIS));
 		ss.set();
 
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("hardware.ai6_1.ch_01.type");
@@ -70,7 +69,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.set();
 		ss.clear();
 
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.add("io.ai00.present.value");
 		ss.get();
@@ -92,7 +91,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.add("io.ai00.keypad"      , -11.0);
 		set_ss.add("io.ai00.mode"        , static_cast<UINT>(rAI::Mode::MKEYPAD));
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.add("io.ai00.present.status");
 		get_ss.add("io.ai00.status");
@@ -107,7 +106,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.clear();
 		set_ss.add("io.ai00.keypad", -5.0);
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.resetAssign();
 		get_ss.get();
@@ -120,7 +119,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.clear();
 		set_ss.add("io.ai00.keypad", 5.0);
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.resetAssign();
 		get_ss.get();
@@ -133,7 +132,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.clear();
 		set_ss.add("io.ai00.keypad", 30.0);
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.resetAssign();
 		get_ss.get();
@@ -146,7 +145,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.clear();
 		set_ss.add("io.ai00.keypad", 50.0);
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.resetAssign();
 		get_ss.get();
@@ -159,7 +158,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.clear();
 		set_ss.add("io.ai00.keypad", 70.0);
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.resetAssign();
 		get_ss.get();
@@ -172,7 +171,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		set_ss.clear();
 		set_ss.add("io.ai00.keypad", 101.0);
 		set_ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		get_ss.resetAssign();
 		get_ss.get();
@@ -195,7 +194,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("io.ai00.current.hihi", 16.0);
 		ss.set();
 
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("io.ai00.current.status");
@@ -209,7 +208,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Max) - 2);
 		ss.set();
 
-		mSleep(SleepValue * 2);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.ai00.current.status");
@@ -231,7 +230,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("io.ai00.keypad"                     , 50.0);
 		ss.add("io.ai00.mode"                       , 0);
 		ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("io.ai00.status");
@@ -245,7 +244,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 
 		ss.add("hardware.ai6_1.ch_01.simulate.value", 0);
 		ss.set();
-		mSleep(SleepValue * 2);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.ai00.present.value");
@@ -272,13 +271,13 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("io.ai01.keypad"                     , 50.0);
 		ss.set();
 
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("io.ai01.mode"                       , static_cast<UINT>(rAI::Mode::PHIS));
 		ss.set();
 
-		mSleep(SleepValue * 3);
+		mSleep(rTest::sleepValue * 3);
 
 		ss.clear();
 		ss.add("io.ai01.status");
@@ -292,7 +291,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 
 		ss.add("hardware.ai6_1.ch_02.simulate.value", 0);
 		ss.set();
-		mSleep(SleepValue * 2);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.ai01.present.value");
@@ -315,7 +314,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("io.ai_virt.scales.max"   , 100.0);
 		ss.add("io.ai_virt.present.value", test_val);
 		ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.clear();
 		ss.add("io.ai_virt.present.value");
@@ -334,7 +333,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.clear();
 		ss.add("io.ai_virt.present.value", test_val);
 		ss.set();
-		mSleep(SleepValue);
+		mSleep(rTest::sleepValue);
 
 		ss.add("io.ai_virt.present.value");
 		ss.add("io.ai_virt.mode");

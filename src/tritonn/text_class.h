@@ -20,11 +20,7 @@
 #include "tinyxml2.h"
 #include "def.h"
 
-
-using std::string;
-using std::vector;
-
-
+class rError;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class rTextItem
@@ -36,19 +32,18 @@ public:
 		Text = text;
 	}
 
-
 	UDINT ID;
-	string Text;
+	std::string Text;
 };
 
 
 class rTextLang
 {
 public:
-	string Name;
-	UDINT  Setup;
+	std::string Name;
+	UDINT       Setup;
 
-	vector<rTextItem> Texts;
+	std::vector<rTextItem> Texts;
 };
 
 
@@ -59,33 +54,28 @@ public:
 	rTextClass();
 	virtual ~rTextClass();
 
-public:
-	UDINT ErrorID;
-	UDINT ErrorLine;
-
 private:
-	vector<rTextLang *>  Langs;
-	rTextLang           *CurLang;
-
+	std::vector<rTextLang*>  Langs;
+	rTextLang* CurLang;
 
 public:
-	UDINT         LoadSystem(const string& filename);
-	UDINT         Load(tinyxml2::XMLElement *root);
-	UDINT         SetCurLang(const string &lang);
-	string        GetCurLang();
-	UDINT         Get(UDINT id, const string &lang, string &text);
-	UDINT         Get(UDINT id, string &text);
-	const string *GetPtr(UDINT id, const string &lang);
-	const string *GetPtr(UDINT id);
+	UDINT         LoadSystem(const std::string& filename, rError& err);
+	UDINT         Load(tinyxml2::XMLElement* root, rError& err);
+	UDINT         SetCurLang(const std::string& lang);
+	std::string   GetCurLang();
+	UDINT         Get(UDINT id, const std::string& lang, std::string& text);
+	UDINT         Get(UDINT id, std::string& text);
+	const std::string *GetPtr(UDINT id, const std::string &lang);
+	const std::string *GetPtr(UDINT id);
 
-	UDINT         GetListLang(vector<string> &list);
-	UDINT         GetListSID (const string &lang, vector<rTextItem> &list);
+	UDINT         GetListLang(std::vector<std::string> &list);
+	UDINT         GetListSID (const std::string &lang, std::vector<rTextItem> &list);
 
 private:
-	UDINT         LoadLang(tinyxml2::XMLElement *root, UDINT create);
+	UDINT         LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err);
 	UDINT         DeleteUnused();
-	rTextLang    *GetLangPtr(const string &name);
-	const string *GetPtr(UDINT id, rTextLang *lang);
+	rTextLang    *GetLangPtr(const std::string& name);
+	const std::string* GetPtr(UDINT id, rTextLang* lang);
 };
 
 

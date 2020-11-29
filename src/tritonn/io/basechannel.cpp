@@ -13,14 +13,10 @@
 //===
 //=================================================================================================
 
-#pragma once
-
-#include "io_basechannel.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "simpleargs.h"
-#include "def_arguments.h"
-#include "units.h"
+#include "basechannel.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../units.h"
 
 rIOBaseChannel::rIOBaseChannel()
 {
@@ -32,11 +28,11 @@ rIOBaseChannel::~rIOBaseChannel()
 
 }
 
-UDINT rIOBaseChannel::generateVars(const std::string &name, rVariableList &list)
+UDINT rIOBaseChannel::generateVars(const std::string &name, rVariableList &list, bool issimulate)
 {
 	std::string p = name + ".";
 
-	if (rSimpleArgs::instance().isSet(rArg::Simulate)) {
+	if (issimulate) {
 		list.add(p + "simulate.type", TYPE_USINT, rVariable::Flags::____, &m_simType, U_DIMLESS , 0);
 	}
 

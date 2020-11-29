@@ -27,6 +27,8 @@ public:
 
 public:
 	rBitsArray& add(const std::string &name, UDINT value);
+	rBitsArray& add(const std::string &name, UINT  value);
+	rBitsArray& add(const std::string &name, USINT value);
 	bool        empty() const;
 	std::string getNameByBits (UDINT value);
 	std::string getNameByValue(UDINT value);

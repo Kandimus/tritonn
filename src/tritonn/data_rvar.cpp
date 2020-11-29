@@ -17,7 +17,7 @@
 #include "tinyxml2.h"
 #include "text_id.h"
 #include "data_manager.h"
-#include "data_config.h"
+#include "error.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "data_rvar.h"
@@ -34,7 +34,7 @@ rRVar::rRVar() : rSource(), Setup(0)
 				.add("CONST", VAR_SETUP_CONST);
 	}
 
-	InitLink(LINK_SETUP_INOUTPUT | LINK_SETUP_NONAME | LINK_SETUP_WRITABLE, Value, U_any, SID_VALUE, XmlName::VALUE, LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, Value, U_any, SID_VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
 }
 
 
@@ -102,40 +102,39 @@ UDINT rRVar::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rRVar::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rRVar::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, "");
-	UDINT  err = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_VAR;
-
-	tinyxml2::XMLElement *xml_value = element->FirstChildElement(XmlName::VALUE);
-	tinyxml2::XMLElement *xml_unit  = element->FirstChildElement(XmlName::UNIT);
-
-	if(nullptr == xml_value || nullptr == xml_unit)
-	{
-		return DATACFGERR_VAR;
+	if(TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
 	}
 
-	Setup = m_flagSetup.getValue(strSetup, err);
+	tinyxml2::XMLElement* xml_value = element->FirstChildElement(XmlName::VALUE);
+	tinyxml2::XMLElement* xml_unit  = element->FirstChildElement(XmlName::UNIT);
 
-	Value.Value = rDataConfig::GetTextLREAL(xml_value, 0.0  , err);
-	Value.Unit  = rDataConfig::GetTextUDINT(xml_unit , U_any, err);
+	if(!xml_value || !xml_unit) {
+		return err.set(DATACFGERR_VAR, element->GetLineNum(), "fault value or unit");
+	}
 
-	if(err)
-	{
-		return DATACFGERR_VAR;
+	UDINT fault = 0;
+	Setup = m_flagSetup.getValue(strSetup, fault);
+
+	Value.Value = XmlUtils::getTextLREAL(xml_value, 0.0  , fault);
+	Value.Unit  = XmlUtils::getTextUDINT(xml_unit , U_any, fault);
+
+	if (fault) {
+		return err.set(DATACFGERR_VAR, element->GetLineNum(), "");
 	}
 
 	// Если переменная константа, то снимаем флаг записи
-	if(Setup & VAR_SETUP_CONST)
-	{
-		Value.Setup &= ~LINK_SETUP_WRITABLE;
+	if(Setup & VAR_SETUP_CONST) {
+		Value.m_setup &= ~rLink::Setup::WRITABLE;
 	}
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

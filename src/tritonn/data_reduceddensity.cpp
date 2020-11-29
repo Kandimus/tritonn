@@ -38,16 +38,16 @@ const UDINT REDUCEDDENS_LE_DENSITY = 0x00000002;
 //
 rReducedDens::rReducedDens() : rSource()
 {
-	InitLink(LINK_SETUP_INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_INOUTPUT, Pres  , U_MPa    , SID_PRESSURE   , XmlName::PRES     , LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_INOUTPUT, Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_INOUTPUT, B15   , U_1_C    , SID_B15        , XmlName::B15      , XmlName::DENSITY15);
-	InitLink(LINK_SETUP_OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , LINK_SHADOW_NONE );
-	InitLink(LINK_SETUP_OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , LINK_SHADOW_NONE );
+	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::INOUTPUT, Pres  , U_MPa    , SID_PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::INOUTPUT, Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::INOUTPUT, B15   , U_1_C    , SID_B15        , XmlName::B15      , XmlName::DENSITY15);
+	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , rLink::SHADOW_NONE );
 }
 
 
@@ -88,10 +88,9 @@ UDINT rReducedDens::InitLimitEvent(rLink &link)
 //
 UDINT rReducedDens::Calculate()
 {
-	rEvent       event_f;
-	rEvent       event_s;
-	UDINT        limit   = 0;
-	TYPE_PRODUCT product = Station->Product;
+	rEvent event_f;
+	rEvent event_s;
+	UDINT  limit = 0;
 
 	if(rSource::Calculate()) return 0;
 
@@ -102,7 +101,8 @@ UDINT rReducedDens::Calculate()
 //	}
 
 	// Проверка на корректность плотности
-	limit = Dens_Limit[0][product] <= Dens15.Value && Dens15.Value < Dens_Limit[1][product];
+	USINT product_id = static_cast<USINT>(Station->m_product);
+	limit = rDensity::Limit[0][product_id] <= Dens15.Value && Dens15.Value < rDensity::Limit[1][product_id];
 
 	if(CheckExpr(!limit, REDUCEDDENS_LE_DENSITY, ReinitEvent(event_f, EID_RDCDDENS_FAULT_DENSITY)<< Dens15.Value, ReinitEvent(event_s, EID_RDCDDENS_GOOD_DENSITY ) << Dens15.Value))
 	{
@@ -116,7 +116,7 @@ UDINT rReducedDens::Calculate()
 	CPL.Value    = 1.0 / (1.0 - Y.Value * Pres.Value);
 	CTL.Value    = exp(-B15.Value * dTemp * (1 + 0.8 * B15.Value * dTemp));
 	Dens.Value   = Dens15.Value * CTL.Value * CPL.Value;
-	Dens20.Value = GetDens20(Dens15.Value, B15.Value);
+	Dens20.Value = rDensity::getDens20(Dens15.Value, B15.Value);
 
 	PostCalculate();
 	
@@ -164,33 +164,34 @@ UDINT rReducedDens::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_REDUCEDDENS;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	tinyxml2::XMLElement *dens15 = element->FirstChildElement(XmlName::DENSITY15);
-	tinyxml2::XMLElement *b15    = element->FirstChildElement(XmlName::B15);
-//	tinyxml2::XMLElement *y15    = element->FirstChildElement(CFGNAME_Y15);
-	tinyxml2::XMLElement *temp   = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement *pres   = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement* xml_dens15 = element->FirstChildElement(XmlName::DENSITY15);
+	tinyxml2::XMLElement* xml_b15    = element->FirstChildElement(XmlName::B15);
+	tinyxml2::XMLElement* xml_temp   = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement* xml_pres   = element->FirstChildElement(XmlName::PRES);
 
-	if(nullptr == temp || nullptr == pres || nullptr == dens15)
-	{
-		return DATACFGERR_REDUCEDDENS;
+	if(!xml_temp || !xml_pres || !xml_dens15) {
+		return err.set(DATACFGERR_REDUCEDDENS, element->GetLineNum(), "fault input");
 	}
 
 	// Обязательные линки и параметры, без которых работа не возможна
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement  (XmlName::LINK), Temp)  ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement  (XmlName::LINK), Pres)  ) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(dens15->FirstChildElement(XmlName::LINK), Dens15)) return cfg.ErrorID;
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement  (XmlName::LINK), Temp)  ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement  (XmlName::LINK), Pres)  ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens15->FirstChildElement(XmlName::LINK), Dens15)) return err.getError();
 
 	// Теневые линки
-	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(b15 ? b15->FirstChildElement(XmlName::LINK) : nullptr, B15, Dens15, XmlName::B15)) return cfg.ErrorID;
-//	if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(y15 ? y15->FirstChildElement(XmlName::LINK) : nullptr, Y15, Dens15, XmlName::Y15)) return cfg.ErrorID;
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_b15, B15, Dens15, XmlName::B15)) {
+		return err.getError();
+	}
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

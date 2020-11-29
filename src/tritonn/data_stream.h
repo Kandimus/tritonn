@@ -19,15 +19,12 @@
 #include "compared_values.h"
 #include "data_source.h"
 #include "data_link.h"
+#include "bits_array.h"
 
 class rVariable;
 
 
 const UINT STR_SETUP_OFF      = 0x0001;
-
-const UINT STR_FLOWMETER_CARIOLIS   = 1;
-const UINT STR_FLOWMETER_TURBINE    = 2;
-const UINT STR_FLOWMETER_ULTRASONIC = 3;
 
 
 struct rFactorPoint
@@ -49,6 +46,14 @@ struct rFlowFactor
 class rStream : public rSource
 {
 public:
+	enum class Type : USINT
+	{
+		CARIOLIS   = 1,
+		TURBINE    = 2,
+		ULTRASONIC = 3,
+	};
+
+public:
 	rStream();
 	virtual ~rStream();
 
@@ -57,7 +62,7 @@ public:
 	virtual const char *RTTI() { return "stream"; }
 
 	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
@@ -67,6 +72,10 @@ public:
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);
 
+protected:
+	LREAL CalcualateKF();
+	UDINT CalcTotal();
+	UDINT GetUnitKF();
 
 public:
 	// Inputs
@@ -88,7 +97,7 @@ public:
 
 //	UDINT       Unit; //
 	rCmpUINT    Setup;
-	USINT       FlowMeter;     // Тип расходомера
+	Type        m_flowmeter;     // Тип расходомера
 	USINT       Maintenance;   // 1 - Линия в ремонте
 	USINT       Linearization; // Флаг использования кусочно-линейной апроксимации, а не одного К-фактора
 	rFlowFactor Factor;
@@ -97,10 +106,8 @@ public:
 	UDINT       AcceptKF;
 	rTotal      Total;
 
-protected:
-	LREAL CalcualateKF();
-	UDINT CalcTotal();
-	UDINT GetUnitKF();
+private:
+	static rBitsArray m_flagsFlowmeter;
 };
 
 

@@ -18,8 +18,10 @@
 #include <string.h>
 #include "event_eid.h"
 #include "text_id.h"
+#include "error.h"
 #include "event_manager.h"
 #include "data_manager.h"
+#include "data_config.h"
 #include "data_link.h"
 #include "variable_item.h"
 #include "variable_list.h"
@@ -27,15 +29,30 @@
 #include "xml_util.h"
 
 
-using std::vector;
-
-
 const UDINT SELECTOR_LE_NOCHANGE = 0x00000001;
+
+rBitsArray rSelector::m_flagsSetup;
+rBitsArray rSelector::m_flagsMode;
+
 
 //-------------------------------------------------------------------------------------------------
 //
 rSelector::rSelector() : Select(-1)
 {
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"    , SELECTOR_SETUP_OFF)
+				.add("NOEVENT", SELECTOR_SETUP_NOEVENT);
+	}
+
+	if (m_flagsMode.empty()) {
+		m_flagsMode
+				.add("NEXT"    , SELECTOR_MODE_CHANGENEXT)
+				.add("PREV"    , SELECTOR_MODE_CHANGEPREV)
+				.add("NOCHANGE", SELECTOR_MODE_NOCHANGE)
+				.add("ERROR"   , SELECTOR_MODE_TOERROR);
+	}
+
 	//TODO Нужно ли очищать свойства класса?
 	LockErr     = 0;
 	CountGroups = MAX_SELECTOR_GROUP; //  По умолчанию доступен максимальный селектор
@@ -202,8 +219,8 @@ void rSelector::GenerateIO()
 		// Настройка выходов
 		for(UDINT grp = 0; grp < CountGroups; ++grp)
 		{
-			const string aa = "";
-			InitLink(LINK_SETUP_OUTPUT, ValueOut[grp], ValueIn[0][grp].Unit, SID_SEL_GRP1_OUT + grp, NameInput[grp] + ".output", LINK_SHADOW_NONE);
+			ValueOut[grp].m_varName = NameInput[grp] + ".output";
+			InitLink(rLink::Setup::OUTPUT | rLink::Setup::VARNAME, ValueOut[grp], ValueIn[0][grp].Unit, SID_SEL_GRP1_OUT + grp, NameInput[grp], rLink::SHADOW_NONE);
 		}
 
 		// Настройка входов
@@ -211,25 +228,25 @@ void rSelector::GenerateIO()
 		{
 			for(UDINT ii = 0; ii < CountInputs; ++ii)
 			{
-				string i_name = String_format("%s.input_%i"      , NameInput[grp].c_str(), ii + 1);
-				string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
+				std::string i_name = String_format("%s.input_%i"      , NameInput[grp].c_str(), ii + 1);
+				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
-				InitLink(LINK_SETUP_INPUT                    , ValueIn[ii][grp], ValueIn[ii][grp].Unit, SID_SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, LINK_SHADOW_NONE);
-				InitLink(LINK_SETUP_INPUT | LINK_SETUP_SIMPLE, FaultIn[ii][grp], U_DIMLESS            , SID_SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name          );
+				InitLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].Unit, SID_SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
+				InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_DIMLESS            , SID_SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
 			}
 		}
 	}
 	else
 	{
-		InitLink(LINK_SETUP_OUTPUT, ValueOut[0], ValueIn[0][0].Unit, SID_SEL_OUT, "output", LINK_SHADOW_NONE);
+		InitLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].Unit, SID_SEL_OUT, "output", rLink::SHADOW_NONE);
 
 		for(UDINT ii = 0; ii < CountInputs; ++ii)
 		{
 			string i_name = String_format("input_%i"      , ii + 1);
 			string f_name = String_format("input_%i.fault", ii + 1);
 
-			InitLink(LINK_SETUP_INPUT                    , ValueIn[ii][0], ValueIn[ii][0].Unit, SID_SEL_IN1  + ii, i_name, LINK_SHADOW_NONE);
-			InitLink(LINK_SETUP_INPUT | LINK_SETUP_SIMPLE, FaultIn[ii][0], U_DIMLESS          , SID_SEL_FLT1 + ii, f_name, i_name          );
+			InitLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].Unit, SID_SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
+			InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS          , SID_SEL_FLT1 + ii, f_name, i_name            );
 		}
 	}
 }
@@ -277,43 +294,50 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix)
 {
-	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::SelectorSetupFlags, SELECTOR_SETUP_OFF);
-	string defMode  = rDataConfig::GetFlagNameByValue(rDataConfig::SelectorModeFlags , SELECTOR_MODE_CHANGENEXT);
-	string strSetup = (element->Attribute("setup")) ? element->Attribute("setup") : defSetup.c_str();
-	string strMode  = (element->Attribute("mode") ) ? element->Attribute("mode")  : defMode.c_str();
-	UDINT  err      = 0;
-	UDINT  ii       = 0;
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(SELECTOR_SETUP_OFF));
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE, m_flagsMode.getNameByBits(SELECTOR_MODE_CHANGENEXT));
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_SELECTOR;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
+	}
 
-	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::SelectorSetupFlags, strSetup, err));
-	Mode.Init (rDataConfig::GetFlagFromStr(rDataConfig::SelectorModeFlags , strMode , err));
-	if(err) return DATACFGERR_SELECTOR;
+	UDINT fault = 0;
+	Setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	Mode.Init (m_flagsMode.getValue(strMode, fault));
+
+	if (fault) {
+		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
+	}
 
 	// Простой селектор
-	if(string(XmlName::SELECTOR) == element->Name())
+	if(std::string(XmlName::SELECTOR) == element->Name())
 	{
-		tinyxml2::XMLElement *inputs = element->FirstChildElement(XmlName::INPUTS);
-		tinyxml2::XMLElement *faults = element->FirstChildElement(XmlName::FAULTS);
-		tinyxml2::XMLElement *keypad = element->FirstChildElement(XmlName::KEYPAD);
+		tinyxml2::XMLElement* xml_inputs = element->FirstChildElement(XmlName::INPUTS);
+		tinyxml2::XMLElement* xml_faults = element->FirstChildElement(XmlName::FAULTS);
+		tinyxml2::XMLElement* xml_keypad = element->FirstChildElement(XmlName::KEYPAD);
 
-		if(nullptr == inputs || nullptr == keypad)
-		{
-			return DATACFGERR_SELECTOR;
+		if(!xml_inputs || !xml_keypad) {
+			return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "error inputs or keypad");
 		}
 
 		//------------------------------------
 		// Входа
-		for(tinyxml2::XMLElement *link = inputs->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
-		{
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, ValueIn[ii][0])) return cfg.ErrorID;
+		UDINT ii = 0;
+		XML_FOR(xml_link, xml_inputs, XmlName::LINK) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_link, ValueIn[ii][0])) {
+				return err.getError();
+			}
 			++ii;
 
-			if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
+			if(ii >= MAX_SELECTOR_INPUT) {
+				return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much inputs");
+			}
 		}
-		if(ii < 2) return DATACFGERR_SELECTOR;
+		if (ii < 2) {
+			return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "too few inputs");
+		}
 
 		CountGroups = 1;
 		CountInputs = ii;
@@ -321,114 +345,148 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 		//------------------------------------
 		// Фаулты (ошибки)
-		if(faults)
-		{
-			for(tinyxml2::XMLElement *link = faults->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
-			{
-				if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][0], ValueIn[ii][0], "fault")) return cfg.ErrorID;
+		if (xml_faults) {
+			XML_FOR(xml_link, xml_faults, XmlName::LINK) {
+				if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_link, FaultIn[ii][0], ValueIn[ii][0], "fault")) {
+					return err.getError();
+				}
+
 				// Принудительно выключаем пределы
 				FaultIn[ii][0].Limit.m_setup.Init(rLimit::Setup::OFF);
 
-				if(++ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
+				if (++ii >= MAX_SELECTOR_INPUT) {
+					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much faults");
+				}
 			}
-			if(ii != CountInputs) return DATACFGERR_SELECTOR;
+
+			if (ii != CountInputs) {
+				return err.set(DATACFGERR_SELECTOR, xml_faults->GetLineNum(), "error count faults");
+			}
 		}
 
 		// Подстановочное значение
-		Keypad[0] = rDataConfig::GetTextLREAL(keypad->FirstChildElement(XmlName::VALUE),   0.0, err);
-		KpUnit[0] = rDataConfig::GetTextUDINT(keypad->FirstChildElement(XmlName::UNIT) , U_any, err);
+		Keypad[0] = XmlUtils::getTextLREAL(xml_keypad->FirstChildElement(XmlName::VALUE),   0.0, fault);
+		KpUnit[0] = XmlUtils::getTextUDINT(xml_keypad->FirstChildElement(XmlName::UNIT) , U_any, fault);
 
-		if(err) return DATACFGERR_SELECTOR;
+		if (fault) {
+			return err.set(DATACFGERR_SELECTOR, xml_faults->GetLineNum(), "");
+		}
 	}
 
 	// Мульти-селектор
-	else if(string(XmlName::MSELECTOR) == element->Name())
-	{
+	else if (string(XmlName::MSELECTOR) == element->Name()) {
 		Setup.Init(Setup.Value | SELECTOR_SETUP_MULTI);
 
-		tinyxml2::XMLElement *names   = element->FirstChildElement(XmlName::NAMES);
-		tinyxml2::XMLElement *inputs  = element->FirstChildElement(XmlName::INPUTS);
-		tinyxml2::XMLElement *faults  = element->FirstChildElement(XmlName::FAULTS);
-		tinyxml2::XMLElement *keypads = element->FirstChildElement(XmlName::KEYPADS);
+		tinyxml2::XMLElement *xml_names   = element->FirstChildElement(XmlName::NAMES);
+		tinyxml2::XMLElement *xml_inputs  = element->FirstChildElement(XmlName::INPUTS);
+		tinyxml2::XMLElement *xml_faults  = element->FirstChildElement(XmlName::FAULTS);
+		tinyxml2::XMLElement *xml_keypads = element->FirstChildElement(XmlName::KEYPADS);
 
-		if(nullptr == names || nullptr == inputs || nullptr == keypads)
-		{
-			return DATACFGERR_SELECTOR;
+		if (!xml_names || !xml_inputs || !xml_keypads) {
+			return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "fault names or inputs or keypad");
 		}
 
 		// Загружаем имена выходов
 		UDINT grp = 0;
-		for(tinyxml2::XMLElement *name = names->FirstChildElement(XmlName::NAME); name != nullptr; name = name->NextSiblingElement(XmlName::NAME))
-		{
-			NameInput[grp] = name->GetText();
+		XML_FOR(xml_name, xml_names, XmlName::NAME) {
+			NameInput[grp] = String_tolower(xml_name->GetText());
 
-			if(NameInput[grp].empty()) return DATACFGERR_SELECTOR;
+			if (NameInput[grp].empty()) {
+				return err.set(DATACFGERR_SELECTOR, xml_name->GetLineNum(), "empty name");
+			}
+
 			++grp;
 		}
 		CountGroups = grp;
 
 		// Загружаем входа
-		ii = 0;
-		for(tinyxml2::XMLElement *group = inputs->FirstChildElement(XmlName::GROUP); group != nullptr; group = group->NextSiblingElement(XmlName::GROUP))
-		{
+		UDINT ii = 0;
+		XML_FOR(xml_group, xml_inputs, XmlName::GROUP) {
 			// Линки
 			grp = 0;
-			for(tinyxml2::XMLElement *link = group->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
-			{
-				if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, ValueIn[ii][grp])) return cfg.ErrorID;
+			XML_FOR(xml_link, xml_group, XmlName::LINK) {
+				if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_link, ValueIn[ii][grp])) {
+					return err.getError();
+				}
 
 				++grp;
-				if(grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
+
+				if (grp >= MAX_SELECTOR_GROUP) {
+					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much groups");
+				}
 			}
-			if(grp != CountGroups) return DATACFGERR_SELECTOR;
+
+			if (grp != CountGroups) {
+				return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "fault count groups");
+			}
 
 			++ii;
-			if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
+
+			if (ii >= MAX_SELECTOR_INPUT) {
+				return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "too much inputs");
+			}
 		}
-		if(ii < 2) return DATACFGERR_SELECTOR;
+		if (ii < 2) {
+			return err.set(DATACFGERR_SELECTOR, xml_inputs->GetLineNum(), "too few inputs");
+		}
 
 		CountInputs = ii;
 
 		// Фаулты
-		if(faults)
-		{
+		if (xml_faults) {
 			ii = 0;
-			for(tinyxml2::XMLElement *group = faults->FirstChildElement(XmlName::GROUP); group != nullptr; group = group->NextSiblingElement(XmlName::GROUP))
-			{
+			XML_FOR(xml_group, xml_faults, XmlName::GROUP) {
 				// Линки
 				grp = 0;
-				for(tinyxml2::XMLElement *link = group->FirstChildElement(XmlName::LINK); link != nullptr; link = link->NextSiblingElement(XmlName::LINK))
-				{
-					if(tinyxml2::XML_SUCCESS != cfg.LoadShadowLink(link, FaultIn[ii][grp], ValueIn[ii][grp], XmlName::FAULT)) return cfg.ErrorID;
+				XML_FOR(xml_link, xml_group, XmlName::LINK) {
+					if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_link, FaultIn[ii][grp], ValueIn[ii][grp], XmlName::FAULT)) {
+						return err.getError();
+					}
 
 					FaultIn[ii][grp].Limit.m_setup.Init(rLimit::Setup::OFF);
 
-					if(++grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
+					if (++grp >= MAX_SELECTOR_GROUP) {
+						return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much fault group");
+					}
 				}
-				if(grp != CountGroups) return DATACFGERR_SELECTOR;
 
-				if(++ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
+				if (grp != CountGroups) {
+					return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "fault count groups");
+				}
+
+				if (++ii >= MAX_SELECTOR_INPUT) {
+					return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "too much groups");
+				}
 			}
-			if(ii != CountInputs) return DATACFGERR_SELECTOR;
+
+			if (ii != CountInputs) {
+				return err.set(DATACFGERR_SELECTOR, xml_faults->GetLineNum(), "error count fault groups");
+			}
 		}
 
 		// Подстановочные значения
 		grp = 0;
-		for(tinyxml2::XMLElement *keypad = keypads->FirstChildElement(XmlName::KEYPAD); keypad != nullptr; keypad = keypad->NextSiblingElement(XmlName::KEYPAD))
-		{
-			Keypad[grp] = rDataConfig::GetTextLREAL(keypad->FirstChildElement(XmlName::VALUE),   0.0, err);
-			KpUnit[grp] = rDataConfig::GetTextUDINT(keypad->FirstChildElement(XmlName::UNIT) , U_any, err);
+		XML_FOR(xml_keypad, xml_keypads, XmlName::KEYPAD) {
+			UDINT fault = 0;
+			Keypad[grp] = XmlUtils::getTextLREAL(xml_keypad->FirstChildElement(XmlName::VALUE),   0.0, fault);
+			KpUnit[grp] = XmlUtils::getTextUDINT(xml_keypad->FirstChildElement(XmlName::UNIT) , U_any, fault);
 
 			++grp;
-			if(grp >= MAX_SELECTOR_GROUP || err) return DATACFGERR_SELECTOR;
+			if (grp >= MAX_SELECTOR_GROUP || fault) {
+				return err.set(DATACFGERR_SELECTOR, xml_keypad->GetLineNum(), "too much keypads or error keypad");
+			}
 		}
-		if(grp != CountGroups) return DATACFGERR_SELECTOR;
+
+		if (grp != CountGroups) {
+			return err.set(DATACFGERR_SELECTOR, xml_keypads->GetLineNum(), "error count keypads");
+		}
+	} else {
+		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "empty keypads");
 	}
-	else return DATACFGERR_SELECTOR;
 
 	GenerateIO();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

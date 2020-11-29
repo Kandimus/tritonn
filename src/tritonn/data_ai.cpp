@@ -22,11 +22,11 @@
 #include "text_id.h"
 #include "event_manager.h"
 #include "data_manager.h"
-#include "data_config.h"
+#include "error.h"
 #include "variable_item.h"
 #include "variable_list.h"
-#include "io_manager.h"
-#include "io_ai_channel.h"
+#include "io/manager.h"
+#include "io/ai_channel.h"
 #include "xml_util.h"
 #include "data_ai.h"
 
@@ -51,12 +51,12 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , Setup::OFF)
-				.add("NOBUFFER" , Setup::NOBUFFER)
-				.add("VIRTUAL"  , Setup::VIRTUAL)
-				.add("NOICE"    , Setup::NOICE)
-				.add("KEYPAD"   , Setup::ERR_KEYPAD)
-				.add("LASTGOOD" , Setup::ERR_LASTGOOD);
+				.add("OFF"      , static_cast<UINT>(Setup::OFF))
+				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER))
+				.add("VIRTUAL"  , static_cast<UINT>(Setup::VIRTUAL))
+				.add("NOICE"    , static_cast<UINT>(Setup::NOICE))
+				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD))
+				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD));
 	}
 
 	LockErr  = 0;
@@ -65,9 +65,9 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 	m_status = Status::UNDEF;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(LINK_SETUP_OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
 
 
@@ -366,49 +366,46 @@ UDINT rAI::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
-	UDINT  err      = 0;
-	UDINT  result   = TRITONN_RESULT_OK;
 
-	if ((result = rSource::LoadFromXML(element, cfg)) != TRITONN_RESULT_OK) {
-		return result;
+	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
-	tinyxml2::XMLElement* module = element->FirstChildElement(XmlName::IOLINK);
-	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
-	tinyxml2::XMLElement* unit   = element->FirstChildElement(XmlName::UNIT);
-	tinyxml2::XMLElement* scale  = element->FirstChildElement(XmlName::SCALE);
+	tinyxml2::XMLElement* xml_module = element->FirstChildElement(XmlName::IOLINK);
+	tinyxml2::XMLElement* xml_limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
+	tinyxml2::XMLElement* xml_unit   = element->FirstChildElement(XmlName::UNIT);
+	tinyxml2::XMLElement* xml_scale  = element->FirstChildElement(XmlName::SCALE);
 
 	// Если аналоговый сигнал не привязан к каналу, то разрешаем менять его значение
-	if (module) {
-		if ((result = rDataModule::loadFromXML(module, cfg)) != TRITONN_RESULT_OK) {
-			return result;
+	if (xml_module) {
+		if (rDataModule::loadFromXML(xml_module, err) != TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 	} else {
-		m_present.Setup |= LINK_SETUP_WRITABLE;
+		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
-	if(nullptr == limits || nullptr == unit || nullptr == scale)
-	{
+	if (!xml_limits || !xml_unit || !xml_scale) {
 		return DATACFGERR_AI;
 	}
 
-	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, err));
+	UDINT fault = 0;
+	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
 
-	m_setup.Init(m_flagsSetup.getValue(strSetup, err));
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 
-	KeypadValue.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD), 0.0, err));
-	m_scale.Min.Init  (XmlUtils::getTextLREAL(scale->FirstChildElement  (XmlName::MIN)   , 0.0, err));
-	m_scale.Max.Init  (XmlUtils::getTextLREAL(scale->FirstChildElement  (XmlName::MAX)   , 0.0, err));
+	KeypadValue.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD) , 0.0, fault));
+	m_scale.Min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MIN), 0.0, fault));
+	m_scale.Max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MAX), 0.0, fault));
 
-	STRID Unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, err);
+	STRID Unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, fault);
 
-	if(err)
-	{
-		return DATACFGERR_AI;
+	if (fault) {
+		return err.set(DATACFGERR_AI, element->GetLineNum(), "");
 	}
 
 	// Подправляем единицы измерения, исходя из конфигурации AI
@@ -417,7 +414,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

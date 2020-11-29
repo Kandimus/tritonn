@@ -16,7 +16,7 @@
 #pragma once
 
 #include <list>
-#include "io_basechannel.h"
+#include "basechannel.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -84,7 +84,7 @@ public:
 	UINT getRange() const;
 
 public:
-	virtual UDINT generateVars(const std::string& name, rVariableList& list);
+	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate();
 

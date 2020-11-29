@@ -27,6 +27,9 @@ public:
 public:
 	void setArgs(int argc, char* argv[]);
 
+public:
+	static const UDINT SleepValue;
+
 private:
 	int    m_argc = 0;
 	char** m_argv = nullptr;

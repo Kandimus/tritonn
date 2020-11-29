@@ -70,11 +70,15 @@ const UINT EVENT_OBJ_STATION  = 0x000B;
 const UINT EVENT_OBJ_TEST     = 0x000C;
 const UINT EVENT_OBJ_REPORT   = 0x000D;
 const UINT EVENT_OBJ_VAR      = 0x000E;
-const UINT EVENT_OBJ__END     = 0x000F;
+const UINT EVENT_OBJ_DI       = 0x000F;
+const UINT EVENT_OBJ_DO       = 0x0010;
+const UINT EVENT_OBJ_AO       = 0x0011;
+const UINT EVENT_OBJ__END     = 0x0012;
 const UINT EVENT_OBJ_MAX      = 0x003F;
-// MAX 0x0003F;
 
-const string EVENT_OBJ_DESC[EVENT_OBJ__END + 1] = {"UNDEF", "SYSTEM", "TCP", "LOG", "EVENT", "SELECTOR", "AI", "FI", "DENSSOL", "REDUCEDDENS", "STREAM", "STATION", "TEST", "REPORT", "USER"};
+const string EVENT_OBJ_DESC[EVENT_OBJ__END + 1] = {"UNDEF", "SYSTEM", "TCP", "LOG", "EVENT", "SELECTOR", "AI", "FI",
+												   "DENSSOL", "REDUCEDDENS", "STREAM", "STATION", "TEST", "REPORT", "VARIABLES", "DI",
+												   "DO", "AO", "USER"};
 
 
 
@@ -96,6 +100,7 @@ CREATE_EID(EID_SYSTEM_FILEIOERROR     , EMT_ERROR  , EVENT_OBJ_SYSTEM , 21)  // 
 CREATE_EID(EID_SYSTEM_RESTART_WARM    , EMT_WARNING, EVENT_OBJ_SYSTEM , 30)  // Команда "Warm-restart"
 CREATE_EID(EID_SYSTEM_RESTART_COLD    , EMT_WARNING, EVENT_OBJ_SYSTEM , 31)  // Команда "Cold-restart"
 CREATE_EID(EID_SYSTEM_RESTART_UNKNOW  , EMT_ERROR  , EVENT_OBJ_SYSTEM , 32)  // Неизвестная команда перезагрузки
+
 
 //-------------------------------------------------------------------------------------------------
 // Selector
@@ -306,3 +311,35 @@ CREATE_EID(EID_VAR_WMAX               , EMT_WARNING, EVENT_OBJ_VAR     , 113)
 CREATE_EID(EID_VAR_NORMAL             , EMT_SUCCESS, EVENT_OBJ_VAR     , 114)
 CREATE_EID(EID_VAR_NAN                , EMT_ERROR  , EVENT_OBJ_VAR     , 115)
 
+
+//-------------------------------------------------------------------------------------------------
+// DI
+CREATE_EID(EID_DI_SUCCESS_ON          , EMT_SUCCESS, EVENT_OBJ_DI      ,   1)
+CREATE_EID(EID_DI_SUCCESS_OFF         , EMT_SUCCESS, EVENT_OBJ_DI      ,   2)
+CREATE_EID(EID_DI_WARNING_ON          , EMT_WARNING, EVENT_OBJ_DI      ,   3)
+CREATE_EID(EID_DI_WARNING_OFF         , EMT_WARNING, EVENT_OBJ_DI      ,   4)
+CREATE_EID(EID_DI_ALARM_ON            , EMT_ERROR  , EVENT_OBJ_DI      ,   5)
+CREATE_EID(EID_DI_ALARM_OFF           , EMT_ERROR  , EVENT_OBJ_DI      ,   6)
+CREATE_EID(EID_DI_NEW_SIMULATE        , EMT_SUCCESS, EVENT_OBJ_DI      ,  10)
+CREATE_EID(EID_DI_CH_FAULT            , EMT_ERROR  , EVENT_OBJ_DI      ,  11)
+CREATE_EID(EID_DI_CH_OK               , EMT_SUCCESS, EVENT_OBJ_DI      ,  12)
+CREATE_EID(EID_DI_KEYPAD_ON           , EMT_WARNING, EVENT_OBJ_DI      ,  13)
+CREATE_EID(EID_DI_KEYPAD_OFF          , EMT_WARNING, EVENT_OBJ_DI      ,  14)
+CREATE_EID(EID_DI_MODULE              , EMT_ERROR  , EVENT_OBJ_DI      ,  15)
+CREATE_EID(EID_DI_NEW_SETUP           , EMT_SUCCESS, EVENT_OBJ_DI      ,  16)
+
+
+//-------------------------------------------------------------------------------------------------
+// DO
+CREATE_EID(EID_DO_SUCCESS_ON          , EMT_SUCCESS, EVENT_OBJ_DO      ,   1)
+CREATE_EID(EID_DO_SUCCESS_OFF         , EMT_SUCCESS, EVENT_OBJ_DO      ,   2)
+CREATE_EID(EID_DO_WARNING_ON          , EMT_WARNING, EVENT_OBJ_DO      ,   3)
+CREATE_EID(EID_DO_WARNING_OFF         , EMT_WARNING, EVENT_OBJ_DO      ,   4)
+CREATE_EID(EID_DO_ALARM_ON            , EMT_ERROR  , EVENT_OBJ_DO      ,   5)
+CREATE_EID(EID_DO_ALARM_OFF           , EMT_ERROR  , EVENT_OBJ_DO      ,   6)
+CREATE_EID(EID_DO_CH_FAULT            , EMT_ERROR  , EVENT_OBJ_DO      ,  10)
+CREATE_EID(EID_DO_CH_OK               , EMT_SUCCESS, EVENT_OBJ_DO      ,  11)
+CREATE_EID(EID_DO_KEYPAD_ON           , EMT_WARNING, EVENT_OBJ_DO      ,  12)
+CREATE_EID(EID_DO_KEYPAD_OFF          , EMT_WARNING, EVENT_OBJ_DO      ,  13)
+CREATE_EID(EID_DO_MODULE              , EMT_ERROR  , EVENT_OBJ_DO      ,  14)
+CREATE_EID(EID_DO_NEW_SETUP           , EMT_SUCCESS, EVENT_OBJ_DO      ,  15)

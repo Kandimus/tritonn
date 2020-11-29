@@ -49,18 +49,18 @@ rDensSol::rDensSol() : Setup(0)
 //	Setup       = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
-	InitLink(LINK_SETUP_INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INOUTPUT, Pres  , U_bar    , SID_PRESSURE   , XmlName::PRES     , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_INPUT   , Period, U_mksec  , SID_PERIOD     , XmlName::PERIOD   , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , B15   , U_1_C    , SID_B15        , XmlName::B15      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , Y15   , U_1_MPa  , SID_Y15        , XmlName::Y15      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID_TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Pres  , U_bar    , SID_PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Period, U_mksec  , SID_PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID_DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens15, U_kg_m3  , SID_DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID_DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID_B          , XmlName::B        , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , B15   , U_1_C    , SID_B15        , XmlName::B15      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID_Y          , XmlName::Y        , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Y15   , U_1_MPa  , SID_Y15        , XmlName::Y15      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , CTL   , U_DIMLESS, SID_CTL        , XmlName::CTL      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID_CPL        , XmlName::CPL      , rLink::SHADOW_NONE);
 }
 
 
@@ -142,11 +142,11 @@ UDINT rDensSol::Calculate()
 	}
 
 	// Расчет плотности
-	TYPE_PRODUCT product = Station->Product;
-	LREAL        dTemp   = Temp.Value - Calibr.Value;
-	LREAL        K20     = UsedCoef.K20A.Value + UsedCoef.K20B.Value * Pres.Value;
-	LREAL        K21     = UsedCoef.K21A.Value + UsedCoef.K21B.Value * Pres.Value;
-	UDINT        limit   = 0;
+	rDensity::Product product = Station->m_product;
+	LREAL dTemp = Temp.Value - Calibr.Value;
+	LREAL K20   = UsedCoef.K20A.Value + UsedCoef.K20B.Value * Pres.Value;
+	LREAL K21   = UsedCoef.K21A.Value + UsedCoef.K21B.Value * Pres.Value;
+	UDINT limit = 0;
 
 	Dens.Value = UsedCoef.K0.Value + UsedCoef.K1.Value * Period.Value + UsedCoef.K2.Value * Period.Value * Period.Value;
 	Dens.Value = Dens.Value * (1.0 + UsedCoef.K18.Value * dTemp      ) + UsedCoef.K19.Value * dTemp;
@@ -160,16 +160,16 @@ UDINT rDensSol::Calculate()
 	LREAL D15_2  = 0.0;
 	UDINT count_iteration = 0;
 	UDINT count_product   = 0;
-	USINT  oil_id         = GetTypeProduct(Dens.Value, product);
+	USINT  oil_id         = rDensity::getTypeProduct(Dens.Value, product);
 
 	while(count_product < 3)
 	{
 		dTemp        = Temp.Value - 15.0;
 		OldD15       = -100000.0;
 		Dens15.Value = Dens.Value;
-		K0           = Dens_K0[oil_id];
-		K1           = Dens_K1[oil_id];
-		K2           = Dens_K2[oil_id];
+		K0           = rDensity::K0[oil_id];
+		K1           = rDensity::K1[oil_id];
+		K2           = rDensity::K2[oil_id];
 
 		while(std::abs(OldD15 - Dens15.Value) > DENSITY15_CONVERGENCE)
 		{
@@ -195,21 +195,22 @@ UDINT rDensSol::Calculate()
 
 		// Для бензинов, определяем куда попали по плотности, если
 		// тип изменился, то считаем еще раз.
-		if(oil_id == GetTypeProduct(Dens15.Value, product)) break;
+		if(oil_id == rDensity::getTypeProduct(Dens15.Value, product)) break;
 
-		oil_id = GetTypeProduct(Dens15.Value, product);
+		oil_id = rDensity::getTypeProduct(Dens15.Value, product);
 		++count_product;
 	}
 
 	//  Проверка полученной плотности
-	limit = Dens_Limit[0][product] <= Dens15.Value && Dens15.Value < Dens_Limit[1][product];
+	USINT product_id = static_cast<USINT>(product);
+	limit = rDensity::Limit[0][product_id] <= Dens15.Value && Dens15.Value < rDensity::Limit[1][product_id];
 	if(CheckExpr(!limit, DENSSOL_LE_VALUE, ReinitEvent(event_f, EID_DENSSOL_FAULT_VALUE) << Dens15.Value, ReinitEvent(event_s, EID_DENSSOL_GOOD_VALUE ) << Dens15.Value))
 	{
 		Fault = 1;
 	}
 
 	// Расчитаем плотность при 20 *С
-	Dens20.Value = GetDens20(Dens15.Value, B15.Value);
+	Dens20.Value = rDensity::getDens20(Dens15.Value, B15.Value);
 
 	PostCalculate();
 
@@ -288,61 +289,58 @@ UDINT rDensSol::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-//	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::AISetupFlags, AISETUP_OFF);
-//	string strSetup = (element->Attribute("setup")) ? element->Attribute("setup") : defSetup.c_str();
-	UDINT  err = 0;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_DENSSOL;
+	tinyxml2::XMLElement *xml_koef   = element->FirstChildElement(XmlName::FACTORS);
+	tinyxml2::XMLElement *xml_temp   = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement *xml_pres   = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement *xml_period = element->FirstChildElement(XmlName::PERIOD);
 
-	tinyxml2::XMLElement *koef   = element->FirstChildElement(XmlName::FACTORS);
-	tinyxml2::XMLElement *temp   = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement *pres   = element->FirstChildElement(XmlName::PRES);
-	tinyxml2::XMLElement *period = element->FirstChildElement(XmlName::PERIOD);
-
-	if(!koef || !temp || !pres || !period)
-	{
-		return DATACFGERR_DENSSOL;
+	if (!xml_koef || !xml_temp || !xml_pres || !xml_period) {
+		return err.set(DATACFGERR_DENSSOL, element->GetLineNum(), "fault inputs");
 	}
 
 	// Обязательные линки и параметры, без которых работа не возможна
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(temp->FirstChildElement  (XmlName::LINK), Temp  )) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(pres->FirstChildElement  (XmlName::LINK), Pres  )) return cfg.ErrorID;
-	if(tinyxml2::XML_SUCCESS != cfg.LoadLink(period->FirstChildElement(XmlName::LINK), Period)) return cfg.ErrorID;
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement  (XmlName::LINK), Temp  )) return err.getError();
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement  (XmlName::LINK), Pres  )) return err.getError();
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_period->FirstChildElement(XmlName::LINK), Period)) return err.getError();
 
-	Coef.K0.Init  (rDataConfig::GetTextLREAL(koef->FirstChildElement("k0")  , 0.0, err));
-	Coef.K1.Init  (rDataConfig::GetTextLREAL(koef->FirstChildElement("k1")  , 0.0, err));
-	Coef.K2.Init  (rDataConfig::GetTextLREAL(koef->FirstChildElement("k2")  , 0.0, err));
-	Coef.K18.Init (rDataConfig::GetTextLREAL(koef->FirstChildElement("k18") , 0.0, err));
-	Coef.K19.Init (rDataConfig::GetTextLREAL(koef->FirstChildElement("k19") , 0.0, err));
-	Coef.K20A.Init(rDataConfig::GetTextLREAL(koef->FirstChildElement("k20a"), 0.0, err));
-	Coef.K20B.Init(rDataConfig::GetTextLREAL(koef->FirstChildElement("k20b"), 0.0, err));
-	Coef.K21A.Init(rDataConfig::GetTextLREAL(koef->FirstChildElement("k21a"), 0.0, err));
-	Coef.K21B.Init(rDataConfig::GetTextLREAL(koef->FirstChildElement("k21b"), 0.0, err));
+	UDINT fault = 0;
+	Coef.K0.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k0")  , 0.0, fault));
+	Coef.K1.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k1")  , 0.0, fault));
+	Coef.K2.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k2")  , 0.0, fault));
+	Coef.K18.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k18") , 0.0, fault));
+	Coef.K19.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k19") , 0.0, fault));
+	Coef.K20A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k20a"), 0.0, fault));
+	Coef.K20B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k20b"), 0.0, fault));
+	Coef.K21A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k21a"), 0.0, fault));
+	Coef.K21B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k21b"), 0.0, fault));
 
-	if(err)
-	{
-		return DATACFGERR_DENSSOL;
+	if (fault) {
+		return err.set(DATACFGERR_DENSSOL, xml_koef->GetLineNum(), "");
 	}
 
 	// Не обязательный параметр
-	Calibr.Init(rDataConfig::GetTextLREAL(element->FirstChildElement(XmlName::CALIBR), 20.0, err));
-	err = 0;
+	Calibr.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::CALIBR), 20.0, fault));
+
+	fault = 0;
 
 	// Так как мы еще не загрузили данные из EEPROM, то принимает текущие коэф-ты за рабочие.
 	UsedCoef = Coef;
 
 	// Проверки
-	if(nullptr == Station)
-	{
+	if (!Station) {
 		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_FAULT_STATION));
-		return DATACFGERR_DENSSOL_NOSTN;
+		return err.set(DATACFGERR_DENSSOL_NOSTN, element->GetLineNum(), "station is empty");
 	}
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

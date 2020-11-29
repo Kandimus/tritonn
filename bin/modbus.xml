@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<modbus kernel="0.17" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./modbus.xsd">
+<modbus kernel="0.18" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./modbus.xsd">
 	<item addr="400000">system.version.major</item>
 	<item addr="400001">system.version.minor</item>
-	<item addr="400002">system.version.patch</item>
-	<item addr="400003">system.version.status</item>
-	<item addr="400004">system.version.build</item>
-	<item addr="400006">system.version.crc</item>
-	<item addr="400008">system.state.alarm</item>
-	<item addr="400010">system.state.live</item>
+	<item addr="400002">system.version.build</item>
+	<item addr="400003">system.version.hash</item>
+	<item addr="400005">system.version.crc</item>
+	<item addr="400007">system.state.alarm</item>
+	<item addr="400009">system.state.live</item>
 	<item addr="400011">system.state.rebootreason</item>
-	<item addr="400012">system.datetime.present.sec</item>
-	<item addr="400013">system.datetime.present.min</item>
-	<item addr="400014">system.datetime.present.hour</item>
-	<item addr="400015">system.datetime.present.day</item>
-	<item addr="400016">system.datetime.present.month</item>
-	<item addr="400017">system.datetime.present.year</item>
-	<item addr="400018">system.datetime.set.sec</item>
-	<item addr="400019">system.datetime.set.min</item>
-	<item addr="400020">system.datetime.set.hour</item>
-	<item addr="400021">system.datetime.set.day</item>
-	<item addr="400022">system.datetime.set.month</item>
-	<item addr="400023">system.datetime.set.year</item>
-	<item addr="400024">system.datetime.set.accept</item>
+	<item addr="400010">system.datetime.sec</item>
+	<item addr="400011">system.datetime.min</item>
+	<item addr="400012">system.datetime.hour</item>
+	<item addr="400013">system.datetime.day</item>
+	<item addr="400014">system.datetime.month</item>
+	<item addr="400015">system.datetime.year</item>
+	<item addr="400016">system.datetime.set.sec</item>
+	<item addr="400017">system.datetime.set.min</item>
+	<item addr="400018">system.datetime.set.hour</item>
+	<item addr="400019">system.datetime.set.day</item>
+	<item addr="400020">system.datetime.set.month</item>
+	<item addr="400021">system.datetime.set.year</item>
+	<item addr="400022">system.datetime.set.accept</item>
 </modbus>

@@ -21,6 +21,7 @@
 class rIOBaseChannel;
 class rDataConfig;
 class rVariableList;
+class rError;
 
 namespace tinyxml2 {
 class XMLElement;
@@ -33,6 +34,7 @@ public:
 	{
 		UNDEF  = 0x0000,     //
 		AI6    = 0x0001,     //
+		DI8DO8 = 0x0002,
 	};
 
 	rIOBaseModule();
@@ -41,8 +43,8 @@ public:
 	virtual std::string getModuleType() = 0;
 	virtual UDINT processing(USINT issim) = 0;
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel) = 0;
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
-	virtual UDINT generateVars(const std::string& prefix, rVariableList& list);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
+	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual std::string saveKernel(const std::string& description);
 /*
 	Type  getType()         { return m_type; }

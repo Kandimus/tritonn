@@ -19,6 +19,7 @@
 #include <time.h>
 #include "time64.h"
 #include "data_source.h"
+#include "bits_array.h"
 #include "total.h"
 #include "data_link.h"
 #include "variable_item.h"
@@ -94,8 +95,8 @@ public:
 	rReportTime StartTime;
 	rReportTime FinalTime;
 
-	vector<rReportTotal *> AverageItems;
-	vector<rReportItem  *> SnapshotItems;
+	std::vector<rReportTotal*> AverageItems;
+	std::vector<rReportItem*>  SnapshotItems;
 
 	void  Clear();
 	void  Print(tinyxml2::XMLPrinter &printer);
@@ -116,7 +117,7 @@ public:
 public:
 	virtual const char *RTTI() { return "report"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
@@ -151,5 +152,9 @@ public:
 	// Временные переменные
 	Time64_T   PastUNIX;
 	struct tm  PastTM;
+
+private:
+	static rBitsArray m_flagsType;
+	static rBitsArray m_flagsPeriod;
 };
 

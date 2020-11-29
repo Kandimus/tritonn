@@ -16,8 +16,12 @@
 #pragma once
 
 #include "def.h"
-#include "data_config.h"
 
+namespace tinyxml2 {
+	class XMLElement;
+}
+
+class rError;
 
 class rPrecision
 {
@@ -38,7 +42,7 @@ public:
 	USINT Get(UDINT unit);
 	UDINT Reset(USINT def);
 
-	UDINT Load(tinyxml2::XMLElement *element);
+	UDINT Load(tinyxml2::XMLElement* element, rError& err);
 
 protected:
 	USINT UnitPrec[MAX_UNITS_COUNT];

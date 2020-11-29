@@ -16,13 +16,16 @@
 #include <limits>
 #include <cmath>
 #include "tinyxml2.h"
-#include "data_config.h"
+#include "error.h"
+//#include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "log_manager.h"
 #include "data_link.h"
 #include "xml_util.h"
 
+
+const std::string rLink::SHADOW_NONE = "";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -138,7 +141,7 @@ void rLink::Init(UINT setup, UDINT unit, rSource *owner, const string &ioname, S
 	Owner   = owner;
 	IO_Name = ioname;
 	Descr   = descr;
-	Setup   = setup;
+	m_setup = setup;
 }
 
 
@@ -156,22 +159,22 @@ UDINT rLink::generateVars(rVariableList& list)
 	}
 
 	name = Owner->Alias;
-	if(!(Setup & LINK_SETUP_NONAME))
+	if(!(m_setup & Setup::NONAME))
 	{
-		name += "." + IO_Name;
+		if (m_setup & Setup::VARNAME) {
+			name += "." + m_varName;
+		} else {
+			name += "." + IO_Name;
+		}
 	}
 
-	if(Setup & LINK_SETUP_WRITABLE)
-	{
+	if (m_setup & Setup::WRITABLE) {
 		flags &= ~rVariable::Flags::READONLY;
 	}
 
-	if(Setup & LINK_SETUP_SIMPLE)
-	{
+	if (m_setup & Setup::SIMPLE) {
 		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &Value, Unit, 0);
-	}
-	else
-	{
+	} else {
 		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &Value        , Unit     , 0);
 		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___              ,  Unit.GetPtr(), U_DIMLESS, 0);
 
@@ -184,38 +187,40 @@ UDINT rLink::generateVars(rVariableList& list)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-UDINT rLink::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rLink::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	string *curstr = &Alias;
+	UNUSED(prefix);
 
-	FullTag = XmlUtils::getAttributeString(element, XmlName::ALIAS, "");
+	std::string* curstr = &Alias;
 
-	if(FullTag.empty()) return DATACFGERR_LINK;
+	FullTag   = XmlUtils::getAttributeString(element, XmlName::ALIAS, "");
+	m_lineNum = element->GetLineNum();
+
+	if (FullTag.empty()) {
+		return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag is empty");
+	}
 
 	// Делим полное имя на имя объекта и имя параметра (разбираем строчку "xxx:yyy")
-	for(UDINT ii = 0; ii < FullTag.size(); ++ii)
-	{
-		if(':' == FullTag[ii])
-		{
+	for (auto ch : FullTag) {
+		if (ch == ':') {
 			// Двоеточие встретилось повторно
-			if(curstr == &Param)
-			{
-				return DATACFGERR_LINK;
+			if (curstr == &Param) {
+				return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag name is fault");
 			}
 
 			curstr = &Param;
 			continue;
 		}
 
-		*curstr += FullTag[ii];
+		*curstr += ch;
 	}
 
 	// Загружаем пределы
-	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS);
+	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS);
 
 	if (limits) {
-		if (tinyxml2::XML_SUCCESS != Limit.LoadFromXML(limits, cfg)) {
-			return DATACFGERR_AI;
+		if (TRITONN_RESULT_OK != Limit.LoadFromXML(limits, err, "")) {
+			return err.getError();
 		}
 	} else {
 		Limit.m_setup.Init(rLimit::Setup::OFF);

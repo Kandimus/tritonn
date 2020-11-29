@@ -16,28 +16,13 @@
 #include "text_manager.h"
 
 
-//-------------------------------------------------------------------------------------------------
-//
-rTextManager::rTextManager() : rTextClass()
+rTextManager::rTextManager()
 {
-	;
+
 }
-
-
 
 rTextManager::~rTextManager()
 {
-	;
+
 }
-
-
-//-------------------------------------------------------------------------------------------------
-//
-rTextManager &rTextManager::Instance()
-{
-	static rTextManager Singleton;
-
-	return Singleton;
-}
-
 

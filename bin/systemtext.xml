@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<strings kernel="0.17" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./systemtext.xsd">
+<strings kernel="0.18" xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ./systemtext.xsd">
 	<lang value="ru">
 		<str id="0"/>
 		<!-- Температурные единицы измерения -->
@@ -19,7 +19,7 @@
 		<str id="48">кг/м³</str>
 		<str id="49">г/см³</str>
 		<!-- Вязкость динамическая -->
-    <str id="64">сП</str>
+		<str id="64">сП</str>
 		<str id="65">П</str>
 		<str id="66">кгс·с/м²</str>
 		<str id="67">Па·с</str>
@@ -46,12 +46,12 @@
 		<str id="176">имп/м³</str>
 		<str id="177">имп/л</str>
 		<!-- Частота -->
-    <str id="192">Гц</str>
+		<str id="192">Гц</str>
 		<str id="193">кГц</str>
 		<str id="194">МГц</str>
-    <!-- Время -->
-    <str id="208">нс</str>
-    <str id="209">мкс</str>
+		<!-- Время -->
+		<str id="208">нс</str>
+		<str id="209">мкс</str>
 		<str id="210">мс</str>
 		<str id="211">с</str>
 		<!-- 288-303 Резерв под Единицы измерения давления (атмосферного) -->
@@ -85,13 +85,13 @@
 		<str id="1014">коэфициент CPL</str> <!-- SID_CPL -->
 		<str id="1015">импульс</str> <!-- SID_IMPULSE -->
 		<str id="1016">частота</str> <!-- SID_FREQUENCY -->
-    <str id="1017">расход массовый</str> <!-- SID_FLOWRATE_MASS -->
-    <str id="1018">расход объемный</str> <!-- SID_FLOWRATE_VOLUME -->
-    <str id="1019">расход объемный при н.у.</str> <!-- SID_FLOWRATE_VOLUME15 -->
-    <str id="1020">расход объемный при 20 °C</str> <!-- SID_FLOWRATE_VOLUME20 -->
-    
-    <str id="1500">выходное значение</str> <!-- SID_SEL_OUT -->
-    <str id="1501">входное значение 1</str> <!-- SID_SEL_IN1 -->
+		<str id="1017">расход массовый</str> <!-- SID_FLOWRATE_MASS -->
+		<str id="1018">расход объемный</str> <!-- SID_FLOWRATE_VOLUME -->
+		<str id="1019">расход объемный при н.у.</str> <!-- SID_FLOWRATE_VOLUME15 -->
+		<str id="1020">расход объемный при 20 °C</str> <!-- SID_FLOWRATE_VOLUME20 -->
+
+		<str id="1500">выходное значение</str> <!-- SID_SEL_OUT -->
+		<str id="1501">входное значение 1</str> <!-- SID_SEL_IN1 -->
     <str id="1502">входное значение 2</str> <!-- SID_SEL_IN2 -->
     <str id="1503">входное значение 3</str> <!-- SID_SEL_IN3 -->
     <str id="1504">входное значение 4</str> <!-- SID_SEL_IN4 -->
@@ -162,15 +162,13 @@
     <str id="1569">группа 8, флаг ошибки входа 1</str> <!-- SID_SEL_GRP8_FLT1 -->
     <str id="1570">группа 8, флаг ошибки входа 2</str> <!-- SID_SEL_GRP8_FLT2 -->
     <str id="1571">группа 8, флаг ошибки входа 3</str> <!-- SID_SEL_GRP8_FLT3 -->
-    <str id="1572">группа 8, флаг ошибки входа 4</str> <!-- SID_SEL_GRP8_FLT4 -->
+		<str id="1572">группа 8, флаг ошибки входа 4</str> <!-- SID_SEL_GRP8_FLT4 -->
 	</lang>
 	<lang value="en">
-	  <str id="0"/>
-      <!-- Температурные единицы измерения -->
+		<str id="0"/>
 		<str id="16">°C</str>
 		<str id="17">К</str>
 		<str id="18">F</str>
-		<!-- Единицы измерения давления (избыточного) -->
 		<str id="32">MPa</str>
 		<str id="33">kPa</str>
 		<str id="34">kgf</str>
@@ -179,11 +177,11 @@
 		<str id="37">atm</str>
 		<str id="38">mm Hg</str>
 		<str id="39">psi</str>
-		
-	  <str id="1000">temperature</str>
-	  <str id="1001">pressure</str>
-	  <str id="1002">period</str>
-	  
-	  <str id="1014">flowrate</str>
+
+		<str id="1000">temperature</str>
+		<str id="1001">pressure</str>
+		<str id="1002">period</str>
+
+		<str id="1014">flowrate</str>
 	</lang>
 </strings>

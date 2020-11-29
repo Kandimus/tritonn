@@ -54,7 +54,7 @@ public:
 	virtual ~rLimit();
 
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list, const string &owner_name, STRID owner_unit);
 
 public:

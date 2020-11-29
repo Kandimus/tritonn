@@ -23,7 +23,6 @@
 
 namespace XmlUtils
 {
-
 USINT       getAttributeUSINT (tinyxml2::XMLElement *element, const std::string &name, const USINT def);
 UDINT       getAttributeUDINT (tinyxml2::XMLElement *element, const std::string &name, const UDINT def);
 std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const std::string &def);
@@ -33,6 +32,7 @@ LREAL       getTextLREAL (tinyxml2::XMLElement *element, LREAL def, UDINT &err);
 UDINT       getTextUDINT (tinyxml2::XMLElement *element, UDINT def, UDINT &err);
 UINT        getTextUINT  (tinyxml2::XMLElement *element, UINT  def, UDINT &err);
 USINT       getTextUSINT (tinyxml2::XMLElement *element, USINT def, UDINT &err);
+USINT       getTextBOOL  (tinyxml2::XMLElement *element, bool  def, UDINT &err);
 
 };
 
@@ -56,6 +56,8 @@ const char CALC[]          = "calculate";
 const char CALIBR[]        = "calibration";
 const char CONFIG[]        = "config";
 const char COUNTER[]       = "counter";
+const char DI[]            = "di";
+const char DO[]            = "do";
 const char FI[]            = "counter";
 const char CHANNEL[]       = "channel";
 const char COMMS[]         = "comms";
@@ -82,6 +84,7 @@ const char FAULT[]         = "fault";
 const char FAULTS[]        = "faults";
 const char FAULTVAL[]      = "faultvalue";
 const char FAULTVALS[]     = "faultvalues";
+const char FLOWMETER[]     = "flowmeter";
 const char FLOWRATEMASS[]  = "flowrate.mass";
 const char FLOWRATEVOL[]   = "flowrate.volume";
 const char FLOWRATEVOL15[] = "flowrate.volume15";

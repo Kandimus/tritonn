@@ -23,13 +23,15 @@
 #include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
+#include "error.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "simplefile.h"
 #include "data_report.h"
 #include "xml_util.h"
 
-
+rBitsArray rReport::m_flagsType;
+rBitsArray rReport::m_flagsPeriod;
 
 void rReportTime::SetCurTime()
 {
@@ -151,6 +153,32 @@ void rReportDataset::CreateFrom(rReportDataset &ds)
 //
 rReport::rReport() : rSource()
 {
+	if (m_flagsType.empty()) {
+		m_flagsType
+				.add("PERIODIC", REPORT_PERIODIC)
+				.add("BATCH"   , REPORT_BATCH);
+	}
+
+	if (m_flagsPeriod.empty()) {
+		m_flagsPeriod
+				.add("HOUR"     , REPORT_PERIOD_HOUR)
+				.add("2HOUR"    , REPORT_PERIOD_2HOUR)
+				.add("3HOUR"    , REPORT_PERIOD_3HOUR)
+				.add("4HOUR"    , REPORT_PERIOD_4HOUR)
+				.add("6HOUR"    , REPORT_PERIOD_6HOUR)
+				.add("8HOUR"    , REPORT_PERIOD_8HOUR)
+				.add("12HOUR"   , REPORT_PERIOD_12HOUR)
+				.add("DAYLY"    , REPORT_PERIOD_DAYLY)
+				.add("WEEKLY"   , REPORT_PERIOD_WEEKLY)
+				.add("BIWEEKLY" , REPORT_PERIOD_BIWEEKLY)
+				.add("MONTHLY"  , REPORT_PERIOD_MONTHLY)
+				.add("QUARTERLY", REPORT_PERIOD_QUARTERLY)
+				.add("ANNUAL"   , REPORT_PERIOD_ANNUAL)
+				.add("5MIN"     , REPORT_PERIOD_5MIN)
+				.add("15MIN"    , REPORT_PERIOD_15MIN);
+
+	}
+
 	Status = REPORT_STATUS_IDLE;
 }
 
@@ -387,93 +415,102 @@ tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	string defType  = rDataConfig::GetFlagNameByValue(rDataConfig::ReportTypeFlags , REPORT_PERIODIC);
-	string strType  = XmlUtils::getAttributeString(element, XmlName::TYPE, defType);
-	UDINT  err      = 0;
+	std::string strType = XmlUtils::getAttributeString(element, XmlName::TYPE, m_flagsType.getNameByBits(REPORT_PERIODIC));
+	UDINT fault = 0;
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_REPORT;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	tinyxml2::XMLElement *period  = element->FirstChildElement(XmlName::PERIOD);
-	tinyxml2::XMLElement *storage = element->FirstChildElement(XmlName::STORAGE);
-	tinyxml2::XMLElement *dsname  = element->FirstChildElement(XmlName::DATASET);
+	tinyxml2::XMLElement* period  = element->FirstChildElement(XmlName::PERIOD);
+	tinyxml2::XMLElement* storage = element->FirstChildElement(XmlName::STORAGE);
+	tinyxml2::XMLElement* dsname  = element->FirstChildElement(XmlName::DATASET);
 
 	// Тип отчета
-	Type = rDataConfig::GetFlagFromStr(rDataConfig::ReportTypeFlags, strType, err);
+	Type = m_flagsType.getValue(strType, fault);
 
-	if((Type == REPORT_PERIODIC && nullptr == period) || nullptr == dsname || err)
-	{
-		return DATACFGERR_REPORT;
+	if ((Type == REPORT_PERIODIC && !period) || !dsname || fault) {
+		return err.set(DATACFGERR_REPORT, element->GetLineNum());
 	}
 
 	// Время хранения отчета
-	Storage = rDataConfig::GetTextUINT(storage, REPORT_DEFAULT_STORAGE, err);
-	if(Storage == 0 || err)
-	{
-		return DATACFGERR_REPORT;
+	Storage = XmlUtils::getTextUINT(storage, REPORT_DEFAULT_STORAGE, fault);
+	if (Storage == 0 || fault) {
+		return err.set(DATACFGERR_REPORT, element->GetLineNum(), "invalid storage");
 	}
 
 	// Загрузка периодических отчетов
-	if(REPORT_PERIODIC == Type)
-	{
-		string strPeriod = rDataConfig::GetTextString(element->FirstChildElement(XmlName::PERIOD), "", err);
+	if (REPORT_PERIODIC == Type) {
+		string strPeriod = XmlUtils::getTextString(element->FirstChildElement(XmlName::PERIOD), "", fault);
 
-		Period = rDataConfig::GetFlagFromStr(rDataConfig::ReportPeriodFlags, strPeriod, err);
+		Period = m_flagsPeriod.getBit(strPeriod, fault);
 
-		if(err) return DATACFGERR_REPORT;
+		if (fault) {
+			return err.set(DATACFGERR_REPORT, element->GetLineNum(), "undefined report period");
+		}
 	}
 
 	//--------------------------------------------
 	// Загружаем DataSet
 	tinyxml2::XMLElement *dataset = GetDataSetElement(element, dsname->GetText());
 
-	if(nullptr == dataset) return DATACFGERR_REPORT;
+	if (!dataset) {
+		return err.set(DATACFGERR_REPORT, element->GetLineNum(), "cant found dataset");
+	}
 
 	// Перебираем станции и линии в dataset
 	// Заполняем только объект Present
-	for(tinyxml2::XMLElement *xml_total = dataset->FirstChildElement(XmlName::TOTAL); xml_total != nullptr; xml_total = xml_total->NextSiblingElement(XmlName::TOTAL))
-	{
-		rReportTotal *tot = new rReportTotal();
+	XML_FOR(total_xml, dataset, XmlName::TOTAL) {
+		rReportTotal* tot = new rReportTotal();
 
 		Present.AverageItems.push_back(tot);
 
 		tot->Source = nullptr;
-		tot->Name   = rDataConfig::GetAttributeString(xml_total, XmlName::NAME , "");
-		tot->Alias  = rDataConfig::GetAttributeString(xml_total, XmlName::ALIAS, "");
+		tot->Name   = XmlUtils::getAttributeString(total_xml, XmlName::NAME , "");
+		tot->Alias  = XmlUtils::getAttributeString(total_xml, XmlName::ALIAS, "");
 
-		if(tot->Name.empty() || tot->Alias.empty()) return DATACFGERR_REPORT;
+		if (tot->Name.empty() || tot->Alias.empty()) {
+			return err.set(DATACFGERR_REPORT, total_xml->GetLineNum(), "undefined name");
+		}
 
-		for(tinyxml2::XMLElement *xml_item = xml_total->FirstChildElement(XmlName::ITEM); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(XmlName::ITEM))
-		{
-			rReportItem *item = new rReportItem();
+		XML_FOR(item_xml, total_xml, XmlName::ITEM) {
+			rReportItem* item = new rReportItem();
 
 			tot->Items.push_back(item);
 
-			item->Name = rDataConfig::GetAttributeString(xml_item, XmlName::NAME, "");
+			item->Name = XmlUtils::getAttributeString(item_xml, XmlName::NAME, "");
 
-			if(item->Name.empty()) return DATACFGERR_REPORT;
+			if (item->Name.empty()) {
+				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
+			}
 
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(xml_item->FirstChildElement(XmlName::LINK), item->Source)) return cfg.ErrorID;
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->Source)) {
+				return err.getError();
+			}
 		}
 	}
 
 	// Загружаем мгновенные данные из dataset
 	// Заполняем только объект Present
-	tinyxml2::XMLElement *xml_snapshots = dataset->FirstChildElement(XmlName::SNAPSHOTS);
-	if(xml_snapshots != nullptr)
+	tinyxml2::XMLElement* snapshots_xml = dataset->FirstChildElement(XmlName::SNAPSHOTS);
+	if(snapshots_xml != nullptr)
 	{
-		for(tinyxml2::XMLElement *xml_item = xml_snapshots->FirstChildElement(XmlName::ITEM); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(XmlName::ITEM))
-		{
-			rReportItem *item = new rReportItem();
+		XML_FOR(item_xml, snapshots_xml, XmlName::ITEM) {
+			rReportItem* item = new rReportItem();
 
 			Present.SnapshotItems.push_back(item);
 
-			item->Name = rDataConfig::GetAttributeString(xml_item, XmlName::NAME, "");
+			item->Name = XmlUtils::getAttributeString(item_xml, XmlName::NAME, "");
 
-			if(item->Name.empty()) return DATACFGERR_REPORT;
+			if (item->Name.empty()) {
+				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
+			}
 
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(xml_item->FirstChildElement(XmlName::LINK), item->Source)) return cfg.ErrorID;
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->Source)) {
+				return err.getError();
+			}
 		}
 	}
 
@@ -482,7 +519,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

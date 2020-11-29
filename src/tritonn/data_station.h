@@ -16,11 +16,11 @@
 #pragma once
 
 #include <vector>
+#include "density.h"
 #include "total.h"
 #include "data_link.h"
 #include "compared_values.h"
-
-using std::vector;
+#include "bits_array.h"
 
 class rStream;
 
@@ -35,7 +35,7 @@ public:
 	virtual const char *RTTI() { return "station"; }
 
 	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg);
+	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
@@ -61,16 +61,16 @@ public:
 	rLink        FlowVolume15;
 	rLink        FlowVolume20;
 
-	TYPE_PRODUCT Product;
+	rDensity::Product m_product;
 	rCmpUINT     Setup;
 	rTotal       Total;
 	UDINT        UnitVolume; // Единицы измерений объема станиции
 	UDINT        UnitMass; // Единицы измерений массы станиции
 
-	UDINT        LockErr;
+	std::vector<rStream*> Stream;
 
-	vector<rStream *> Stream;
-
+private:
+	static rBitsArray m_flagsProduct;
 };
 
 

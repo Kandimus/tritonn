@@ -19,12 +19,13 @@
 #include <memory>
 #include "safity.h"
 #include "tinyxml2.h"
-#include "variable_class.h"
+#include "../variable_class.h"
 #include "thread_class.h"
-#include "io_basemodule.h"
+#include "basemodule.h"
 
 class rDataConfig;
 class rIOBaseChannel;
+class rError;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -36,7 +37,7 @@ public:
 
 // Методы
 public:
-	UDINT LoadFromXML(tinyxml2::XMLElement* element, rDataConfig &cfg);
+	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
 	std::string saveKernel();
 
@@ -46,7 +47,7 @@ protected:
 	virtual rThreadStatus Proccesing();
 
 private:
-	std::vector<rIOBaseModule* > m_modules; //
+	std::vector<rIOBaseModule*> m_modules; //
 	USINT m_moduleCount;
 };
 

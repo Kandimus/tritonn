@@ -25,6 +25,7 @@
 #include "data_source.h"
 #include "text_manager.h"
 #include "xml_util.h"
+#include "error.h"
 
 
 
@@ -167,7 +168,7 @@ UDINT rSource::Calculate()
 UDINT rSource::PostCalculate()
 {
 	for (auto link : m_outputs) {
-		if (link->Setup & LINK_SETUP_INPUT) {
+		if (link->m_setup & rLink::Setup::INPUT) {
 			continue;
 		}
 
@@ -204,8 +205,8 @@ UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, STRID nameid, const
 	link.Shadow = shadow;
 	link.Descr  = nameid;
 
-	if(setup & LINK_SETUP_INPUT ) m_inputs.push_back (&link);
-	if(setup & LINK_SETUP_OUTPUT) m_outputs.push_back(&link);
+	if(setup & rLink::Setup::INPUT ) m_inputs.push_back (&link);
+	if(setup & rLink::Setup::OUTPUT) m_outputs.push_back(&link);
 
 	// Вызываем функцию конечного класса
 	InitLimitEvent(link);
@@ -221,7 +222,7 @@ UDINT rSource::ReinitLimitEvents()
 	}
 
 	for (auto link : m_outputs) {
-		if (!(link->Setup & LINK_SETUP_INPUT)) {
+		if (!(link->m_setup & rLink::Setup::INPUT)) {
 			InitLimitEvent(*link);
 		}
 	}
@@ -239,7 +240,7 @@ UDINT rSource::generateVars(rVariableList& list)
 	}
 
 	for (auto link : m_outputs) {
-		if (link->Setup & LINK_SETUP_INPUT) {
+		if (link->m_setup & rLink::Setup::INPUT) {
 			continue;
 		}
 
@@ -252,20 +253,17 @@ UDINT rSource::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	const char *strAlias = element->Attribute(XmlName::NAME);
 
 	//TODO Можно еще алиас проверить на валидность имени
 	if (!strAlias) {
-		cfg.ErrorLine = element->GetLineNum();
-		cfg.ErrorID   = DATACFGERR_INVALID_NAME;
-		return cfg.ErrorID;
+		return err.set(DATACFGERR_INVALID_NAME, element->GetLineNum());
 	}
 
-	if(cfg.Prefix.size())
-	{
-		Alias  = cfg.Prefix + ".";
+	if (prefix.size()) {
+		Alias = prefix + ".";
 	}
 
 	Alias += strAlias;
@@ -273,13 +271,15 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 	Descr  = XmlUtils::getAttributeUDINT(element, XmlName::DESC, 0);
 
 	// Загружаем все пределы по всем входам и выходам
-	tinyxml2::XMLElement *limits = element->FirstChildElement(XmlName::LIMITS);
+	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS);
 
-	if(nullptr == limits) return tinyxml2::XML_SUCCESS;
+	if (nullptr == limits) {
+		return TRITONN_RESULT_OK;
+	}
 
 	XML_FOR(limit_xml, limits, XmlName::LIMIT) {
-		rLink *link = nullptr;
-		string ioname = String_tolower(limit_xml->Attribute(XmlName::NAME));
+		rLink*      link   = nullptr;
+		std::string ioname = String_tolower(limit_xml->Attribute(XmlName::NAME));
 
 		for (auto item : m_inputs) {
 			if (item->IO_Name == ioname) {
@@ -288,7 +288,7 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			}
 		}
 
-		if (link == nullptr) {
+		if (!link) {
 			for (auto item : m_outputs) {
 				if (item->IO_Name == ioname) {
 					link = item;
@@ -297,14 +297,14 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
 			}
 		}
 
-		if (link == nullptr) {
-			return DATACFGERR_LIMIT;
+		if (!link) {
+			return err.set(DATACFGERR_LIMIT, limit_xml->GetLineNum(), ioname);
 		}
 
-		link->Limit.LoadFromXML(limit_xml, cfg);
+		link->Limit.LoadFromXML(limit_xml, err, prefix);
 	}
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

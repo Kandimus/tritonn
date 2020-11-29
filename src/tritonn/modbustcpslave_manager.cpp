@@ -21,6 +21,7 @@
 #include "hash.h"
 #include "log_manager.h"
 #include "xml_util.h"
+#include "error.h"
 #include "data_manager.h"
 #include "variable_item.h"
 #include "variable_list.h"
@@ -76,11 +77,13 @@ rModbusTCPSlaveManager::~rModbusTCPSlaveManager()
 //
 rThreadStatus rModbusTCPSlaveManager::Proccesing()
 {
-	if(LoadStandartModbus())
-	{
+	rError err;
+
+	if (LoadStandartModbus(err)) {
 		CloseServer();
 		Finish();
-		//TODO Нужно вызвать HALT
+
+		rDataManager::instance().DoHalt(HALT_REASON_CONFIGFILE | err.getError());
 		return rThreadStatus::FINISHED;
 	}
 
@@ -395,23 +398,18 @@ UDINT rModbusTCPSlaveManager::StartServer()
 
 //-------------------------------------------------------------------------------------------------
 // Проверка переменных, создание Snapshoot
-UDINT rModbusTCPSlaveManager::CheckVars(rDataConfig &cfg)
+UDINT rModbusTCPSlaveManager::CheckVars(rError& err)
 {
 	UDINT address = 0;
 
 	for(auto& tlink : TempLink) {
 		rModbusLink link;
 
-		if(m_snapshot.add(tlink.VarName) == nullptr) {
-			cfg.ErrorLine = tlink.LineNum;
-			cfg.ErrorStr  = tlink.VarName;
-			cfg.ErrorID   = DATACFGERR_INTERFACES_NF_VAR;
-
-			return cfg.ErrorID;
+		if (!m_snapshot.add(tlink.VarName)) {
+			return err.set(DATACFGERR_INTERFACES_NF_VAR, tlink.LineNum, tlink.VarName);
 		}
 
-		if(tlink.Address)
-		{
+		if (tlink.Address) {
 			address = tlink.Address;
 		}
 
@@ -420,13 +418,8 @@ UDINT rModbusTCPSlaveManager::CheckVars(rDataConfig &cfg)
 		address     += TypeCountReg(link.m_item->getVariable()->getType());
 
 		// check block start + count > 65535
-		if(address > 0x0000FFFF)
-		{
-			cfg.ErrorLine = tlink.LineNum;
-			cfg.ErrorStr  = tlink.VarName;
-			cfg.ErrorID   = DATACFGERR_INTERFACES_ADDROVERFLOW;
-
-			return cfg.ErrorID;
+		if (address > 0x0000FFFF) {
+			return err.set(DATACFGERR_INTERFACES_ADDROVERFLOW, tlink.LineNum, tlink.VarName);
 		}
 
 		ModbusLink.push_back(link);
@@ -439,14 +432,14 @@ UDINT rModbusTCPSlaveManager::CheckVars(rDataConfig &cfg)
 
 //-------------------------------------------------------------------------------------------------
 // Загрузка СТАНДАРТНОЙ области данных модбас (системной)
-UDINT rModbusTCPSlaveManager::LoadStandartModbus()
+UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 {
 	string filetext = "";
 	UDINT  result   = TRITONN_RESULT_OK;
 
 	if(TRITONN_RESULT_OK != (result = SimpleFileLoad(FILE_MODBUS, filetext)))
 	{
-		return result;
+		return err.set(result, 0, "");
 	}
 
 	tinyxml2::XMLDocument doc;
@@ -454,28 +447,26 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus()
 
 	if(tinyxml2::XML_SUCCESS != doc.Parse(filetext.c_str()))
 	{
-		return (UDINT)doc.ErrorID();
+		return err.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
 	}
 
 	xml_modbus = doc.FirstChildElement("modbus");
-	if(nullptr == xml_modbus)
+	if(!xml_modbus)
 	{
-		return -1;
+		return TRITONN_RESULT_OK;
 	}
 
-	for(tinyxml2::XMLElement *xml_item = xml_modbus->FirstChildElement("item"); xml_item != nullptr; xml_item = xml_item->NextSiblingElement("item"))
-	{
-		UDINT       err = 0;
+	XML_FOR(xml_item, xml_modbus, XmlName::ITEM) {
+		UDINT fault = 0;
 		rModbusLink link;
 
-		m_snapshot.add(rDataConfig::GetTextString(xml_item, "", err));
+		m_snapshot.add(XmlUtils::getTextString(xml_item, "", fault));
 
-		link.Address = rDataConfig::GetAttributeUDINT(xml_item, "addr", 0xFFFF);
+		link.Address = XmlUtils::getAttributeUDINT(xml_item, "addr", 0xFFFF); //TODO заменить на константу
 		link.m_item  = m_snapshot.last();
 
-		if(link.Address == 0xFFFF || nullptr == link.m_item->getVariable())
-		{
-			return -2;
+		if (link.Address == 0xFFFF || nullptr == link.m_item->getVariable()) {
+			return err.set(DATACFGERR_INTERFACES_NF_VAR, xml_item->GetLineNum(), "not found variable or incorrect address");
 		}
 
 		ModbusLink.push_back(link);
@@ -514,12 +505,12 @@ tinyxml2::XMLElement *rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement *el
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataConfig &cfg)
+UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError& err)
 {
-	UDINT  port = 0;
-	string ip   = "";
+	UDINT       port  = 0;
+	std::string ip    = "";
 
-	rInterface::loadFromXML(xml_root, cfg);
+	rInterface::loadFromXML(xml_root, err);
 
 	Alias    = "comms.modbus." + Alias;
 	port     = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
@@ -533,34 +524,25 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 	tinyxml2::XMLElement* xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
 	tinyxml2::XMLElement* xml_wlist  = xml_root->FirstChildElement(XmlName::WHITELIST);
 
-	if(nullptr == xml_adrmap)
-	{
-		cfg.ErrorLine = xml_root->GetLineNum();
-
-		return DATACFGERR_INTERFACES_NF_BLOCKS;
+	if (!xml_adrmap) {
+		return err.set(DATACFGERR_INTERFACES_NF_BLOCKS, xml_root->GetLineNum(), "");
 	}
 
 	// Загружаем информацию по Swap
-	if(nullptr != xml_swap)
-	{
-		UDINT err = 0;
+	if(xml_swap) {
+		UDINT fault = 0;
 
-		Swap.Byte  = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(XmlName::BYTE ), Swap.Byte , err);
-		Swap.Word  = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(XmlName::WORD ), Swap.Word , err);
-		Swap.DWord = rDataConfig::GetTextUSINT(xml_swap->FirstChildElement(XmlName::DWORD), Swap.DWord, err);
+		Swap.Byte  = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::BYTE ), Swap.Byte , fault);
+		Swap.Word  = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::WORD ), Swap.Word , fault);
+		Swap.DWord = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::DWORD), Swap.DWord, fault);
 	}
 
 	// Загружаем список "белых" адрессов
-	if(nullptr != xml_wlist)
-	{
+	if (xml_wlist) {
 		XML_FOR(xml_item, xml_wlist, XmlName::IP) {
-			if(xml_item->GetText())
-			{
-				if(!AddWhiteIP(xml_item->GetText()))
-				{
-					cfg.ErrorLine = xml_item->GetLineNum();
-
-					return DATACFGERR_INCORRECT_IP;
+			if(xml_item->GetText()) {
+				if (!AddWhiteIP(xml_item->GetText())) {
+					return err.set(DATACFGERR_INCORRECT_IP, xml_wlist->GetLineNum(), "");
 				}
 			}
 		}
@@ -570,48 +552,37 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement *xml_root, rDataC
 	// Перебираем указанные блоки
 	XML_FOR(xml_item, xml_adrmap, XmlName::ADDRESSBLOCK) {
 		// Считываем блок модбаса
-		UDINT  err       = 0;
+		UDINT  fault     = 0;
 		UDINT  address   = XmlUtils::getAttributeUDINT(xml_item, XmlName::BEGIN, 0xFFFFFFFF);
-		string blockname = XmlUtils::getTextString    (xml_item, "", err);
+		string blockname = XmlUtils::getTextString    (xml_item, "", fault);
 
 		if (address < 400000 || address > 465535) {
-			cfg.ErrorLine = xml_item->GetLineNum();
-
-			return DATACFGERR_INTERFACES_BADADDR;
+			return err.set(DATACFGERR_INTERFACES_BADADDR, xml_item->GetLineNum(), "");
 		}
 		address -= 400000;
 
-		if(err)
-		{
-			cfg.ErrorLine = xml_item->GetLineNum();
-
-			return DATACFGERR_INTERFACES_BADBLOCK;
+		if (fault) {
+			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_item->GetLineNum(), "");
 		}
 
-		tinyxml2::XMLElement *xml_block = FindBlock(xml_root, blockname);
+		tinyxml2::XMLElement* xml_block = FindBlock(xml_root, blockname);
 
-		if(nullptr == xml_block)
-		{
-			cfg.ErrorLine = xml_root->GetLineNum();
-
-			return DATACFGERR_INTERFACES_BADBLOCK;
+		if (!xml_block) {
+			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_root->GetLineNum(), "");
 		}
 
 		//
 		XML_FOR (xml_var, xml_block, XmlName::VARIABLE) {
 			rTempLink tlink;
 
-			err           = 0;
+			fault         = 0;
 			tlink.Address = address;
-			tlink.VarName = XmlUtils::getTextString(xml_var, "", err);
+			tlink.VarName = XmlUtils::getTextString(xml_var, "", fault);
 			tlink.LineNum = xml_var->GetLineNum();
 			address       = 0;
 
-			if(err)
-			{
-				cfg.ErrorLine = tlink.LineNum;
-
-				return DATACFGERR_INTERFACES_BADVAR;
+			if (fault) {
+				return err.set(DATACFGERR_INTERFACES_BADVAR, xml_var->GetLineNum(), "");
 			}
 
 			TempLink.push_back(tlink);

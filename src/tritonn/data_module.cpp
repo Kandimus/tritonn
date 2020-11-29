@@ -38,15 +38,13 @@ bool rDataModule::isSetModule() const
 }
 
 
-UDINT rDataModule::loadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rDataModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
 	m_module  = XmlUtils::getAttributeUSINT(element, XmlName::MODULE , 0xFF);
 	m_channel = XmlUtils::getAttributeUSINT(element, XmlName::CHANNEL, 0xFF);
 
 	if (!isSetModule()) {
-		cfg.ErrorLine = element->GetLineNum();
-		cfg.ErrorID   = DATACFGERR_INVALID_MODULELINK;
-		return cfg.ErrorID;
+		return err.set(DATACFGERR_INVALID_MODULELINK, element->GetLineNum(), "");
 	}
 
 	return TRITONN_RESULT_OK;

@@ -61,9 +61,9 @@ rCounter::rCounter() : Setup(FI_SETUP_OFF)
 		Spline[ii] = FI_BAD_SPLINE;
 	}
 
-	InitLink(LINK_SETUP_OUTPUT, Impulse, U_imp  , SID_IMPULSE  , XmlName::IMPULSE, LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Freq   , U_Hz   , SID_FREQUENCY, XmlName::FREQ   , LINK_SHADOW_NONE);
-	InitLink(LINK_SETUP_OUTPUT, Period , U_mksec, SID_PERIOD   , XmlName::PERIOD , LINK_SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Impulse, U_imp  , SID_IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Freq   , U_Hz   , SID_FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Period , U_mksec, SID_PERIOD   , XmlName::PERIOD , rLink::SHADOW_NONE);
 }
 
 
@@ -267,19 +267,23 @@ UDINT rCounter::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::LoadFromXML(tinyxml2::XMLElement *element, rDataConfig &cfg)
+UDINT rCounter::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(FI_SETUP_OFF));
-	UDINT  err      = 0;
 
-	if(TRITONN_RESULT_OK != rSource::LoadFromXML(element, cfg)) return 1;
+	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+		return err.getError();
+	}
 
-	Setup.Init(m_flagsSetup.getValue(strSetup, err));
-	if(err) return 1;
+	UDINT fault = 0;
+	Setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	if (fault) {
+		return err.set(DATACFGERR_FI, element->GetLineNum(), "setup fault");
+	}
 
 	ReinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

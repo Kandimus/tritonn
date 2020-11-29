@@ -5,10 +5,10 @@
 #include "event_manager.h"
 #include "threadmaster.h"
 #include "data_manager.h"
-#include "io_manager.h"
+#include "io/manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
-//#include "data_variable.h"
+#include "error.h"
 #include "text_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"
@@ -57,14 +57,14 @@ int main(int argc, char* argv[])
 			.setSwitch(rArg::Terminal , false)
 			.setSwitch(rArg::Simulate , true)
 			.setOption(rArg::Log      , "FFFFFFFF")
-			.setOption(rArg::ForceConf, "test.xml");
+			.setOption(rArg::Config   , "test.xml");
 #else
 	rSimpleArgs::instance()
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
-			.addOption(rArg::ForceConf, 'c', "test_sikn.xml");
+			.addOption(rArg::Config   , 'c', "test_sikn.xml");
 
 	rSimpleArgs::instance().parse(argc, (const char**)argv);
 #endif
@@ -102,9 +102,10 @@ int main(int argc, char* argv[])
 
 	//----------------------------------------------------------------------------------------------
 	// Системные строки
-	if(tinyxml2::XML_SUCCESS != rTextManager::Instance().LoadSystem(FILE_SYSTEMTEXT))
+	rError err;
+	if(TRITONN_RESULT_OK != rTextManager::instance().LoadSystem(FILE_SYSTEMTEXT, err))
 	{
-		TRACEERROR("Can't load system string. Error %i, line %i", rTextManager::Instance().ErrorID, rTextManager::Instance().ErrorLine);
+		TRACEERROR("Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
 		exit(0);
 	}
 
@@ -113,7 +114,7 @@ int main(int argc, char* argv[])
 	// Менеджер сообщений
 	rEventManager::instance().LoadText(FILE_SYSTEMEVENT); // Системные события
 	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
-	rEventManager::instance().Run(100);
+	rEventManager::instance().Run(16);
 
 	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
 
@@ -121,14 +122,14 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
 	rDataManager::instance().LoadConfig();
-	rDataManager::instance().Run(400);
+	rDataManager::instance().Run(100);
 
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
 
 	//----------------------------------------------------------------------------------------------
 	// Стартуем обмен с модулями IO
-	rIOManager::instance().Run(400);
+	rIOManager::instance().Run(100);
 
 	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "io");
 

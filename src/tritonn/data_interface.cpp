@@ -16,6 +16,7 @@
 #include <limits>
 #include "def.h"
 #include "tinyxml2.h"
+#include "xml_util.h"
 #include "data_config.h"
 #include "event_manager.h"
 #include "variable_item.h"
@@ -41,11 +42,13 @@ rInterface::~rInterface()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rInterface::loadFromXML(tinyxml2::XMLElement *element, rDataConfig &/*cfg*/)
+UDINT rInterface::loadFromXML(tinyxml2::XMLElement *element, rError& err)
 {
-	const char *strAlias = element->Attribute("name");
+	const char* strAlias = element->Attribute(XmlName::NAME);
 
-	if(!strAlias) return 1; //TODO Можно еще алиас проверить на валидность имени
+	if (!strAlias) {
+		return err.set(DATACFGERR_INTERFACES_BADNAME, element->GetLineNum(), "fault name"); //TODO Можно еще алиас проверить на валидность имени
+	}
 
 	Alias  = String_tolower(strAlias);
 

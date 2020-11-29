@@ -15,7 +15,8 @@
 
 #include "text_class.h"
 #include "log_manager.h"
-#include "data_config.h"
+#include "error.h"
+//#include "data_config.h"
 #include "text_id.h"
 #include "xml_util.h"
 
@@ -26,9 +27,7 @@ const UDINT TEXTLANG_SETUP_USED = 0x00000001;
 
 rTextClass::rTextClass()
 {
-	ErrorID   = 0;
-	ErrorLine = 0;
-	CurLang   = nullptr;
+	CurLang = nullptr;
 
 	Langs.clear();
 }
@@ -37,9 +36,8 @@ rTextClass::rTextClass()
 
 rTextClass::~rTextClass()
 {
-	for(UDINT ii = 0; ii < Langs.size(); ++ii)
-	{
-		delete Langs[ii];
+	for(auto lang: Langs) {
+		delete lang;
 	}
 	Langs.clear();
 }
@@ -47,62 +45,44 @@ rTextClass::~rTextClass()
 
 //-------------------------------------------------------------------------------------------------
 // Загрузка из основного файла
-UDINT rTextClass::LoadSystem(const string& filename)
+UDINT rTextClass::LoadSystem(const string& filename, rError& err)
 {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement *root = nullptr;
 
-	if(tinyxml2::XML_SUCCESS != doc.LoadFile(filename.c_str()))
-	{
-		ErrorID   = doc.ErrorID();
-		ErrorLine = 0;
-
-		return ErrorID;
+	if (tinyxml2::XML_SUCCESS != doc.LoadFile(filename.c_str())) {
+		return err.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
 	}
 
 	root = doc.FirstChildElement(XmlName::STRINGS);
-	if(nullptr == root)
-	{
-		ErrorID   = doc.ErrorID();
-		ErrorLine = 0;
-
-		return ErrorID;
+	if (!root) {
+		return err.set(DATACFGERR_NOTSYSTEXTFILE, 0, "");
 	}
 
-
-	// Загружаем языки
-	for(tinyxml2::XMLElement *lang = root->FirstChildElement(XmlName::LANG); lang != nullptr; lang = lang->NextSiblingElement(XmlName::LANG))
-	{
-		if(tinyxml2::XML_SUCCESS != LoadLang(lang, true))
-		{
-			return ErrorID;
+	XML_FOR(lang, root, XmlName::LANG) {
+		if (TRITONN_RESULT_OK != LoadLang(lang, true, err)) {
+			return err.getError();
 		}
 	}
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 
 
 // Загрузка дополнительных строк
-UDINT rTextClass::Load(tinyxml2::XMLElement *root)
+UDINT rTextClass::Load(tinyxml2::XMLElement* root, rError& err)
 {
-	if(nullptr == root)
-	{
-		ErrorID   = DATACFGERR_LANG_STRUCT;
-		ErrorLine = 0;
-
-		return ErrorID;
+	if (!root) {
+		return err.set(DATACFGERR_LANG_STRUCT, 0, "");
 	}
 
-	// Загружаем языки
-	for(tinyxml2::XMLElement *lang = root->FirstChildElement(XmlName::LANG); lang != nullptr; lang = lang->NextSiblingElement(XmlName::LANG))
-	{
-		if(tinyxml2::XML_SUCCESS != LoadLang(lang, false))
-		{
-			return ErrorID;
+	XML_FOR(lang, root, XmlName::LANG) {
+		if (TRITONN_RESULT_OK != LoadLang(lang, false, err)) {
+			return err.getError();
 		}
 	}
+
 /*
 	// Устанавливаем язык по умолчанию
 	string deflang = root->Attribute(CFGNAME_DEFAULT);
@@ -122,73 +102,51 @@ UDINT rTextClass::Load(tinyxml2::XMLElement *root)
 
 
 
-UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create)
+UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err)
 {
-	string     langID = "";
+	std::string langID = "";
+	rTextLang*  lang   = nullptr;
 
-	rTextLang *lang   = nullptr;
-	if(nullptr == root)
-	{
-		ErrorID   = DATACFGERR_LANG_STRUCT;
-		ErrorLine = 0;
-
-		return ErrorID;
+	if (!root) {
+		return err.set(DATACFGERR_LANG_STRUCT, 0, "");
 	}
 
 	langID = String_tolower(root->Attribute(XmlName::VALUE));
 	lang   = GetLangPtr(langID);
-	if(lang == nullptr)
-	{
-		if(create)
-		{
+
+	if (!lang) {
+		if (create) {
 			lang        = new rTextLang();
 			lang->Name  = langID;
 			lang->Setup = 0;
 
 			Langs.push_back(lang);
+		} else {
+			return err.set(DATACFGERR_LANG_UNKNOW, root->GetLineNum(), "");
 		}
-		else
-		{
-			ErrorID   = DATACFGERR_LANG_UNKNOW;
-			ErrorLine = root->GetLineNum();
-
-			return ErrorID;
-		}
-	}
-	else
-	{
+	} else {
 		lang->Setup |= TEXTLANG_SETUP_USED;
 	}
 
-	// Загружаем строки
-	for(tinyxml2::XMLElement *item = root->FirstChildElement(XmlName::STR); item != nullptr; item = item->NextSiblingElement(XmlName::STR))
-	{
-		UDINT  id    = XmlUtils::getAttributeUDINT(item, XmlName::ID, SID_UNKNOW);
-		CCHPTR ptext = item->GetText();
+	XML_FOR(xml_item, root, XmlName::STR) {
+		UDINT  id    = XmlUtils::getAttributeUDINT(xml_item, XmlName::ID, SID_UNKNOW);
+		CCHPTR ptext = xml_item->GetText();
 		string text  = (nullptr == ptext) ? "" : ptext;
 
-		if(SID_UNKNOW == id)
-		{
-			ErrorID   = DATACFGERR_LANG_ID;
-			ErrorLine = item->GetLineNum();
-
-			return ErrorID;
+		if (SID_UNKNOW == id) {
+			return err.set(DATACFGERR_LANG_ID, xml_item->GetLineNum(), "");
 		}
 
 		// Проверка на сопадение ID
-		if(nullptr != GetPtr(id, lang))
-		{
-			ErrorID   = DATACFGERR_LANG_DUPID;
-			ErrorLine = item->GetLineNum();
-
-			return ErrorID;
+		if (GetPtr(id, lang)) {
+			return err.set(DATACFGERR_LANG_DUPID, xml_item->GetLineNum(), "");
 		}
 
 		// Добавляем элемент
 		lang->Texts.push_back(rTextItem(id, text));
 	}
 
-	return tinyxml2::XML_SUCCESS;
+	return TRITONN_RESULT_OK;
 }
 
 

@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== io_basechannel.h
+//=== basechannel.h
 //===
 //=== Copyright (c) 2019 by RangeSoft.
 //=== All rights reserved.
@@ -26,7 +26,7 @@ public:
 	rIOBaseChannel();
 	virtual ~rIOBaseChannel();
 
-	virtual UDINT generateVars(const std::string& name, rVariableList& list);
+	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing() = 0;
 	virtual UDINT simulate() = 0;
 
