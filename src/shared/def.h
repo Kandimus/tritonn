@@ -306,22 +306,33 @@ const UDINT  ACCESS_MASK_VIEWHIDE      = (ACCESS_SA | ACCESS_ADMIN);
 
 //-------------------------------------------------------------------------------------------------
 // Директории
-#ifdef ISYOCTO
-	const string DIR_HOME                  = "/home/root/tritonn/";
+#ifdef WIN32
+const std::string DIR_HOME             = ".\\";
+const std::string DIR_CONF             = DIR_HOME + "conf\\";
+const std::string DIR_FTP              = DIR_HOME + "ftp\\";
+const std::string DIR_WWW              = DIR_HOME + "www\\";
+const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports\\";
+const std::string DIR_TIMEINFO         = DIR_HOME + "diag\\";
+const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
+const std::string FILE_RESTART         = DIR_HOME + "tritonn.restart";
+const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
+const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";
+const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 #else
-	const string DIR_HOME                  = "./";
+const std::string DIR_HOME             = "./";
+const std::string DIR_CONF             = DIR_HOME + "conf/";
+const std::string DIR_FTP              = DIR_HOME + "ftp/";
+const std::string DIR_WWW              = DIR_HOME + "www/";
+const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports/";
+const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
+const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
+const std::string FILE_RESTART         = DIR_HOME + "tritonn.restart";
+const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
+const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";
+const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
+const std::string FILE_WWW_TREE_OBJ    = DIR_WWW  + "application/core/tree_objects.json";
 #endif
 
-const string DIR_CONF                  = DIR_HOME + "conf/";
-const string DIR_FTP                   = DIR_HOME + "ftp/";
-const string DIR_WWW                   = DIR_HOME + "www/";
-const string DIR_REPORT                = DIR_HOME + DIR_FTP + "reports/";
-const string DIR_TIMEINFO              = DIR_HOME + "diag/";
-const string FILE_CONF                 = DIR_HOME + "tritonn.conf";
-const string FILE_RESTART              = DIR_HOME + "tritonn.restart";
-const string FILE_MODBUS               = DIR_HOME + "modbus.xml";
-const string FILE_SYSTEMTEXT           = DIR_HOME + "systemtext.xml";
-const string FILE_SYSTEMEVENT          = DIR_HOME + "systemevent.xml";
 
 //
 // Константы языков

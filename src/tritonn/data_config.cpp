@@ -839,8 +839,12 @@ UDINT rDataConfig::ResolveReports(void)
 //-------------------------------------------------------------------------------------------------
 void rDataConfig::SaveWeb()
 {
-	char  *str = cJSON_Print(CfgJSON);
-	UDINT  result = SimpleFileSave(DIR_WWW + "application/core/tree_objects.json", str);
+#ifdef WIN32
+	return;
+#endif
+
+	char* str = cJSON_Print(CfgJSON);
+	UDINT result = SimpleFileSave(FILE_WWW_TREE_OBJ, str);
 
 	free(str);
 	if(TRITONN_RESULT_OK != result)
@@ -860,22 +864,19 @@ void rDataConfig::SaveWeb()
 
 	rTextManager::instance().GetListLang(langlist);
 
-	for(UDINT ii = 0; ii < langlist.size(); ++ii)
-	{
+	for (auto& lang : langlist) {
 		string  text     = "";
 		UDINT   result   = TRITONN_RESULT_OK;
 
-		rTextManager::instance().GetListSID(langlist[ii], sidlist);
+		rTextManager::instance().GetListSID(lang, sidlist);
 
-		text = String_format("<?php\n$lang[\"language_locale\"] = \"%s\";\n\n", langlist[ii].c_str());
+		text = String_format("<?php\n$lang[\"language_locale\"] = \"%s\";\n\n", lang.c_str());
 
-		for(UDINT jj = 0; jj < sidlist.size(); ++jj)
-		{
-			text += String_format("$lang[\"%u\"]=\"%s\";\n", sidlist[jj].ID, sidlist[jj].Text.c_str());
+		for(auto& item : sidlist) {
+			text += String_format("$lang[\"core_%u\"]=\"%s\";\n", item.ID, item.Text.c_str());
 		}
-		text += "?>";
 
-		result = SimpleFileSave(String_format("%sapplication/language/%s/custom_lang.php", DIR_WWW.c_str(), langlist[ii].c_str()), text);
+		result = SimpleFileSave(String_format("%sapplication/language/%s/custom_lang.php", DIR_WWW.c_str(), lang.c_str()), text);
 		if(TRITONN_RESULT_OK != result)
 		{
 			rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
