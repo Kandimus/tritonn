@@ -20,13 +20,29 @@
 #include "event_eid.h"
 #include "data_manager.h"
 
+rBitsArray rSampler::m_flagsMode;
+rBitsArray rSampler::m_flagsSetup;
 
-//const UDINT SELECTOR_LE_NOCHANGE = 0x00000001;
 
 //-------------------------------------------------------------------------------------------------
 //
 rSampler::rSampler()
 {
+	if (m_flagsMode.empty()) {
+		m_flagsMode
+				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
+				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD));
+	}
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"      , static_cast<UINT>(Setup::OFF))
+				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER))
+				.add("VIRTUAL"  , static_cast<UINT>(Setup::VIRTUAL))
+				.add("NOICE"    , static_cast<UINT>(Setup::NOICE))
+				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD))
+				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD));
+	}
+
 }
 
 

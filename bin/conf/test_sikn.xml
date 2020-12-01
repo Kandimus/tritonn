@@ -303,7 +303,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
+							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
 								<_iolink module="3" channel="3"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
@@ -321,13 +321,13 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter"             setup=""                 description="4019">
+							<counter name="Counter" setup="" description="4019">
 								<_iolink module="1" channel="2"/>
 							</counter>
-							<counter name="Period1"             setup="NOBUFFER"         description="4020"> <!-- Виртуальный, для тестов -->
+							<counter name="Period1" setup="NOBUFFER" description="4020"> <!-- Виртуальный, для тестов -->
 								<_iolink module="2" channel="0"/>
 							</counter>
-							<counter name="Period2"             setup="NOBUFFER"         description="4021">
+							<counter name="Period2" setup="NOBUFFER" description="4021">
 								<_iolink module="2" channel="1"/>
 							</counter>
 						</io>
@@ -367,7 +367,7 @@
 							</limit>
 						</limits>
 					</densitometer>
-					<densitometer  name="Dens2" description="4023">
+					<densitometer name="Dens2" description="4023">
 						<period>     <link alias="SIKN_123.BIK.IO.Period2:period"/></period>
 						<temperature><link alias="SIKN_123.BIK.IO.Temp2"/></temperature>
 						<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
@@ -475,20 +475,19 @@
 							<value>0</value>
 						</keypad>
 					</selector>
-					<sampler       name="Sampler1" method="PERIOD" setup="" description="4026">
-						<reserved><link alias="SIKN_123.Sampler2"/></reserved>
-						<pulse>1000</pulse>
+					<sampler name="Sampler1" method="PERIOD" setup="RESERVERR | RESERVFILL" description="4026">
+						<totals>sikn_123</totals>
+						<canfilled><link alias=""/></canfilled>
+						<error>    <link alias=""/></error>
+						<mass>     <link alias=""/></mass>
+						<reserved>sikn_123.obj.sampler2</reserved>
 						<grabvol>1.2</grabvol>
-						<canvol>3900</canvol>
-						<inputs>
-							<error><link alias=""/></error>
-							<canfilled><link alias=""/></canfilled>
-						</inputs>
-						<outputs>
-							<filled><link alias=""/></filled>
-						</outputs>
+						<canvol>
+							<primary>3900</primary>
+							<secondary>3850</secondary>
+						</canvol>
 					</sampler>
-					<sampler       name="Sampler2" method="VOLUME" setup="" description="4027">
+					<sampler name="Sampler2" method="VOLUME" setup="" description="4027">
 						<reserved><link alias="SIKN_123.Sampler1"/></reserved>
 						<pulse>1000</pulse>
 						<grabvol>1.2</grabvol>
@@ -668,89 +667,90 @@
 		<reportsystem>
 			<datasets>
 				<dataset name="std_report">
-	        <total name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
-	          <item name="item_1"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
-	          <item name="item_2"><link alias="SIKN_123.Line1.io.pres:present"/></item>
-	          <item name="item_3"><link alias="SIKN_123.Line1:density"/></item>
-	          <item name="item_4"><link alias="SIKN_123.Line1.io.temp:present"/></item>
-	        </total> <!-- fwa -->
-	        <total name="Line2" alias="SIKN123.Line2">
-	          <item name="item_1"><link alias="SIKN_123.Line2.io.temp:present"/></item>
-	          <item name="item_2"><link alias="SIKN_123.Line2.io.pres:present"/></item>
-	          <item name="item_3"><link alias="SIKN_123.Line2:density"/></item>
-	          <item name="item_4"><link alias="SIKN_123.Line2.io.temp:present"/></item>
-	        </total>
-	        <total name="SIKN123" alias="SIKN123">
-	          <item name="item_1"><link alias="SIKN_123:temperature"/></item>
-	          <item name="item_2"><link alias="SIKN_123:pressure"/></item>
-	          <item name="item_3"><link alias="SIKN_123:density"/></item>
-	          <item name="item_4"><link alias="SIKN_123.obj.StnWater:output"/></item>
-	        </total>
-	        <snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
-			  <item name="ss_1"><link alias="sikn_321.io.counter:frequency"/></item>
-	        </snapshots>
-	      </dataset>
-	    </datasets>
-	    <reports>
-	      <report name="rep_2h" type="PERIODIC" description="4100">
-	        <period>5MIN</period>
-	        <storage>31</storage>
-	        <dataset>std_report</dataset>
-	      </report>
-	      <report name="batch" type="BATCH" description="4101">
-	        <storage>366</storage>
-	        <dataset>std_report</dataset>
-	      </report>
-	    </reports>
-	  </reportsystem>
+					<total name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
+						<item name="item_1"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
+						<item name="item_2"><link alias="SIKN_123.Line1.io.pres:present"/></item>
+						<item name="item_3"><link alias="SIKN_123.Line1:density"/></item>
+						<item name="item_4"><link alias="SIKN_123.Line1.io.temp:present"/></item>
+					</total> <!-- fwa -->
+					<total name="Line2" alias="SIKN123.Line2">
+						<item name="item_1"><link alias="SIKN_123.Line2.io.temp:present"/></item>
+						<item name="item_2"><link alias="SIKN_123.Line2.io.pres:present"/></item>
+						<item name="item_3"><link alias="SIKN_123.Line2:density"/></item>
+						<item name="item_4"><link alias="SIKN_123.Line2.io.temp:present"/></item>
+					</total>
+					<total name="SIKN123" alias="SIKN123">
+						<item name="item_1"><link alias="SIKN_123:temperature"/></item>
+						<item name="item_2"><link alias="SIKN_123:pressure"/></item>
+						<item name="item_3"><link alias="SIKN_123:density"/></item>
+						<item name="item_4"><link alias="SIKN_123.obj.StnWater:output"/></item>
+					</total>
+					<snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
+						<item name="ss_1"><link alias="sikn_321.io.counter:frequency"/></item>
+					</snapshots>
+				</dataset>
+			</datasets>
+			<reports>
+				<report name="rep_2h" type="PERIODIC" description="4100">
+					<period>5MIN</period>
+					<storage>31</storage>
+					<dataset>std_report</dataset>
+				</report>
+				<report name="batch" type="BATCH" description="4101">
+					<storage>366</storage>
+					<dataset>std_report</dataset>
+				</report>
+			</reports>
+		</reportsystem>
 	</config>
-  <custom lang="ru">
-	  <precision default="5">
-	    <unit id="16">3</unit>
-	  </precision>
-    <strings>
-      <lang value="ru">
-        <str id="4000">Температура на линии 1 СИКН 1</str>
-        <str id="4001">СИКН 1</str>
-        <str id="4002">СИКН 1. Линия 1</str>
-        <str id="4003">Температура на линии 1 СИКН 1</str>
-        <str id="4004">Давление на линии 1 СИКН 1</str>
-        <str id="4005">Счетчик 1 СИКН 1</str>
-        <str id="4006">Приведение плотности на линии 1 СИКН 1</str>
-        <str id="4007">СИКН 1. Линия 2</str>
-        <str id="4008">Температура на линии 2 СИКН 1</str>
-        <str id="4009">Давление на линии 2 СИКН 1</str>
-        <str id="4010">Счетчик 2 СИКН 1</str>
-        <str id="4011">Приведение плотности на линии 2 СИКН 1</str>
-        <str id="4012">СИКН 1. БИК</str>
-        <str id="4013">Температура 1 в БИК СИКН 1</str>
-        <str id="4014">Температура 2 в БИК СИКН 1</str>
-        <str id="4015">Объемая доля воды 1 в БИК СИКН 1</str>
-        <str id="4016">Объемая доля воды 2 в БИК СИКН 1</str>
-        <str id="4017">Вязкость в БИК СИКН 1</str>
-        <str id="4018">Давление в БИК СИКН 1</str>
-        <str id="4019">Счетчик БИК СИКН 1</str>
-        <str id="4020">Период плотномера 1 СИКН 1</str>
-        <str id="4021">Период плотномера 2 СИКН 1</str>
-        <str id="4022">Плотномер 1 СИКН 1</str>
-        <str id="4023">Плотномер 2 СИКН 1</str>
-        <str id="4026">Пробоотборник 1 СИКН 1</str>
-        <str id="4027">Пробоотборник 2 СИКН 1</str>
-        <str id="4029">СИКН 2. Линия</str>
-        <str id="4030">Температура на линии СИКН 2</str>
-        <str id="4031">Давление на линии СИКН 2</str>
-        <str id="4032">Счетчик СИКН 2</str>
-        <str id="4033">Период плотномера СИКН 2</str>
-        <str id="4034">Плотномер СИКН 2</str>
-        <str id="4035">Пробоотборник 1 СИКН 2</str>
-        <str id="4036">Пробоотборник 2 СИКН 2</str>
-        <str id="4100">Периодический отчет</str>
-        <str id="4101">Партийный отчет</str>
-        <str id="5000">Тестовая строка пользователя.</str>
-      </lang>
-    </strings>
-<!--    <events>
-    </events>
+	<custom lang="ru">
+		<precision default="5">
+			<unit id="16">3</unit>
+		</precision>
+		<strings>
+			<lang value="ru">
+				<str id="4000">Температура на линии 1 СИКН 1</str>
+				<str id="4001">СИКН 1</str>
+				<str id="4002">СИКН 1. Линия 1</str>
+				<str id="4003">Температура на линии 1 СИКН 1</str>
+				<str id="4004">Давление на линии 1 СИКН 1</str>
+				<str id="4005">Счетчик 1 СИКН 1</str>
+				<str id="4006">Приведение плотности на линии 1 СИКН 1</str>
+				<str id="4007">СИКН 1. Линия 2</str>
+				<str id="4008">Температура на линии 2 СИКН 1</str>
+				<str id="4009">Давление на линии 2 СИКН 1</str>
+				<str id="4010">Счетчик 2 СИКН 1</str>
+				<str id="4011">Приведение плотности на линии 2 СИКН 1</str>
+				<str id="4012">СИКН 1. БИК</str>
+				<str id="4013">Температура 1 в БИК СИКН 1</str>
+				<str id="4014">Температура 2 в БИК СИКН 1</str>
+				<str id="4015">Объемая доля воды 1 в БИК СИКН 1</str>
+				<str id="4016">Объемая доля воды 2 в БИК СИКН 1</str>
+				<str id="4017">Вязкость в БИК СИКН 1</str>
+				<str id="4018">Давление в БИК СИКН 1</str>
+				<str id="4019">Счетчик БИК СИКН 1</str>
+				<str id="4020">Период плотномера 1 СИКН 1</str>
+				<str id="4021">Период плотномера 2 СИКН 1</str>
+				<str id="4022">Плотномер 1 СИКН 1</str>
+				<str id="4023">Плотномер 2 СИКН 1</str>
+				<str id="4026">Пробоотборник 1 СИКН 1</str>
+				<str id="4027">Пробоотборник 2 СИКН 1</str>
+				<str id="4029">СИКН 2. Линия</str>
+				<str id="4030">Температура на линии СИКН 2</str>
+				<str id="4031">Давление на линии СИКН 2</str>
+				<str id="4032">Счетчик СИКН 2</str>
+				<str id="4033">Период плотномера СИКН 2</str>
+				<str id="4034">Плотномер СИКН 2</str>
+				<str id="4035">Пробоотборник 1 СИКН 2</str>
+				<str id="4036">Пробоотборник 2 СИКН 2</str>
+				<str id="4100">Периодический отчет</str>
+				<str id="4101">Партийный отчет</str>
+				<str id="5000">Тестовая строка пользователя.</str>
+			</lang>
+		</strings>
+<!--
+		<events>
+		</events>
 -->
 	</custom>
 	<security>
