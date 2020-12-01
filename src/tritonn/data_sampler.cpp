@@ -18,7 +18,7 @@
 #include <string.h>
 #include "data_sampler.h"
 #include "event_eid.h"
-#include "data_manager.h"
+#include "xml_util.h"
 
 rBitsArray rSampler::m_flagsMode;
 rBitsArray rSampler::m_flagsSetup;
@@ -30,19 +30,24 @@ rSampler::rSampler()
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
-				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD));
-	}
-	if (m_flagsSetup.empty()) {
-		m_flagsSetup
-				.add("OFF"      , static_cast<UINT>(Setup::OFF))
-				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER))
-				.add("VIRTUAL"  , static_cast<UINT>(Setup::VIRTUAL))
-				.add("NOICE"    , static_cast<UINT>(Setup::NOICE))
-				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD))
-				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD));
+				.add("PERIOD", static_cast<UINT>(Mode::PERIOD))
+				.add("MASS"  , static_cast<UINT>(Mode::MASS))
+				.add("VOLUME", static_cast<UINT>(Mode::VOLUME));
 	}
 
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"       , static_cast<UINT>(Setup::OFF))
+				.add("ERRRESERV" , static_cast<UINT>(Setup::ERR_RESERV))
+				.add("FILLRESERV", static_cast<UINT>(Setup::FILL_RESERV));
+	}
+
+	InitLink(rLink::Setup::INPUT , m_canFilled, U_any, SID_CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_canError , U_any, SID_FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_camMass  , U_g  , SID_CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
+
+	InitLink(rLink::Setup::OUTPUT, m_grab     , U_any, SID_GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_selected , U_any, SID_CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
 }
 
 

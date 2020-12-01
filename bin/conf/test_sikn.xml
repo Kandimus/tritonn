@@ -537,7 +537,7 @@
 					</stream>
 				</streams>
 				<io>
-					<ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4030">
+					<ai name="temp" mode="PHIS" setup="NOICE | LASTGOOD" description="4030">
 						<_iolink module="3" channel="3"/>
 						<unit>16</unit>
 						<keypad>12.5</keypad>

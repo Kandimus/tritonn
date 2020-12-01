@@ -112,6 +112,7 @@ void rUnits::Init()
 	// Масса
 	UNIT_INIT(U_t , 0, 1.0);
 	UNIT_INIT(U_kg, 0, 1000.0);
+	UNIT_INIT(U_g , 0, 1000000.0);
 
 	// Объем
 	UNIT_INIT(U_m3   , 0, 1.0);

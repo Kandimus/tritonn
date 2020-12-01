@@ -18,6 +18,7 @@
 //#include "io.h"
 #include "data_source.h"
 #include "bits_array.h"
+#include "data_link.h"
 #include "compared_values.h"
 
 
@@ -61,11 +62,11 @@ public:
 	// Inputs, Inoutputs
 	rLink m_canFilled;
 	rLink m_canError;
-	rLink m_mass;
+	rLink m_canMass;
 
 	// Outputs
-	rLink       m_grab;                 // Текущее физическое значение
-	rLink       m_canSelect;
+	rLink m_grab;
+	rLink m_selected;
 
 	UINT  m_select = 0;
 	UINT  m_setup;
