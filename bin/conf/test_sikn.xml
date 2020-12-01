@@ -779,49 +779,49 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 	MODBUS
 	-->
 	<comms>
+		<datablocks>
+			<datablock name="systime">
+				<variable>system.datetime.sec</variable>
+				<variable>system.datetime.min</variable>
+				<variable>system.datetime.hour</variable>
+				<variable>system.datetime.day</variable>
+				<variable>system.datetime.month</variable>
+				<variable>system.datetime.year</variable>
+				<variable>system.state.alarm</variable>
+				<variable>system.state.live</variable>
+				<variable>system.state.rebootreason</variable>
+			</datablock>
+			<datablock name="sysver">
+				<variable>system.version.minor</variable>
+				<variable>system.version.major</variable>
+				<variable>system.version.build</variable>
+				<variable>system.version.hash</variable>
+				<variable>system.version.crc</variable>
+			</datablock>
+			<datablock name="globaltemp">
+				<variable convert="float">io.globaltemp.present.value</variable>
+				<whitespace size="2"/>
+				<variable                >io.globaltemp.present.unit</variable>
+				<variable convert="float">io.globaltemp.present.hihi</variable>
+				<variable convert="float">io.globaltemp.present.hi</variable>
+				<variable convert="float">io.globaltemp.present.lo</variable>
+				<variable convert="float">io.globaltemp.present.lolo</variable>
+				<variable convert="float">io.globaltemp.present.hysteresis</variable>
+				<variable                >io.globaltemp.present.status</variable>
+				<variable convert="float">io.globaltemp.physical.value</variable>
+				<variable convert="float">io.globaltemp.current.value</variable>
+				<variable convert="float">io.globaltemp.keypad</variable>
+				<variable                >io.globaltemp.scales.min</variable>
+				<variable                >io.globaltemp.scales.max</variable>
+				<variable                >io.globaltemp.status</variable>
+				<variable                >io.globaltemp.mode</variable>
+			</datablock>
+			<datablock name="slave1_info">
+				<variable>comms.modbus.slave1.tx</variable>
+				<variable>comms.modbus.slave1.rx</variable>
+			</datablock>
+		</datablocks>
 		<modbus>
-			<datamap>
-				<datablock name="systime">
-					<variable>system.datetime.sec</variable>
-					<variable>system.datetime.min</variable>
-					<variable>system.datetime.hour</variable>
-					<variable>system.datetime.day</variable>
-					<variable>system.datetime.month</variable>
-					<variable>system.datetime.year</variable>
-					<variable>system.state.alarm</variable>
-					<variable>system.state.live</variable>
-					<variable>system.state.rebootreason</variable>
-				</datablock>
-				<datablock name="sysver">
-					<variable>system.version.minor</variable>
-					<variable>system.version.major</variable>
-					<variable>system.version.build</variable>
-					<variable>system.version.hash</variable>
-					<variable>system.version.crc</variable>
-				</datablock>
-				<datablock name="globaltemp">
-					<variable convert="float">io.globaltemp.present.value</variable>
-					<whitespace size="2"/>
-					<variable                >io.globaltemp.present.unit</variable>
-					<variable convert="float">io.globaltemp.present.hihi</variable>
-					<variable convert="float">io.globaltemp.present.hi</variable>
-					<variable convert="float">io.globaltemp.present.lo</variable>
-					<variable convert="float">io.globaltemp.present.lolo</variable>
-					<variable convert="float">io.globaltemp.present.hysteresis</variable>
-					<variable                >io.globaltemp.present.status</variable>
-					<variable convert="float">io.globaltemp.physical.value</variable>
-					<variable convert="float">io.globaltemp.current.value</variable>
-					<variable convert="float">io.globaltemp.keypad</variable>
-					<variable                >io.globaltemp.scales.min</variable>
-					<variable                >io.globaltemp.scales.max</variable>
-					<variable                >io.globaltemp.status</variable>
-					<variable                >io.globaltemp.mode</variable>
-				</datablock>
-				<datablock name="slave1_info">
-					<variable>comms.modbus.slave1.tx</variable>
-					<variable>comms.modbus.slave1.rx</variable>
-				</datablock>
-			</datamap>
 			<slavetcp name="slave1" id="1" port="1502" counterror="3" security="0" maxclient="0">
 				<whitelist>
 					<ip>127.0.0.1</ip>

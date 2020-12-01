@@ -614,63 +614,48 @@ UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement* root, cJSON* jroot)
 
 UDINT rDataConfig::LoadComms(tinyxml2::XMLElement *root)
 {
-	UDINT result = TRITONN_RESULT_OK;
-	tinyxml2::XMLElement *xml_comms = nullptr;
+	tinyxml2::XMLElement *xml_comms  = nullptr;
 
-	if(nullptr == root)
-	{
+	if (!root) {
 		return TRITONN_RESULT_OK;
 	}
 
 	xml_comms = root->FirstChildElement(XmlName::COMMS);
 
-	if(nullptr == xml_comms)
-	{
+	if (!xml_comms) {
 		return TRITONN_RESULT_OK;
 	}
 
-	result = LoadModbus(xml_comms);
-	if(TRITONN_RESULT_OK != result)
-	{
-		return result;
+	if (LoadModbus(xml_comms) != TRITONN_RESULT_OK) {
+		return m_error.getError();
 	}
 
-	result = LoadOPCUA(xml_comms);
-	if(TRITONN_RESULT_OK != result)
-	{
-		return result;
+	if (LoadOPCUA(xml_comms) != TRITONN_RESULT_OK) {
+		return m_error.getError();
 	}
 
 	return TRITONN_RESULT_OK;
 }
 
 
-UDINT rDataConfig::LoadModbus(tinyxml2::XMLElement *root)
+UDINT rDataConfig::LoadModbus(tinyxml2::XMLElement* root)
 {
-	UDINT result = TRITONN_RESULT_OK;
-	tinyxml2::XMLElement *xml_modbus = nullptr;
-
-	if(nullptr == root)
-	{
-		return 0;
+	if (!root) {
+		return TRITONN_RESULT_OK;
 	}
 
-	xml_modbus = root->FirstChildElement(XmlName::MODBUS);
+	auto xml_modbus = root->FirstChildElement(XmlName::MODBUS);
 
-	if(nullptr == xml_modbus)
-	{
-		return 0;
+	if (!xml_modbus) {
+		return TRITONN_RESULT_OK;
 	}
 
-	for(tinyxml2::XMLElement *xml_item = xml_modbus->FirstChildElement(); xml_item != nullptr; xml_item = xml_item->NextSiblingElement())
-	{
-		string name = (xml_item->Name() == nullptr) ? "" : xml_item->Name();
+	XML_FOR_ALL(xml_item, xml_modbus) {
+		std::string name = (xml_item->Name() == nullptr) ? "" : xml_item->Name();
 
-		if(XmlName::SLAVETCP == name) { result = LoadModbusTCP(xml_item); }
-
-		if(result != TRITONN_RESULT_OK)
-		{
-			return result;
+		if(XmlName::SLAVETCP == name) { if(LoadModbusTCP(xml_item) != TRITONN_RESULT_OK) return m_error.getError(); }
+		else {
+			//TODO добавить ошибку
 		}
 	}
 
@@ -681,7 +666,7 @@ UDINT rDataConfig::LoadModbus(tinyxml2::XMLElement *root)
 
 UDINT rDataConfig::LoadModbusTCP(tinyxml2::XMLElement* root)
 {
-	rModbusTCPSlaveManager* slavetcp = new rModbusTCPSlaveManager();
+	auto slavetcp = new rModbusTCPSlaveManager();
 
 	if(slavetcp->loadFromXML(root, m_error) != TRITONN_RESULT_OK) {
 		delete slavetcp;

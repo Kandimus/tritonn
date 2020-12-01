@@ -15,6 +15,7 @@
 
 #include <string>
 #include <stdarg.h>
+#include <cstdarg>
 #include <algorithm>
 //#include <cmath>
 //#include <unistd.h>
@@ -85,12 +86,23 @@ std::string String_vaformat(const char *format, va_list arg_ptr)
 
 std::string String_format(const char *format, ...)
 {
-	std::string result = "";
-
-	va_list  arg;
+	va_list arg;
 	va_start(arg, format);
-	result = String_vaformat(format, arg);
+	//std::string result = String_vaformat(format, arg); //WARNING Тут падает на x64
+	char *buff = new char[vsnprintf(NULL, 0, format, arg) + 1];
 	va_end(arg);
+
+	if(!buff) {
+		return "";
+	}
+
+	va_list arg2;
+	va_start(arg2, format);
+	vsprintf(buff, format, arg2);
+	va_end(arg2);
+
+	std::string result = buff;
+	delete[] buff;
 
 	return result;
 }

@@ -72,7 +72,7 @@ public:
 protected:
 	rSnapshot   m_snapshot;
 	UINT*       Modbus = nullptr;
-	string      Name;            // Имя объекта, для переменных
+	std::string Name;            // Имя объекта, для переменных
 	USINT       SlaveID;
 	UDINT       Security;        // Флаг использования ScurityModbus
 	USINT       Live;            // Текущий статус менеджера. Выделена в отдельную переменную, что бы можно было засунуть ее в rDataManager::lock
@@ -88,7 +88,7 @@ protected:
 	vector<rTempLink>   TempLink;
 
 public:
-	tinyxml2::XMLElement *FindBlock(tinyxml2::XMLElement *xml_blocks, const string &name);
+
 
 protected:
 	void Func_0x03 (rModbusTCPSlaveClient *client);
@@ -104,6 +104,7 @@ protected:
 
 
 	UDINT LoadStandartModbus(rError& err);
+	tinyxml2::XMLElement* FindBlock(tinyxml2::XMLElement* xml_blocks, const std::string& name);
 };
 
 
