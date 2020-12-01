@@ -68,21 +68,21 @@ protected:
 	std::vector<rReport* >    *ListReport;
 	std::vector<rLink* >       ListLink; //TODO Нужно ли это оставлять тут, или перенести в rDataManager?
 
-	UDINT LoadSecurity  (tinyxml2::XMLElement *root, tinyxml2::XMLDocument &doc_security);
-	UDINT LoadHardware  (tinyxml2::XMLElement *root);
-	UDINT LoadConfig    (tinyxml2::XMLElement *root);
-	UDINT LoadStation   (tinyxml2::XMLElement *root, cJSON *jroot);
-	UDINT LoadStream    (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix);
-	UDINT LoadIO        (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix);
-	UDINT LoadCalc      (tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix);
-	UDINT LoadReport    (tinyxml2::XMLElement *root);
-	UDINT LoadCustom    (tinyxml2::XMLElement *root);
-	UDINT LoadVariable  (tinyxml2::XMLElement *root);
-	UDINT LoadUsers     (tinyxml2::XMLElement *root, cJSON *jroot);
-	UDINT LoadComms     (tinyxml2::XMLElement *root);
-	UDINT LoadModbus    (tinyxml2::XMLElement *root);
-	UDINT LoadModbusTCP (tinyxml2::XMLElement *root);
-	UDINT LoadOPCUA     (tinyxml2::XMLElement *root);
+	UDINT LoadSecurity  (tinyxml2::XMLElement* root, tinyxml2::XMLDocument& doc_security);
+	UDINT LoadHardware  (tinyxml2::XMLElement* root);
+	UDINT LoadConfig    (tinyxml2::XMLElement* root);
+	UDINT LoadStation   (tinyxml2::XMLElement* root, cJSON* jroot);
+	UDINT LoadStream    (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
+	UDINT LoadIO        (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
+	UDINT LoadCalc      (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
+	UDINT LoadReport    (tinyxml2::XMLElement* root);
+	UDINT LoadCustom    (tinyxml2::XMLElement* root);
+	UDINT LoadVariable  (tinyxml2::XMLElement* root);
+	UDINT LoadUsers     (tinyxml2::XMLElement* root, cJSON* jroot);
+	UDINT LoadComms     (tinyxml2::XMLElement* root);
+	UDINT LoadModbus    (tinyxml2::XMLElement* root);
+	UDINT LoadModbusTCP (tinyxml2::XMLElement* root);
+	UDINT LoadOPCUA     (tinyxml2::XMLElement* root);
 
 	UDINT ResolveLinks(void);
 	UDINT ResolveReports(void);

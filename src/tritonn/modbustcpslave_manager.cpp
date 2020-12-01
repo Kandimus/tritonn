@@ -480,24 +480,33 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 
 //-------------------------------------------------------------------------------------------------
 // Поиск требуемого dataset в дереве конфигурации
-tinyxml2::XMLElement *rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement *element, const string &name)
+tinyxml2::XMLElement* rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement* element, const std::string& name)
 {
-	tinyxml2::XMLNode    *xml_modbus = element->Parent();
-	tinyxml2::XMLElement *xml_blocks = nullptr;
+	auto xml_modbus = element->Parent();
+	if (!xml_modbus) {
+		return nullptr;
+	}
 
-	if(nullptr == xml_modbus) return nullptr;
+	auto xml_comms = xml_modbus->Parent();
+	if (!xml_comms) {
+		return nullptr;
+	}
 
-	xml_blocks = xml_modbus->FirstChildElement(XmlName::DATAMAP);
+	auto xml_blocks = xml_comms->FirstChildElement(XmlName::DATABLOCKS);
+	if (!xml_blocks) {
+		return nullptr;
+	}
 
-	if(nullptr == xml_blocks) return nullptr;
-
-	for(tinyxml2::XMLElement *xml_item = xml_blocks->FirstChildElement(XmlName::DATABLOCK); xml_item != nullptr; xml_item = xml_item->NextSiblingElement(XmlName::DATABLOCK))
-	{
+	XML_FOR(xml_item, xml_blocks, XmlName::DATABLOCK) {
 		const char *item_name = xml_item->Attribute(XmlName::NAME);
 
-		if(nullptr == item_name) continue;
+		if (!item_name) {
+			continue;
+		}
 
-		if(String_equali(name, item_name)) return xml_item;
+		if (String_equali(name, item_name)) {
+			return xml_item;
+		}
 	}
 
 	return nullptr;
@@ -507,22 +516,22 @@ tinyxml2::XMLElement *rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement *el
 //-------------------------------------------------------------------------------------------------
 UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError& err)
 {
-	UDINT       port  = 0;
-	std::string ip    = "";
+	if (rInterface::loadFromXML(xml_root, err) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
 
-	rInterface::loadFromXML(xml_root, err);
+	UDINT       port  = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
+	std::string ip    = "0.0.0.0";
 
 	Alias    = "comms.modbus." + Alias;
-	port     = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
-	ip       = "0.0.0.0";
 	Name     = XmlUtils::getAttributeString(xml_root, XmlName::NAME    , "");
 	SlaveID  = XmlUtils::getAttributeUDINT (xml_root, XmlName::ID      , 0);
 	Security = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY, 0);
 	MaxError = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNTERR, 3);
 
-	tinyxml2::XMLElement* xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
-	tinyxml2::XMLElement* xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
-	tinyxml2::XMLElement* xml_wlist  = xml_root->FirstChildElement(XmlName::WHITELIST);
+	auto xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
+	auto xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
+	auto xml_wlist  = xml_root->FirstChildElement(XmlName::WHITELIST);
 
 	if (!xml_adrmap) {
 		return err.set(DATACFGERR_INTERFACES_NF_BLOCKS, xml_root->GetLineNum(), "");
@@ -552,9 +561,9 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 	// Перебираем указанные блоки
 	XML_FOR(xml_item, xml_adrmap, XmlName::ADDRESSBLOCK) {
 		// Считываем блок модбаса
-		UDINT  fault     = 0;
-		UDINT  address   = XmlUtils::getAttributeUDINT(xml_item, XmlName::BEGIN, 0xFFFFFFFF);
-		string blockname = XmlUtils::getTextString    (xml_item, "", fault);
+		UDINT fault     = 0;
+		UDINT address   = XmlUtils::getAttributeUDINT(xml_item, XmlName::BEGIN, 0xFFFFFFFF);
+		auto  blockname = XmlUtils::getTextString    (xml_item, "", fault);
 
 		if (address < 400000 || address > 465535) {
 			return err.set(DATACFGERR_INTERFACES_BADADDR, xml_item->GetLineNum(), "");
@@ -565,10 +574,10 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_item->GetLineNum(), "");
 		}
 
-		tinyxml2::XMLElement* xml_block = FindBlock(xml_root, blockname);
+		auto xml_block = FindBlock(xml_root, blockname);
 
 		if (!xml_block) {
-			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_root->GetLineNum(), "");
+			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_adrmap->GetLineNum(), blockname);
 		}
 
 		//

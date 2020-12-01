@@ -19,7 +19,8 @@
 #include "tinyxml2.h"
 #include "def.h"
 
-#define XML_FOR(var, root, name)                       for (tinyxml2::XMLElement* var = root->FirstChildElement(name); var != nullptr; var = var->NextSiblingElement(name))
+#define XML_FOR(var, root, name)       for (tinyxml2::XMLElement* var = root->FirstChildElement(name); var != nullptr; var = var->NextSiblingElement(name))
+#define XML_FOR_ALL(var, root)         for (tinyxml2::XMLElement* var = root->FirstChildElement();     var != nullptr; var = var->NextSiblingElement())
 
 namespace XmlUtils
 {
@@ -34,7 +35,7 @@ UINT        getTextUINT  (tinyxml2::XMLElement *element, UINT  def, UDINT &err);
 USINT       getTextUSINT (tinyxml2::XMLElement *element, USINT def, UDINT &err);
 USINT       getTextBOOL  (tinyxml2::XMLElement *element, bool  def, UDINT &err);
 
-};
+}
 
 namespace XmlName
 {
@@ -67,6 +68,7 @@ const char CTL[]           = "ctl";
 const char CURRENT[]       = "current";
 const char CUSTOM[]        = "custom";
 const char DATABLOCK[]     = "datablock";
+const char DATABLOCKS[]    = "datablocks";
 const char DATAMAP[]       = "datamap";
 const char DATASET[]       = "dataset";
 const char DATASETS[]      = "datasets";
@@ -119,6 +121,8 @@ const char LINK[]          = "link";
 const char LO[]            = "lo";
 const char LOGIN[]         = "login";
 const char LOLO[]          = "lolo";
+const char MASTERRTU[]     = "masterrtu";
+const char MASTERTCP[]     = "mastertcp";
 const char MAINTENANCE[]   = "maintenance";
 const char MAX[]           = "max";
 const char MIN[]           = "min";
@@ -151,6 +155,7 @@ const char SCALE[]         = "scale";
 const char SECURITY[]      = "security";
 const char SELECTOR[]      = "selector";
 const char SETUP[]         = "setup";
+const char SLAVERTU[]      = "slavertu";
 const char SLAVETCP[]      = "slavetcp";
 const char SNAPSHOTS[]     = "snapshots";
 const char STATIONS[]      = "stations";
@@ -177,5 +182,5 @@ const char WORD[]          = "word";
 const char Y[]             = "y";
 const char Y15[]           = "y15";
 
-};
+}
 

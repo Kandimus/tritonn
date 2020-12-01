@@ -373,7 +373,7 @@
 		<!--EID_DI_SUCCESS_OFF - $1 ID, $2 Descr -->
 		<str id="537853954">$2. Сигнал снят.</str>
 		<!--EID_DI_WARNING_ON - $1 ID, $2 Descr -->
-		<str id="-1609629693">$2. Сигнал установлен.
+		<str id="-1609629693">$2. Сигнал установлен.</str>
 		<!--EID_DI_WARNING_OFF - $1 ID, $2 Descr -->
 		<str id="-1609629692">$2. Сигнал снят.</str>
 		<!--EID_DI_ALARM_ON - $1 ID, $2 Descr -->
