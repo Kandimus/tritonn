@@ -475,17 +475,24 @@
 							<value>0</value>
 						</keypad>
 					</selector>
-					<sampler name="Sampler1" method="PERIOD" setup="RESERVERR | RESERVFILL" description="4026">
+					<sampler name="Sampler1" method="PERIOD" setup="RESERVERR | RESERVFILL | SINGLECAN | DUALCAN" description="4026">
 						<totals>sikn_123</totals>
-						<canfilled><link alias=""/></canfilled>
-						<error>    <link alias=""/></error>
-						<mass>     <link alias=""/></mass>
+						<io_start><link alias=""/></io_start>
+						<io_stop> <link alias=""/></io_stop>
 						<reserved>sikn_123.obj.sampler2</reserved>
 						<grabvol>1.2</grabvol>
-						<canvol>
-							<primary>3900</primary>
-							<secondary>3850</secondary>
-						</canvol>
+						<primary>
+							<overflow><link alias=""/></overflow>
+							<fault>    <link alias=""/></fault>
+							<weight>   <link alias=""/></weight>
+							<canvolume>3900</canvolume>
+						</primary>
+						<secondary>
+							<overflow><link alias=""/></overflow>
+							<fault>    <link alias=""/></fault>
+							<weight>   <link alias=""/></weight>
+							<volume>3850</volume>
+						</secondary>
 					</sampler>
 					<sampler name="Sampler2" method="VOLUME" setup="" description="4027">
 						<reserved><link alias="SIKN_123.Sampler1"/></reserved>
