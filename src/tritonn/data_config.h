@@ -90,7 +90,7 @@ protected:
 	void  SaveWeb();
 
 public:
-	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link);
+	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
 	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
 
 

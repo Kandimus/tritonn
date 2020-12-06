@@ -452,7 +452,7 @@ enum rTritonn_Error
 	DATACFGERR_REDUCEDDENS,                 // 120
 	DATACFGERR_RESOLVELINK,                 //
 	DATACFGERR_CHECKLINK,                   // 122
-	DATACFGERR_SAMPLER,                     //
+	DATACFGERR_UNUSED_123,                  // ----------------------------------------------------
 	DATACFGERR_MAX_AI,                      // 124
 	DATACFGERR_MAX_AO,                      //
 	DATACFGERR_MAX_FI,                      // 126
@@ -494,6 +494,7 @@ enum rTritonn_Error
 	DATACFGERR_INTERFACES_BADNAME,          // 162
 	DATACFGERR_DI,                          //
 	DATACFGERR_DO,                          // 164
+	DATACFGERR_SAMPLER_TOTALS,              //
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,

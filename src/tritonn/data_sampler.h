@@ -38,9 +38,28 @@ public:
 
 	enum Setup : UINT
 	{
-		OFF = 0x0001,
+		OFF         = 0x0001,
 		ERR_RESERV  = 0x0002,
 		FILL_RESERV = 0x0004,
+		SINGLE_CAN  = 0x0008,
+		DUAL_CAN    = 0x0010,
+		AUTOSWITCH  = 0x0020,
+	};
+
+	class rCan
+	{
+	public:
+		// Inputs, Inoutputs
+		rLink m_filled;
+		rLink m_error;
+		rLink m_mass;
+
+		UDINT m_volume;
+	};
+
+	enum
+	{
+		CAN_MAX = 2,
 	};
 
 public:
@@ -60,26 +79,26 @@ protected:
 
 public:
 	// Inputs, Inoutputs
-	rLink m_canFilled;
-	rLink m_canError;
-	rLink m_canMass;
+	rLink m_ioStart;
+	rLink m_ioStop;
 
 	// Outputs
 	rLink m_grab;
 	rLink m_selected;
 
-	UINT  m_select = 0;
-	UINT  m_setup;
-	UINT  m_mode;
-	LREAL m_CanVol[2];
-	LREAL m_grabVol;
+	std::string     m_totalsAlias;
+	const rTotal*   m_totals;
+	const rSampler* m_reserv;
+
+	rCan     m_can[MAX_CAN];
+	UINT     m_select = 0;
+	rCmpUINT m_setup;
+	UINT     m_mode;
+	UDINT    m_period;
+	UDINT    m_grabTest;
+	LREAL    m_grabVol;
 
 private:
 	static rBitsArray m_flagsMode;
 	static rBitsArray m_flagsSetup;
-
 };
-
-
-
-

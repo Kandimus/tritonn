@@ -13,11 +13,12 @@
 //===
 //=================================================================================================
 
-
+#include "data_sampler.h"
 #include <vector>
 #include <string.h>
-#include "data_sampler.h"
+#include "error.h"
 #include "event_eid.h"
+#include "data_config.h"
 #include "xml_util.h"
 
 rBitsArray rSampler::m_flagsMode;
@@ -39,15 +40,22 @@ rSampler::rSampler()
 		m_flagsSetup
 				.add("OFF"       , static_cast<UINT>(Setup::OFF))
 				.add("ERRRESERV" , static_cast<UINT>(Setup::ERR_RESERV))
-				.add("FILLRESERV", static_cast<UINT>(Setup::FILL_RESERV));
+				.add("FILLRESERV", static_cast<UINT>(Setup::FILL_RESERV))
+				.add("SINGLECAN" , static_cast<UINT>(Setup::SINGLE_CAN))
+				.add("DUAL_CAN"  , static_cast<UINT>(Setup::DUAL_CAN))
+				.add("AUTOSWITCH", static_cast<UINT>(Setup::AUTOSWITCH));
 	}
 
-	InitLink(rLink::Setup::INPUT , m_canFilled, U_any, SID_CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_canError , U_any, SID_FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_camMass  , U_g  , SID_CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
+	for (auto ii = 0; ii < CAN_MAX; ++ii) {
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_filled, U_any, SID_CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_rrror , U_any, SID_FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_cam[ii].m_mass  , U_g  , SID_CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
+	}
+	InitLink(rLink::Setup::INPUT , m_ioStart , U_any, SID_CANIOSTART, XmlName::IO_START, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_ioStop  , U_any, SID_CANIOSTOP , XmlName::IO_STOP , rLink::SHADOW_NONE);
 
-	InitLink(rLink::Setup::OUTPUT, m_grab     , U_any, SID_GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_selected , U_any, SID_CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_grab    , U_any, SID_GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_selected, U_any, SID_CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
 }
 
 
@@ -62,43 +70,7 @@ rSampler::~rSampler()
 //
 UDINT rSampler::InitLimitEvent(rLink &/*link*/)
 {
-//	link.Limit.EventChangeAMin  = ReinitEvent(EID_RDCDDENS_NEW_AMIN)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeWMin  = ReinitEvent(EID_RDCDDENS_NEW_WMIN)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeWMax  = ReinitEvent(EID_RDCDDENS_NEW_WMAX)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeAMax  = ReinitEvent(EID_RDCDDENS_NEW_AMAX)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeHyst  = ReinitEvent(EID_RDCDDENS_NEW_HYST)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeSetup = ReinitEvent(EID_RDCDDENS_NEW_SETUP) << link.Descr << link.Unit;
-//	link.Limit.EventAMin        = ReinitEvent(EID_RDCDDENS_AMIN)      << link.Descr << link.Unit;
-//	link.Limit.EventWMin        = ReinitEvent(EID_RDCDDENS_WMIN)      << link.Descr << link.Unit;
-//	link.Limit.EventWMax        = ReinitEvent(EID_RDCDDENS_WMAX)      << link.Descr << link.Unit;
-//	link.Limit.EventAMax        = ReinitEvent(EID_RDCDDENS_AMAX)      << link.Descr << link.Unit;
-//	link.Limit.EventNan         = ReinitEvent(EID_RDCDDENS_NAN)       << link.Descr << link.Unit;
-//	link.Limit.EventNormal      = ReinitEvent(EID_RDCDDENS_NORMAL)    << link.Descr << link.Unit;
-
 	return 0;
-}
-
-
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rSampler::GetFault(void)
-{
-	UDINT result = 0;
-
-	return result;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rSampler::generateVars(rVariableList&/*list*/)
-{
-//	list.push_back(new rVariable(Alias + ".Status"    , TYPE_UINT , VARF_RO, SSPOINTER(IO.AI[ID].Status    )));
-//	list.push_back(new rVariable(Alias + ".Mode"      , TYPE_UINT , VARF_RW, SSPOINTER(IO.AI[ID].Mode      )));
-//	list.push_back(new rVariable(Alias + ".Unit"      , TYPE_STRID, VARF_RO, SSPOINTER(IO.AI[ID].Unit      )));
-
-	return TRITONN_RESULT_OK;
 }
 
 
@@ -214,149 +186,69 @@ UDINT rSampler::Calculate()
 	return 0;
 }
 
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rSampler::generateVars(rVariableList& list)
+{
+	rSource::generateVars(list);
 
+	// Variables
+	list.add(Alias + ".mode"    , TYPE_UINT, rVariable::Flags::___L, &m_mode, U_UNDEF, ACCESS_SAMPLERS);
+
+//	list.push_back(new rVariable(Alias + ".Status"    , TYPE_UINT , VARF_RO, SSPOINTER(IO.AI[ID].Status    )));
+//	list.push_back(new rVariable(Alias + ".Mode"      , TYPE_UINT , VARF_RW, SSPOINTER(IO.AI[ID].Mode      )));
+//	list.push_back(new rVariable(Alias + ".Unit"      , TYPE_STRID, VARF_RO, SSPOINTER(IO.AI[ID].Unit      )));
+
+	return TRITONN_RESULT_OK;
+}
 
 UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	UNUSED(element); UNUSED(err); UNUSED(prefix);
-	return TRITONN_RESULT_OK;
-/*
-	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::SelectorSetupFlags, SELECTOR_SETUP_OFF);
-	string defMode  = rDataConfig::GetFlagNameByValue(rDataConfig::SelectorModeFlags , SELECTOR_MODE_CHANGENEXT);
-	string strSetup = (element->Attribute("setup")) ? element->Attribute("setup") : defSetup.c_str();
-	string strMode  = (element->Attribute("mode") ) ? element->Attribute("mode")  : defMode.c_str();
-	UDINT  err      = 0;
-	UDINT  ii       = 0;
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PERIOD)));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_SELECTOR;
-
-	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::SelectorSetupFlags, strSetup, err));
-	Mode.Init (rDataConfig::GetFlagFromStr(rDataConfig::SelectorModeFlags , strMode , err));
-	if(err) return DATACFGERR_SELECTOR;
-
-	// Простой селектор
-	if(string(CFGNAME_SELECTOR) == element->Name())
-	{
-		tinyxml2::XMLElement *inputs = element->FirstChildElement(CFGNAME_INPUTS);
-		tinyxml2::XMLElement *faults = element->FirstChildElement(CFGNAME_FAULTS);
-
-		if(nullptr == inputs)
-		{
-			return DATACFGERR_SELECTOR;
-		}
-
-		// Входа
-		for(tinyxml2::XMLElement *link = inputs->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-		{
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &ValueLink[0][ii])) return cfg.ErrorID;
-			++ii;
-
-			if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-		}
-
-		CountInputs = ii;
-		ii          = 0;
-
-		// Фаулты (ошибки)
-		if(faults)
-		{
-			for(tinyxml2::XMLElement *link = faults->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-			{
-				if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &FaultLink[0][ii])) return cfg.ErrorID;
-				++ii;
-
-				if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-			}
-			if(ii != CountInputs) return DATACFGERR_SELECTOR;
-		}
-
-		// Подстановочное значение
-		ValueFault[0] = rDataConfig::GetValueLREAL(element->FirstChildElement(CFGNAME_FAULTVAL), 0.0, err);
-		if(err) return DATACFGERR_SELECTOR;
+	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
-	// Мульти-селектор
-	else if(string(CFGNAME_MSELECTOR) == element->Name())
-	{
-		Setup.Init(Setup.Value | SELECTOR_SETUP_MULTI);
+	tinyxml2::XMLElement* xml_totals   = element->FirstChildElement(XmlName::TOTALS);
+	tinyxml2::XMLElement* xml_iostart  = element->FirstChildElement(XmlName::IOSTART);
+	tinyxml2::XMLElement* xml_iostop   = element->FirstChildElement(XmlName::IOSTOP);
+	tinyxml2::XMLElement* xml_reserve  = element->FirstChildElement(XmlName::RESERVE);
+	tinyxml2::XMLElement* xml_grabvol  = element->FirstChildElement(XmlName::GRABVOL);
+	tinyxml2::XMLElement* xml_period   = element->FirstChildElement(XmlName::PERIOD);
+	tinyxml2::XMLElement* xml_grabtest = element->FirstChildElement(XmlName::GRABTEST);
+	tinyxml2::XMLElement* xml_can1     = element->FirstChildElement(XmlName::CAN1);
+	tinyxml2::XMLElement* xml_can2     = element->FirstChildElement(XmlName::CAN2);
 
-		tinyxml2::XMLElement *names     = element->FirstChildElement(CFGNAME_NAMES);
-		tinyxml2::XMLElement *inputs    = element->FirstChildElement(CFGNAME_INPUTS);
-		tinyxml2::XMLElement *faults    = element->FirstChildElement(CFGNAME_FAULTS);
-		tinyxml2::XMLElement *faultvals = element->FirstChildElement(CFGNAME_FAULTVALS);
-
-		if(nullptr == names || nullptr == inputs || nullptr == faultvals)
-		{
-			return DATACFGERR_SELECTOR;
-		}
-
-		// Загружаем имена выходов
-		UDINT grp = 0;
-		for(tinyxml2::XMLElement *name = names->FirstChildElement(CFGNAME_NAME); name != nullptr; name = name->NextSiblingElement(CFGNAME_NAME))
-		{
-			NameInput[grp] = name->GetText();
-
-			if(NameInput[grp].empty()) return DATACFGERR_SELECTOR;
-			++grp;
-		}
-		CountGroup = grp;
-
-		// Загружаем входа
-		ii = 0;
-		for(tinyxml2::XMLElement *group = inputs->FirstChildElement(CFGNAME_GROUP); group != nullptr; group = group->NextSiblingElement(CFGNAME_GROUP))
-		{
-			// Линки
-			grp = 0;
-			for(tinyxml2::XMLElement *link = group->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-			{
-				if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &ValueLink[ii][grp])) return cfg.ErrorID;
-
-				++grp;
-				if(grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
-			}
-			if(grp != CountGroup) return DATACFGERR_SELECTOR;
-
-			++ii;
-			if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-		}
-		CountInputs = ii;
-
-		// Фаулты
-		if(faults)
-		{
-			ii = 0;
-			for(tinyxml2::XMLElement *group = faults->FirstChildElement(CFGNAME_GROUP); group != nullptr; group = group->NextSiblingElement(CFGNAME_GROUP))
-			{
-				// Линки
-				grp = 0;
-				for(tinyxml2::XMLElement *link = group->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-				{
-					if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &FaultLink[ii][grp])) return cfg.ErrorID;
-
-					++grp;
-					if(grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
-				}
-				if(grp != CountGroup) return DATACFGERR_SELECTOR;
-
-				++ii;
-				if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-			}
-			if(ii != CountInputs) return DATACFGERR_SELECTOR;
-		}
-
-		// Подстановочные значения
-		grp = 0;
-		for(tinyxml2::XMLElement *faultval = faultvals->FirstChildElement(CFGNAME_FAULTVAL); faultval != nullptr; faultval = faultval->NextSiblingElement(CFGNAME_FAULTVAL))
-		{
-			ValueFault[grp] = rDataConfig::GetValueLREAL(faultval, 0.0, err);
-
-			++grp;
-			if(grp >= MAX_SELECTOR_GROUP || err) return DATACFGERR_SELECTOR;
-		}
-		if(grp != CountGroup) return DATACFGERR_SELECTOR;
+	if (!xml_totals) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "");
 	}
-	else return DATACFGERR_SELECTOR;
-*/
+
+	UDINT failt = 0;
+	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_MODE, element->GetLineNum(), "");
+	}
+
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_SETUP, element->GetLineNum(), "");
+	}
+
+	m_totalsAlias = XmlUtils::getTextString(xml_totals, "", fault);
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "empty alias");
+	}
+
+	if (rDataConfig::instance().LoadLink(xml_iostart, m_ioStart, false) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
+
+	if (rDataConfig::instance().LoadLink(xml_iostop, m_ioStop, false) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
+
 	return TRITONN_RESULT_OK;
 }
 

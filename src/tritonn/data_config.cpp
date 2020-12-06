@@ -715,21 +715,21 @@ UDINT rDataConfig::LoadOPCUA(tinyxml2::XMLElement *root)
 // Основная особенность функции LoadLink от LoadShadowLink в том, что на вход в первую подается
 // указатель на сам тег линка, а во вторую указатель на родителя
 //TODO можно также реализовать загрузку линка, где прописана просто числовая константа
-UDINT rDataConfig::LoadLink(tinyxml2::XMLElement* element, rLink& link)
+UDINT rDataConfig::LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required)
 {
-	if (!element) {
-		link.Source = nullptr;
+	link.Source = nullptr;
 
+	if (!element) {
+		if (!required) {
+			return TRITONN_RESULT_OK;
+		}
 		return m_error.set(DATACFGERR_LINKNF, link.m_lineNum, String_format("source '%s' is null", link.FullTag.c_str()));
 	}
 
 	if (TRITONN_RESULT_OK != link.LoadFromXML(element, m_error, "")) {
-		link.Source = nullptr;
-
 		return m_error.getError();
 	}
 
-	link.Source    = nullptr;
 	link.m_lineNum = element->GetLineNum();
 
 	ListLink.push_back(&link);
@@ -812,7 +812,7 @@ UDINT rDataConfig::ResolveReports(void)
 			}
 
 			if (!tot->Source) {
-				return m_error.set(DATACFGERR_RESOLVETOTAL, 0, tot->Name);
+				return m_error.set(DATACFGERR_RESOLVETOTAL, 0, tot->Name); //TODO добавить номер линии
 			}
 		}
 	}

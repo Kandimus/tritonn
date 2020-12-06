@@ -43,7 +43,7 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 	if (m_flagsFlowmeter.empty()) {
 		m_flagsFlowmeter
 				.add("TURBINE"   , static_cast<UINT>(Type::TURBINE))
-				.add("CARIOLIS"  , static_cast<UINT>(Type::CARIOLIS))
+				.add("CORIOLIS"  , static_cast<UINT>(Type::CORIOLIS))
 				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC));
 	}
 
@@ -161,7 +161,7 @@ UDINT rStream::Calculate()
 	if(check & TOTAL_MAX_VOLUME20) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME20));
 
 	// Расчитаем расход исходя из частоты
-	if (m_flowmeter == Type::CARIOLIS) {
+	if (m_flowmeter == Type::CORIOLIS) {
 		FlowMass.Value   = Freq.Value     / CurKF      * 3600.0 * Factor.KeypadMF.Value;
 		FlowVolume.Value = FlowMass.Value / Dens.Value * 1000.0 * Factor.KeypadMF.Value;
 	} else {
@@ -179,7 +179,7 @@ UDINT rStream::GetUnitKF()
 {
 	if(Station == nullptr) return U_UNDEF;
 
-	if (m_flowmeter == Type::CARIOLIS) {
+	if (m_flowmeter == Type::CORIOLIS) {
 		switch (Station->UnitMass) {
 			case U_t : return U_imp_t;
 			case U_kg: return U_imp_kg;
@@ -239,11 +239,11 @@ UDINT rStream::generateVars(rVariableList& list)
 	list.add(Alias + ".total.past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Mass         , Station->UnitMass  , 0);
 	list.add(Alias + ".total.past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH_, &Total.Past.Count        , U_imp              , 0);
 	list.add(Alias + ".presentkf"             , TYPE_LREAL, rVariable::Flags::R___, &CurKF                   , GetUnitKF()        , 0);
-	list.add(Alias + ".factors.kf"             , TYPE_LREAL, rVariable::Flags::R___, &Factor.KeypadKF.Value   , GetUnitKF()        , 0);
-	list.add(Alias + ".factors.mf"             , TYPE_LREAL, rVariable::Flags::R__L, &Factor.KeypadMF.Value   , U_DIMLESS          , 0);
-	list.add(Alias + ".factors.set.kf"         , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadKF.Value, GetUnitKF()        , ACCESS_FACTORS);
-	list.add(Alias + ".factors.set.mf"         , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadMF.Value, U_DIMLESS          , ACCESS_FACTORS);
-	list.add(Alias + ".factors.set.accept"     , TYPE_UDINT, rVariable::Flags::___L, &AcceptKF                , U_DIMLESS          , ACCESS_FACTORS);
+	list.add(Alias + ".factors.kf"            , TYPE_LREAL, rVariable::Flags::R___, &Factor.KeypadKF.Value   , GetUnitKF()        , 0);
+	list.add(Alias + ".factors.mf"            , TYPE_LREAL, rVariable::Flags::R__L, &Factor.KeypadMF.Value   , U_DIMLESS          , 0);
+	list.add(Alias + ".factors.set.kf"        , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadKF.Value, GetUnitKF()        , ACCESS_FACTORS);
+	list.add(Alias + ".factors.set.mf"        , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadMF.Value, U_DIMLESS          , ACCESS_FACTORS);
+	list.add(Alias + ".factors.set.accept"    , TYPE_UDINT, rVariable::Flags::___L, &AcceptKF                , U_DIMLESS          , ACCESS_FACTORS);
 
 
 	for(UDINT ii = 0; ii < MAX_FACTOR_POINT; ++ii)
@@ -269,7 +269,7 @@ UDINT rStream::generateVars(rVariableList& list)
 //
 UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strFlowMeter = XmlUtils::getAttributeString(element, XmlName::FLOWMETER, m_flagsFlowmeter.getNameByBits(static_cast<USINT>(Type::CARIOLIS)));
+	std::string strFlowMeter = XmlUtils::getAttributeString(element, XmlName::FLOWMETER, m_flagsFlowmeter.getNameByBits(static_cast<USINT>(Type::CORIOLIS)));
 
 	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
 		return err.getError();
@@ -423,7 +423,7 @@ UDINT rStream::CalcTotal()
 		return 0;
 	}
 
-	if(m_flowmeter == Type::CARIOLIS) {
+	if(m_flowmeter == Type::CORIOLIS) {
 		Total.Inc.Mass     = Total.Inc.Count  / CurKF        * Factor.KeypadMF.Value;
 		Total.Inc.Volume   = Total.Inc.Mass   / Dens.Value   * 1000.0;
 		Total.Inc.Volume15 = Total.Inc.Mass   / Dens15.Value * 1000.0;

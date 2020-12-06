@@ -39,7 +39,7 @@
 			<station name="SIKN_123" product="PETROLEUM" precision="0" setup="" description="4001">
 				<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
 				<streams>
-					<stream name="Line1" flowmeter="CARIOLIS" linearization="1" maintenance="0" description="4002">
+					<stream name="Line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4002">
 						<impulse><link alias="SIKN_123.Line1.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
 						<pressure><link alias="SIKN_123.Line1.IO.Pres"/></pressure>
@@ -56,8 +56,8 @@
 							</points>
 						</factors>
 						<io>
-							<ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4003">
-								<iolink module="0" channel="0"/>
+							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4003">
+								<io_link module="0" channel="0"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -75,7 +75,7 @@
 								</limits>
 							</ai>
 							<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
-								<iolink module="0" channel="1"/>
+								<io_link module="0" channel="1"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -93,7 +93,7 @@
 								</limits>
 							</ai>
 							<counter name="Counter"             setup="NOBUFFER"         description="4005">
-								<_iolink module="1" channel="0"/>
+								<_io_link module="1" channel="0"/>
 							</counter>
 						</io>
 						<calculate>
@@ -120,7 +120,7 @@
 							</limit>
 						</limits>
 					</stream>
-					<stream name="Line2" flowmeter="CARIOLIS" linearization="1" maintenance="0" description="4007">
+					<stream name="Line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
 						<impulse>    <link alias="SIKN_123.Line2.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_123.Line2.IO.Temp"/>   </temperature>
 						<pressure>   <link alias="SIKN_123.Line2.IO.Pres"/>   </pressure>
@@ -137,8 +137,8 @@
 							</points>
 						</factors>
 						<io>
-							<ai      name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4008">
-								<iolink module="0" channel="2"/>
+							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4008">
+								<io_link module="0" channel="2"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -155,8 +155,8 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
-								<iolink module="0" channel="3"/>
+							<ai name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
+								<io_link module="0" channel="3"/>
 									<unit>32</unit>
 									<keypad>0.5</keypad>
 									<scale>
@@ -174,7 +174,7 @@
 								</limits>
 							</ai>
 							<counter name="Counter"             setup="NOBUFFER"         description="4010">
-								<_iolink module="1" channel="1"/>
+								<_io_link module="1" channel="1"/>
 							</counter>
 						</io>
 						<calculate>
@@ -214,7 +214,7 @@
 						</factors>
 						<io>
 							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4013">
-								<iolink module="0" channel="4"/>
+								<io_link module="0" channel="4"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -232,7 +232,7 @@
 								</limits>
 							</ai>
 							<ai      name="Temp2"   mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
-								<iolink module="0" channel="5"/>
+								<io_link module="0" channel="5"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -250,7 +250,7 @@
 								</limits>
 							</ai>
 							<ai      name="Water1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4015">
-								<_iolink module="3" channel="0"/>
+								<_io_link module="3" channel="0"/>
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -268,7 +268,7 @@
 								</limits>
 							</ai>
 							<ai      name="Water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
-								<_iolink module="3" channel="1"/>
+								<_io_link module="3" channel="1"/>
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -286,7 +286,7 @@
 								</limits>
 							</ai>
 							<ai      name="Visc"    mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
-								<_iolink module="3" channel="2"/>
+								<_io_link module="3" channel="2"/>
 								<unit>64</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -304,7 +304,7 @@
 								</limits>
 							</ai>
 							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
-								<_iolink module="3" channel="3"/>
+								<_io_link module="3" channel="3"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -322,13 +322,13 @@
 								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4019">
-								<_iolink module="1" channel="2"/>
+								<_io_link module="1" channel="2"/>
 							</counter>
 							<counter name="Period1" setup="NOBUFFER" description="4020"> <!-- Виртуальный, для тестов -->
-								<_iolink module="2" channel="0"/>
+								<_io_link module="2" channel="0"/>
 							</counter>
 							<counter name="Period2" setup="NOBUFFER" description="4021">
-								<_iolink module="2" channel="1"/>
+								<_io_link module="2" channel="1"/>
 							</counter>
 						</io>
 						<limits>
@@ -475,26 +475,26 @@
 							<value>0</value>
 						</keypad>
 					</selector>
-					<sampler name="Sampler1" method="PERIOD" setup="RESERVERR | RESERVFILL | SINGLECAN | DUALCAN" description="4026">
+					<sampler name="Sampler1" method="PERIOD" setup="RESERVERR | RESERVFILL | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
 						<totals>sikn_123</totals>
 						<io_start><link alias=""/></io_start>
 						<io_stop> <link alias=""/></io_stop>
 						<reserved>sikn_123.obj.sampler2</reserved>
 						<grab_vol>1.2</grab_vol>
 						<period>28800</period>
-						<test_grab>100</test_grab>
-						<first>
+						<grab_testing>100</grab_testing>
+						<can_1>
 							<overflow><link alias=""/></overflow>
-							<fault>    <link alias=""/></fault>
-							<weight>   <link alias=""/></weight>
+							<fault>   <link alias=""/></fault>
+							<weight>  <link alias=""/></weight>
 							<can_volume>3900</can_volume>
-						</first>
-						<secondary>
+						</can_1>
+						<can_2>
 							<overflow><link alias=""/></overflow>
-							<fault>    <link alias=""/></fault>
-							<weight>   <link alias=""/></weight>
+							<fault>   <link alias=""/></fault>
+							<weight>  <link alias=""/></weight>
 							<can_volume>3850</can_volume>
-						</secondary>
+						</can_2>
 					</sampler>
 					<sampler name="Sampler2" method="VOLUME" setup="" description="4027">
 						<reserved><link alias="SIKN_123.Sampler1"/></reserved>
@@ -547,7 +547,7 @@
 				</streams>
 				<io>
 					<ai name="temp" mode="PHIS" setup="NOICE | LASTGOOD" description="4030">
-						<_iolink module="3" channel="3"/>
+						<_io_link module="3" channel="3"/>
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
@@ -565,7 +565,7 @@
 						</limits>
 					</ai>
 					<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4031">
-						<_iolink module="3" channel="4"/>
+						<_io_link module="3" channel="4"/>
 						<unit>33</unit>
 						<keypad>0.5</keypad>
 						<scale>
@@ -583,10 +583,10 @@
 						</limits>
 					</ai>
 					<counter name="counter"             setup="NOBUFFER"         description="4032">
-						<_iolink module="1" channel="3"/>
+						<_io_link module="1" channel="3"/>
 					</counter>
 					<counter name="Period"              setup=""                 description="4033">
-						<_iolink module="2" channel="2"/>
+						<_io_link module="2" channel="2"/>
 					</counter>
 				</io>
 				<calculate>
@@ -673,27 +673,32 @@
 				<unit>512</unit>
 			</variable>
 		</variables>
+		<!---
+
+		ОТЧЕТЫ
+
+		-->
 		<reportsystem>
 			<datasets>
 				<dataset name="std_report">
-					<total name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
+					<totals name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
 						<item name="item_1"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
 						<item name="item_2"><link alias="SIKN_123.Line1.io.pres:present"/></item>
 						<item name="item_3"><link alias="SIKN_123.Line1:density"/></item>
 						<item name="item_4"><link alias="SIKN_123.Line1.io.temp:present"/></item>
-					</total> <!-- fwa -->
-					<total name="Line2" alias="SIKN123.Line2">
+					</totals> <!-- fwa -->
+					<totals name="Line2" alias="SIKN123.Line2">
 						<item name="item_1"><link alias="SIKN_123.Line2.io.temp:present"/></item>
 						<item name="item_2"><link alias="SIKN_123.Line2.io.pres:present"/></item>
 						<item name="item_3"><link alias="SIKN_123.Line2:density"/></item>
 						<item name="item_4"><link alias="SIKN_123.Line2.io.temp:present"/></item>
-					</total>
-					<total name="SIKN123" alias="SIKN123">
+					</totals>
+					<totals name="SIKN123" alias="SIKN123">
 						<item name="item_1"><link alias="SIKN_123:temperature"/></item>
 						<item name="item_2"><link alias="SIKN_123:pressure"/></item>
 						<item name="item_3"><link alias="SIKN_123:density"/></item>
 						<item name="item_4"><link alias="SIKN_123.obj.StnWater:output"/></item>
-					</total>
+					</totals>
 					<snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
 						<item name="ss_1"><link alias="sikn_321.io.counter:frequency"/></item>
 					</snapshots>

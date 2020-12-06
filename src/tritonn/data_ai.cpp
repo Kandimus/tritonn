@@ -390,7 +390,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	if (!xml_limits || !xml_unit || !xml_scale) {
-		return DATACFGERR_AI;
+		return err.set(DATACFGERR_AI, element->GetLineNum(), "cant found limits or unit or scale");
 	}
 
 	UDINT fault = 0;

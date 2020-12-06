@@ -48,7 +48,7 @@ class rStream : public rSource
 public:
 	enum class Type : USINT
 	{
-		CARIOLIS   = 1,
+		CORIOLIS   = 1,
 		TURBINE    = 2,
 		ULTRASONIC = 3,
 	};
