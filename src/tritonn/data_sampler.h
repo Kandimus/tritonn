@@ -15,16 +15,11 @@
 
 #pragma once
 
-//#include "io.h"
 #include "data_source.h"
 #include "bits_array.h"
 #include "data_link.h"
 #include "compared_values.h"
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
 
 class rSampler : public rSource
 {
@@ -46,9 +41,10 @@ public:
 		AUTOSWITCH  = 0x0020,
 	};
 
-	class rCan
+	struct Can
 	{
-	public:
+		UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
+
 		// Inputs, Inoutputs
 		rLink m_filled;
 		rLink m_error;
@@ -57,10 +53,7 @@ public:
 		UDINT m_volume;
 	};
 
-	enum
-	{
-		CAN_MAX = 2,
-	};
+	const static UDINT CAN_MAX = 2;
 
 public:
 	rSampler();
@@ -75,7 +68,7 @@ public:
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
-//	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT InitLimitEvent(rLink &link);
 
 public:
 	// Inputs, Inoutputs
@@ -87,13 +80,13 @@ public:
 	rLink m_selected;
 
 	std::string     m_totalsAlias;
-	const rTotal*   m_totals;
+	rTotal*         m_totals;
 	const rSampler* m_reserv;
 
-	rCan     m_can[MAX_CAN];
+	Can      m_can[CAN_MAX];
 	UINT     m_select = 0;
 	rCmpUINT m_setup;
-	UINT     m_mode;
+	Mode     m_mode;
 	UDINT    m_period;
 	UDINT    m_grabTest;
 	LREAL    m_grabVol;
@@ -101,4 +94,6 @@ public:
 private:
 	static rBitsArray m_flagsMode;
 	static rBitsArray m_flagsSetup;
+
+	std::string m_reserveAlias;
 };

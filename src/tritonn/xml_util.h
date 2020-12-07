@@ -100,6 +100,7 @@ const char HI[]            = "hi";
 const char HIHI[]          = "hihi";
 const char HYSTER[]        = "hysteresis";
 const char HERTZ[]         = "hz";
+const char GRAB[]          = "grab";
 const char GRABVOL[]       = "grab_vol";
 const char GRABTEST[]      = "grab_test";
 const char GROUP[]         = "group";

@@ -19,7 +19,9 @@
 #include "error.h"
 #include "event_eid.h"
 #include "data_config.h"
+#include "variable_list.h"
 #include "xml_util.h"
+#include "text_id.h"
 
 rBitsArray rSampler::m_flagsMode;
 rBitsArray rSampler::m_flagsSetup;
@@ -46,16 +48,16 @@ rSampler::rSampler()
 				.add("AUTOSWITCH", static_cast<UINT>(Setup::AUTOSWITCH));
 	}
 
-	for (auto ii = 0; ii < CAN_MAX; ++ii) {
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_filled, U_any, SID_CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_rrror , U_any, SID_FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
-		InitLink(rLink::Setup::INPUT , m_cam[ii].m_mass  , U_g  , SID_CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
+	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_filled, U_any, SID::CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_error , U_any, SID::FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_mass  , U_g  , SID::CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
 	}
-	InitLink(rLink::Setup::INPUT , m_ioStart , U_any, SID_CANIOSTART, XmlName::IO_START, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_ioStop  , U_any, SID_CANIOSTOP , XmlName::IO_STOP , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_ioStart , U_any, SID::CANIOSTART, XmlName::IOSTART, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_ioStop  , U_any, SID::CANIOSTOP , XmlName::IOSTOP , rLink::SHADOW_NONE);
 
-	InitLink(rLink::Setup::OUTPUT, m_grab    , U_any, SID_GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_selected, U_any, SID_CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_grab    , U_any, SID::GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_selected, U_any, SID::CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
 }
 
 
@@ -221,11 +223,15 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	tinyxml2::XMLElement* xml_can1     = element->FirstChildElement(XmlName::CAN1);
 	tinyxml2::XMLElement* xml_can2     = element->FirstChildElement(XmlName::CAN2);
 
+	UDINT fault = 0;
+
 	if (!xml_totals) {
 		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "");
 	}
+	if (!xml_can1) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "");
+	}
 
-	UDINT failt = 0;
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
 	if (fault) {
 		return err.set(DATACFGERR_SAMPLER_MODE, element->GetLineNum(), "");
@@ -236,11 +242,26 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.set(DATACFGERR_SAMPLER_SETUP, element->GetLineNum(), "");
 	}
 
+	if (!xml_reserve && m_setup.Value & (Setup::ERR_RESERV | Setup::FILL_RESERV)) {
+		return err.set(DATACFGERR_SAMPLER_RESERVE, element->GetLineNum(), "");
+	}
+
+	if (!xml_can2 && m_setup.Value & (Setup::DUAL_CAN | Setup::AUTOSWITCH)) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can_b");
+	}
+
 	m_totalsAlias = XmlUtils::getTextString(xml_totals, "", fault);
 	if (fault) {
 		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "empty alias");
 	}
 	rDataConfig::instance().addCheckTotal(&m_totals, m_totalsAlias, xml_totals->GetLineNum(), "");
+
+	if (xml_reserve) {
+		m_reserveAlias = XmlUtils::getTextString(xml_reserve, "", fault);
+		if (fault) {
+			return err.set(DATACFGERR_SAMPLER_RESERVE, xml_reserve->GetLineNum(), "");
+		}
+	}
 
 	if (rDataConfig::instance().LoadLink(xml_iostart, m_ioStart, false) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -249,6 +270,22 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	if (rDataConfig::instance().LoadLink(xml_iostop, m_ioStop, false) != TRITONN_RESULT_OK) {
 		return err.getError();
 	}
+
+	if (m_can[0].loadFromXML(xml_can1, err) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
+
+	if (xml_can2) {
+		if (m_can[1].loadFromXML(xml_can2, err) != TRITONN_RESULT_OK) {
+			return err.getError();
+		}
+	}
+
+
+	m_grabVol  = XmlUtils::getTextLREAL(xml_grabvol , 1.0  , fault);
+	m_grabTest = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
+	m_period   = XmlUtils::getTextUDINT(xml_period  , 43200, fault);
+
 
 	return TRITONN_RESULT_OK;
 }

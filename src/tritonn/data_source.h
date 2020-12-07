@@ -20,6 +20,7 @@
 #include "units.h"
 #include "event_class.h"
 
+
 class  rVariableList;
 class  rStation;
 class  rLink;
@@ -82,7 +83,7 @@ public:
 	virtual const rTotal *GetTotal(void);
 
 protected:
-	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, STRID nameid, const string &name, const string &shadow);
+	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const string &name, const string &shadow);
 	virtual UDINT InitLimitEvent(rLink &link) = 0;
 	virtual UDINT ReinitLimitEvents();
 

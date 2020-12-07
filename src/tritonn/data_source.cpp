@@ -198,7 +198,7 @@ rEvent &rSource::ReinitEvent(UDINT eid)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, STRID nameid, const string &name, const string &shadow)
+UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const string &name, const string &shadow)
 {
 	link.Init(setup, unit, this, name, nameid);
 

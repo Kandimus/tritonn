@@ -61,8 +61,8 @@ rDI::rDI() : rSource(), m_keypadValue(0), m_setup(0)
 	m_mode   = Mode::PHIS;
 	m_status = Status::UNDEF;
 
-	InitLink(rLink::Setup::OUTPUT, m_present , U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_physical, U_any, SID_PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_present , U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_physical, U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
 }
 
 

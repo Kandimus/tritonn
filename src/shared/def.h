@@ -495,6 +495,10 @@ enum rTritonn_Error
 	DATACFGERR_DI,                          //
 	DATACFGERR_DO,                          // 164
 	DATACFGERR_SAMPLER_TOTALS,              //
+	DATACFGERR_SAMPLER_CAN,                 // 166
+	DATACFGERR_SAMPLER_MODE,                //
+	DATACFGERR_SAMPLER_SETUP,               // 168
+	DATACFGERR_SAMPLER_RESERVE,             //
 
 	DATACFGERR_LANG_STRUCT = 200,
 	DATACFGERR_LANG_UNKNOW,

@@ -55,7 +55,7 @@ rDO::rDO() : rSource(), m_setup(0)
 	m_mode   = Mode::PHIS;
 	m_status = Status::UNDEF;
 
-	InitLink(rLink::Setup::INOUTPUT, m_present , U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_present , U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 }
 
 

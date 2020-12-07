@@ -65,9 +65,9 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 	m_status = Status::UNDEF;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
 
 

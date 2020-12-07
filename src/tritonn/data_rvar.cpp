@@ -34,7 +34,7 @@ rRVar::rRVar() : rSource(), Setup(0)
 				.add("CONST", VAR_SETUP_CONST);
 	}
 
-	InitLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, Value, U_any, SID_VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, Value, U_any, SID::VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
 }
 
 

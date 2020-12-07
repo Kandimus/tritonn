@@ -482,19 +482,19 @@
 						<reserved>sikn_123.obj.sampler2</reserved>
 						<grab_vol>1.2</grab_vol>
 						<period>28800</period>
-						<grab_testing>100</grab_testing>
-						<can_1>
+						<grab_test>100</grab_test>
+						<can_a>
 							<overflow><link alias=""/></overflow>
 							<fault>   <link alias=""/></fault>
 							<weight>  <link alias=""/></weight>
 							<can_volume>3900</can_volume>
-						</can_1>
-						<can_2>
+						</can_a>
+						<can_b>
 							<overflow><link alias=""/></overflow>
 							<fault>   <link alias=""/></fault>
 							<weight>  <link alias=""/></weight>
 							<can_volume>3850</can_volume>
-						</can_2>
+						</can_b>
 					</sampler>
 					<sampler name="Sampler2" method="VOLUME" setup="" description="4027">
 						<reserved><link alias="SIKN_123.Sampler1"/></reserved>

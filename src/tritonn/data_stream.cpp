@@ -52,19 +52,19 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 	Linearization = false;
 //	rTotal   Total;
 
-	InitLink(rLink::Setup::INPUT   , Counter     , U_imp   , SID_IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT   , Freq        , U_Hz    , SID_FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
-	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C     , SID_TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa   , SID_PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3 , SID_DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens15      , U_kg_m3 , SID_DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, Dens20      , U_kg_m3 , SID_DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, B15         , U_1_C   , SID_B15              , XmlName::B15          , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, Y15         , U_1_MPa , SID_Y15              , XmlName::Y15          , XmlName::DENSITY);
-	InitLink(rLink::Setup::OUTPUT  , FlowMass    , U_t_h   , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , U_m3_h  , SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, U_m3_h  , SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, U_m3_h  , SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Counter     , U_imp   , SID::IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Freq        , U_Hz    , SID::FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
+	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C     , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa   , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3 , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens15      , U_kg_m3 , SID::DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, Dens20      , U_kg_m3 , SID::DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, B15         , U_1_C   , SID::B15              , XmlName::B15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, Y15         , U_1_MPa , SID::Y15              , XmlName::Y15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::OUTPUT  , FlowMass    , U_t_h   , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , U_m3_h  , SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, U_m3_h  , SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, U_m3_h  , SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
 }
 
 
