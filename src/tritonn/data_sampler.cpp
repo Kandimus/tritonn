@@ -240,6 +240,7 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	if (fault) {
 		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "empty alias");
 	}
+	rDataConfig::instance().addCheckTotal(&m_totals, m_totalsAlias, xml_totals->GetLineNum(), "");
 
 	if (rDataConfig::instance().LoadLink(xml_iostart, m_ioStart, false) != TRITONN_RESULT_OK) {
 		return err.getError();
