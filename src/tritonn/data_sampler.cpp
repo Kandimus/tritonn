@@ -49,9 +49,9 @@ rSampler::rSampler()
 	}
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_filled, U_any, SID::CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_error , U_any, SID::FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_mass  , U_g  , SID::CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_overflow, U_any, SID::CANFILLED, XmlName::CANFILLED, rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_fault   , U_any, SID::FAULT    , XmlName::FAULT    , rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_weight  , U_g  , SID::CANMASS  , XmlName::MASS     , rLink::SHADOW_NONE);
 	}
 	InitLink(rLink::Setup::INPUT , m_ioStart , U_any, SID::CANIOSTART, XmlName::IOSTART, rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::INPUT , m_ioStop  , U_any, SID::CANIOSTOP , XmlName::IOSTOP , rLink::SHADOW_NONE);
@@ -204,6 +204,29 @@ UDINT rSampler::generateVars(rVariableList& list)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rSampler::Can::loadFromXML(tinyxml2::XMLElement *element, rError &err)
+{
+	tinyxml2::XMLElement* xml_overflow = element->FirstChildElement(XmlName::OVERFLOW_);
+	tinyxml2::XMLElement* xml_fault    = element->FirstChildElement(XmlName::FAULT);
+	tinyxml2::XMLElement* xml_weight   = element->FirstChildElement(XmlName::WEIGHT);
+
+	if (rDataConfig::instance().LoadLink(xml_overflow, m_overflow, false) != TRITONN_RESULT_OK ||
+		rDataConfig::instance().LoadLink(xml_fault   , m_fault   , false) != TRITONN_RESULT_OK ||
+		rDataConfig::instance().LoadLink(xml_weight  , m_weight  , false) != TRITONN_RESULT_OK) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "link fault");
+	}
+
+	UDINT fault = 0;
+	m_volume =XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::VOLUME), 0, fault);
+
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "fault volume");
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+
 UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PERIOD)));
@@ -220,16 +243,16 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	tinyxml2::XMLElement* xml_grabvol  = element->FirstChildElement(XmlName::GRABVOL);
 	tinyxml2::XMLElement* xml_period   = element->FirstChildElement(XmlName::PERIOD);
 	tinyxml2::XMLElement* xml_grabtest = element->FirstChildElement(XmlName::GRABTEST);
-	tinyxml2::XMLElement* xml_can1     = element->FirstChildElement(XmlName::CAN1);
-	tinyxml2::XMLElement* xml_can2     = element->FirstChildElement(XmlName::CAN2);
+	tinyxml2::XMLElement* xml_can_a    = element->FirstChildElement(XmlName::CAN1);
+	tinyxml2::XMLElement* xml_can_b    = element->FirstChildElement(XmlName::CAN2);
 
 	UDINT fault = 0;
 
 	if (!xml_totals) {
 		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "");
 	}
-	if (!xml_can1) {
-		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "");
+	if (!xml_can_a) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can A");
 	}
 
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
@@ -246,8 +269,8 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.set(DATACFGERR_SAMPLER_RESERVE, element->GetLineNum(), "");
 	}
 
-	if (!xml_can2 && m_setup.Value & (Setup::DUAL_CAN | Setup::AUTOSWITCH)) {
-		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can_b");
+	if (!xml_can_b && m_setup.Value & (Setup::DUAL_CAN | Setup::AUTOSWITCH)) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can B");
 	}
 
 	m_totalsAlias = XmlUtils::getTextString(xml_totals, "", fault);
@@ -271,21 +294,19 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.getError();
 	}
 
-	if (m_can[0].loadFromXML(xml_can1, err) != TRITONN_RESULT_OK) {
+	if (m_can[0].loadFromXML(xml_can_a, err) != TRITONN_RESULT_OK) {
 		return err.getError();
 	}
 
-	if (xml_can2) {
-		if (m_can[1].loadFromXML(xml_can2, err) != TRITONN_RESULT_OK) {
+	if (xml_can_b) {
+		if (m_can[1].loadFromXML(xml_can_b, err) != TRITONN_RESULT_OK) {
 			return err.getError();
 		}
 	}
 
-
 	m_grabVol  = XmlUtils::getTextLREAL(xml_grabvol , 1.0  , fault);
 	m_grabTest = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
 	m_period   = XmlUtils::getTextUDINT(xml_period  , 43200, fault);
-
 
 	return TRITONN_RESULT_OK;
 }

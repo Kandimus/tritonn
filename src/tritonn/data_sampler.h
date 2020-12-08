@@ -46,9 +46,9 @@ public:
 		UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 
 		// Inputs, Inoutputs
-		rLink m_filled;
-		rLink m_error;
-		rLink m_mass;
+		rLink m_overflow;
+		rLink m_fault;
+		rLink m_weight;
 
 		UDINT m_volume;
 	};
