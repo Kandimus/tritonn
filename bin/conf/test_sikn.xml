@@ -38,6 +38,13 @@
 		<stations>
 			<station name="SIKN_123" product="PETROLEUM" precision="0" setup="" description="4001">
 				<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
+				<units>
+					<volume>112</volume>
+					<mass>96</mass>
+					<temperature>16</temperature>
+					<pressure>32</pressure>
+					<density>48</density>
+				</units>
 				<streams>
 					<stream name="Line1" flowmeter="CARIOLIS" linearization="1" maintenance="0" description="4002">
 						<impulse><link alias="SIKN_123.Line1.IO.Counter:impulse"/></impulse>
@@ -507,6 +514,13 @@
 		Вторая станция
 		-->
 			<station name="SIKN_321" product="LUBRICANT" setup="" precision="3" description="4028">
+				<units>
+					<volume>112</volume>
+					<mass>96</mass>
+					<temperature>16</temperature>
+					<pressure>32</pressure>
+					<density>48</density>
+				</units>
 				<streams>
 					<stream name="Line" flowmeter="TURBINE" linearization="1" maintenance="0" description="4029">
 						<impulse>    <link alias="SIKN_321.IO.Counter:impulse"/></impulse>

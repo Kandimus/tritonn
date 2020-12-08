@@ -96,6 +96,13 @@
 		<stations>
 			<station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">
 				<temperature><link alias="sikn1.Obj.StnDensTemp:temp"/></temperature>
+				<units>
+					<volume>112</volume>
+					<mass>96</mass>
+					<temperature>16</temperature>
+					<pressure>32</pressure>
+					<density>48</density>
+				</units>
 				<streams>
 					<stream name="line1" flowmeter="CARIOLIS" linearization="1" maintenance="0" description="4002">
 						<impulse><link alias="sikn1.line1.IO.Counter:impulse"/></impulse>

@@ -246,9 +246,10 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.getError();
 	}
 
-	tinyxml2::XMLElement* xml_temp = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement* xml_pres = element->FirstChildElement(XmlName::PRES);
-	tinyxml2::XMLElement* xml_dens = element->FirstChildElement(XmlName::DENSITY);
+	tinyxml2::XMLElement* xml_temp  = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement* xml_pres  = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement* xml_dens  = element->FirstChildElement(XmlName::DENSITY);
+	tinyxml2::XMLElement* xml_units = element->FirstChildElement(XmlName::DENSITY);
 
 	UDINT fault = 0;
 	m_product = static_cast<rDensity::Product>(m_flagsProduct.getValue(strProduct, fault));
@@ -262,6 +263,11 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), Temp)) return err.getError();
 	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement(XmlName::LINK), Pres)) return err.getError();
 	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens->FirstChildElement(XmlName::LINK), Dens)) return err.getError();
+
+	if (xml_units) {
+		UnitMass   = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::MASS), U_t, fault);
+		UnitVolume = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::VOLUME), U_m3, fault);
+	}
 
 	ReinitLimitEvents();
 
