@@ -249,7 +249,7 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	tinyxml2::XMLElement* xml_temp  = element->FirstChildElement(XmlName::TEMP);
 	tinyxml2::XMLElement* xml_pres  = element->FirstChildElement(XmlName::PRES);
 	tinyxml2::XMLElement* xml_dens  = element->FirstChildElement(XmlName::DENSITY);
-	tinyxml2::XMLElement* xml_units = element->FirstChildElement(XmlName::DENSITY);
+	tinyxml2::XMLElement* xml_units = element->FirstChildElement(XmlName::UNITS);
 
 	UDINT fault = 0;
 	m_product = static_cast<rDensity::Product>(m_flagsProduct.getValue(strProduct, fault));

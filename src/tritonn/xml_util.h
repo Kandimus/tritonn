@@ -172,6 +172,7 @@ const char TRITONN[]       = "tritonn";
 const char TEMP[]          = "temperature";
 const char TYPE[]          = "type";
 const char UNIT[]          = "unit";
+const char UNITS[]         = "units";
 const char USER[]          = "user";
 const char USERS[]         = "users";
 const char VALUE[]         = "value";
