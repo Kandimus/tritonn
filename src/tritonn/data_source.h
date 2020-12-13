@@ -43,9 +43,10 @@ public:
 	rSource();
 	virtual ~rSource();
 
-	std::string Alias;                   // Полное имя объекта, формируется из префикса и xml-атрибута "name"
-	STRID       Descr;
-	UDINT       ID;
+	std::string Alias     = ""; // Полное имя объекта, формируется из префикса и xml-атрибута "name"
+	STRID       Descr     = 0;
+	UDINT       ID        = 0;
+	UDINT       m_lineNum = 0;
 
 	rStation *Station;
 
@@ -60,15 +61,15 @@ protected:
 	std::vector<rLink*> m_inputs;
 	std::vector<rLink*> m_outputs;
 
-	rEvent &ReinitEvent(UDINT eid);
-	rEvent &ReinitEvent(rEvent &event, UDINT eid);
+	rEvent& ReinitEvent(UDINT eid);
+	rEvent& ReinitEvent(rEvent &event, UDINT eid);
 	UDINT   CheckExpr(bool expr, UDINT flag, rEvent &event_fault, rEvent &event_success);
 	UDINT   SendEventSetLE(UDINT flag, rEvent &event);
 	UDINT   SendEventClearLE(UDINT flag, rEvent &event);
-	rLink  *GetOutputByName(const string &name);
+	rLink*  GetOutputByName(const string &name);
 
 public:
-	virtual const char *RTTI() = 0;
+	virtual const char *RTTI() const = 0;
 
 	virtual LREAL GetValue(const string &name, UDINT unit, UDINT &err);
 	virtual STRID GetValueUnit(const string &name, UDINT &err);
@@ -79,8 +80,9 @@ public:
 	virtual UDINT PreCalculate();
 	virtual UDINT Calculate();
 	virtual UDINT PostCalculate();
+	virtual UDINT check(rError& err);
 
-	virtual const rTotal *GetTotal(void);
+	virtual const rTotal *getTotal(void) const { return nullptr; }
 
 protected:
 	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const string &name, const string &shadow);

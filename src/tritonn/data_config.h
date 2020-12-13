@@ -94,6 +94,8 @@ protected:
 	UDINT LoadModbusTCP (tinyxml2::XMLElement* root);
 	UDINT LoadOPCUA     (tinyxml2::XMLElement* root);
 
+	UDINT checkMaxCount();
+	UDINT checkSource(void);
 	UDINT ResolveLinks(void);
 	UDINT ResolveReports(void);
 
@@ -103,7 +105,7 @@ public:
 	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
 	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
 
-	void addCheckTotal(rTotal** dest, const std::string& alias, UDINT lineno, const std::string& name);
+	const rSource* getSource(const std::string& alias);
 
 
 	tinyxml2::XMLElement* GetRootSecurity();

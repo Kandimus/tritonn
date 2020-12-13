@@ -38,6 +38,7 @@
 #include "data_counter.h"
 #include "data_report.h"
 #include "data_rvar.h"
+#include "data_sampler.h"
 #include "text_manager.h"
 #include "event_manager.h"
 #include "io/manager.h"
@@ -323,6 +324,7 @@ UDINT rDataManager::SaveKernel()
 	rDI di;
 	rDO do_;
 	rCounter fi;
+	rSampler smp;
 	auto rep     = new rReport();
 	auto rvar    = new rRVar();
 	auto mbSlTCP = new rModbusTCPSlaveManager();
@@ -354,6 +356,7 @@ UDINT rDataManager::SaveKernel()
 	text += "</io_list>\n";
 
 	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
+	text += smp.saveKernel(false, "sampler", "Пробоотборник", false);
 	text += denssol->saveKernel(false, "densitometer", "Плотномер (Солартрон)", false);
 	text += rdcdens->saveKernel(false, "reduceddens", "Приведение плотности", true);
 	text += ssel->saveKernel   (false, "selector", "Селектор", true);

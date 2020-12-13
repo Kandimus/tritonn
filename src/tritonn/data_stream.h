@@ -59,7 +59,7 @@ public:
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() { return "stream"; }
+	virtual const char *RTTI() const { return "stream"; }
 
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
@@ -67,7 +67,7 @@ public:
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 
-	virtual const rTotal *GetTotal(void);
+	virtual const rTotal *getTotal(void) const;
 
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

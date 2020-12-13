@@ -29,92 +29,94 @@
 
 enum UNITID
 {
-	U_any     = 0,
+	U_any          = 0,
 
 	// Температура
-	U_C       = 16,
-	U_K       = 17,
-	U_F       = 18,
+	U_C            = 16,
+	U_K            = 17,
+	U_F            = 18,
 
 	// Давление
-	U_MPa     = 32,
-	U_kPa     = 33,
-	U_kgs_sm2 = 34,
-	U_bar     = 35,
-	U_mbar    = 36,
-	U_atm     = 37,
-	U_mmptst  = 38,
-	U_psi     = 39,
+	U_MPa          = 32,
+	U_kPa          = 33,
+	U_kgs_sm2      = 34,
+	U_bar          = 35,
+	U_mbar         = 36,
+	U_atm          = 37,
+	U_mmptst       = 38,
+	U_psi          = 39,
 
 	// Плотность
-	U_kg_m3   = 48,
-	U_g_sm3   = 49,
+	U_kg_m3        = 48,
+	U_g_sm3        = 49,
 
 	// Вязкость динамическая
-	U_sP      = 64,
-	U_P       = 65,
-	U_kgss_m2 = 66,
-	U_Pas     = 67,
+	U_sP           = 64,
+	U_P            = 65,
+	U_kgss_m2      = 66,
+	U_Pas          = 67,
 
 	// Вязкость кинематическая
-	U_sSt     = 80,
-	U_St      = 81,
-	U_m2_s    = 82,
+	U_sSt          = 80,
+	U_St           = 81,
+	U_m2_s         = 82,
 
 	// Масса
-	U_t       = 96,
-	U_kg      = 97,
-	U_g       = 98,
+	U_t            = 96,
+	U_kg           = 97,
+	U_g            = 98,
 
 	// Объем
-	U_m3      = 112,
-	U_liter   = 113,
+	U_m3           = 112,
+	U_liter        = 113,
+	U_ml           = 114,
 
 	// Массовый расход
-	U_t_h     = 128,
-	U_kg_h    = 129,
+	U_t_h          = 128,
+	U_kg_h         = 129,
 
 	// Объемный расход
-	U_m3_h    = 144,
-	U_ltr_h   = 145,
+	U_m3_h         = 144,
+	U_ltr_h        = 145,
 
 	// К-фактор массовый
-	U_imp_t   = 160,
-	U_imp_kg  = 161,
+	U_imp_t        = 160,
+	U_imp_kg       = 161,
 
 	// К-фактор объемный
-	U_imp_m3  = 176,
-	U_imp_ltr = 177,
+	U_imp_m3       = 176,
+	U_imp_ltr      = 177,
 
 	// Частота
-	U_Hz      = 192,
-	U_kHz     = 193,
-	U_MHz     = 194,
+	U_Hz           = 192,
+	U_kHz          = 193,
+	U_MHz          = 194,
 
 	// Время
-	U_usec    = 208,
-	U_mksec   = 209,
-	U_msec    = 210,
-	U_sec     = 211,
+	U_usec         = 208,
+	U_mksec        = 209,
+	U_msec         = 210,
+	U_sec          = 211,
 
 	// Байты
-	U_bytes   = 224,
-	U_KBytes  = 225,
-	U_MBytes  = 226,
-	U_GBytes  = 227,
-	U_bit     = 228,
+	U_bytes        = 224,
+	U_KBytes       = 225,
+	U_MBytes       = 226,
+	U_GBytes       = 227,
+	U_bit          = 228,
 
 	// Прочие
-	U_DIMLESS = 512,
-	U_perc    = 513,
-	U_imp     = 514,
-	U_mA      = 515,
-	U_V       = 516,
-	U_1_C     = 517,
-	U_1_MPa   = 518,
-	U_perc_w  = 519,
-	U_perc_v  = 520,
-	U_COEFSOL = 521,
+	U_DIMLESS      = 512,
+	U_perc         = 513,
+	U_imp          = 514,
+	U_mA           = 515,
+	U_V            = 516,
+	U_1_C          = 517,
+	U_1_MPa        = 518,
+	U_perc_w       = 519,
+	U_perc_v       = 520,
+	U_COEFSOL      = 521,
+	U_discrete     = 522,
 
 	U_UNDEF   = 999
 };
@@ -130,11 +132,18 @@ private:
 		LREAL B;
 	};
 
+	enum Error
+	{
+		NONE = 0,
+		ISNAN,
+		INCOMPATIBILITY,
+	};
+
 	static rUnitsAB UnitsTable[U_DIMLESS];
 
 public:
 	static void  Init();
-	static UDINT ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dstUnit);
+	static Error ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dstUnit);
 };
 
 

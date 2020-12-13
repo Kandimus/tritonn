@@ -191,7 +191,7 @@ UDINT rStation::GetUnitFlowMass()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-const rTotal *rStation::GetTotal(void)
+const rTotal *rStation::getTotal(void) const
 {
 	return &Total;
 }

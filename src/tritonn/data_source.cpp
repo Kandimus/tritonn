@@ -135,12 +135,6 @@ UDINT rSource::GetFault()
 }
 
 
-const rTotal *rSource::GetTotal(void)
-{
-	return nullptr;
-}
-
-
 UDINT rSource::PreCalculate()
 {
 	Calculated = 0;
@@ -255,11 +249,17 @@ UDINT rSource::generateVars(rVariableList& list)
 //
 UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
+	if (!element) {
+		return err.set(DATACFGERR_CONFIG, 0, "element is null");
+	}
+
+	m_lineNum = element->GetLineNum();
+
 	const char *strAlias = element->Attribute(XmlName::NAME);
 
 	//TODO Можно еще алиас проверить на валидность имени
 	if (!strAlias) {
-		return err.set(DATACFGERR_INVALID_NAME, element->GetLineNum());
+		return err.set(DATACFGERR_INVALID_NAME, m_lineNum);
 	}
 
 	if (prefix.size()) {
@@ -307,6 +307,12 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	return TRITONN_RESULT_OK;
 }
 
+
+UDINT rSource::check(rError& err)
+{
+	UNUSED(err);
+	return TRITONN_RESULT_OK;
+}
 
 
 //-------------------------------------------------------------------------------------------------

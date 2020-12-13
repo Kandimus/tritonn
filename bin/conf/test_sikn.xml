@@ -475,45 +475,53 @@
 							<value>0</value>
 						</keypad>
 					</selector>
-					<sampler name="Sampler1" method="PERIOD" setup="RESERVERR | RESERVFILL | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
+					<sampler name="Sampler1" method="PERIOD" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
 						<totals>sikn_123</totals>
-						<io_start><link alias=""/></io_start>
-						<io_stop> <link alias=""/></io_stop>
-						<reserved>sikn_123.obj.sampler2</reserved>
+						<!--io_start><link alias=""/></io_start>
+						<io_stop> <link alias=""/></io_stop-->
+						<reserve>sikn_123.obj.sampler2</reserve>
 						<grab_vol>1.2</grab_vol>
 						<period>28800</period>
 						<grab_test>100</grab_test>
 						<can_a>
-							<overflow><link alias=""/></overflow>
+							<!--overflow><link alias=""/></overflow>
 							<fault>   <link alias=""/></fault>
-							<weight>  <link alias=""/></weight>
-							<can_volume>3900</can_volume>
+							<weight>  <link alias=""/></weight-->
+							<volume>3900</volume>
 						</can_a>
 						<can_b>
-							<overflow><link alias=""/></overflow>
+							<!--overflow><link alias=""/></overflow>
 							<fault>   <link alias=""/></fault>
-							<weight>  <link alias=""/></weight>
-							<can_volume>3850</can_volume>
+							<weight>  <link alias=""/></weight-->
+							<volume>3850</volume>
 						</can_b>
 					</sampler>
-					<sampler name="Sampler2" method="VOLUME" setup="" description="4027">
-						<reserved><link alias="SIKN_123.Sampler1"/></reserved>
-						<pulse>1000</pulse>
-						<grabvol>1.2</grabvol>
-						<canvol>3900</canvol>
-						<inputs>
-							<error><link alias=""/></error>
-							<canfilled><link alias=""/></canfilled>
-						</inputs>
-						<outputs>
-							<filled><link alias=""/></filled>
-						</outputs>
+					<sampler name="Sampler2" method="VOLUME" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4027">
+						<totals>sikn_123</totals>
+						<!--io_start><link alias=""/></io_start>
+						<io_stop> <link alias=""/></io_stop-->
+						<reserve>sikn_123.obj.sampler1</reserve>
+						<grab_vol>1.3</grab_vol>
+						<period>28800</period>
+						<grab_test>100</grab_test>
+						<can_a>
+							<!--overflow><link alias=""/></overflow>
+							<fault>   <link alias=""/></fault>
+							<weight>  <link alias=""/></weight-->
+							<volume>3900</volume>
+						</can_a>
+						<can_b>
+							<!--overflow><link alias=""/></overflow>
+							<fault>   <link alias=""/></fault>
+							<weight>  <link alias=""/></weight-->
+							<volume>3850</volume>
+						</can_b>
 					</sampler>
 				</calculate>
 			</station>
-		<!---
-		Вторая станция
-		-->
+			<!---
+			Вторая станция
+			-->
 			<station name="SIKN_321" product="LUBRICANT" setup="" precision="3" description="4028">
 				<streams>
 					<stream name="Line" flowmeter="TURBINE" linearization="1" maintenance="0" description="4029">
@@ -564,7 +572,7 @@
 							</limit>
 						</limits>
 					</ai>
-					<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4031">
+					<ai name="Pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4031">
 						<_io_link module="3" channel="4"/>
 						<unit>33</unit>
 						<keypad>0.5</keypad>
@@ -582,10 +590,10 @@
 							</limit>
 						</limits>
 					</ai>
-					<counter name="counter"             setup="NOBUFFER"         description="4032">
+					<counter name="counter" setup="NOBUFFER" description="4032">
 						<_io_link module="1" channel="3"/>
 					</counter>
-					<counter name="Period"              setup=""                 description="4033">
+					<counter name="Period" setup="" description="4033">
 						<_io_link module="2" channel="2"/>
 					</counter>
 				</io>
@@ -616,31 +624,25 @@
 							</limit>
 						</limits>
 					</densitometer>
-					<sampler      name="Sampler1" method="PERIOD" setup="" description="4035">
-						<reserved><link alias="SIKN_321.Sampler2"/></reserved>
-						<pulse>1000</pulse>
-						<grabvol>1.2</grabvol>
-						<canvol>3900</canvol>
-						<inputs>
-							<error><link alias=""/></error>
-							<canfilled><link alias=""/></canfilled>
-						</inputs>
-						<outputs>
-							<filled><link alias=""/></filled>
-						</outputs>
-					</sampler>
-					<sampler      name="Sampler2" method="PERIOD" setup="" description="4036">
-						<reserved><link alias="SIKN_321.Sampler1"/></reserved>
-						<pulse>1000</pulse>
-						<grabvol>1.2</grabvol>
-						<canvol>3900</canvol>
-						<inputs>
-							<error><link alias=""/></error>
-							<canfilled><link alias=""/></canfilled>
-						</inputs>
-						<outputs>
-							<filled><link alias=""/></filled>
-						</outputs>
+					<sampler name="Sampler" method="PERIOD" setup="SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
+						<totals>sikn_321</totals>
+						<!--io_start><link alias=""/></io_start>
+						<io_stop> <link alias=""/></io_stop-->
+						<grab_vol>1.5</grab_vol>
+						<period>28800</period>
+						<grab_test>100</grab_test>
+						<can_a>
+							<!--overflow><link alias=""/></overflow>
+							<fault>   <link alias=""/></fault>
+							<weight>  <link alias=""/></weight-->
+							<volume>3900</volume>
+						</can_a>
+						<can_b>
+							<!--overflow><link alias=""/></overflow>
+							<fault>   <link alias=""/></fault>
+							<weight>  <link alias=""/></weight-->
+							<volume>3850</volume>
+						</can_b>
 					</sampler>
 				</calculate>
 			</station>

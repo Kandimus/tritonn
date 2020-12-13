@@ -40,6 +40,7 @@
 #include "data_station.h"
 #include "data_stream.h"
 #include "data_rvar.h"
+#include "data_sampler.h"
 #include "modbustcpslave_manager.h"
 #include "opcua_manager.h"
 #include "structures.h"
@@ -132,6 +133,10 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 
 	// Вся конфигурация загруженна, расчитываем линки
 	if (TRITONN_RESULT_OK != ResolveLinks()) {
+		return m_error.getError();
+	}
+
+	if (checkSource() != TRITONN_RESULT_OK) {
 		return m_error.getError();
 	}
 
@@ -316,7 +321,7 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		if (XmlName::REDUCEDDENS == name) { if(SysVar->Max.m_reducedDens >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS, 0);  source = dynamic_cast<rSource*>(new rReducedDens()); source->ID = SysVar->Max.m_reducedDens++; }
 		if (XmlName::MSELECTOR   == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector());    source->ID = SysVar->Max.m_selector++;    }
 		if (XmlName::SELECTOR    == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector());    source->ID = SysVar->Max.m_selector++;    }
-		if (XmlName::SAMPLER     == name) continue;
+		if (XmlName::SAMPLER     == name) { source = dynamic_cast<rSource*>(new rSampler()); source->ID = SysVar->Max.m_sampler++;    }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);
@@ -762,6 +767,29 @@ UDINT rDataConfig::LoadShadowLink(tinyxml2::XMLElement *element, rLink &link, rL
 }
 
 
+const rSource* rDataConfig::getSource(const std::string& alias)
+{
+	for (auto item : *ListSource) {
+		if (item->Alias == alias) {
+			return item;
+		}
+	}
+
+	return nullptr;
+}
+
+
+UDINT rDataConfig::checkSource(void)
+{
+	for (auto  item : *ListSource) {
+		if (item->check(m_error) != TRITONN_RESULT_OK) {
+			return m_error.getError();
+		}
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
 //
 UDINT rDataConfig::ResolveLinks(void)
 {
@@ -799,7 +827,7 @@ UDINT rDataConfig::ResolveReports(void)
 
 		for (auto tot: rpt->AverageItems) {
 			for(auto scr: *ListSource) {
-				const rTotal *scrtot = scr->GetTotal();
+				const rTotal *scrtot = scr->getTotal();
 
 				if (!scrtot) {
 					continue;

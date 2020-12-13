@@ -39,7 +39,7 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() { return "fi"; }
+	virtual const char *RTTI() const { return "fi"; }
 
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);

@@ -120,7 +120,7 @@ UDINT rAI::Calculate()
 	rEvent event_success;
 	rEvent event_fault;
 	
-	if(rSource::Calculate()) return 0;
+	if(rSource::Calculate()) return TRITONN_RESULT_OK;
 
 	// Если аналоговый сигнал выключен, то выходим
 	if(m_setup.Value & rAI::Setup::OFF)

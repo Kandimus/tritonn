@@ -198,7 +198,7 @@ UDINT rStream::GetUnitKF()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-const rTotal *rStream::GetTotal(void)
+const rTotal *rStream::getTotal(void) const
 {
 	return &Total;
 }

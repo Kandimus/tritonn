@@ -23,7 +23,7 @@
 rUnits::rUnitsAB rUnits::UnitsTable[U_DIMLESS];
 
 
-UDINT rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dstUnit)
+rUnits::Error rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dstUnit)
 {
 	LREAL baseVal;
 
@@ -31,13 +31,13 @@ UDINT rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dst
 	if(srcUnit == dstUnit || srcUnit == U_any || dstUnit == U_any)
 	{
 		dstVal = srcVal;
-		return 0;
+		return Error::NONE;
 	}
 
 	if(std::isnan(UnitsTable[srcUnit].A) || std::isnan(UnitsTable[srcUnit].B) || std::isnan(UnitsTable[dstUnit].A) || std::isnan(UnitsTable[dstUnit].B))
 	{
 		dstVal = srcVal;
-		return 1;
+		return Error::ISNAN;
 	}
 
 
@@ -46,7 +46,7 @@ UDINT rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dst
 	if((srcUnit >= U_DIMLESS) || (dstUnit >= U_DIMLESS) || ((srcUnit >> 4) != (dstUnit >> 4)))
 	{
 		dstVal = srcVal;
-		return 2;
+		return Error::INCOMPATIBILITY;
 	}
 
 	// Если нужно, то приводим исходное значение к стандартному типу
@@ -62,7 +62,7 @@ UDINT rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, UDINT dst
 	}
 
 	dstVal = baseVal;
-	return 0;
+	return Error::NONE;
 }
 
 
@@ -117,6 +117,7 @@ void rUnits::Init()
 	// Объем
 	UNIT_INIT(U_m3   , 0, 1.0);
 	UNIT_INIT(U_liter, 0, 1000.0);
+	UNIT_INIT(U_ml   , 0, 1000000.0)
 
 	// Массовый расход
 	UNIT_INIT(U_t_h , 0, 1.0);
