@@ -46,8 +46,9 @@ public:
 		NONE = 0,
 		START = 1,
 		STOP = 2,
-		PAUSE = 3,
-		TEST = 4,
+		TEST = 3,
+		PAUSE = 122,
+		RESUME =145,
 	};
 
 	struct Can
@@ -72,6 +73,7 @@ private:
 		WORKTIME,
 		WORKVOLUME,
 		WORKMASS,
+		PAUSE,
 	};
 
 public:
@@ -127,7 +129,14 @@ private:
 	std::string m_totalsAlias  = "";
 	std::string m_reserveAlias = "";
 
+	UDINT m_timerInterval = 0;
+	State m_resumeState   = State::IDLE;
+
 private:
 	void onStart(void);
 	void onStop(void);
+	void onStartTest(void);
+	void onPause(void);
+	void onResume(void);
+	void onTest(void);
 };

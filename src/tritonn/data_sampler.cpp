@@ -15,7 +15,8 @@
 
 #include "data_sampler.h"
 #include <vector>
-#include <string.h>
+//#include <string.h>
+#include "tickcount.h"
 #include "event_manager.h"
 #include "error.h"
 #include "event_eid.h"
@@ -82,16 +83,20 @@ UDINT rSampler::InitLimitEvent(rLink &/*link*/)
 //
 UDINT rSampler::Calculate()
 {
+	m_grab.Value = false;
+
 	if(rSource::Calculate()) return TRITONN_RESULT_OK;
 
 	switch (m_state) {
 		case State::IDLE:
 			switch (m_command) {
-				case Command::NONE : break;
-				case Command::START: onStart(); break;
-				case Command::STOP : onStop(); break;
-				case Command::PAUSE: onPause(); break;
-				case Command::TEST : onStartTest(); break;
+				case Command::NONE  : break;
+				case Command::START : onStart(); break;
+				case Command::STOP  : onStop(); break;
+				case Command::TEST  : onStartTest(); break;
+				case Command::PAUSE : onPause(); break;
+				case Command::RESUME: onResume(); break;
+
 				default:
 					rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
 					break;
@@ -102,6 +107,7 @@ UDINT rSampler::Calculate()
 		case State::WORKTIME  : onWorkTimer();  break;
 		case State::WORKVOLUME: onWorkVolume(); break;
 		case State::WORKMASS  : onWorkMass();   break;
+		case State::PAUSE     : break;
 	}
 
 	m_command = Command::NONE;
@@ -305,10 +311,11 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 
 void rSampler::onStart()
 {
-	m_interval   = 0;
-	m_grabCount  = 0;
-	m_grabRemain = 0;
-	m_volRemain  = 0;
+	m_interval      = 0;
+	m_grabCount     = 0;
+	m_grabRemain    = 0;
+	m_volRemain     = 0;
+	m_timerInterval = rTickCount::SysTick();
 
 	switch (m_mode) {
 		case Mode::PERIOD:
@@ -342,13 +349,50 @@ void rSampler::onStart()
 	}
 }
 
+
 void rSampler::onStop(void)
 {
-	m_interval   = 0;
-	m_grabCount  = 0;
-	m_grabRemain = 0;
-	m_volRemain  = 0;
-	m_state      = State::IDLE;
+	m_state = State::IDLE;
 
 	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
 }
+
+
+void rSampler::onStartTest(void)
+{
+	m_interval      = 2000 * m_grabTest;
+	m_grabCount     = 0;
+	m_grabRemain    = m_grabTest;
+	m_volRemain     = 0;
+	m_state         = State::TEST;
+	m_timerInterval = rTickCount::SysTick();
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_TEST));
+}
+
+
+void rSampler::onPause(void)
+{
+	m_resumeState = m_state;
+	m_state       = State::PAUSE;
+}
+
+
+void rSampler::onResume(void)
+{
+	//TODO нужно пересчитать значения
+	m_state       = m_resumeState;
+	m_resumeState = State::IDLE;
+}
+
+
+void rSampler::onTest(void)
+{
+	auto tick = rTickCount::SysTick();
+
+	if (tick >= m_timerInterval + m_interval) {
+		m_grab.Value    = true;
+		m_timerInterval = m_timerInterval + m_interval; // учитываем то время, что прое*али
+	}
+}
+
