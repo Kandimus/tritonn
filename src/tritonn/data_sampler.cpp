@@ -89,22 +89,19 @@ UDINT rSampler::Calculate()
 			switch (m_command) {
 				case Command::NONE : break;
 				case Command::START: onStart(); break;
-				case Command::STOP : break;
-				case Command::TEST : break;
+				case Command::STOP : onStop(); break;
+				case Command::PAUSE: onPause(); break;
+				case Command::TEST : onStartTest(); break;
+				default:
+					rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+					break;
 			}
 			break;
 
-		case State::TEST:
-			break;
-
-		case State::WORKTIME:
-			break;
-
-		case State::WORKVOLUME:
-			break;
-
-		case State::WORKMASS:
-			break;
+		case State::TEST      : onTest();       break;
+		case State::WORKTIME  : onWorkTimer();  break;
+		case State::WORKVOLUME: onWorkVolume(); break;
+		case State::WORKMASS  : onWorkMass();   break;
 	}
 
 	m_command = Command::NONE;
@@ -318,18 +315,24 @@ void rSampler::onStart()
 			m_grabRemain = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
 			m_interval   = m_probePeriod / m_grabRemain;
 			m_state      = State::WORKTIME;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_PERIOD));
 			break;
 
 		case Mode::VOLUME:
 			m_grabRemain = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
 			m_interval   = m_probeVolume / m_grabRemain;
 			m_state      = State::WORKVOLUME;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_VOLUME));
 			break;
 
 		case Mode::MASS:
 			m_grabRemain = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
 			m_interval   = m_probeMass / m_grabRemain;
 			m_state      = State::WORKMASS;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_MASS));
 			break;
 
 		default:
@@ -337,4 +340,15 @@ void rSampler::onStart()
 			m_mode = Mode::PERIOD;
 			break;
 	}
+}
+
+void rSampler::onStop(void)
+{
+	m_interval   = 0;
+	m_grabCount  = 0;
+	m_grabRemain = 0;
+	m_volRemain  = 0;
+	m_state      = State::IDLE;
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
 }

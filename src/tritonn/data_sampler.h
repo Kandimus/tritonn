@@ -46,7 +46,8 @@ public:
 		NONE = 0,
 		START = 1,
 		STOP = 2,
-		TEST = 3,
+		PAUSE = 3,
+		TEST = 4,
 	};
 
 	struct Can
@@ -127,5 +128,6 @@ private:
 	std::string m_reserveAlias = "";
 
 private:
-	void onStart();
+	void onStart(void);
+	void onStop(void);
 };
