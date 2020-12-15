@@ -19,6 +19,7 @@
 #include "bits_array.h"
 #include "data_link.h"
 #include "compared_values.h"
+#include "total.h"
 
 
 class rSampler : public rSource
@@ -112,11 +113,16 @@ public:
 	UDINT    m_grabTest;      // Кол-во тестовых доз
 	LREAL    m_grabVol;       // Объем единичной дозы
 	LREAL    m_volume;        // Требуемый объем емкости
+	UINT     m_noflow;
 
 	LREAL    m_interval;      // объем/масса между дозами или время, в мсек, между дозами, при отборе по времени
-	LREAL    m_volRemain;     // Оставшийся объем пробы
-	UDINT    m_grabCount;     // Кол-во отобранных проб
+	LREAL    m_volPresent;    // Текущий объем емкости
+	LREAL    m_volRemain;     // Оставшийся объем емкости
+	UDINT    m_timeRemain;    // Оставшиеся время
+	UDINT    m_grabPresent;   // Кол-во отобранных проб
 	UDINT    m_grabRemain;    // Кол-во оставшихся проб
+	UDINT    m_grabCount;     // Кол-во проб
+	UDINT    m_timeStart;     // Время начала пробоотбора
 	State    m_state = State::IDLE;
 
 private:
@@ -126,6 +132,7 @@ private:
 	const rTotal*   m_totals  = nullptr;
 	const rSampler* m_reserve = nullptr;
 
+	rTotal      m_lastTotal;
 	std::string m_totalsAlias  = "";
 	std::string m_reserveAlias = "";
 
@@ -133,10 +140,14 @@ private:
 	State m_resumeState   = State::IDLE;
 
 private:
+	void checkCommand(void);
+	bool checkInterval(void);
+	void recalcInterval(void);
 	void onStart(void);
 	void onStop(void);
 	void onStartTest(void);
 	void onPause(void);
 	void onResume(void);
-	void onTest(void);
+	void onWorkTimer(bool checkflow);
+	void onWorkVolume(void);
 };
