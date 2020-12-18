@@ -89,25 +89,13 @@ UDINT rSampler::Calculate()
 
 	switch (m_state) {
 		case State::IDLE:
-			switch (m_command) {
-				case Command::NONE  : break;
-				case Command::START : onStart(); break;
-				case Command::STOP  : onStop(); break;
-				case Command::TEST  : onStartTest(); break;
-				case Command::PAUSE : onPause(); break;
-				case Command::RESUME: onResume(); break;
-
-				default:
-					rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
-					break;
-			}
-			break;
-
-		case State::TEST      : onWorkTimer(false); break;
-		case State::WORKTIME  : onWorkTimer(true);  break;
-		case State::WORKVOLUME: onWorkVolume(); break;
-		case State::WORKMASS  : onWorkMass();   break;
-		case State::PAUSE     : break;
+		case State::FINISH:     onIdle();            break;
+		case State::TEST:       onWorkTimer(false);  break;
+		case State::WORKTIME:   onWorkTimer(true);   break;
+		case State::WORKVOLUME: onWorkVolume(false); break;
+		case State::WORKMASS:   onWorkVolume(true);  break;
+		case State::PAUSE:                           break;
+		case State::ERROR:      onWorkError();       break;
 	}
 
 	m_command = Command::NONE;
@@ -116,6 +104,238 @@ UDINT rSampler::Calculate()
 
 	return TRITONN_RESULT_OK;
 }
+
+
+void rSampler::onIdle(void)
+{
+	switch (m_command) {
+		case Command::NONE   : break;
+		case Command::START  : onStart(); break;
+		case Command::STOP   : onStop(); break;
+		case Command::TEST   : onStartTest(); break;
+		case Command::CONFIRM: break;
+		case Command::PAUSE  : break;
+		case Command::RESUME : break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			break;
+	}
+}
+
+
+void rSampler::onStart()
+{
+	m_interval      = 0;
+	m_grabCount     = 0;
+	m_grabPresent   = 0;
+	m_grabRemain    = 0;
+	m_timeRemain    = 0;
+	m_volRemain     = 0;
+	m_noflow        = false;
+	m_timeStart     = 0;
+	m_timerInterval = 0;
+
+	if (m_select >= CAN_MAX) {
+		m_state = State::ERROR;
+		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_SELECT_FAULT));
+		return;
+	}
+
+	switch (m_mode) {
+		case Mode::PERIOD:
+			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
+			m_interval  = m_probePeriod / m_grabRemain;
+
+			if (checkInterval()) {
+				m_state  = State::WORKTIME;
+				rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_PERIOD));
+			}
+			break;
+
+		case Mode::VOLUME:
+			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
+			m_interval  = m_probeVolume / m_grabRemain;
+			m_state     = State::WORKVOLUME;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_VOLUME));
+			break;
+
+		case Mode::MASS:
+			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
+			m_interval  = m_probeMass / m_grabRemain;
+			m_state     = State::WORKMASS;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_MASS));
+			break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_mode));
+			m_mode  = Mode::PERIOD;
+			m_state = State::ERROR;
+			return;
+	}
+
+	m_lastTotal     = *m_totals;
+	m_grabRemain    = m_grabCount;
+	m_volRemain     = m_can[m_select].m_volume;
+	m_timeStart     = rTickCount::UnixTime();
+	m_timerInterval = rTickCount::SysTick();
+}
+
+
+void rSampler::onStop(void)
+{
+	m_state = State::IDLE;
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+}
+
+
+void rSampler::onStartTest(void)
+{
+	m_noflow        = false;
+	m_interval      = 2000 * m_grabTest;
+	m_state         = State::TEST;
+	m_lastTotal     = *m_totals;
+	m_grabCount     = m_grabTest;
+	m_grabRemain    = m_grabCount;
+	m_grabPresent   = 0;
+	m_volRemain     = m_can[m_select].m_volume;
+	m_timeRemain    = 0;
+	m_timeStart     = rTickCount::UnixTime();
+	m_timerInterval = rTickCount::SysTick();
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_TEST));
+}
+
+
+void rSampler::onPause(void)
+{
+	m_resumeState = m_state;
+	m_state       = State::PAUSE;
+}
+
+
+void rSampler::onResume(void)
+{
+	//TODO нужно пересчитать значения
+	m_state       = m_resumeState;
+	m_resumeState = State::IDLE;
+}
+
+
+void rSampler::onWorkTimer(bool checkflow)
+{
+	switch(m_command) {
+		case Command::NONE: break;
+		case Command::STOP:
+			m_state = State::FINISH;
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+			return;
+
+		case Command::PAUSE:
+			onPause();
+			return;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
+			break;
+	}
+
+	//TODO как правильно уменьшать m_timeRemain в случае если нет расхода,
+	//     нужно ли уменьшать постоянно, или допустимо скачками
+
+	auto tick = rTickCount::SysTick();
+
+	if (checkflow) {
+		if (m_totals->Raw.Volume - m_lastTotal.Raw.Volume < 0.00000000000001) {
+			m_noflow = true;
+		} else {
+			if (m_noflow) {
+				recalcInterval();
+				m_noflow = false;
+			}
+		}
+	}
+
+	// Нет расхода - выходим
+	if (checkflow && m_noflow) {
+		return;
+	}
+
+	if (tick >= m_timerInterval + m_interval) {
+		m_grab.Value    = true;
+		m_timeRemain   -= m_interval;
+		m_canPresent   += m_grabVol;
+		m_canRemain    -= m_grabVol;
+		m_timerInterval = m_timerInterval + m_interval; // учитываем то время, что прое*али
+		m_lastTotal     = *m_totals;
+
+		++m_grabPresent;
+		--m_grabRemain;
+	}
+
+	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || m_grabRemain < 0.001) {
+		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
+		m_state = State::FINISH;
+	}
+}
+
+
+void rSampler::onWorkVolume(bool isMass)
+{
+	switch(m_command) {
+		case Command::NONE: break;
+		case Command::STOP:
+			m_state = State::FINISH;
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+			return;
+
+		case Command::PAUSE: onPause(); return;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
+			break;
+	}
+
+	LREAL currvol = isMass ? m_totals->Raw.Mass   : m_totals->Raw.Volume;
+	LREAL lastvol = isMass ? m_lastTotal.Raw.Mass : m_lastTotal.Raw.Volume;
+
+	if (currvol > lastvol + m_interval) {
+		m_grab.Value    = true;
+		m_canPresent   += m_grabVol;
+		m_canRemain    -= m_grabVol;
+		m_lastTotal     = *m_totals;
+
+		++m_grabPresent;
+		--m_grabRemain;
+	}
+
+	if (m_grabRemain < 0.001) {
+		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
+		m_state = State::FINISH;
+	}
+}
+
+
+void rSampler::onWorkError()
+{
+	switch (m_command) {
+		case Command::NONE:
+			break;
+
+		case Command::CONFIRM:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_CONFIRM));
+			m_state = State::IDLE;
+			break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			break;
+	}
+}
+
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -128,22 +348,22 @@ UDINT rSampler::generateVars(rVariableList& list)
 	list.add(Alias + ".setup"       , TYPE_UINT , rVariable::Flags::___L, &m_setup.Value, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".select"      , TYPE_UINT , rVariable::Flags::____, &m_select     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".command"     , TYPE_UINT , rVariable::Flags::___L, &m_command    , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(Alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow     , U_DIMLESS, 0);
 	list.add(Alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___L, &m_probePeriod, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___L, &m_probeVolume, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___L, &m_probeMass  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".grabtest"    , TYPE_UDINT, rVariable::Flags::___L, &m_grabTest   , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".grabvol"     , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol    , U_ml     , 0);
-	list.add(Alias + ".volume"      , TYPE_LREAL, rVariable::Flags::____, &m_volume     , U_ml     , 0);
-	list.add(Alias + ".volpresent"  , TYPE_LREAL, rVariable::Flags::R___, &m_volPresent , U_ml     , 0);
-	list.add(Alias + ".volremain"   , TYPE_LREAL, rVariable::Flags::R___, &m_volRemain  , U_ml     , 0);
-	list.add(Alias + ".grabcount"   , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount  , U_DIMLESS, 0);
-	list.add(Alias + ".grabpresent" , TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent, U_DIMLESS, 0);
-	list.add(Alias + ".grabremain"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain , U_DIMLESS, 0);
+	list.add(Alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___L, &m_probeTest  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol    , U_ml     , 0);
+	list.add(Alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount  , U_DIMLESS, 0);
+	list.add(Alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent, U_DIMLESS, 0);
+	list.add(Alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain , U_DIMLESS, 0);
+	list.add(Alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::____, &m_canVolume  , U_ml     , 0);
+	list.add(Alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R___, &m_canPresent , U_ml     , 0);
+	list.add(Alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R___, &m_canRemain  , U_ml     , 0);
 	list.add(Alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R___, &m_interval   , U_DIMLESS, 0);
-	list.add(Alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(Alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow     , U_DIMLESS, 0);
-	list.add(Alias + ".timeremain"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain , U_msec   , 0);
-	list.add(Alias + ".timestart"   , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart  , U_sec    , 0);
+	list.add(Alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain , U_msec   , 0);
+	list.add(Alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart  , U_sec    , 0);
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
 		std::string prefix = Alias + String_format(".can_%c", 'a' + ii);
@@ -316,13 +536,6 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 }
 
 
-void rSampler::checkCommand(void)
-{
-	if (m_command != Command::NONE) {
-		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
-	}
-}
-
 bool rSampler::checkInterval(void)
 {
 	if (m_interval > 1000) {
@@ -344,147 +557,3 @@ void rSampler::recalcInterval(void)
 }
 
 
-void rSampler::onStart()
-{
-	m_interval      = 0;
-	m_grabCount     = 0;
-	m_grabPresent   = 0;
-	m_grabRemain    = 0;
-	m_timeRemain    = 0;
-	m_volRemain     = 0;
-	m_noflow        = false;
-	m_timeStart     = 0;
-	m_timerInterval = 0;
-
-	if (m_select >= CAN_MAX) {
-		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_SELECT_FAULT));
-		return;
-	}
-
-	switch (m_mode) {
-		case Mode::PERIOD:
-			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
-			m_interval  = m_probePeriod / m_grabRemain;
-
-			if (checkInterval()) {
-				m_state  = State::WORKTIME;
-				rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_PERIOD));
-			}
-			break;
-
-		case Mode::VOLUME:
-			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
-			m_interval  = m_probeVolume / m_grabRemain;
-			m_state     = State::WORKVOLUME;
-
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_VOLUME));
-			break;
-
-		case Mode::MASS:
-			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
-			m_interval  = m_probeMass / m_grabRemain;
-			m_state     = State::WORKMASS;
-
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_MASS));
-			break;
-
-		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_mode));
-			m_mode = Mode::PERIOD;
-			return;
-	}
-
-	m_lastTotal     = *m_totals;
-	m_grabRemain    = m_grabCount;
-	m_volRemain     = m_can[m_select].m_volume;
-	m_timeStart     = rTickCount::UnixTime();
-	m_timerInterval = rTickCount::SysTick();
-}
-
-
-void rSampler::onStop(void)
-{
-	m_state = State::IDLE;
-
-	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
-}
-
-
-void rSampler::onStartTest(void)
-{
-	m_noflow        = false;
-	m_interval      = 2000 * m_grabTest;
-	m_state         = State::TEST;
-	m_lastTotal     = *m_totals;
-	m_grabCount     = m_grabTest;
-	m_grabRemain    = m_grabCount;
-	m_grabPresent   = 0;
-	m_volRemain     = m_can[m_select].m_volume;
-	m_timeRemain    = 0;
-	m_timeStart     = rTickCount::UnixTime();
-	m_timerInterval = rTickCount::SysTick();
-
-	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_TEST));
-}
-
-
-void rSampler::onPause(void)
-{
-	m_resumeState = m_state;
-	m_state       = State::PAUSE;
-}
-
-
-void rSampler::onResume(void)
-{
-	//TODO нужно пересчитать значения
-	m_state       = m_resumeState;
-	m_resumeState = State::IDLE;
-}
-
-
-void rSampler::onWorkTimer(bool checkflow)
-{
-	checkCommand();
-
-	//TODO как правильно уменьшать m_timeRemain
-
-	auto tick = rTickCount::SysTick();
-
-	if (checkflow) {
-		if (m_totals->Raw.Volume - m_lastTotal.Raw.Volume < 0.00000000000001) {
-			m_noflow = true;
-		} else {
-			if (m_noflow) {
-				recalcInterval();
-				m_noflow = false;
-			}
-		}
-	}
-
-	// Нет расхода - выходим
-	if (checkflow && m_noflow) {
-		return;
-	}
-
-	if (tick >= m_timerInterval + m_interval) {
-		m_grab.Value    = true;
-		m_timeRemain   -= m_interval;
-		m_timerInterval = m_timerInterval + m_interval; // учитываем то время, что прое*али
-		m_lastTotal     = *m_totals;
-
-		++m_grabPresent;
-		--m_grabRemain;
-	}
-
-	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || !m_grabRemain) {
-		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
-		m_state = State::IDLE;
-	}
-}
-
-
-void rSampler::onWorkVolume(void)
-{
-
-}

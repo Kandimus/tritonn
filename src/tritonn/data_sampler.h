@@ -48,6 +48,7 @@ public:
 		START = 1,
 		STOP = 2,
 		TEST = 3,
+		CONFIRM = 4,
 		PAUSE = 122,
 		RESUME =145,
 	};
@@ -75,6 +76,8 @@ private:
 		WORKVOLUME,
 		WORKMASS,
 		PAUSE,
+		FINISH,
+		ERROR,
 	};
 
 public:
@@ -107,17 +110,17 @@ public:
 	UINT     m_select = 0;
 	rCmpUINT m_setup;
 	Mode     m_mode;
-	UDINT    m_probePeriod;        // Период времени для работы по таймеру
-	LREAL    m_probeVolume;
-	LREAL    m_probeMass;
-	UDINT    m_grabTest;      // Кол-во тестовых доз
+	UDINT    m_probePeriod;   // Период времени для работы по таймеру
+	LREAL    m_probeVolume;   //
+	LREAL    m_probeMass;     //
+	UDINT    m_probeTest;     // Кол-во тестовых доз
 	LREAL    m_grabVol;       // Объем единичной дозы
-	LREAL    m_volume;        // Требуемый объем емкости
+	LREAL    m_canVolume;     // Требуемый объем емкости
 	UINT     m_noflow;
 
 	LREAL    m_interval;      // объем/масса между дозами или время, в мсек, между дозами, при отборе по времени
-	LREAL    m_volPresent;    // Текущий объем емкости
-	LREAL    m_volRemain;     // Оставшийся объем емкости
+	LREAL    m_canPresent;    // Текущий объем емкости
+	LREAL    m_canRemain;     // Оставшийся объем емкости
 	UDINT    m_timeRemain;    // Оставшиеся время
 	UDINT    m_grabPresent;   // Кол-во отобранных проб
 	UDINT    m_grabRemain;    // Кол-во оставшихся проб
@@ -140,14 +143,15 @@ private:
 	State m_resumeState   = State::IDLE;
 
 private:
-	void checkCommand(void);
 	bool checkInterval(void);
 	void recalcInterval(void);
+	void onIdle(void);
 	void onStart(void);
 	void onStop(void);
 	void onStartTest(void);
 	void onPause(void);
 	void onResume(void);
 	void onWorkTimer(bool checkflow);
-	void onWorkVolume(void);
+	void onWorkVolume(bool isMass);
+	void onWorkMass(void);
 };
