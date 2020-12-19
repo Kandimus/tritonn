@@ -153,5 +153,8 @@ private:
 	void onResume(void);
 	void onWorkTimer(bool checkflow);
 	void onWorkVolume(bool isMass);
-	void onWorkMass(void);
+	void onWorkError(void);
+	bool isCanOverflow(void);
+	bool isCanFault(void);
+	bool checkIO(void);
 };

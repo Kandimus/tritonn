@@ -28,6 +28,9 @@
 rBitsArray rSampler::m_flagsMode;
 rBitsArray rSampler::m_flagsSetup;
 
+const UDINT LE_IO_START = 0x00000001;
+const UDINT LE_IO_STOP  = 0x00000002;
+
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -85,7 +88,11 @@ UDINT rSampler::Calculate()
 {
 	m_grab.Value = false;
 
-	if(rSource::Calculate()) return TRITONN_RESULT_OK;
+	if (rSource::Calculate()) {
+		return TRITONN_RESULT_OK;
+	}
+
+	checkIO();
 
 	switch (m_state) {
 		case State::IDLE:
@@ -131,7 +138,8 @@ void rSampler::onStart()
 	m_grabPresent   = 0;
 	m_grabRemain    = 0;
 	m_timeRemain    = 0;
-	m_volRemain     = 0;
+	m_canRemain     = 0;
+	m_canPresent    = 0;
 	m_noflow        = false;
 	m_timeStart     = 0;
 	m_timerInterval = 0;
@@ -144,7 +152,7 @@ void rSampler::onStart()
 
 	switch (m_mode) {
 		case Mode::PERIOD:
-			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
+			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
 			m_interval  = m_probePeriod / m_grabRemain;
 
 			if (checkInterval()) {
@@ -154,7 +162,7 @@ void rSampler::onStart()
 			break;
 
 		case Mode::VOLUME:
-			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
+			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
 			m_interval  = m_probeVolume / m_grabRemain;
 			m_state     = State::WORKVOLUME;
 
@@ -162,7 +170,7 @@ void rSampler::onStart()
 			break;
 
 		case Mode::MASS:
-			m_grabCount = static_cast<UDINT>(m_volume / m_grabVol + 0.5);
+			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
 			m_interval  = m_probeMass / m_grabRemain;
 			m_state     = State::WORKMASS;
 
@@ -178,7 +186,7 @@ void rSampler::onStart()
 
 	m_lastTotal     = *m_totals;
 	m_grabRemain    = m_grabCount;
-	m_volRemain     = m_can[m_select].m_volume;
+	m_canRemain     = m_can[m_select].m_volume;
 	m_timeStart     = rTickCount::UnixTime();
 	m_timerInterval = rTickCount::SysTick();
 }
@@ -195,13 +203,13 @@ void rSampler::onStop(void)
 void rSampler::onStartTest(void)
 {
 	m_noflow        = false;
-	m_interval      = 2000 * m_grabTest;
+	m_interval      = 2000 * m_probeTest;
 	m_state         = State::TEST;
 	m_lastTotal     = *m_totals;
-	m_grabCount     = m_grabTest;
+	m_grabCount     = m_probeTest;
 	m_grabRemain    = m_grabCount;
 	m_grabPresent   = 0;
-	m_volRemain     = m_can[m_select].m_volume;
+	m_canRemain     = m_can[m_select].m_volume;
 	m_timeRemain    = 0;
 	m_timeStart     = rTickCount::UnixTime();
 	m_timerInterval = rTickCount::SysTick();
@@ -265,18 +273,18 @@ void rSampler::onWorkTimer(bool checkflow)
 	}
 
 	if (tick >= m_timerInterval + m_interval) {
-		m_grab.Value    = true;
-		m_timeRemain   -= m_interval;
-		m_canPresent   += m_grabVol;
-		m_canRemain    -= m_grabVol;
-		m_timerInterval = m_timerInterval + m_interval; // учитываем то время, что прое*али
-		m_lastTotal     = *m_totals;
+		m_grab.Value     = true;
+		m_timeRemain    -= static_cast<UDINT>(m_interval);
+		m_canPresent    += m_grabVol;
+		m_canRemain     -= m_grabVol;
+		m_timerInterval += static_cast<UDINT>(m_interval); // учитываем то время, что прое*али
+		m_lastTotal      = *m_totals;
 
 		++m_grabPresent;
 		--m_grabRemain;
 	}
 
-	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || m_grabRemain < 0.001) {
+	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || m_grabRemain < 0.001 || isCanOverflow()) {
 		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
 		m_state = State::FINISH;
 	}
@@ -312,7 +320,7 @@ void rSampler::onWorkVolume(bool isMass)
 		--m_grabRemain;
 	}
 
-	if (m_grabRemain < 0.001) {
+	if (m_grabRemain < 0.001 || isCanOverflow()) {
 		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
 		m_state = State::FINISH;
 	}
@@ -474,7 +482,7 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	}
 
 	m_grabVol     = XmlUtils::getTextLREAL(xml_grabvol , 1.0  , fault);
-	m_grabTest    = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
+	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
 	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , 43200, fault);
 
 	return TRITONN_RESULT_OK;
@@ -557,3 +565,51 @@ void rSampler::recalcInterval(void)
 }
 
 
+bool rSampler::isCanOverflow(void)
+{
+	return m_select < CAN_MAX && m_can[m_select].m_overflow.isValid() && m_can[m_select].m_overflow.Value > 0;
+}
+
+
+bool rSampler::isCanFault(void)
+{
+	return m_select < CAN_MAX && m_can[m_select].m_fault.isValid() && m_can[m_select].m_fault.Value > 0;
+}
+
+
+bool rSampler::checkIO(void)
+{
+	if (m_ioStop.isValid()){
+		if (m_ioStop.Value > 0 && !(LockErr & LE_IO_STOP)) {
+			LockErr |= LE_IO_STOP;
+
+			if (!(LockErr & LE_IO_START)) {
+				onStop();
+				return true;
+			}
+		}
+
+		if (static_cast<DINT>(m_ioStop.Value) == 0 && (LockErr & LE_IO_STOP))
+		{
+			LockErr &= ~LE_IO_STOP;
+		}
+
+	}
+
+	if (m_ioStart.isValid()) {
+		if (m_ioStart.Value > 0 && !(LockErr & LE_IO_START)) {
+			LockErr |= LE_IO_START;
+
+			if (!(LockErr & LE_IO_STOP)) {
+				onStart();
+				return true;
+			}
+		}
+
+		if (static_cast<DINT>(m_ioStart.Value) == 0 && (LockErr & LE_IO_START)) {
+			LockErr &= ~LE_IO_START;
+		}
+	}
+
+	return false;
+}

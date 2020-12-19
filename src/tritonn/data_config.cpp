@@ -722,7 +722,7 @@ UDINT rDataConfig::LoadOPCUA(tinyxml2::XMLElement *root)
 //TODO можно также реализовать загрузку линка, где прописана просто числовая константа
 UDINT rDataConfig::LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required)
 {
-	link.Source = nullptr;
+	link.m_source = nullptr;
 
 	if (!element) {
 		if (!required) {
@@ -806,12 +806,12 @@ UDINT rDataConfig::ResolveLinks(void)
 					}
 				}
 
-				link->Source = src;
+				link->m_source = src;
 				break;
 			}
 		}
 
-		if (!link->Source) {
+		if (!link->isValid()) {
 			return m_error.set(DATACFGERR_RESOLVELINK, link->m_lineNum, link->FullTag);
 		}
 	}
