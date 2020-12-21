@@ -35,6 +35,16 @@ rLink::~rLink()
 	;
 }
 
+const rSource* rLink::getOwner() const
+{
+	return m_owner;
+}
+
+
+bool rLink::isValid() const
+{
+	return m_owner && m_source;
+}
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -43,13 +53,12 @@ LREAL rLink::GetValue()
 	UDINT err    = 0;
 	LREAL result = 0;
 
-	if(nullptr == Source)
-	{
+	if (!m_source) {
 		err = 1;
 		return 0;
 	}
 
-	result = Source->GetValue(Param, Unit, err);
+	result = m_source->GetValue(Param, Unit, err);
 
 	//TODO Нужна обработка ошибки
 
@@ -61,13 +70,12 @@ STRID rLink::GetSourceUnit()
 {
 	UDINT err = 0;
 
-	if(nullptr == Source)
-	{
+	if (!isValid()) {
 		err = 1;
 		return U_any;
 	}
 
-	return Source->GetValueUnit(Param, err);
+	return m_source->GetValueUnit(Param, err);
 }
 
 
@@ -75,12 +83,11 @@ STRID rLink::GetSourceUnit()
 //
 UDINT rLink::GetFault(void)
 {
-	if(Source == nullptr)
-	{
+	if (!isValid()) {
 		return 1;
 	}
 
-	return Source->GetFault();
+	return m_source->GetFault();
 }
 
 
@@ -92,13 +99,12 @@ UDINT rLink::Calculate()
 
 	rSource::Calculate();
 
-	if(nullptr == Source)
-	{
+	if (!isValid()) {
 		return 1;
 	}
 
 	// Получаем значение линка
-	Value = Source->GetValue(Param, Unit, err);
+	Value = m_source->GetValue(Param, Unit, err);
 
 	// Вычисляем пределы
 	Limit.Calculate(Value, true);
@@ -138,7 +144,7 @@ LREAL rLink::GetValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 void rLink::Init(UINT setup, UDINT unit, rSource *owner, const string &ioname, STRID descr)
 {
 	Unit    = unit;
-	Owner   = owner;
+	m_owner = owner;
 	IO_Name = ioname;
 	Descr   = descr;
 	m_setup = setup;
@@ -152,13 +158,13 @@ UDINT rLink::generateVars(rVariableList& list)
 	string name  = "";
 	UINT   flags = rVariable::Flags::READONLY;
 
-	if(nullptr == Owner)
+	if(nullptr == m_owner)
 	{
 		TRACEERROR("The link '%s' has no owner.", Alias.c_str());
 		return 0;
 	}
 
-	name = Owner->Alias;
+	name = m_owner->Alias;
 	if(!(m_setup & Setup::NONAME))
 	{
 		if (m_setup & Setup::VARNAME) {
@@ -228,7 +234,4 @@ UDINT rLink::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 
 	return TRITONN_RESULT_OK;
 }
-
-
-
 

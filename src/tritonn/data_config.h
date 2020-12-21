@@ -33,6 +33,7 @@ class  rLink;
 class  rInterface;
 class  rStation;
 class  rReport;
+class  rTotal;
 struct rSystemVariable;
 
 
@@ -49,6 +50,14 @@ class rDataConfig
 {
 	SINGLETON(rDataConfig)
 
+	struct rLinkTotal
+	{
+		rTotal**    m_dest;
+		std::string m_alias;
+		std::string m_name;
+		UDINT       m_lineno;
+	};
+
 public:
 	std::string FileName;
 	rError      m_error;
@@ -63,10 +72,11 @@ protected:
 	cJSON                *CfgJSON_USR;
 	tinyxml2::XMLElement* XMLRootSecurity;
 	rSystemVariable*      SysVar;
-	std::vector<rSource* >    *ListSource;
-	std::vector<rInterface* > *ListInterface;
-	std::vector<rReport* >    *ListReport;
-	std::vector<rLink* >       ListLink; //TODO Нужно ли это оставлять тут, или перенести в rDataManager?
+	std::vector<rSource*>    *ListSource;
+	std::vector<rInterface*> *ListInterface;
+	std::vector<rReport*>    *ListReport;
+	std::vector<rLink*>       ListLink; //TODO Нужно ли это оставлять тут, или перенести в rDataManager?
+	std::vector<rLinkTotal>   m_listTotals;
 
 	UDINT LoadSecurity  (tinyxml2::XMLElement* root, tinyxml2::XMLDocument& doc_security);
 	UDINT LoadHardware  (tinyxml2::XMLElement* root);
@@ -84,14 +94,18 @@ protected:
 	UDINT LoadModbusTCP (tinyxml2::XMLElement* root);
 	UDINT LoadOPCUA     (tinyxml2::XMLElement* root);
 
+	UDINT checkMaxCount();
+	UDINT checkSource(void);
 	UDINT ResolveLinks(void);
 	UDINT ResolveReports(void);
 
 	void  SaveWeb();
 
 public:
-	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link);
+	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
 	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
+
+	const rSource* getSource(const std::string& alias);
 
 
 	tinyxml2::XMLElement* GetRootSecurity();

@@ -36,7 +36,7 @@
 				</limits>
 			</ai>
 			<ai name="ai00" mode="PHIS" setup="NOICE | KEYPAD" description="4001">
-				<iolink module="0" channel="0"/>
+				<io_link module="0" channel="0"/>
 				<unit>16</unit>
 				<keypad>12.5</keypad>
 				<scale>
@@ -59,7 +59,7 @@
 				</limits>
 			</ai>
 			<ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD" description="4002">
-				<iolink module="0" channel="1"/>
+				<io_link module="0" channel="1"/>
 				<unit>16</unit>
 				<keypad>12.5</keypad>
 				<scale>
@@ -82,11 +82,11 @@
 				</limits>
 			</ai>
 			<di name="di00" mode="PHIS" setup="KEYPAD | SUCCESS0 | WARNING1" description="4003">
-				<iolink module="1" channel="0"/>
+				<io_link module="1" channel="0"/>
 				<keypad>0</keypad>
 			</di>
 			<di name="di01" mode="PHIS" setup="KEYPAD | SUCCESS1 | ALARM0" description="4004">
-				<iolink module="1" channel="0"/>
+				<io_link module="1" channel="0"/>
 				<keypad>0</keypad>
 			</di>
 			<di name="di_virt" mode="PHIS" setup="" description="4005">

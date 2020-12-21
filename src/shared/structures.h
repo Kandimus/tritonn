@@ -87,6 +87,7 @@ struct rMaxCount
 	USINT m_densSol     = 0;
 	USINT m_reducedDens = 0;
 	USINT m_selector    = 0;
+	USINT m_sampler     = 0;
 };
 
 

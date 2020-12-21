@@ -40,7 +40,7 @@ public:
 	};
 
 	// Настройка аналоговых сигналов
-	enum Setup
+	enum Setup : UINT
 	{
 		OFF          = 0x0001,     // Cигнал выключен из обработки
 		ERR_KEYPAD   = 0x0002,     // Разрешение при обрыве переводить сигнал в KEYPAD
@@ -75,11 +75,11 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() { return "ai"; }
+	virtual const char *RTTI() const { return "ai"; }
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual std::string saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

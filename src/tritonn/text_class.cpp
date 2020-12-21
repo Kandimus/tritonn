@@ -129,11 +129,11 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err
 	}
 
 	XML_FOR(xml_item, root, XmlName::STR) {
-		UDINT  id    = XmlUtils::getAttributeUDINT(xml_item, XmlName::ID, SID_UNKNOW);
+		UDINT  id    = XmlUtils::getAttributeUDINT(xml_item, XmlName::ID, SID::UNKNOW);
 		CCHPTR ptext = xml_item->GetText();
 		string text  = (nullptr == ptext) ? "" : ptext;
 
-		if (SID_UNKNOW == id) {
+		if (SID::UNKNOW == id) {
 			return err.set(DATACFGERR_LANG_ID, xml_item->GetLineNum(), "");
 		}
 

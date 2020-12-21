@@ -47,7 +47,7 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() { return "denssol"; }
+	virtual const char *RTTI() const { return "denssol"; }
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);

@@ -66,13 +66,13 @@ rStation::rStation() : Setup(0)
 
 	Stream.clear();
 
-	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C       , SID_TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa     , SID_PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3   , SID_DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowMass    , UnitMass  , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , UnitVolume, SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, UnitVolume, SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, UnitVolume, SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C       , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa     , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3   , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowMass    , UnitMass  , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , UnitVolume, SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, UnitVolume, SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, UnitVolume, SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
 }
 
 
@@ -156,9 +156,9 @@ UDINT rStation::Calculate()
 	for (auto str : Stream) {
 		if(str->Maintenance) continue;
 
-		if(!Temp.Source) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(!Pres.Source) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(!Dens.Source) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!Temp.isValid()) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!Pres.isValid()) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!Dens.isValid()) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
 	}
 
 	return TRITONN_RESULT_OK;
@@ -191,7 +191,7 @@ UDINT rStation::GetUnitFlowMass()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-const rTotal *rStation::GetTotal(void)
+const rTotal *rStation::getTotal(void) const
 {
 	return &Total;
 }

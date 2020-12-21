@@ -13,20 +13,57 @@
 //===
 //=================================================================================================
 
-
-#include <vector>
-#include <string.h>
 #include "data_sampler.h"
+#include <vector>
+//#include <string.h>
+#include "tickcount.h"
+#include "event_manager.h"
+#include "error.h"
 #include "event_eid.h"
-#include "data_manager.h"
+#include "data_config.h"
+#include "variable_list.h"
+#include "xml_util.h"
+#include "text_id.h"
 
+rBitsArray rSampler::m_flagsMode;
+rBitsArray rSampler::m_flagsSetup;
 
-//const UDINT SELECTOR_LE_NOCHANGE = 0x00000001;
+const UDINT LE_IO_START = 0x00000001;
+const UDINT LE_IO_STOP  = 0x00000002;
+
 
 //-------------------------------------------------------------------------------------------------
 //
 rSampler::rSampler()
 {
+	if (m_flagsMode.empty()) {
+		m_flagsMode
+				.add("PERIOD", static_cast<UINT>(Mode::PERIOD))
+				.add("MASS"  , static_cast<UINT>(Mode::MASS))
+				.add("VOLUME", static_cast<UINT>(Mode::VOLUME));
+	}
+
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"         , static_cast<UINT>(Setup::OFF))
+				.add("ERR2RESERVE" , static_cast<UINT>(Setup::ERR_RESERV))
+				.add("FILL2RESERVE", static_cast<UINT>(Setup::FILL_RESERV))
+				.add("SINGLECAN"   , static_cast<UINT>(Setup::SINGLE_CAN))
+				.add("DUALCAN"     , static_cast<UINT>(Setup::DUAL_CAN))
+				.add("AUTOSWITCH"  , static_cast<UINT>(Setup::AUTOSWITCH));
+	}
+
+	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
+		std::string name = String_format("can_%c.", 'a' + ii);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_overflow, U_discrete, SID::CANFILLED, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_fault   , U_discrete, SID::FAULT    , name + XmlName::FAULT    , rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::INPUT , m_can[ii].m_weight  , U_g       , SID::CANMASS  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+	}
+	InitLink(rLink::Setup::INPUT , m_ioStart , U_discrete, SID::CANIOSTART, XmlName::IOSTART, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_ioStop  , U_discrete, SID::CANIOSTOP , XmlName::IOSTOP , rLink::SHADOW_NONE);
+
+	InitLink(rLink::Setup::OUTPUT, m_grab    , U_discrete, SID::GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_selected, U_discrete, SID::CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
 }
 
 
@@ -41,43 +78,7 @@ rSampler::~rSampler()
 //
 UDINT rSampler::InitLimitEvent(rLink &/*link*/)
 {
-//	link.Limit.EventChangeAMin  = ReinitEvent(EID_RDCDDENS_NEW_AMIN)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeWMin  = ReinitEvent(EID_RDCDDENS_NEW_WMIN)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeWMax  = ReinitEvent(EID_RDCDDENS_NEW_WMAX)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeAMax  = ReinitEvent(EID_RDCDDENS_NEW_AMAX)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeHyst  = ReinitEvent(EID_RDCDDENS_NEW_HYST)  << link.Descr << link.Unit;
-//	link.Limit.EventChangeSetup = ReinitEvent(EID_RDCDDENS_NEW_SETUP) << link.Descr << link.Unit;
-//	link.Limit.EventAMin        = ReinitEvent(EID_RDCDDENS_AMIN)      << link.Descr << link.Unit;
-//	link.Limit.EventWMin        = ReinitEvent(EID_RDCDDENS_WMIN)      << link.Descr << link.Unit;
-//	link.Limit.EventWMax        = ReinitEvent(EID_RDCDDENS_WMAX)      << link.Descr << link.Unit;
-//	link.Limit.EventAMax        = ReinitEvent(EID_RDCDDENS_AMAX)      << link.Descr << link.Unit;
-//	link.Limit.EventNan         = ReinitEvent(EID_RDCDDENS_NAN)       << link.Descr << link.Unit;
-//	link.Limit.EventNormal      = ReinitEvent(EID_RDCDDENS_NORMAL)    << link.Descr << link.Unit;
-
 	return 0;
-}
-
-
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rSampler::GetFault(void)
-{
-	UDINT result = 0;
-
-	return result;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rSampler::generateVars(rVariableList&/*list*/)
-{
-//	list.push_back(new rVariable(Alias + ".Status"    , TYPE_UINT , VARF_RO, SSPOINTER(IO.AI[ID].Status    )));
-//	list.push_back(new rVariable(Alias + ".Mode"      , TYPE_UINT , VARF_RW, SSPOINTER(IO.AI[ID].Mode      )));
-//	list.push_back(new rVariable(Alias + ".Unit"      , TYPE_STRID, VARF_RO, SSPOINTER(IO.AI[ID].Unit      )));
-
-	return TRITONN_RESULT_OK;
 }
 
 
@@ -85,259 +86,547 @@ UDINT rSampler::generateVars(rVariableList&/*list*/)
 //
 UDINT rSampler::Calculate()
 {
-/*
-	USINT  ii        = 0;
-	UINT   mode      = Setup & SELECTOR_MODE; // Забираем только текущий выбор
-	LREAL  _valueout = 0.0;
-	INT    _select   = Select.Value;
-	UDINT  _lockerr  = LockErr;
-	rEvent event;
-	
-	vector<rWriteValue> arr;
+	m_grab.Value = false;
 
-	
-	if(Setup & SELECTOR_OFF) return 0;
-
-	// Проверка на изменение данных пользователем
-	event.Reinit(EID_SELECTOR_SELECTED) << id;
-	Select.Compare(event);	
-
-	
-	// Если переменная переключатель находится в недопустимом режиме
-	if(_select >= Count || _select < -1)
-	{
-		Event_ID_UINT(EID_SELECTOR_ERROR, _select, id);
-		
-		_select = -1;
+	if (rSource::Calculate()) {
+		return TRITONN_RESULT_OK;
 	}
-	else
-	{
-		_valueout = ValueIn[_select];
-		
-		//----------------------------------------------------------------------------------------
-		// Автоматические переходы, по статусу ошибки
-		if(Fault[_select])
-		{
-			switch(mode)
-			{
-				// Переходы запрещены
-				case SELECTOR_NOCHANGE:
-					{
-						if(!(_lockerr & SELECTOR_LE_NOCHANGE))
-						{
-							Event_ID_UINT(EID_SELECTOR_NOCHANGE, _select, id);
-						
-							_lockerr |= SELECTOR_LE_NOCHANGE;
-						}
-						break;
-					}
 
-				// Переход на значение ошибки
-				case SELECTOR_TOERROR:
-					{
-						Event_ID_UINT(EID_SELECTOR_TOFAULT, _select, id);
-					
-						_select   = -1;
-						_valueout = ValueFault;
-					}
+	checkIO();
 
-				// Переходим на следующий канал
-				default:
-					{
-						UINT oldSelect = _select;
+	switch (m_state) {
+		case State::IDLE:
+		case State::FINISH:     onIdle();            break;
+		case State::TEST:       onWorkTimer(false);  break;
+		case State::WORKTIME:   onWorkTimer(true);   break;
+		case State::WORKVOLUME: onWorkVolume(false); break;
+		case State::WORKMASS:   onWorkVolume(true);  break;
+		case State::PAUSE:                           break;
+		case State::ERROR:      onWorkError();       break;
+	}
 
-						ii        = 0;
-						_lockerr &= ~(SELECTOR_LE_NOCHANGE);
-						do
-						{
-							_select += (Setup & SELECTOR_CHANGENEXT) ? +1 : -1;
-					
-							if(_select < 0)     _select = Count - 1;
-							if(_select > Count) _select = 0;
-						
-							++ii;
-						}
-						while(Fault[_select] && ii < Count - 2);
+	m_command = Command::NONE;
 
-						if(Fault[_select])
-						{
-							Event_ID_UINT(EID_SELECTOR_NOTHINGNEXT, _select, id);
-						
-							_select = -1;
-						}
-						else
-						{
-							Event_ID_UINT_UINT(EID_SELECTOR_TONEXT, _select, oldSelect, id);
-						}
-				}
-			} //switch
-		}
-		else
-		{
-			if(_lockerr & SELECTOR_LE_NOCHANGE)
-			{
-				Event_ID_UINT(EID_SELECTOR_CLEARERROR, id, _select);
-			}
-			_lockerr &= ~(SELECTOR_LE_NOCHANGE);
-		}
+	PostCalculate();
 
-		_valueout = (_select >= 0) ? ValueIn[_select] : ValueFault;
-	}// else
-
-	// Формируем запись данных в DataManager
-	arr.push_back(rWriteValue(SSPOINTER(Selector[id].Select.Value), _select));
-	arr.push_back(rWriteValue(SSPOINTER(Selector[id].LockErr)     , _lockerr));
-	arr.push_back(rWriteValue(SSPOINTER(Selector[id].ValueOut)    , _valueout));
-	gDataManager.Set(arr);
-*/
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
+
+void rSampler::onIdle(void)
+{
+	switch (m_command) {
+		case Command::NONE   : break;
+		case Command::START  : onStart(); break;
+		case Command::STOP   : onStop(); break;
+		case Command::TEST   : onStartTest(); break;
+		case Command::CONFIRM: break;
+		case Command::PAUSE  : break;
+		case Command::RESUME : break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			break;
+	}
+}
+
+
+void rSampler::onStart()
+{
+	m_interval      = 0;
+	m_grabCount     = 0;
+	m_grabPresent   = 0;
+	m_grabRemain    = 0;
+	m_timeRemain    = 0;
+	m_canRemain     = 0;
+	m_canPresent    = 0;
+	m_noflow        = false;
+	m_timeStart     = 0;
+	m_timerInterval = 0;
+
+	if (m_select >= CAN_MAX) {
+		m_state = State::ERROR;
+		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_SELECT_FAULT));
+		return;
+	}
+
+	switch (m_mode) {
+		case Mode::PERIOD:
+			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
+			m_interval  = m_probePeriod / m_grabRemain;
+
+			if (checkInterval()) {
+				m_state  = State::WORKTIME;
+				rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_PERIOD));
+			}
+			break;
+
+		case Mode::VOLUME:
+			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
+			m_interval  = m_probeVolume / m_grabRemain;
+			m_state     = State::WORKVOLUME;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_VOLUME));
+			break;
+
+		case Mode::MASS:
+			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
+			m_interval  = m_probeMass / m_grabRemain;
+			m_state     = State::WORKMASS;
+
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_MASS));
+			break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_mode));
+			m_mode  = Mode::PERIOD;
+			m_state = State::ERROR;
+			return;
+	}
+
+	m_lastTotal     = *m_totals;
+	m_grabRemain    = m_grabCount;
+	m_canRemain     = m_can[m_select].m_volume;
+	m_timeStart     = rTickCount::UnixTime();
+	m_timerInterval = rTickCount::SysTick();
+}
+
+
+void rSampler::onStop(void)
+{
+	m_state = State::IDLE;
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+}
+
+
+void rSampler::onStartTest(void)
+{
+	m_noflow        = false;
+	m_interval      = 2000 * m_probeTest;
+	m_state         = State::TEST;
+	m_lastTotal     = *m_totals;
+	m_grabCount     = m_probeTest;
+	m_grabRemain    = m_grabCount;
+	m_grabPresent   = 0;
+	m_canRemain     = m_can[m_select].m_volume;
+	m_timeRemain    = 0;
+	m_timeStart     = rTickCount::UnixTime();
+	m_timerInterval = rTickCount::SysTick();
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_TEST));
+}
+
+
+void rSampler::onPause(void)
+{
+	m_resumeState = m_state;
+	m_state       = State::PAUSE;
+}
+
+
+void rSampler::onResume(void)
+{
+	//TODO нужно пересчитать значения
+	m_state       = m_resumeState;
+	m_resumeState = State::IDLE;
+}
+
+
+void rSampler::onWorkTimer(bool checkflow)
+{
+	switch(m_command) {
+		case Command::NONE: break;
+		case Command::STOP:
+			m_state = State::FINISH;
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+			return;
+
+		case Command::PAUSE:
+			onPause();
+			return;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
+			break;
+	}
+
+	//TODO как правильно уменьшать m_timeRemain в случае если нет расхода,
+	//     нужно ли уменьшать постоянно, или допустимо скачками
+
+	auto tick = rTickCount::SysTick();
+
+	if (checkflow) {
+		if (m_totals->Raw.Volume - m_lastTotal.Raw.Volume < 0.00000000000001) {
+			m_noflow = true;
+		} else {
+			if (m_noflow) {
+				recalcInterval();
+				m_noflow = false;
+			}
+		}
+	}
+
+	// Нет расхода - выходим
+	if (checkflow && m_noflow) {
+		return;
+	}
+
+	if (tick >= m_timerInterval + m_interval) {
+		m_grab.Value     = true;
+		m_timeRemain    -= static_cast<UDINT>(m_interval);
+		m_canPresent    += m_grabVol;
+		m_canRemain     -= m_grabVol;
+		m_timerInterval += static_cast<UDINT>(m_interval); // учитываем то время, что прое*али
+		m_lastTotal      = *m_totals;
+
+		++m_grabPresent;
+		--m_grabRemain;
+	}
+
+	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || m_grabRemain < 0.001 || isCanOverflow()) {
+		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
+		m_state = State::FINISH;
+	}
+}
+
+
+void rSampler::onWorkVolume(bool isMass)
+{
+	switch(m_command) {
+		case Command::NONE: break;
+		case Command::STOP:
+			m_state = State::FINISH;
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+			return;
+
+		case Command::PAUSE: onPause(); return;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
+			break;
+	}
+
+	LREAL currvol = isMass ? m_totals->Raw.Mass   : m_totals->Raw.Volume;
+	LREAL lastvol = isMass ? m_lastTotal.Raw.Mass : m_lastTotal.Raw.Volume;
+
+	if (currvol > lastvol + m_interval) {
+		m_grab.Value    = true;
+		m_canPresent   += m_grabVol;
+		m_canRemain    -= m_grabVol;
+		m_lastTotal     = *m_totals;
+
+		++m_grabPresent;
+		--m_grabRemain;
+	}
+
+	if (m_grabRemain < 0.001 || isCanOverflow()) {
+		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
+		m_state = State::FINISH;
+	}
+}
+
+
+void rSampler::onWorkError()
+{
+	switch (m_command) {
+		case Command::NONE:
+			break;
+
+		case Command::CONFIRM:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_CONFIRM));
+			m_state = State::IDLE;
+			break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			break;
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rSampler::generateVars(rVariableList& list)
+{
+	rSource::generateVars(list);
+
+	// Variables
+	list.add(Alias + ".mode"        , TYPE_UINT , rVariable::Flags::___L, &m_mode       , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".setup"       , TYPE_UINT , rVariable::Flags::___L, &m_setup.Value, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".select"      , TYPE_UINT , rVariable::Flags::____, &m_select     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".command"     , TYPE_UINT , rVariable::Flags::___L, &m_command    , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(Alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow     , U_DIMLESS, 0);
+	list.add(Alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___L, &m_probePeriod, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___L, &m_probeVolume, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___L, &m_probeMass  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___L, &m_probeTest  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol    , U_ml     , 0);
+	list.add(Alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount  , U_DIMLESS, 0);
+	list.add(Alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent, U_DIMLESS, 0);
+	list.add(Alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain , U_DIMLESS, 0);
+	list.add(Alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::____, &m_canVolume  , U_ml     , 0);
+	list.add(Alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R___, &m_canPresent , U_ml     , 0);
+	list.add(Alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R___, &m_canRemain  , U_ml     , 0);
+	list.add(Alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R___, &m_interval   , U_DIMLESS, 0);
+	list.add(Alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain , U_msec   , 0);
+	list.add(Alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart  , U_sec    , 0);
+
+	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
+		std::string prefix = Alias + String_format(".can_%c", 'a' + ii);
+		list.add(prefix + ".volume", TYPE_LREAL, rVariable::Flags::___L, &m_can[ii].m_volume, U_ml, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+
+UDINT rSampler::Can::loadFromXML(tinyxml2::XMLElement *element, rError &err)
+{
+	tinyxml2::XMLElement* xml_overflow = element->FirstChildElement(XmlName::OVERFLOW_);
+	tinyxml2::XMLElement* xml_fault    = element->FirstChildElement(XmlName::FAULT);
+	tinyxml2::XMLElement* xml_weight   = element->FirstChildElement(XmlName::WEIGHT);
+
+	if (rDataConfig::instance().LoadLink(xml_overflow, m_overflow, false) != TRITONN_RESULT_OK ||
+		rDataConfig::instance().LoadLink(xml_fault   , m_fault   , false) != TRITONN_RESULT_OK ||
+		rDataConfig::instance().LoadLink(xml_weight  , m_weight  , false) != TRITONN_RESULT_OK) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "link fault");
+	}
+
+	UDINT fault = 0;
+	m_volume = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::VOLUME), 0, fault);
+
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "fault volume");
+	}
+
+	return TRITONN_RESULT_OK;
+}
 
 
 UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	UNUSED(element); UNUSED(err); UNUSED(prefix);
-	return TRITONN_RESULT_OK;
-/*
-	string defSetup = rDataConfig::GetFlagNameByBit  (rDataConfig::SelectorSetupFlags, SELECTOR_SETUP_OFF);
-	string defMode  = rDataConfig::GetFlagNameByValue(rDataConfig::SelectorModeFlags , SELECTOR_MODE_CHANGENEXT);
-	string strSetup = (element->Attribute("setup")) ? element->Attribute("setup") : defSetup.c_str();
-	string strMode  = (element->Attribute("mode") ) ? element->Attribute("mode")  : defMode.c_str();
-	UDINT  err      = 0;
-	UDINT  ii       = 0;
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PERIOD)));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
 
-	if(tinyxml2::XML_SUCCESS != rSource::LoadFromXML(element, cfg)) return DATACFGERR_SELECTOR;
-
-	Setup.Init(rDataConfig::GetFlagFromStr(rDataConfig::SelectorSetupFlags, strSetup, err));
-	Mode.Init (rDataConfig::GetFlagFromStr(rDataConfig::SelectorModeFlags , strMode , err));
-	if(err) return DATACFGERR_SELECTOR;
-
-	// Простой селектор
-	if(string(CFGNAME_SELECTOR) == element->Name())
-	{
-		tinyxml2::XMLElement *inputs = element->FirstChildElement(CFGNAME_INPUTS);
-		tinyxml2::XMLElement *faults = element->FirstChildElement(CFGNAME_FAULTS);
-
-		if(nullptr == inputs)
-		{
-			return DATACFGERR_SELECTOR;
-		}
-
-		// Входа
-		for(tinyxml2::XMLElement *link = inputs->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-		{
-			if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &ValueLink[0][ii])) return cfg.ErrorID;
-			++ii;
-
-			if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-		}
-
-		CountInputs = ii;
-		ii          = 0;
-
-		// Фаулты (ошибки)
-		if(faults)
-		{
-			for(tinyxml2::XMLElement *link = faults->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-			{
-				if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &FaultLink[0][ii])) return cfg.ErrorID;
-				++ii;
-
-				if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-			}
-			if(ii != CountInputs) return DATACFGERR_SELECTOR;
-		}
-
-		// Подстановочное значение
-		ValueFault[0] = rDataConfig::GetValueLREAL(element->FirstChildElement(CFGNAME_FAULTVAL), 0.0, err);
-		if(err) return DATACFGERR_SELECTOR;
+	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+		return err.getError();
 	}
 
-	// Мульти-селектор
-	else if(string(CFGNAME_MSELECTOR) == element->Name())
-	{
-		Setup.Init(Setup.Value | SELECTOR_SETUP_MULTI);
+	tinyxml2::XMLElement* xml_totals   = element->FirstChildElement(XmlName::TOTALS);
+	tinyxml2::XMLElement* xml_iostart  = element->FirstChildElement(XmlName::IOSTART);
+	tinyxml2::XMLElement* xml_iostop   = element->FirstChildElement(XmlName::IOSTOP);
+	tinyxml2::XMLElement* xml_reserve  = element->FirstChildElement(XmlName::RESERVE);
+	tinyxml2::XMLElement* xml_grabvol  = element->FirstChildElement(XmlName::GRABVOL);
+	tinyxml2::XMLElement* xml_period   = element->FirstChildElement(XmlName::PERIOD);
+	tinyxml2::XMLElement* xml_grabtest = element->FirstChildElement(XmlName::GRABTEST);
+	tinyxml2::XMLElement* xml_can_a    = element->FirstChildElement(XmlName::CAN1);
+	tinyxml2::XMLElement* xml_can_b    = element->FirstChildElement(XmlName::CAN2);
 
-		tinyxml2::XMLElement *names     = element->FirstChildElement(CFGNAME_NAMES);
-		tinyxml2::XMLElement *inputs    = element->FirstChildElement(CFGNAME_INPUTS);
-		tinyxml2::XMLElement *faults    = element->FirstChildElement(CFGNAME_FAULTS);
-		tinyxml2::XMLElement *faultvals = element->FirstChildElement(CFGNAME_FAULTVALS);
+	UDINT fault = 0;
 
-		if(nullptr == names || nullptr == inputs || nullptr == faultvals)
-		{
-			return DATACFGERR_SELECTOR;
-		}
-
-		// Загружаем имена выходов
-		UDINT grp = 0;
-		for(tinyxml2::XMLElement *name = names->FirstChildElement(CFGNAME_NAME); name != nullptr; name = name->NextSiblingElement(CFGNAME_NAME))
-		{
-			NameInput[grp] = name->GetText();
-
-			if(NameInput[grp].empty()) return DATACFGERR_SELECTOR;
-			++grp;
-		}
-		CountGroup = grp;
-
-		// Загружаем входа
-		ii = 0;
-		for(tinyxml2::XMLElement *group = inputs->FirstChildElement(CFGNAME_GROUP); group != nullptr; group = group->NextSiblingElement(CFGNAME_GROUP))
-		{
-			// Линки
-			grp = 0;
-			for(tinyxml2::XMLElement *link = group->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-			{
-				if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &ValueLink[ii][grp])) return cfg.ErrorID;
-
-				++grp;
-				if(grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
-			}
-			if(grp != CountGroup) return DATACFGERR_SELECTOR;
-
-			++ii;
-			if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-		}
-		CountInputs = ii;
-
-		// Фаулты
-		if(faults)
-		{
-			ii = 0;
-			for(tinyxml2::XMLElement *group = faults->FirstChildElement(CFGNAME_GROUP); group != nullptr; group = group->NextSiblingElement(CFGNAME_GROUP))
-			{
-				// Линки
-				grp = 0;
-				for(tinyxml2::XMLElement *link = group->FirstChildElement(CFGNAME_LINK); link != nullptr; link = link->NextSiblingElement(CFGNAME_LINK))
-				{
-					if(tinyxml2::XML_SUCCESS != cfg.LoadLink(link, &FaultLink[ii][grp])) return cfg.ErrorID;
-
-					++grp;
-					if(grp >= MAX_SELECTOR_GROUP) return DATACFGERR_SELECTOR;
-				}
-				if(grp != CountGroup) return DATACFGERR_SELECTOR;
-
-				++ii;
-				if(ii >= MAX_SELECTOR_INPUT) return DATACFGERR_SELECTOR;
-			}
-			if(ii != CountInputs) return DATACFGERR_SELECTOR;
-		}
-
-		// Подстановочные значения
-		grp = 0;
-		for(tinyxml2::XMLElement *faultval = faultvals->FirstChildElement(CFGNAME_FAULTVAL); faultval != nullptr; faultval = faultval->NextSiblingElement(CFGNAME_FAULTVAL))
-		{
-			ValueFault[grp] = rDataConfig::GetValueLREAL(faultval, 0.0, err);
-
-			++grp;
-			if(grp >= MAX_SELECTOR_GROUP || err) return DATACFGERR_SELECTOR;
-		}
-		if(grp != CountGroup) return DATACFGERR_SELECTOR;
+	if (!xml_totals) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "");
 	}
-	else return DATACFGERR_SELECTOR;
-*/
+	if (!xml_can_a) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can A");
+	}
+
+	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_MODE, element->GetLineNum(), "");
+	}
+
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_SETUP, element->GetLineNum(), "");
+	}
+
+	if (!xml_reserve && m_setup.Value & (Setup::ERR_RESERV | Setup::FILL_RESERV)) {
+		return err.set(DATACFGERR_SAMPLER_RESERVE_NF, element->GetLineNum(), "");
+	}
+
+	if (!xml_can_b && m_setup.Value & (Setup::DUAL_CAN | Setup::AUTOSWITCH)) {
+		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can B");
+	}
+
+	m_totalsAlias = XmlUtils::getTextString(xml_totals, "", fault);
+	if (fault) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, element->GetLineNum(), "empty alias");
+	}
+
+	if (xml_reserve) {
+		m_reserveAlias = XmlUtils::getTextString(xml_reserve, "", fault);
+		if (fault) {
+			return err.set(DATACFGERR_SAMPLER_RESERVE, xml_reserve->GetLineNum(), "");
+		}
+	}
+
+	if (rDataConfig::instance().LoadLink(xml_iostart, m_ioStart, false) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
+
+	if (rDataConfig::instance().LoadLink(xml_iostop, m_ioStop, false) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
+
+	if (m_can[0].loadFromXML(xml_can_a, err) != TRITONN_RESULT_OK) {
+		return err.getError();
+	}
+
+	if (xml_can_b) {
+		if (m_can[1].loadFromXML(xml_can_b, err) != TRITONN_RESULT_OK) {
+			return err.getError();
+		}
+	}
+
+	m_grabVol     = XmlUtils::getTextLREAL(xml_grabvol , 1.0  , fault);
+	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
+	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , 43200, fault);
+
 	return TRITONN_RESULT_OK;
 }
 
 
+UDINT rSampler::check(rError& err)
+{
+	const rSource* src = rDataConfig::instance().getSource(m_totalsAlias);
 
+	if (!src) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, m_lineNum, "can't fount source '" + m_totalsAlias + "'");
+	}
+
+	m_totals = src->getTotal();
+
+	if (!m_totals) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, m_lineNum, "source '" + m_totalsAlias + "' does not contain totals");
+	}
+
+
+	if (m_reserveAlias.empty()) {
+		return TRITONN_RESULT_OK;
+	}
+
+	src = rDataConfig::instance().getSource(m_reserveAlias);
+
+	if (!src) {
+		return err.set(DATACFGERR_SAMPLER_TOTALS, m_lineNum, "can't fount source '" + m_totalsAlias + "'");
+	}
+
+	if (std::string(src->RTTI()) != RTTI()) {
+		return err.set(DATACFGERR_SAMPLER_RESERVE, m_lineNum, "source '" + m_totalsAlias + "' is not sampler");
+	}
+
+	m_reserve = dynamic_cast<const rSampler*>(src);
+
+	return TRITONN_RESULT_OK;
+}
+
+
+std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
+{
+	UNUSED(isio);
+	UNUSED(isglobal);
+
+	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
+
+	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
+		m_can[ii].m_overflow.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_fault.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_weight.Limit.m_setup.Init(rLimit::Setup::OFF);
+	}
+
+	return rSource::saveKernel(false, objname, comment, false);
+}
+
+
+UDINT rSampler::generateMD(std::string path)
+{
+	UNUSED(path);
+	std::string text = "";
+
+	text += "# " + std::string(RTTI()) + "\n";
+
+	text += "## XML\n````xml\n";
+	text += String_format("<sampler name=\"alas\" method=\"%s\" setup=\"%s\" description=\"number\">\n",
+						  m_flagsMode.getNameByValue(0xFFFFFFFF).c_str(),
+						  m_flagsSetup.getNameByValue(0xFFFFFFFF).c_str());
+	text += "\t<totals>object's alias</totals>\n";
+	text += "\t<io_start><link alias=\"object's output\"/></io_start> <!-- Optional -->";
+	return TRITONN_RESULT_OK;
+}
+
+
+bool rSampler::checkInterval(void)
+{
+	if (m_interval > 1000) {
+		return true;
+	}
+
+	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_FAULT));
+	return false;
+}
+
+
+void rSampler::recalcInterval(void)
+{
+	m_interval = m_timeRemain / m_grabRemain;
+
+	if (!checkInterval()) {
+		m_state = State::IDLE;
+	}
+}
+
+
+bool rSampler::isCanOverflow(void)
+{
+	return m_select < CAN_MAX && m_can[m_select].m_overflow.isValid() && m_can[m_select].m_overflow.Value > 0;
+}
+
+
+bool rSampler::isCanFault(void)
+{
+	return m_select < CAN_MAX && m_can[m_select].m_fault.isValid() && m_can[m_select].m_fault.Value > 0;
+}
+
+
+bool rSampler::checkIO(void)
+{
+	if (m_ioStop.isValid()){
+		if (m_ioStop.Value > 0 && !(LockErr & LE_IO_STOP)) {
+			LockErr |= LE_IO_STOP;
+
+			if (!(LockErr & LE_IO_START)) {
+				onStop();
+				return true;
+			}
+		}
+
+		if (static_cast<DINT>(m_ioStop.Value) == 0 && (LockErr & LE_IO_STOP))
+		{
+			LockErr &= ~LE_IO_STOP;
+		}
+
+	}
+
+	if (m_ioStart.isValid()) {
+		if (m_ioStart.Value > 0 && !(LockErr & LE_IO_START)) {
+			LockErr |= LE_IO_START;
+
+			if (!(LockErr & LE_IO_STOP)) {
+				onStart();
+				return true;
+			}
+		}
+
+		if (static_cast<DINT>(m_ioStart.Value) == 0 && (LockErr & LE_IO_START)) {
+			LockErr &= ~LE_IO_START;
+		}
+	}
+
+	return false;
+}

@@ -220,7 +220,7 @@ void rSelector::GenerateIO()
 		for(UDINT grp = 0; grp < CountGroups; ++grp)
 		{
 			ValueOut[grp].m_varName = NameInput[grp] + ".output";
-			InitLink(rLink::Setup::OUTPUT | rLink::Setup::VARNAME, ValueOut[grp], ValueIn[0][grp].Unit, SID_SEL_GRP1_OUT + grp, NameInput[grp], rLink::SHADOW_NONE);
+			InitLink(rLink::Setup::OUTPUT | rLink::Setup::VARNAME, ValueOut[grp], ValueIn[0][grp].Unit, SID::SEL_GRP1_OUT + grp, NameInput[grp], rLink::SHADOW_NONE);
 		}
 
 		// Настройка входов
@@ -231,22 +231,22 @@ void rSelector::GenerateIO()
 				std::string i_name = String_format("%s.input_%i"      , NameInput[grp].c_str(), ii + 1);
 				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
-				InitLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].Unit, SID_SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
-				InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_DIMLESS            , SID_SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
+				InitLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].Unit, SID::SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
+				InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_DIMLESS            , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
 			}
 		}
 	}
 	else
 	{
-		InitLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].Unit, SID_SEL_OUT, "output", rLink::SHADOW_NONE);
+		InitLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].Unit, SID::SEL_OUT, "output", rLink::SHADOW_NONE);
 
 		for(UDINT ii = 0; ii < CountInputs; ++ii)
 		{
 			string i_name = String_format("input_%i"      , ii + 1);
 			string f_name = String_format("input_%i.fault", ii + 1);
 
-			InitLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].Unit, SID_SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
-			InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS          , SID_SEL_FLT1 + ii, f_name, i_name            );
+			InitLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].Unit, SID::SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
+			InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS          , SID::SEL_FLT1 + ii, f_name, i_name            );
 		}
 	}
 }

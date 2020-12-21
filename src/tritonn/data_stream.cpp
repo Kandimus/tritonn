@@ -43,7 +43,7 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 	if (m_flagsFlowmeter.empty()) {
 		m_flagsFlowmeter
 				.add("TURBINE"   , static_cast<UINT>(Type::TURBINE))
-				.add("CARIOLIS"  , static_cast<UINT>(Type::CARIOLIS))
+				.add("CORIOLIS"  , static_cast<UINT>(Type::CORIOLIS))
 				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC));
 	}
 
@@ -52,19 +52,19 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 	Linearization = false;
 //	rTotal   Total;
 
-	InitLink(rLink::Setup::INPUT   , Counter     , U_imp   , SID_IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT   , Freq        , U_Hz    , SID_FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
-	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C     , SID_TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa   , SID_PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3 , SID_DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens15      , U_kg_m3 , SID_DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, Dens20      , U_kg_m3 , SID_DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, B15         , U_1_C   , SID_B15              , XmlName::B15          , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, Y15         , U_1_MPa , SID_Y15              , XmlName::Y15          , XmlName::DENSITY);
-	InitLink(rLink::Setup::OUTPUT  , FlowMass    , U_t_h   , SID_FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , U_m3_h  , SID_FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, U_m3_h  , SID_FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, U_m3_h  , SID_FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Counter     , U_imp   , SID::IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , Freq        , U_Hz    , SID::FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
+	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C     , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa   , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3 , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, Dens15      , U_kg_m3 , SID::DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, Dens20      , U_kg_m3 , SID::DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, B15         , U_1_C   , SID::B15              , XmlName::B15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, Y15         , U_1_MPa , SID::Y15              , XmlName::Y15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::OUTPUT  , FlowMass    , U_t_h   , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , U_m3_h  , SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, U_m3_h  , SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, U_m3_h  , SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
 }
 
 
@@ -161,7 +161,7 @@ UDINT rStream::Calculate()
 	if(check & TOTAL_MAX_VOLUME20) rEventManager::instance().Add(ReinitEvent(EID_STREAM_TOTAL_VOLUME20));
 
 	// Расчитаем расход исходя из частоты
-	if (m_flowmeter == Type::CARIOLIS) {
+	if (m_flowmeter == Type::CORIOLIS) {
 		FlowMass.Value   = Freq.Value     / CurKF      * 3600.0 * Factor.KeypadMF.Value;
 		FlowVolume.Value = FlowMass.Value / Dens.Value * 1000.0 * Factor.KeypadMF.Value;
 	} else {
@@ -179,7 +179,7 @@ UDINT rStream::GetUnitKF()
 {
 	if(Station == nullptr) return U_UNDEF;
 
-	if (m_flowmeter == Type::CARIOLIS) {
+	if (m_flowmeter == Type::CORIOLIS) {
 		switch (Station->UnitMass) {
 			case U_t : return U_imp_t;
 			case U_kg: return U_imp_kg;
@@ -198,7 +198,7 @@ UDINT rStream::GetUnitKF()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-const rTotal *rStream::GetTotal(void)
+const rTotal *rStream::getTotal(void) const
 {
 	return &Total;
 }
@@ -239,19 +239,19 @@ UDINT rStream::generateVars(rVariableList& list)
 	list.add(Alias + ".total.past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Mass         , Station->UnitMass  , 0);
 	list.add(Alias + ".total.past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH_, &Total.Past.Count        , U_imp              , 0);
 	list.add(Alias + ".presentkf"             , TYPE_LREAL, rVariable::Flags::R___, &CurKF                   , GetUnitKF()        , 0);
-	list.add(Alias + ".factor.kf"             , TYPE_LREAL, rVariable::Flags::R___, &Factor.KeypadKF.Value   , GetUnitKF()        , 0);
-	list.add(Alias + ".factor.mf"             , TYPE_LREAL, rVariable::Flags::R__L, &Factor.KeypadMF.Value   , U_DIMLESS          , 0);
-	list.add(Alias + ".factor.set.kf"         , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadKF.Value, GetUnitKF()        , ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.mf"         , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadMF.Value, U_DIMLESS          , ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.accept"     , TYPE_UDINT, rVariable::Flags::___L, &AcceptKF                , U_DIMLESS          , ACCESS_FACTORS);
+	list.add(Alias + ".factors.kf"            , TYPE_LREAL, rVariable::Flags::R___, &Factor.KeypadKF.Value   , GetUnitKF()        , 0);
+	list.add(Alias + ".factors.mf"            , TYPE_LREAL, rVariable::Flags::R__L, &Factor.KeypadMF.Value   , U_DIMLESS          , 0);
+	list.add(Alias + ".factors.set.kf"        , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadKF.Value, GetUnitKF()        , ACCESS_FACTORS);
+	list.add(Alias + ".factors.set.mf"        , TYPE_LREAL, rVariable::Flags::___L, &SetFactor.KeypadMF.Value, U_DIMLESS          , ACCESS_FACTORS);
+	list.add(Alias + ".factors.set.accept"    , TYPE_UDINT, rVariable::Flags::___L, &AcceptKF                , U_DIMLESS          , ACCESS_FACTORS);
 
 
 	for(UDINT ii = 0; ii < MAX_FACTOR_POINT; ++ii)
 	{
-		string name_kf     = String_format("%s.factor.point_%i.kf"    , Alias.c_str(), ii + 1);
-		string name_hz     = String_format("%s.factor.point_%i.hz"    , Alias.c_str(), ii + 1);
-		string name_set_kf = String_format("%s.factor.set.point_%i.kf", Alias.c_str(), ii + 1);
-		string name_set_hz = String_format("%s.factor.set.point_%i.hz", Alias.c_str(), ii + 1);
+		string name_kf     = String_format("%s.factors.point_%i.kf"    , Alias.c_str(), ii + 1);
+		string name_hz     = String_format("%s.factors.point_%i.hz"    , Alias.c_str(), ii + 1);
+		string name_set_kf = String_format("%s.factors.set.point_%i.kf", Alias.c_str(), ii + 1);
+		string name_set_hz = String_format("%s.factors.set.point_%i.hz", Alias.c_str(), ii + 1);
 
 		list.add(name_kf    , TYPE_LREAL, rVariable::Flags::R__L, &Factor.Point[ii].Kf   , GetUnitKF(), 0);
 		list.add(name_set_kf, TYPE_LREAL, rVariable::Flags::____, &SetFactor.Point[ii].Kf, GetUnitKF(), ACCESS_FACTORS);
@@ -269,7 +269,7 @@ UDINT rStream::generateVars(rVariableList& list)
 //
 UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strFlowMeter = XmlUtils::getAttributeString(element, XmlName::FLOWMETER, m_flagsFlowmeter.getNameByBits(static_cast<USINT>(Type::CARIOLIS)));
+	std::string strFlowMeter = XmlUtils::getAttributeString(element, XmlName::FLOWMETER, m_flagsFlowmeter.getNameByBits(static_cast<USINT>(Type::CORIOLIS)));
 
 	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
 		return err.getError();
@@ -423,7 +423,7 @@ UDINT rStream::CalcTotal()
 		return 0;
 	}
 
-	if(m_flowmeter == Type::CARIOLIS) {
+	if(m_flowmeter == Type::CORIOLIS) {
 		Total.Inc.Mass     = Total.Inc.Count  / CurKF        * Factor.KeypadMF.Value;
 		Total.Inc.Volume   = Total.Inc.Mass   / Dens.Value   * 1000.0;
 		Total.Inc.Volume15 = Total.Inc.Mass   / Dens15.Value * 1000.0;

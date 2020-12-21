@@ -457,12 +457,12 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	tinyxml2::XMLElement *dataset = GetDataSetElement(element, dsname->GetText());
 
 	if (!dataset) {
-		return err.set(DATACFGERR_REPORT, element->GetLineNum(), "cant found dataset");
+		return err.set(DATACFGERR_REPORT, element->GetLineNum(), "can't found dataset");
 	}
 
 	// Перебираем станции и линии в dataset
 	// Заполняем только объект Present
-	XML_FOR(total_xml, dataset, XmlName::TOTAL) {
+	XML_FOR(total_xml, dataset, XmlName::TOTALS) {
 		rReportTotal* tot = new rReportTotal();
 
 		Present.AverageItems.push_back(tot);

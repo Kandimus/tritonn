@@ -65,9 +65,9 @@ rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
 	m_status = Status::UNDEF;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID_PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID_PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID_CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
 
 
@@ -120,7 +120,7 @@ UDINT rAI::Calculate()
 	rEvent event_success;
 	rEvent event_fault;
 	
-	if(rSource::Calculate()) return 0;
+	if(rSource::Calculate()) return TRITONN_RESULT_OK;
 
 	// Если аналоговый сигнал выключен, то выходим
 	if(m_setup.Value & rAI::Setup::OFF)
@@ -390,7 +390,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	if (!xml_limits || !xml_unit || !xml_scale) {
-		return DATACFGERR_AI;
+		return err.set(DATACFGERR_AI, element->GetLineNum(), "cant found limits or unit or scale");
 	}
 
 	UDINT fault = 0;
