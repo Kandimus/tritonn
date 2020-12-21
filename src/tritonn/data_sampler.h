@@ -91,6 +91,7 @@ public:
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
+	virtual UDINT generateMD(std::string path);
 	virtual UDINT Calculate();
 	virtual UDINT check(rError& err);
 protected:

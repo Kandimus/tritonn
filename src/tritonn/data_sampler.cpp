@@ -544,6 +544,23 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 }
 
 
+UDINT rSampler::generateMD(std::string path)
+{
+	UNUSED(path);
+	std::string text = "";
+
+	text += "# " + std::string(RTTI()) + "\n";
+
+	text += "## XML\n````xml\n";
+	text += String_format("<sampler name=\"alas\" method=\"%s\" setup=\"%s\" description=\"number\">\n",
+						  m_flagsMode.getNameByValue(0xFFFFFFFF).c_str(),
+						  m_flagsSetup.getNameByValue(0xFFFFFFFF).c_str());
+	text += "\t<totals>object's alias</totals>\n";
+	text += "\t<io_start><link alias=\"object's output\"/></io_start> <!-- Optional -->";
+	return TRITONN_RESULT_OK;
+}
+
+
 bool rSampler::checkInterval(void)
 {
 	if (m_interval > 1000) {
