@@ -35,14 +35,14 @@ public:
 
 	const UDINT CHANNEL_COUNT = 4;
 
-	rModuleFI6();
-	virtual ~rModuleFI6();
+	rModuleFI4();
+	virtual ~rModuleFI4();
 
 	static std::string getRTTI() { return "fi4"; }
 	
 	// Виртуальные функции от rBaseModule
 public:
-	virtual std::string getModuleType() { return rModuleFI6::getRTTI(); }
+	virtual std::string getModuleType() { return rModuleFI4::getRTTI(); }
 	virtual UDINT processing(USINT issim);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);

@@ -17,8 +17,7 @@
 #include <math.h>
 #include "../variable_item.h"
 #include "../variable_list.h"
-//#include "simpleargs.h"
-//#include "../def_arguments.h"
+#include "../units.h"
 #include "tickcount.h"
 
 rIOFIChannel::rIOFIChannel()
@@ -47,6 +46,7 @@ UDINT rIOFIChannel::generateVars(const std::string& name, rVariableList& list, b
 	return TRITONN_RESULT_OK;
 }
 
+
 UDINT rIOFIChannel::processing()
 {
 	m_state = false;
@@ -60,6 +60,7 @@ UDINT rIOFIChannel::processing()
 
 	return TRITONN_RESULT_OK;
 }
+
 
 UDINT rIOFIChannel::simulate()
 {

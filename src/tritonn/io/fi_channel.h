@@ -37,13 +37,14 @@ public:
 	{
 		UNDEF    = 0x0000,     // Статуст не определен
 		OFF      = 0x0001,     // Канал выключен
+		AVERAGE  = 0x0002,
 	};
 
 public:
 	rIOFIChannel();
 	virtual ~rIOFIChannel() {}
 
-	USINT getValue() const { return m_value; }
+	UDINT getValue() const { return m_value; }
 
 public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);

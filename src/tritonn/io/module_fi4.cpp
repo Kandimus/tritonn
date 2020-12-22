@@ -25,8 +25,8 @@ rModuleFI4::rModuleFI4()
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE));
+				.add("OFF"    , static_cast<UINT>(rIOFIChannel::Setup::OFF))
+				.add("AVERAGE", static_cast<UINT>(rIOFIChannel::Setup::AVERAGE));
 	}
 
 	while(m_channel.size() < CHANNEL_COUNT) {
@@ -34,9 +34,6 @@ rModuleFI4::rModuleFI4()
 	}
 
 	m_type = Type::FI4;
-
-	m_channel[0].m_simSpeed = 1111;
-	m_channel[0].m_simType  = rIOFIChannel::SimType::Const;
 }
 
 

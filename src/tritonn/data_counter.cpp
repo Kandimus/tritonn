@@ -13,6 +13,7 @@
 //===
 //=================================================================================================
 
+#include "data_counter.h"
 #include <vector>
 #include <limits>
 #include <string.h>
@@ -24,46 +25,38 @@
 #include "data_manager.h"
 #include "variable_item.h"
 #include "variable_list.h"
-#include "data_config.h"
-#include "data_counter.h"
+#include "io/manager.h"
+#include "io/fi_channel.h"
+#include "tickcount.h"
 #include "xml_util.h"
 
 
 const UDINT FI_BAD_COUNT     = 0x10000000;
 const LREAL FI_BAD_SPLINE    = -1.0;
 
-const UDINT FI_LE_STATUSPATH = 0x00000001;
-const UDINT FI_LE_SIM_AUTO   = 0x00000002;
-const UDINT FI_LE_SIM_MANUAL = 0x00000004;
-const UDINT FI_LE_SIM_OFF    = 0x00000008;
-const UDINT FI_LE_SIM_LAST   = 0x00000010;
-const UDINT FI_LE_CODE_FAULT = 0x00000020;
+//const UDINT FI_LE_SIM_AUTO   = 0x00000002;
+//const UDINT FI_LE_SIM_MANUAL = 0x00000004;
+//const UDINT FI_LE_SIM_OFF    = 0x00000008;
+//const UDINT FI_LE_SIM_LAST   = 0x00000010;
+const UDINT FI_LE_CODE_FAULT = 0x00000001;
 
 rBitsArray rCounter::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rCounter::rCounter() : Setup(FI_SETUP_OFF)
+rCounter::rCounter() : m_setup(Setup::OFF)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , FI_SETUP_OFF)
-				.add("NOBUFFER" , FI_SETUP_NOBUFFER);
+				.add("OFF"      , Setup::OFF);
 	}
 
 	LockErr     = 0;
-	LastCount   = FI_BAD_COUNT;
-	CountTail   = 0;
-	SetCount    = 0;
+	m_countLast = 0;
 
-	for(UDINT ii = 0; ii < MAX_FI_SPLINE; ++ii)
-	{
-		Spline[ii] = FI_BAD_SPLINE;
-	}
-
-	InitLink(rLink::Setup::OUTPUT, Impulse, U_imp  , SID::IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, Freq   , U_Hz   , SID::FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, Period , U_mksec, SID::PERIOD   , XmlName::PERIOD , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_impulse, U_imp  , SID::IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_freq   , U_Hz   , SID::FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_period , U_mksec, SID::PERIOD   , XmlName::PERIOD , rLink::SHADOW_NONE);
 }
 
 
@@ -96,15 +89,6 @@ UDINT rCounter::InitLimitEvent(rLink &link)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::GetFault(void)
-{	
-	// Нужно получить значения статуса модуля и канала
-	return ChFault;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
 UDINT rCounter::Calculate()
 {
 	UDINT  cnt     = 0; // Расширенный текущий счетчик с модуля
@@ -114,7 +98,7 @@ UDINT rCounter::Calculate()
 	
 	if(rSource::Calculate()) return 0;
 
-	// Если аналоговый сигнал выключен, то выходим
+	// Если сигнал выключен, то выходим
 	if(Setup.Value & FI_SETUP_OFF)
 	{
 		//lStatusCh = OFAISTATUSCH_OK;		
@@ -124,47 +108,52 @@ UDINT rCounter::Calculate()
 		Period.Value  = 0.0;
 		Impulse.Value = 0.0;
 
-		for(UDINT ii = 0; ii < MAX_FI_SPLINE; ++ii)
-		{
-			Spline[ii] = FI_BAD_SPLINE;
-		}
-
 		PostCalculate();
 
-		return 0;
+		return TRITONN_RESULT_OK;
 	}
 
-	curtick = Tick.Timer();
+	Fault = false;
 
-	if(SetCount)
-	{
-		ChFault = (SetCount & 0x00010000) > 0;
+	if(isSetModule()) {
+		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
+		auto channel     = static_cast<rIOFIChannel*>(channel_ptr.get());
+
+		if (channel == nullptr)
+		{
+			rEventManager::instance().Add(ReinitEvent(EID_AI_MODULE) << m_module << m_channel);
+			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			return DATACFGERR_REALTIME_MODULELINK;
+		}
+
+		CheckExpr(channel->m_state, FI_LE_CODE_FAULT, event_fault.Reinit(EID_COUNTER_CH_FAULT) << ID << Descr, event_success.Reinit(EID_COUNTER_CH_OK) << ID << Descr);
+
+		Fault = channel->m_state;
+
+		if (channel->m_state) {
+			m_period.Value  = std::numeric_limits<LREAL>::quiet_NaN();
+			m_freq.Value    = std::numeric_limits<LREAL>::quiet_NaN();
+			m_impulse.Value = std::numeric_limits<LREAL>::quiet_NaN();
+
+		} else {
+			UDINT count = channel->getValue();
+			UDINT tick  = rTickCount::SysTick();
+
+			if (!m_isInit) {
+
+			}
+
+			m_impulse.Value = count - m_countLast;
+			m_countLast     = count;
+			m_freq.Value    = m_impulse.Value * 1000.0 / ((LREAL)curtick);
+			m_period.Value  = m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
+		}
 	}
 
 	// Получаем значение счетчика
 	// Count
-
-	CheckExpr(ChFault, COUNTER_LE_CODE_FAULT, event_fault.Reinit(EID_COUNTER_CH_OK) << ID << Descr, event_success.Reinit(EID_COUNTER_CH_OK) << ID << Descr);
-
-	if(ChFault)
-	{
-		Period.Value  = std::numeric_limits<LREAL>::quiet_NaN();
-		Freq.Value    = std::numeric_limits<LREAL>::quiet_NaN();
-		Impulse.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	}
 	else
 	{
-		// Если это первый запуск, или произошло включение сигнала
-		if(LastCount == FI_BAD_COUNT)
-		{
-			Tick.Timer();
-
-			LastCount     = Count;
-			Freq.Value    = 0.0;
-			Period.Value  = 0.0;
-			Impulse.Value = 0;
-		}
-
 		// Имитация, тестирование
 		if(SetCount)
 		{
@@ -173,8 +162,6 @@ UDINT rCounter::Calculate()
 			Impulse.Value = UINT(curimp + CountTail);
 			Freq.Value    = SetCount & 0x0000FFFF;
 			CountTail     = (curimp + CountTail) - Impulse.Value;
-
-//			printf("set: %u, tick: %u, imp: %.1f, freq: %.4f\n", SetCount, curtick, Impulse.Value, Freq.Value);
 		}
 		// Данные с модуля
 		else
@@ -197,27 +184,8 @@ UDINT rCounter::Calculate()
 			}
 		}
 
-		if(!(Setup.Value & FI_SETUP_NOBUFFER))
-		{
-			LREAL spline_freq = Freq.Value;
-
-			// Устредняем по последним "хорошим" значениям
-			for(UDINT ii = 0; ii < MAX_FI_SPLINE; ++ii)
-			{
-				spline_freq += ((Spline[ii] <= -1) ? Freq.Value : Spline[ii]);
-			}
-			Freq.Value = spline_freq / (LREAL)(MAX_FI_SPLINE + 1);
-
-			// Смещаем сплайн
-			for(UDINT ii = 1; ii < MAX_FI_SPLINE; ++ii)
-			{
-				Spline[ii] = Spline[ii - 1];
-			}
-			Spline[0] = Freq.Value;
-		}
-
 		// Расчет периода
-		Period.Value = (Freq.Value > 0.1) ? (1000000.0 / Freq.Value) : 0;
+
 	}
 
 	/*if(Alias == "sikn_123.bik.io.period1")

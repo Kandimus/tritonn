@@ -27,6 +27,7 @@
 #include "../error.h"
 #include "module_ai6.h"
 #include "module_di8do8.h"
+#include "module_fi4.h"
 
 
 rIOManager::rIOManager() : rVariableClass(Mutex)
@@ -110,6 +111,9 @@ UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 		} else if (type == rModuleDI8DO8::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
+
+		} else if (type == rModuleFI4::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4());
 
 		} else {
 			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());

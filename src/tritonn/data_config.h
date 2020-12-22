@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include "data_module.h"
 #include "def.h"
 #include "singlenton.h"
 #include "error.h"
