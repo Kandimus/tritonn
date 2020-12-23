@@ -65,14 +65,14 @@ public:
 
 	// Variable
 	UDINT      m_count;                   // Текущее значение счетчика с модуля
-	UDINT      m_countLast;               // Прошлое значение счетчика с модуля. Если LastCount == 0xFFFFFFFF, то это означает что нужно пропустить цикл
-
 	rCmpUINT   m_setup;                   // Настройка сигнала
 	UINT       m_status;                  // Нах это???????
 
 protected:
 	static rBitsArray m_flagsSetup;
-	bool m_isInit = false;
+	bool  m_isInit = false;
+	UDINT m_countPrev = 0;
+	UDINT m_tickPrev  = 0;
 };
 
 

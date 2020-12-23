@@ -12,10 +12,6 @@
 			<channel number="9" setup="INVERSED"/>
 		</module>
 		<module type="fi4" name="fi4_1">
-			<channel number="0" setup=""/>
-			<channel number="1" setup="INVERSED"/>
-			<channel number="8" setup=""/>
-			<channel number="9" setup="INVERSED"/>
 		</module>
 	</hardware>
 	<config>

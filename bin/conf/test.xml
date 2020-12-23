@@ -12,6 +12,7 @@
 			<channel number="8" setup=""/>
 			<channel number="9" setup="INVERSED"/>
 		</module>
+		<module type="fi4" name="fi4_1" />
 	</hardware>
 	<config>
 		<settings>
@@ -92,6 +93,10 @@
 			<di name="di_virt" mode="PHIS" setup="" description="4005">
 				<keypad>0</keypad>
 			</di>
+			<counter name="fi_virt" setup="" description="4000" />
+			<counter name="fi00" setup="" description="4000" >
+				<io_link module="2" channel="0"/>
+			</counter>
 		</io>
 		<stations>
 			<station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">
