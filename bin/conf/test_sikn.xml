@@ -101,8 +101,8 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter"             setup="NOBUFFER"         description="4005">
-								<_io_link module="1" channel="0"/>
+							<counter name="Counter" setup="" description="4005">
+								<io_link module="2" channel="0"/>
 							</counter>
 						</io>
 						<calculate>
