@@ -2,7 +2,7 @@
 #include <cmath>
 #include "../catchtest/catch.hpp"
 #include "test.h"
-#include "data_ai.h"
+#include "data_counter.h"
 #include "data_manager.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
@@ -14,45 +14,46 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 {
 	SECTION("Virtual counter. Set present values") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
-		LREAL test_freq = 2222.22;
+		LREAL test_freq   = 2222.22;
 		LREAL test_period = 3.123456;
 		UDINT test_count  = 54321;
 
-		ss.add("io.fi_virt.present.value", test_freq);
-		ss.add("io.fi_virt.present.value", test_period);
-		ss.add("io.fi_virt.present.value", test_count);
+		ss.add("io.fi_virt.frequency.value", test_freq);
+		ss.add("io.fi_virt.period.value"   , test_period);
+		ss.add("io.fi_virt.impulse.value"  , test_count);
 		ss.set();
 
 		mSleep(rTest::sleepValue);
 
-		ss.clear();
-		ss.add("io.fi_virt.present.value");
+		ss.resetAssign();
 		ss.get();
 
-		REQUIRE(ss("io.fi_virt.present.value"));
-		CHECK  (ss("io.fi_virt.present.value")->getValueLREAL() == test_period);
+		REQUIRE(ss("io.fi_virt.frequency.value"));
+		REQUIRE(ss("io.fi_virt.period.value"));
+		REQUIRE(ss("io.fi_virt.impulse.value"));
+		CHECK  (ss("io.fi_virt.frequency.value")->getValueLREAL() == test_freq);
+		CHECK  (ss("io.fi_virt.period.value")->getValueLREAL()    == test_period);
+		CHECK  (ss("io.fi_virt.impulse.value")->getValueUDINT()   == test_count);
 	}
-/*
+
 	SECTION("Set simulate IO (const)") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
-		LREAL min_val = -10.0;
+		LREAL freq = 1000.0;
 
 		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::Const));
-		ss.add("hardware.fi4_1.ch_01.simulate.value", 10000);
+		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
 		ss.set();
 
 		mSleep(rTest::sleepValue + 1000);
 
 		ss.clear();
-		ss.add("hardware.fi6_1.ch_01.simulate.value");
 		ss.add("io.fi00.frequency.value");
 		ss.get();
 
-		REQUIRE(ss("io.ai00.present.value"));
-		CHECK  (ss("io.ai00.mode")->getValueUINT() == static_cast<UINT>(rAI::Mode::PHIS));
-		CHECK  (ss("io.ai00.present.value")->getValueLREAL() == min_val);
+		REQUIRE(ss("io.fi00.frequency.value"));
+		CHECK  (ss("io.fi00.frequency.value")->getValueLREAL() == freq);
+		CHECK  (ss("io.fi00.period.value")->getValueLREAL() == 1.0 / freq);
 	}
-*/
 /*
 	SECTION("Limits current (hihi, lolo)") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);

@@ -17,6 +17,7 @@
 
 #include "data_source.h"
 #include "data_module.h"
+#include <list>
 #include "bits_array.h"
 #include "compared_values.h"
 #include "data_link.h"
@@ -37,9 +38,12 @@ class rCounter : public rSource, private rDataModule
 public:
 	enum Setup : UINT
 	{
-		NONE = 0x0000,
-		OFF  = 0x0001,
+		NONE    = 0x0000,
+		OFF     = 0x0001,
+		AVERAGE = 0x0002,
 	};
+
+	const UDINT AVERAGE_MAX = 5;
 
 	rCounter();
 	virtual ~rCounter();
@@ -73,6 +77,8 @@ protected:
 	bool  m_isInit = false;
 	UDINT m_countPrev = 0;
 	UDINT m_tickPrev  = 0;
+
+	std::list<LREAL> m_averageFreq;
 };
 
 

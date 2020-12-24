@@ -160,7 +160,8 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="NOBUFFER" description="4005">
+							<counter name="Counter" setup="" description="4005">
+								<io_link module="2" channel="1" />
 							</counter>
 						</io>
 						<calculate>
@@ -280,7 +281,8 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="NOBUFFER" description="4010">
+							<counter name="Counter" setup="" description="4010">
+								<io_link module="2" channel="2" />
 							</counter>
 						</io>
 						<calculate>
@@ -422,8 +424,9 @@
 								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4019">
+								<io_link module="2" channel="3" />
 							</counter>
-							<counter name="Period1" setup="NOBUFFER" description="4020"> <!-- Виртуальный, для тестов -->
+							<counter name="Period1" setup="NOBUFFER" description="4020">
 							</counter>
 							<counter name="Period2" setup="NOBUFFER" description="4021">
 							</counter>

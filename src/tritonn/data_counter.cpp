@@ -32,13 +32,6 @@
 #include "xml_util.h"
 
 
-const UDINT FI_BAD_COUNT     = 0x10000000;
-const LREAL FI_BAD_SPLINE    = -1.0;
-
-//const UDINT FI_LE_SIM_AUTO   = 0x00000002;
-//const UDINT FI_LE_SIM_MANUAL = 0x00000004;
-//const UDINT FI_LE_SIM_OFF    = 0x00000008;
-//const UDINT FI_LE_SIM_LAST   = 0x00000010;
 const UDINT FI_LE_CODE_FAULT = 0x00000001;
 
 rBitsArray rCounter::m_flagsSetup;
@@ -49,7 +42,8 @@ rCounter::rCounter() : m_setup(Setup::OFF)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , static_cast<UDINT>(Setup::OFF));
+				.add("OFF"    , static_cast<UINT>(Setup::OFF))
+				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE));
 	}
 
 	LockErr     = 0;
@@ -108,6 +102,8 @@ UDINT rCounter::Calculate()
 		m_period.Value  = 0.0;
 		m_impulse.Value = 0.0;
 
+		m_averageFreq.clear();
+
 		PostCalculate();
 
 		return TRITONN_RESULT_OK;
@@ -154,7 +150,19 @@ UDINT rCounter::Calculate()
 				m_tickPrev      = tick;
 			}
 
-			//TODO В теории тут нужно еще усреднить частоту и возможно период
+			if (m_setup.Value & Setup::AVERAGE) {
+				m_averageFreq.push_back(m_freq.Value);
+
+				while (m_averageFreq.size() > AVERAGE_MAX) {
+					m_averageFreq.pop_front();
+				}
+
+				LREAL average = 0.0;
+				for (auto value : m_averageFreq) {
+					average += value;
+				}
+				m_freq.Value = average / AVERAGE_MAX;
+			}
 		}
 	}
 
