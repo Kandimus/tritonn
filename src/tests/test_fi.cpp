@@ -44,15 +44,17 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
 		ss.set();
 
-		mSleep(rTest::sleepValue + 1000);
+		mSleep(rTest::sleepValue + 1030);
 
 		ss.clear();
 		ss.add("io.fi00.frequency.value");
+		ss.add("io.fi00.period.value");
 		ss.get();
 
 		REQUIRE(ss("io.fi00.frequency.value"));
+		REQUIRE(ss("io.fi00.frequency.value"));
 		CHECK  (ss("io.fi00.frequency.value")->getValueLREAL() == freq);
-		CHECK  (ss("io.fi00.period.value")->getValueLREAL() == 1.0 / freq);
+		CHECK  (ss("io.fi00.period.value")->getValueLREAL() == 1000000.0 / freq);
 	}
 /*
 	SECTION("Limits current (hihi, lolo)") {

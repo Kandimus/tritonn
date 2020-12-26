@@ -115,8 +115,7 @@ UDINT rCounter::Calculate()
 		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
 		auto channel     = static_cast<rIOFIChannel*>(channel_ptr.get());
 
-		if (channel == nullptr)
-		{
+		if (channel == nullptr) {
 			rEventManager::instance().Add(ReinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;

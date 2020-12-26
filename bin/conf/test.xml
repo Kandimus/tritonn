@@ -109,9 +109,9 @@
 					<density>48</density>
 				</units>
 				<streams>
-					<stream name="line1" flowmeter="CARIOLIS" linearization="1" maintenance="0" description="4002">
-						<impulse><link alias="sikn1.line1.IO.Counter:impulse"/></impulse>
-						<temperature><link alias="sikn1.line1.IO.Temp"/></temperature>
+					<stream name="line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4002">
+						<impulse><link alias="sikn1.line1.io.counter:impulse"/></impulse>
+						<temperature><link alias="sikn1.line1.io.temp"/></temperature>
 						<pressure><link alias="sikn1.line1.IO.Pres"/></pressure>
 						<density><link alias="sikn1.line1.obj.StnDens:density"/></density>
 						<factors>
@@ -160,7 +160,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="" description="4005">
+							<counter name="counter" setup="" description="4005">
 								<io_link module="2" channel="1" />
 							</counter>
 						</io>
@@ -230,7 +230,7 @@
 							</limit>
 						</limits>
 					</stream>
-					<stream name="Line2" flowmeter="CARIOLIS" linearization="1" maintenance="0" description="4007">
+					<stream name="Line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
 						<impulse>    <link alias="sikn1.Line2.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="sikn1.Line2.IO.Temp"/>   </temperature>
 						<pressure>   <link alias="sikn1.Line2.IO.Pres"/>   </pressure>
@@ -426,9 +426,9 @@
 							<counter name="Counter" setup="" description="4019">
 								<io_link module="2" channel="3" />
 							</counter>
-							<counter name="Period1" setup="NOBUFFER" description="4020">
+							<counter name="Period1" setup="" description="4020">
 							</counter>
-							<counter name="Period2" setup="NOBUFFER" description="4021">
+							<counter name="Period2" setup="" description="4021">
 							</counter>
 						</io>
 						<limits>
