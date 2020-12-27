@@ -19,7 +19,7 @@
 			<contracthour>0</contracthour>
 		</settings>
 		<io>
-			<ai name="GlobalTemp"    mode="PHIS" setup="NOICE | LASTGOOD"     description="4000">
+			<ai name="GlobalTemp" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
 				<unit>16</unit>
 				<keypad>12.5</keypad>
 				<scale>
@@ -83,7 +83,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
+							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
 								<io_link module="0" channel="1"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
@@ -182,7 +182,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter"             setup="NOBUFFER"         description="4010">
+							<counter name="Counter" setup="AVERAGE" description="4010">
 								<_io_link module="1" channel="1"/>
 							</counter>
 						</io>
@@ -294,7 +294,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Visc"    mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
+							<ai name="visc" mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
 								<_io_link module="3" channel="2"/>
 								<unit>64</unit>
 								<keypad>0.5</keypad>
@@ -333,10 +333,10 @@
 							<counter name="Counter" setup="" description="4019">
 								<_io_link module="1" channel="2"/>
 							</counter>
-							<counter name="Period1" setup="NOBUFFER" description="4020"> <!-- Виртуальный, для тестов -->
+							<counter name="Period1" setup="" description="4020"> <!-- Виртуальный, для тестов -->
 								<_io_link module="2" channel="0"/>
 							</counter>
-							<counter name="Period2" setup="NOBUFFER" description="4021">
+							<counter name="Period2" setup="" description="4021">
 								<_io_link module="2" channel="1"/>
 							</counter>
 						</io>
@@ -413,38 +413,38 @@
 						</names>
 						<inputs>
 							<group>
-								<link alias="SIKN_123.Obj.Dens1:Density"/>
+								<link alias="SIKN_123.Obj.Dens1:density"/>
 								<link alias="SIKN_123.Obj.Dens1:Density15"/>
 								<link alias="SIKN_123.Obj.Dens1:Density20"/>
-								<link alias="SIKN_123.Obj.Dens1:B15"/>
-								<link alias="SIKN_123.Obj.Dens1:Y15"/>
+								<link alias="SIKN_123.Obj.Dens1:b15"/>
+								<link alias="SIKN_123.Obj.Dens1:y15"/>
 								<link alias="SIKN_123.BIK.IO.Temp1"/>
 							</group>
 							<group>
 								<link alias="SIKN_123.Obj.Dens2:Density"/>
 								<link alias="SIKN_123.Obj.Dens2:Density15"/>
 								<link alias="SIKN_123.Obj.Dens2:Density20"/>
-								<link alias="SIKN_123.Obj.Dens2:B15"/>
-								<link alias="SIKN_123.Obj.Dens2:Y15"/>
+								<link alias="SIKN_123.Obj.Dens2:b15"/>
+								<link alias="SIKN_123.Obj.Dens2:y15"/>
 								<link alias="SIKN_123.BIK.IO.Temp2"/>
 							</group>
 						</inputs>
 						<faults>
 							<group>
-								<link alias="SIKN_123.Obj.Dens1"/>
-								<link alias="SIKN_123.Obj.Dens1"/>
-								<link alias="SIKN_123.Obj.Dens1"/>
-								<link alias="SIKN_123.Obj.Dens1"/>
-								<link alias="SIKN_123.Obj.Dens1"/>
-								<link alias="SIKN_123.BIK.IO.Temp1"/>
+								<link alias="SIKN_123.Obj.Dens1:fault"/>
+								<link alias="SIKN_123.Obj.Dens1:fault"/>
+								<link alias="SIKN_123.Obj.Dens1:fault"/>
+								<link alias="SIKN_123.Obj.Dens1:fault"/>
+								<link alias="SIKN_123.Obj.Dens1:fault"/>
+								<link alias="SIKN_123.BIK.IO.Temp1:fault"/>
 							</group>
 							<group>
-								<link alias="SIKN_123.Obj.Dens2"/>
-								<link alias="SIKN_123.Obj.Dens2"/>
-								<link alias="SIKN_123.Obj.Dens2"/>
-								<link alias="SIKN_123.Obj.Dens2"/>
-								<link alias="SIKN_123.Obj.Dens2"/>
-								<link alias="SIKN_123.BIK.IO.Temp2"/>
+								<link alias="SIKN_123.Obj.dens2:fault"/>
+								<link alias="SIKN_123.Obj.dens2:fault"/>
+								<link alias="SIKN_123.Obj.dens2:fault"/>
+								<link alias="SIKN_123.Obj.dens2:fault"/>
+								<link alias="SIKN_123.Obj.dens2:fault"/>
+								<link alias="SIKN_123.BIK.io.temp2:fault"/>
 							</group>
 						</faults>
 						<keypads>
@@ -606,10 +606,10 @@
 							</limit>
 						</limits>
 					</ai>
-					<counter name="counter" setup="NOBUFFER" description="4032">
+					<counter name="counter" setup="" description="4032">
 						<_io_link module="1" channel="3"/>
 					</counter>
-					<counter name="Period" setup="" description="4033">
+					<counter name="Period" setup="AVERAGE" description="4033">
 						<_io_link module="2" channel="2"/>
 					</counter>
 				</io>

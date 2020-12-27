@@ -91,7 +91,7 @@ LREAL rSource::GetValue(const string &name, UDINT unit, UDINT &err)
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTPUT) << Descr);
+		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTVAL) << ID << Descr << STRID(unit));
 
 		return std::numeric_limits<LREAL>::quiet_NaN();
 	}
@@ -101,7 +101,7 @@ LREAL rSource::GetValue(const string &name, UDINT unit, UDINT &err)
 
 	if(err)
 	{
-		SendEventSetLE(SOURCE_LE_UNIT, Event.Reinit(EID_SYSTEM_ERRUNIT) << Descr << link->Unit << unit);
+		SendEventSetLE(SOURCE_LE_UNIT, Event.Reinit(EID_SYSTEM_ERRUNIT) <<ID << Descr << STRID(link->Unit) << STRID(unit));
 	}
 
 	return result;
@@ -119,7 +119,7 @@ STRID rSource::GetValueUnit(const string &name, UDINT &err)
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTPUT) << Descr);
+		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTPUT) << ID << Descr);
 
 		return 0xFFFFFFFF;
 	}

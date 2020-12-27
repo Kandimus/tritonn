@@ -48,5 +48,7 @@ const LREAL Limit[7][2] = {{611.2, 1163.8},  // PRODUCT_PETROLEUM
 // Определение типа бензина, по плотности
 USINT getTypeProduct(LREAL dens, Product product);
 LREAL getDens20(LREAL dens15, LREAL b15);
+LREAL getY(LREAL dens15, LREAL temp);
+LREAL getY15(LREAL dens15);
 
 };

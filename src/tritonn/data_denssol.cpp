@@ -49,10 +49,10 @@ rDensSol::rDensSol() : Setup(0)
 //	Setup       = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
+	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::INOUTPUT, Pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::INPUT   , Period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::OUTPUT  , Dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE);
@@ -177,8 +177,8 @@ UDINT rDensSol::Calculate()
 			OldD15       = Dens15.Value;
 			B15.Value    = (K0 + K1 * Dens15.Value) / (D15_2) + K2;
 			B.Value      = B15.Value + 1.6 * B15.Value * B15.Value * dTemp;
-			Y15.Value    = 0.001 * exp(-1.62080 + 0.00021592 * 15.0       + (870960 + 4209.2 * 15.0      ) / D15_2);
-			Y.Value      = 0.001 * exp(-1.62080 + 0.00021592 * Temp.Value + (870960 + 4209.2 * Temp.Value) / D15_2);
+			Y15.Value    = rDensity::getY15(Dens15.Value);
+			Y.Value      = rDensity::getY  (Dens15.Value, Temp.Value);
 			CPL.Value    = 1.0 / (1.0 - Y.Value * Pres.Value);
 			CTL.Value    = exp(-B15.Value * dTemp * (1 + 0.8 * B15.Value * dTemp));
 			Dens15.Value = (Dens.Value / CPL.Value) / CTL.Value;

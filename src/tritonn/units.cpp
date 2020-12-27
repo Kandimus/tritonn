@@ -28,8 +28,7 @@ rUnits::Error rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, U
 	LREAL baseVal;
 
 	// Если ед.измерения равны, то ничего не меняем
-	if(srcUnit == dstUnit || srcUnit == U_any || dstUnit == U_any)
-	{
+	if (srcUnit == dstUnit || srcUnit == U_any || dstUnit == U_any) {
 		dstVal = srcVal;
 		return Error::NONE;
 	}

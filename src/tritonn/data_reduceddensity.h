@@ -52,6 +52,7 @@ public:
 	rLink CPL;
 	rLink B;
 	rLink Y;
+	rLink Y15;
 
 protected:
 	UDINT SetFault();

@@ -232,7 +232,7 @@ void rSelector::GenerateIO()
 				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
 				InitLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].Unit, SID::SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
-				InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_DIMLESS            , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
+				InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete           , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
 			}
 		}
 	}
@@ -246,7 +246,7 @@ void rSelector::GenerateIO()
 			string f_name = String_format("input_%i.fault", ii + 1);
 
 			InitLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].Unit, SID::SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
-			InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS          , SID::SEL_FLT1 + ii, f_name, i_name            );
+			InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_discrete         , SID::SEL_FLT1 + ii, f_name, i_name            );
 		}
 	}
 }
@@ -354,6 +354,10 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 				// Принудительно выключаем пределы
 				FaultIn[ii][0].Limit.m_setup.Init(rLimit::Setup::OFF);
 
+				if (FaultIn[ii][0].Param.empty()) {
+					FaultIn[ii][0].Param = XmlName::FAULT;
+				}
+
 				if (++ii >= MAX_SELECTOR_INPUT) {
 					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much faults");
 				}
@@ -444,6 +448,12 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 					}
 
 					FaultIn[ii][grp].Limit.m_setup.Init(rLimit::Setup::OFF);
+
+					// Если параметр не задан, то принудетельно выставляем в fault, для того чтобы
+					// значение бралось из fault а не из выхода по умолчанию
+					if (FaultIn[ii][grp].Param.empty()) {
+						FaultIn[ii][grp].Param = XmlName::FAULT;
+					}
 
 					if (++grp >= MAX_SELECTOR_GROUP) {
 						return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much fault group");

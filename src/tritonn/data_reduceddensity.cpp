@@ -48,6 +48,7 @@ rReducedDens::rReducedDens() : rSource()
 	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE );
 	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE );
 	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE );
+	InitLink(rLink::Setup::OUTPUT  , Y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE );
 }
 
 
@@ -117,6 +118,7 @@ UDINT rReducedDens::Calculate()
 	CTL.Value    = exp(-B15.Value * dTemp * (1 + 0.8 * B15.Value * dTemp));
 	Dens.Value   = Dens15.Value * CTL.Value * CPL.Value;
 	Dens20.Value = rDensity::getDens20(Dens15.Value, B15.Value);
+	Y15.Value    = rDensity::getY15(Dens15.Value);
 
 	PostCalculate();
 	
@@ -209,6 +211,7 @@ std::string rReducedDens::saveKernel(UDINT isio, const string &objname, const st
 	CPL.Limit.m_setup.Init(rLimit::Setup::NONE);
 	B.Limit.m_setup.Init(rLimit::Setup::NONE);
 	Y.Limit.m_setup.Init(rLimit::Setup::NONE);
+	Y15.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

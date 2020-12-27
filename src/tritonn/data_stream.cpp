@@ -308,7 +308,7 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_dens15, Dens15, Dens   , XmlName::DENSITY15)) return err.getError();
 	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_dens20, Dens20, Dens   , XmlName::DENSITY20)) return err.getError();
 	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_b15   , B15   , Dens   , XmlName::B15)      ) return err.getError();
-	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_y15   , Y15   , Dens   , XmlName::B15)      ) return err.getError();
+	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_y15   , Y15   , Dens   , XmlName::Y15)      ) return err.getError();
 
 	//----------------------------------------------------------------------------------------------
 	// Загрузка факторов

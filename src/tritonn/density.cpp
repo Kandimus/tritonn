@@ -47,4 +47,16 @@ LREAL getDens20(LREAL dens15, LREAL b15)
 	return dens15 * exp(-5.0 * b15 * (1.0 + 4.0 * b15));
 }
 
+LREAL getY(LREAL dens15, LREAL temp)
+{
+	return 0.001 * exp(-1.62080 + 0.00021592 * temp + (870960 + 4209.2 * temp) / (dens15 * dens15));
+}
+
+
+LREAL getY15(LREAL dens15)
+{
+	return getY(dens15, 15.0);
+}
+
+
 };

@@ -206,6 +206,8 @@ UDINT rLink::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 		return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag is empty");
 	}
 
+	FullTag = String_tolower(FullTag);
+
 	// Делим полное имя на имя объекта и имя параметра (разбираем строчку "xxx:yyy")
 	for (auto ch : FullTag) {
 		if (ch == ':') {

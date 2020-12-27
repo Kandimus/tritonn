@@ -9,10 +9,12 @@
 		<str id="1610678275">Система запущена</str>
 		<!-- EID_SYSTEM_HALT -->
 		<str id="-536805372">Критический сбой системы (ошибка $1)</str>
-		<!-- EID_SYSTEM_ERRUNIT -->
-		<str id="-536805366"/>
-		<!-- EID_SYSTEM_ERROUTPUT -->
-		<str id="-536805365"/>
+		<!-- EID_SYSTEM_ERRUNIT - $1 ID, $2 Descr, $3 unit, $4 convert unit -->
+		<str id="-536805366">$2. Ошибка конвертации единиц измерения '$3' к '$4' (ID $1)</str>
+		<!-- EID_SYSTEM_ERROUTPUT - $1 ID, $2 Decr -->
+		<str id="-536805365">$2. Запрашиваемое выходное значение не найдено (ID $1)</str>
+		<!-- EID_SYSTEM_ERROUTVAL - $1 ID, $2 Decr, $3 unit -->
+		<str id="-536805364">$2. Запрашиваемое выходное значение не найдено. (ID $1. Unit '$3')</str>
 		<!-- EID_SYSTEM_CFGERROR -->
 		<str id="-536805356">Ошибка загрузки конфигурационного файла (код ошибки $1, строка $2)</str>
 		<!--EID_SYSTEM_FILEIOERROR-->
@@ -118,6 +120,8 @@
 		<str id="-536412159"/>
 		<!--EID_COUNTER_CH_OK-->
 		<str id="537329666"/>
+		<!--EID_COUNTER_MODULE-->
+		<str id="-536412157"/>
 		<!-- EID_COUNTER_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="537329764">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
 		<!-- EID_COUNTER_NEW_WMIN -->
@@ -169,10 +173,10 @@
 		<str id="-536346612"/>
 		<!-- EID_DENSSOL_GOOD_INPUTS -->
 		<str id="537395213"/>
-		<!-- EID_DENSSOL_FAULT_PERIOD -->
-		<str id="-536346610"/>
-		<!-- EID_DENSSOL_GOOD_PERIOD -->
-		<str id="537395215"/>
+		<!-- EID_DENSSOL_FAULT_PERIOD - $1 ID, $2 Descr -->
+		<str id="-536346610">$2. Не действительное значие периода.</str>
+		<!-- EID_DENSSOL_GOOD_PERIOD - $1 ID, $2 Descr -->
+		<str id="537395215">$2. Значение периода в допустимом диапазоне</str>
 		<!-- EID_DENSSOL_FAULT_VALUE -->
 		<str id="-536346608"/>
 		<!-- EID_DENSSOL_GOOD_VALUE -->
@@ -419,5 +423,30 @@
 		<str id="-535822322"/>
 		<!--EID_DO_NEW_SETUP-->
 		<str id="537919503"/>
-    </lang>
+
+		<!--EID_SAMPLER_START_PERIOD-->
+		<str id="538050561"/>
+		<!--EID_SAMPLER_START_VOLUME-->
+		<str id="538050562"/>
+		<!--EID_SAMPLER_START_MASS-->
+		<str id="538050563"/>
+		<!--EID_SAMPLER_START_TEST-->
+		<str id="538050564"/>
+		<!--EID_SAMPLER_STOP-->
+		<str id="538050565"/>
+		<!--EID_SAMPLER_DONT_STOP-->
+		<str id="-535691258"/>
+		<!--EID_SAMPLER_FINISH-->
+		<str id="-1609433081"/>
+		<!--EID_SAMPLER_CONFIRM-->
+		<str id="-1609433080"/>
+		<!--EID_SAMPLER_MODE_FAULT-->
+		<str id="-535691254"/>
+		<!--EID_SAMPLER_COMMAND_FAULT-->
+		<str id="-535691253"/>
+		<!--EID_SAMPLER_SELECT_FAULT-->
+		<str id="-535691252"/>
+		<!--EID_SAMPLER_START_FAULT-->
+		<str id="-535691251"/>
+	</lang>
 </strings>
