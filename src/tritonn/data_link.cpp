@@ -43,7 +43,7 @@ const rSource* rLink::getOwner() const
 
 bool rLink::isValid() const
 {
-	return m_owner && m_source;
+	return /*m_owner &&*/ m_source;
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -797,7 +797,10 @@ UDINT rDataConfig::ResolveLinks(void)
 		// Проходим все загруженные объекты
 		for (auto src : *ListSource) {
 			if (!strcasecmp(link->Alias.c_str(), src->Alias.c_str())) {
-				std::string aa = src->Alias;
+//				std::string aa = src->Alias;
+//				if ("sikn1.line1.io.counter" == aa) {
+//					aa = aa + "@";
+//				}
 				// Проверка на наличие требуемого параметра
 				if (link->Param.size()) {
 					if (src->CheckOutput(link->Param)) {
@@ -840,7 +843,7 @@ UDINT rDataConfig::ResolveReports(void)
 			}
 
 			if (!tot->Source) {
-				return m_error.set(DATACFGERR_RESOLVETOTAL, 0, tot->Name); //TODO добавить номер линии
+				return m_error.set(DATACFGERR_RESOLVETOTAL, reports->m_lineNum, tot->Name); //TODO добавить номер линии
 			}
 		}
 	}

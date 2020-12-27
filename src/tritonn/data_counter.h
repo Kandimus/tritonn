@@ -16,9 +16,11 @@
 #pragma once
 
 #include "data_source.h"
+#include "data_module.h"
+#include <list>
 #include "bits_array.h"
 #include "compared_values.h"
-#include "tickcount.h"
+#include "data_link.h"
 
 
 // Внутренние флаги
@@ -31,9 +33,18 @@ const UDINT COUNTER_SA_IMP   = 0x00020000;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rCounter : public rSource
+class rCounter : public rSource, private rDataModule
 {
 public:
+	enum Setup : UINT
+	{
+		NONE    = 0x0000,
+		OFF     = 0x0001,
+		AVERAGE = 0x0002,
+	};
+
+	const UDINT AVERAGE_MAX = 5;
+
 	rCounter();
 	virtual ~rCounter();
 	
@@ -41,7 +52,6 @@ public:
 public:
 	virtual const char *RTTI() const { return "fi"; }
 
-	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
@@ -53,25 +63,22 @@ public:
 	// Inputs
 
 	//Outputs
-	rLink      Freq;
-	rLink      Period;
-	rLink      Impulse;
+	rLink      m_freq;
+	rLink      m_period;
+	rLink      m_impulse;
 
 	// Variable
-	//rAI_io Channel;
-	UDINT      SetCount;
-	LREAL      CountTail;
-	UINT       Count;                   // Текущее значение счетчика с модуля
-	UINT       ChFault;                 // Ошибка канала или модуля
-	UDINT      LastCount;               // Прошлое значение счетчика с модуля. Если LastCount == 0xFFFFFFFF, то это означает что нужно пропустить цикл
-
-	rCmpUINT   Setup;                   // Настройка сигнала
-	rTickCount Tick;                    // Прошлый системный Tick (мсек)
-	LREAL      Spline[MAX_FI_SPLINE];   // Массив последних 4 "хороших" частот, для сглаживания
-	UINT       Status;                  // Нах это???????
+	UDINT      m_count;                   // Текущее значение счетчика с модуля
+	rCmpUINT   m_setup;                   // Настройка сигнала
+	UINT       m_status;                  // Нах это???????
 
 protected:
 	static rBitsArray m_flagsSetup;
+	bool  m_isInit = false;
+	UDINT m_countPrev = 0;
+	UDINT m_tickPrev  = 0;
+
+	std::list<LREAL> m_averageFreq;
 };
 
 

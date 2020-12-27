@@ -147,13 +147,11 @@ UDINT rAI::Calculate()
 
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
-	if(isSetModule())
-	{
+	if (isSetModule()) {
 		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
 		auto channel     = static_cast<rIOAIChannel*>(channel_ptr.get());
 
-		if (channel == nullptr)
-		{
+		if (channel == nullptr) {
 			rEventManager::instance().Add(ReinitEvent(EID_AI_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
@@ -164,11 +162,10 @@ UDINT rAI::Calculate()
 		PhValue.Value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
 		Current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
 
-		if(channel->m_state)
-		{
+		if (channel->m_state) {
 			Fault = true;
 
-			if(m_mode == Mode::PHIS)
+			if (m_mode == Mode::PHIS)
 			{
 				// если симуляция разрешена, то симулируем этот сигнал
 				if(m_setup.Value & Setup::ERR_KEYPAD)

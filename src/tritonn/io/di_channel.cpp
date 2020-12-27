@@ -17,8 +17,6 @@
 #include <math.h>
 #include "../variable_item.h"
 #include "../variable_list.h"
-#include "simpleargs.h"
-#include "../def_arguments.h"
 #include "../units.h"
 #include "tickcount.h"
 
@@ -40,7 +38,7 @@ UDINT rIODIChannel::generateVars(const std::string& name, rVariableList& list, b
 	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state , U_DIMLESS, 0);
 	list.add(p + "bounce" , TYPE_UDINT, rVariable::Flags::____, &m_bounce, U_msec   , 0);
 
-	if (rSimpleArgs::instance().isSet(rArg::Simulate)) {
+	if (issimulate) {
 		list.add(p + "simulate.value", TYPE_USINT, rVariable::Flags::____, &m_simValue, U_DIMLESS, 0);
 		list.add(p + "simulate.blink", TYPE_UDINT, rVariable::Flags::____, &m_simBlink, U_msec   , 0);
 	}

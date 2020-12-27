@@ -28,9 +28,9 @@ public:
 	UDINT GetCount();
 	UDINT Reset();
 
-	static UDINT SysTick(void);
-	static UDINT SysTickUs(void);
-	static UDINT Tick(timeval &tv);
+	static UDINT SysTick(void); // msec
+	static UDINT SysTickUs(void); // usec
+	static UDINT Tick(timeval &tv);  // msec
 	static UDINT TickUs(timeval &tv);
 	static UDINT UnixTime();
 

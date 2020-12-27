@@ -7,6 +7,7 @@ file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h
 							${CMAKE_BINARY_DIR}/src/*.h)
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
+target_include_directories(${PROJECT_NAME} PRIVATE ${OPENSSL_INCLUDE_DIRS})
 
 # OUTPUTNAME
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tritonn")

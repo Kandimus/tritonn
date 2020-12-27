@@ -35,6 +35,7 @@ public:
 		UNDEF  = 0x0000,     //
 		AI6    = 0x0001,     //
 		DI8DO8 = 0x0002,
+		FI4    = 0x0003,
 	};
 
 	rIOBaseModule();

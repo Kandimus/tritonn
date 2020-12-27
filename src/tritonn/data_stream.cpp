@@ -291,7 +291,11 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	Maintenance   = XmlUtils::getAttributeUSINT(element, XmlName::MAINTENANCE  , 0);
 	m_flowmeter   = static_cast<Type>(m_flagsFlowmeter.getValue(strFlowMeter, fault));
 
-	if (!xml_impulse || !xml_temp || !xml_pres || !xml_dens || !xml_factors || fault) {
+	if (fault) {
+		return err.set(DATACFGERR_STREAM, element->GetLineNum(), "undefened paramters");
+	}
+
+	if (!xml_impulse || !xml_temp || !xml_pres || !xml_dens || !xml_factors) {
 		return err.set(DATACFGERR_STREAM, element->GetLineNum(), "undefened links");
 	}
 
