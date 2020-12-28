@@ -76,8 +76,9 @@ public:
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT generateMD(std::string path) { return TRITONN_RESULT_OK; };
-	virtual UDINT generateVars(rVariableList& list);
+	virtual std::string getMarkDown() const;
+	virtual std::string getXmlInput() const;
+	virtual UDINT generateVars(rVariableList& list) const;
 	virtual UDINT PreCalculate();
 	virtual UDINT Calculate();
 	virtual UDINT PostCalculate();

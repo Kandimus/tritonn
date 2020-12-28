@@ -362,8 +362,8 @@ enum TT_TYPE
 
 
 // Размеры типов данных
-const UDINT  EPT_SIZE [TYPE__END] = {255, sizeof(SINT), sizeof(USINT), sizeof(INT), sizeof(UINT), sizeof(DINT), sizeof(UDINT), sizeof(REAL), sizeof(LREAL), sizeof(/*STRID*/UDINT)/*, 0*/};
-const string NAME_TYPE[TYPE__END] = {"UNDEF", "SINT", "USINT", "INT", "UINT", "DINT", "UDINT", "REAL", "LREAL", "STRID"/*, "DATA"*/};
+const UDINT       EPT_SIZE [TYPE__END] = {255, sizeof(SINT), sizeof(USINT), sizeof(INT), sizeof(UINT), sizeof(DINT), sizeof(UDINT), sizeof(REAL), sizeof(LREAL), sizeof(/*STRID*/UDINT)/*, 0*/};
+const std::string NAME_TYPE[TYPE__END] = {"UNDEF", "SINT", "USINT", "INT", "UINT", "DINT", "UDINT", "REAL", "LREAL", "STRID"/*, "DATA"*/};
 
 
 

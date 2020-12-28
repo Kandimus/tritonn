@@ -39,17 +39,17 @@ public:
 	{
 		struct rProperty
 		{
-			std::string       m_name;
-			ItemType          m_type;
+			std::string m_name;
+			ItemType    m_type;
 			const rBitsArray* m_bits;
-			UDINT             m_intVal;
-			LREAL             m_realVal;
+			UDINT       m_intVal;
+			LREAL       m_realVal;
 		};
 
 		const char* XML_OPTIONAL = "<!-- Optional -->";
 
 	public:
-		rItem(const rSource* source, const std::string& name);
+		rItem(const rSource* source, const std::string& name, bool isstdinput);
 		virtual ~rItem();
 
 		rItem* addProperty(const std::string& name, const rBitsArray* bits);
@@ -66,6 +66,7 @@ public:
 	protected:
 		const rSource* m_source;
 		std::string    m_name;
+		bool           m_isStdInput;
 		std::vector<rProperty>   m_properties;
 		std::vector<std::string> m_xml;
 	};
@@ -74,7 +75,7 @@ public:
 	rGeneratorMD();
 	virtual ~rGeneratorMD();
 
-	rGeneratorMD::rItem* add(const rSource* source, const std::string& name);
+	rGeneratorMD::rItem* add(const rSource* source, const std::string& name, bool isstdinput);
 
 	UDINT save(std::string path);
 

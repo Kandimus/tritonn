@@ -15,6 +15,7 @@
 
 #include "generator_md.h"
 #include "data_source.h"
+#include "bits_array.h"
 
 rGeneratorMD::rGeneratorMD()
 {
@@ -24,9 +25,10 @@ rGeneratorMD::~rGeneratorMD()
 {
 }
 
-rGeneratorMD::rItem* rGeneratorMD::add(const rSource* source, const std::string& name)
+rGeneratorMD::rItem* rGeneratorMD::add(const rSource* source, const std::string& name, bool isstdinput)
 {
-	m_items.push_back(rItem(source, name));
+	m_items.push_back(rItem(source, name, isstdinput));
+
 
 	return &m_items.back();
 }
@@ -42,10 +44,11 @@ UDINT save(std::string path)
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-rGeneratorMD::rItem::rItem(const rSource* source, const std::string& name)
+rGeneratorMD::rItem::rItem(const rSource* source, const std::string& name, bool isstdinput)
 {
-	m_source = source;
-	m_name   = name;
+	m_source     = source;
+	m_name       = name;
+	m_isStdInput = isstdinput;
 }
 
 rGeneratorMD::rItem::~rItem()
@@ -83,24 +86,24 @@ rGeneratorMD::rItem* rGeneratorMD::rItem::addProperty(const std::string& name, L
 	return this;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlstring, bool isoptional = false)
+rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlstring, bool isoptional)
 {
 	m_xml.push_back(xmlstring + (isoptional ? XML_OPTIONAL : ""));
 
 	return this;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false)
+rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional)
 {
 	return addXml(String_format("<%s>%s<%s/> %s", xmlname.c_str(), defval.c_str(), xmlname.c_str()), isoptional);
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional = false)
+rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional)
 {
 	return addXml(String_format("<%s>%u<%s/>", xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional = false)
+rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional)
 {
 	return addXml(String_format("<%s>%g<%s/>", xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
@@ -122,79 +125,22 @@ std::string rGeneratorMD::rItem::save()
 	}
 	result += ">\n";
 
+	if (m_isStdInput) {
+		result += m_source->getXmlInput();
+	}
+
 	for (auto& item : m_xml) {
-		result += item + "\n";
+		result += "\t" + item + "\n";
 	}
 	result += String_format("</%s>\n````\n", m_source->RTTI());
 
 	for (auto& item : m_properties) {
-		if (item.m_type == ItemType::BITSFLAG) {
-
+		if (item.m_type == ItemType::BITSFLAG && item.m_bits) {
+			result += item.m_bits->getMarkDown(item.m_name);
 		}
 	}
 
-	for (auto var : list) {
-		if (var->isHide()) {
-			continue;
-		}
-
-		result += var->saveKernel(Alias.size() + 1, "\t\t");
-	}
-	result += "\t</values>\n";
-
-	// Входа
-	if (m_inputs.size()) {
-
-		result += "\t<inputs>\n";
-
-		for (auto link : m_inputs) {
-			UDINT shadow_count = 0;
-
-			result += String_format("\t\t<input name=\"%s\" unit=\"%i\"", link->IO_Name.c_str(), (UDINT)link->Unit);
-
-			for (auto sublink : m_inputs) {
-				if (link == sublink) {
-					continue;
-				}
-
-				if (sublink->Shadow == link->IO_Name) {
-					if (0 == shadow_count) {
-						result += ">\n";
-					}
-
-					result += String_format("\t\t\t<shadow name=\"%s\"/>\n", sublink->IO_Name.c_str());
-					++shadow_count;
-				}
-			}
-
-			if (0 == shadow_count) {
-				if (link->Shadow.size()) {
-					result += String_format(" shadow=\"%s\"", link->Shadow.c_str());
-				}
-				result += "/>\n";
-			}
-			else
-			{
-				result += "\t\t</input>\n";
-			}
-		}
-		result += "\t</inputs>\n";
-	}
-
-	// Outputs
-	if (m_outputs.size()) {
-		result += "\t<outputs>\n";
-
-		for (auto link : m_outputs) {
-			result += String_format("\t\t<output name=\"%s\" unit=\"%i\"%s/>\n",
-					link->IO_Name.c_str(), (UDINT)link->Unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
-		}
-
-		result += "\t\t<output name=\"fault\" unit=\"512\"/>\n"
-				  "\t</outputs>\n";
-	}
-
-	result += String_format("</%s>\n", Tag[isio ? 1 : 0].c_str());
+	result += m_source->getMarkDown();
 
 	return result;
 }

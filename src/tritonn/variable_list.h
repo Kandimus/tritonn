@@ -42,6 +42,8 @@ public:
 	std::vector<rVariable*>::iterator begin() { return m_list.begin(); }
 	std::vector<rVariable*>::iterator end()   { return m_list.end();   }
 
+	std::string getMarkDown() const;
+
 private:
 	std::vector<rVariable*> m_list;
 };

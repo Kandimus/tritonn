@@ -27,26 +27,26 @@ rBitsArray::~rBitsArray()
 }
 
 
-rBitsArray& rBitsArray::add(const std::string &name, UDINT value)
+rBitsArray& rBitsArray::add(const std::string &name, UDINT value, const std::string& comment)
 {
-	m_list.push_back(rBitsArray::rBitFlag(name, value));
+	m_list.push_back(rBitsArray::rBitFlag(name, value, comment));
 	return *this;
 }
 
-rBitsArray& rBitsArray::add(const std::string &name, UINT value)
+rBitsArray& rBitsArray::add(const std::string &name, UINT value, const std::string& comment)
 {
-	return add(name, static_cast<UDINT>(value));
+	return add(name, static_cast<UDINT>(value), comment);
 }
 
-rBitsArray& rBitsArray::add(const std::string &name, USINT value)
+rBitsArray& rBitsArray::add(const std::string &name, USINT value, const std::string& comment)
 {
-	return add(name, static_cast<UDINT>(value));
+	return add(name, static_cast<UDINT>(value), comment);
 }
 
 //-------------------------------------------------------------------------------------------------
 // Возвращает строковое название флага, если выставлены несколько бит, то вернется срока с
 // несколькими флагами
-std::string rBitsArray::getNameByBits(UDINT value)
+std::string rBitsArray::getNameByBits(UDINT value) const
 {
 	std::string result = "";
 
@@ -63,7 +63,7 @@ std::string rBitsArray::getNameByBits(UDINT value)
 
 //-------------------------------------------------------------------------------------------------
 // Возвращает строковое значение числа, проверка идет на равенство
-std::string rBitsArray::getNameByValue(UDINT value)
+std::string rBitsArray::getNameByValue(UDINT value) const
 {
 	for(auto& item : m_list) {
 		if (item.m_value == value) {
@@ -77,7 +77,7 @@ std::string rBitsArray::getNameByValue(UDINT value)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rBitsArray::getBit(const std::string &name, UDINT &err)
+UDINT rBitsArray::getBit(const std::string &name, UDINT &err) const
 {
 	if(err) return 0;
 	if(name.empty()) return 0;
@@ -95,7 +95,7 @@ UDINT rBitsArray::getBit(const std::string &name, UDINT &err)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rBitsArray::getValue(const std::string &str, UDINT &err)
+UDINT rBitsArray::getValue(const std::string &str, UDINT &err) const
 {
 	std::string name   = "";
 	UDINT       result = 0;
@@ -128,3 +128,14 @@ UDINT rBitsArray::getValue(const std::string &str, UDINT &err)
 	return result;
 }
 
+
+std::string rBitsArray::getMarkDown(const std::string& name) const
+{
+	std::string result = "#### " + name + "\n";
+
+	for (auto& item : m_list) {
+		result += "* _" + item.m_name + "_ " + item.m_comment + "\n";
+	}
+
+	return result;
+}
