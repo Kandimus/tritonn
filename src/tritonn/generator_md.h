@@ -28,7 +28,8 @@ class rBitsArray;
 class rGeneratorMD
 {
 public:
-	enum ItemType{
+	enum ItemType
+	{
 		BITSFLAG,
 		UDINT_VAL,
 		LREAL_VAL,
@@ -39,8 +40,13 @@ public:
 		struct rProperty
 		{
 			std::string       m_name;
+			ItemType          m_type;
 			const rBitsArray* m_bits;
+			UDINT             m_intVal;
+			LREAL             m_realVal;
 		};
+
+		const char* XML_OPTIONAL = "<!-- Optional -->";
 
 	public:
 		rItem(const rSource* source, const std::string& name);
@@ -49,10 +55,13 @@ public:
 		rItem* addProperty(const std::string& name, const rBitsArray* bits);
 		rItem* addProperty(const std::string& name, UDINT defval);
 		rItem* addProperty(const std::string& name, LREAL defval);
-		rItem* addXml(const std::string& xml);
+		rItem* addXml(const std::string& xmlstring, bool isoptional = false);
+		rItem* addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false);
+		rItem* addXml(const std::string& xmlname, UDINT defval, bool isoptional = false);
+		rItem* addXml(const std::string& xmlname, LREAL defval, bool isoptional = false);
 
 	protected:
-		UDINT save(const std::string& filename);
+		std::string save();
 
 	protected:
 		const rSource* m_source;
@@ -62,15 +71,15 @@ public:
 	};
 
 public:
-	rGeneratorMD(std::string path);
+	rGeneratorMD();
 	virtual ~rGeneratorMD();
 
 	rGeneratorMD::rItem* add(const rSource* source, const std::string& name);
 
-
-	UDINT save();
+	UDINT save(std::string path);
 
 protected:
 	std::vector<rItem> m_items;
+	std::string m_path;
 };
 
