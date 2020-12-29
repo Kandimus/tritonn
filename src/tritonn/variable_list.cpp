@@ -18,6 +18,7 @@
 #include "variable_item.h"
 #include "simplefile.h"
 #include <algorithm>
+#include "text_manager.h"
 
 
 rVariableList::rVariableList()
@@ -99,3 +100,24 @@ UDINT rVariableList::saveToCSV(const std::string& path)
 }
 
 
+std::string rVariableList::getMarkDown() const
+{
+	std::string result = "";
+
+	result += "Variable | Type | Unit | Unit ID | Readonly | Access | Comment\n";
+	result += ":-- |:--:|:--:|:--:|:--:|:--:|:--\n";
+	for (auto item : m_list) {
+		std::string strunit = "";
+
+		rTextManager::instance().Get(item->getUnit(), strunit);
+
+		result += item->getName() + " | ";
+		result += NAME_TYPE[item->getType()] + " | ";
+		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
+		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";
+		result += String_format("0x%x", item->getAccess()) + " | ";
+		result += "\n";
+	}
+
+	return result;
+}

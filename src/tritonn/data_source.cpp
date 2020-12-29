@@ -25,6 +25,7 @@
 #include "data_source.h"
 #include "text_manager.h"
 #include "xml_util.h"
+#include "text_manager.h"
 #include "error.h"
 
 
@@ -227,7 +228,7 @@ UDINT rSource::ReinitLimitEvents()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::generateVars(rVariableList& list)
+UDINT rSource::generateVars(rVariableList& list) const
 {
 	for (auto link : m_inputs) {
 		link->generateVars(list);
@@ -401,8 +402,73 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 	return result;
 }
 
+std::string rSource::getMarkDown() const
+{
+	std::string result = "";
 
+	if (m_inputs.size()) {
+		result += "## Inputs\n";
+		result += "Input | Unit | Unit ID | Limits | Shadow | Comment\n";
+		result += ":-- |:--:|:--:|:--:|:--:|:--\n";
 
+		for (auto link : m_inputs) {
+			std::string strunit = "";
+
+			rTextManager::instance().Get(link->Unit, strunit);
+
+			result += link->IO_Name + " | ";
+			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
+			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value) + " | ";
+			result += link->Shadow + " | ";
+			result += /*link->m_comment + */"\n";
+		}
+	}
+	result += "\n";
+
+	result += "## Outputs\n";
+	result += "Output | Unit | Unit ID | Limits | Comment\n";
+	result += ":-- |:--:|:--:|:--:|:--\n";
+	for (auto link : m_outputs) {
+		std::string strunit = "";
+
+		rTextManager::instance().Get(link->Unit, strunit);
+
+		result += link->IO_Name + " | ";
+		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
+
+		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value) + " | ";
+		result += /*link->m_comment + */"\n";
+	}
+	result += "\n";
+
+	rVariableList list;
+	generateVars(list);
+
+	result += "## Variable\n";
+	result += list.getMarkDown();
+	result += "\n";
+
+	return result;
+}
+
+std::string rSource::getXmlInput() const
+{
+	std::string result = "";
+
+	if (m_inputs.size()) {
+		for (auto link : m_inputs) {
+			result += "<" + link->IO_Name + "><link alias=\"object's output\"/></" + link->IO_Name + ">";
+
+			if (link->Shadow.size()) {
+				result += "<!-- Optional -->";
+			}
+
+			result += "\n";
+		}
+	}
+
+	return result;
+}
 
 UDINT rSource::CheckOutput(const string &name)
 {
