@@ -60,7 +60,7 @@ public:
 		rItem* addXml(const std::string& xmlname, UDINT defval, bool isoptional = false);
 		rItem* addXml(const std::string& xmlname, LREAL defval, bool isoptional = false);
 
-	protected:
+		std::string getName() const { return m_name; }
 		std::string save();
 
 	protected:

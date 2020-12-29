@@ -16,6 +16,7 @@
 #include "generator_md.h"
 #include "data_source.h"
 #include "bits_array.h"
+#include "simplefile.h"
 
 rGeneratorMD::rGeneratorMD()
 {
@@ -33,8 +34,12 @@ rGeneratorMD::rItem* rGeneratorMD::add(const rSource* source, const std::string&
 	return &m_items.back();
 }
 
-UDINT save(std::string path)
+UDINT rGeneratorMD::save(std::string path)
 {
+	for (auto& item : m_items) {
+		SimpleFileSave(path + "/" + item.getName() + ".md", item.save());
+	}
+
 	return TRITONN_RESULT_OK;
 }
 
