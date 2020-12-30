@@ -49,16 +49,16 @@ public:
 		const char* XML_OPTIONAL = "<!-- Optional -->";
 
 	public:
-		rItem(const rSource* source, const std::string& name, bool isstdinput);
+		rItem(const rSource* source, bool isstdinput);
 		virtual ~rItem();
 
-		rItem* addProperty(const std::string& name, const rBitsArray* bits);
-		rItem* addProperty(const std::string& name, UDINT defval);
-		rItem* addProperty(const std::string& name, LREAL defval);
-		rItem* addXml(const std::string& xmlstring, bool isoptional = false);
-		rItem* addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false);
-		rItem* addXml(const std::string& xmlname, UDINT defval, bool isoptional = false);
-		rItem* addXml(const std::string& xmlname, LREAL defval, bool isoptional = false);
+		rItem& addProperty(const std::string& name, const rBitsArray* bits);
+		rItem& addProperty(const std::string& name, UDINT defval);
+		rItem& addProperty(const std::string& name, LREAL defval);
+		rItem& addXml(const std::string& xmlstring, bool isoptional = false);
+		rItem& addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false);
+		rItem& addXml(const std::string& xmlname, UDINT defval, bool isoptional = false);
+		rItem& addXml(const std::string& xmlname, LREAL defval, bool isoptional = false);
 
 		std::string getName() const { return m_name; }
 		std::string save();
@@ -75,7 +75,7 @@ public:
 	rGeneratorMD();
 	virtual ~rGeneratorMD();
 
-	rGeneratorMD::rItem* add(const rSource* source, const std::string& name, bool isstdinput);
+	rGeneratorMD::rItem& add(const rSource* source, bool isstdinput);
 
 	UDINT save(std::string path);
 

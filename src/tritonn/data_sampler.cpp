@@ -24,6 +24,7 @@
 #include "variable_list.h"
 #include "xml_util.h"
 #include "text_id.h"
+#include "generator_md.h"
 
 rBitsArray rSampler::m_flagsMode;
 rBitsArray rSampler::m_flagsSetup;
@@ -36,8 +37,8 @@ const UDINT LE_IO_STOP  = 0x00000002;
 //
 rSampler::rSampler()
 {
-	if (m_flagsMode.empty()) {
-		m_flagsMode
+	if (m_flagsMethod.empty()) {
+		m_flagsMethod
 				.add("PERIOD", static_cast<UINT>(Mode::PERIOD))
 				.add("MASS"  , static_cast<UINT>(Mode::MASS))
 				.add("VOLUME", static_cast<UINT>(Mode::VOLUME));
@@ -407,8 +408,8 @@ UDINT rSampler::Can::loadFromXML(tinyxml2::XMLElement *element, rError &err)
 
 UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PERIOD)));
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
+	std::string strMethod = XmlUtils::getAttributeString(element, XmlName::METHOD, m_flagsMethod.getNameByBits (static_cast<UINT>(Method::PERIOD)));
+	std::string strSetup  = XmlUtils::getAttributeString(element, XmlName::SETUP , m_flagsSetup.getNameByBits(Setup::OFF));
 
 	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -433,9 +434,9 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can A");
 	}
 
-	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
+	m_method = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
 	if (fault) {
-		return err.set(DATACFGERR_SAMPLER_MODE, element->GetLineNum(), "");
+		return err.set(DATACFGERR_SAMPLER_METHOD, element->GetLineNum(), "");
 	}
 
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
@@ -481,9 +482,9 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		}
 	}
 
-	m_grabVol     = XmlUtils::getTextLREAL(xml_grabvol , 1.0  , fault);
-	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
-	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , 43200, fault);
+	m_grabVol     = XmlUtils::getTextLREAL(xml_grabvol , m_grabVol    , fault);
+	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, m_probeTest  , fault);
+	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , m_probePeriod, fault);
 
 	return TRITONN_RESULT_OK;
 }
@@ -544,10 +545,28 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 }
 
 
-UDINT rSampler::generateMD(std::string path)
+UDINT rSampler::generateMarkDown(rGeneratorMD& md)
 {
-	UNUSED(path);
-	std::string text = "";
+	md.add(this, false)
+			.addProperty("method", &m_flagsMethod)
+			.addProperty("setup", &m_flagsSetup)
+			.addXml("<totals>object containing totals</totals>")
+			.addXml("<reserve>sampler object</reserve>", true)
+			.addXml(XmlName::GRABVOL, m_grabVol, true)
+			.addXml(XmlName::PERIOD , m_probePeriod, true)
+			.addXml(XmlName::GRABTEST, m_probeTest, true)
+			.addXml("<can_a>")
+			.addXml("\t<overflow><link alias=\"\"/></overflow>")
+			.addXml("\t<fault><link alias=\"\"/></fault>")
+			.addXml("\t<weight><link alias=\"\"/></weight>")
+			.addXml(String_format("\t<volume>%u</volume>"), m_can[1].m_volume)
+			.addXml("</can_a>")
+			.addXml("<can_b>")
+			.addXml("\t<overflow><link alias=\"\"/></overflow>")
+			.addXml("\t<fault><link alias=\"\"/></fault>")
+			.addXml("\t<weight><link alias=\"\"/></weight>")
+			.addXml(String_format("\t<volume>%u</volume>"), m_can[1].m_volume)
+			.addXml("</can_a>")
 
 	text += "# " + std::string(RTTI()) + "\n";
 

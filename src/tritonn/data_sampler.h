@@ -25,7 +25,7 @@
 class rSampler : public rSource
 {
 public:
-	enum class Mode : UINT
+	enum class Method : UINT
 	{
 		PERIOD = 0,
 		MASS   = 1,
@@ -91,7 +91,7 @@ public:
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT generateMD(std::string path);
+	virtual UDINT       generateMarkDown(rGeneratorMD& md);
 	virtual UDINT Calculate();
 	virtual UDINT check(rError& err);
 protected:
@@ -110,13 +110,13 @@ public:
 	Command  m_command;
 	UINT     m_select = 0;
 	rCmpUINT m_setup;
-	Mode     m_mode;
-	UDINT    m_probePeriod;   // Период времени для работы по таймеру
-	LREAL    m_probeVolume;   //
-	LREAL    m_probeMass;     //
-	UDINT    m_probeTest;     // Кол-во тестовых доз
-	LREAL    m_grabVol;       // Объем единичной дозы
-	LREAL    m_canVolume;     // Требуемый объем емкости
+	Method   m_method;
+	UDINT    m_probePeriod = 43200; // Период времени для работы по таймеру
+	LREAL    m_probeVolume;         //
+	LREAL    m_probeMass;           //
+	UDINT    m_probeTest = 100;     // Кол-во тестовых доз
+	LREAL    m_grabVol   = 1.0;     // Объем единичной дозы
+	LREAL    m_canVolume;           // Требуемый объем емкости
 	UINT     m_noflow;
 
 	LREAL    m_interval;      // объем/масса между дозами или время, в мсек, между дозами, при отборе по времени
@@ -130,7 +130,7 @@ public:
 	State    m_state = State::IDLE;
 
 private:
-	static rBitsArray m_flagsMode;
+	static rBitsArray m_flagsMethod;
 	static rBitsArray m_flagsSetup;
 
 	const rTotal*   m_totals  = nullptr;

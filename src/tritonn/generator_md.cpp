@@ -26,12 +26,16 @@ rGeneratorMD::~rGeneratorMD()
 {
 }
 
-rGeneratorMD::rItem* rGeneratorMD::add(const rSource* source, const std::string& name, bool isstdinput)
+rGeneratorMD::rItem& rGeneratorMD::add(const rSource* source, bool isstdinput)
 {
-	m_items.push_back(rItem(source, name, isstdinput));
+	if (!source) {
+		return nullptr;
+	}
+
+	m_items.push_back(rItem(source, isstdinput));
 
 
-	return &m_items.back();
+	return m_items.back();
 }
 
 UDINT rGeneratorMD::save(std::string path)
@@ -49,10 +53,10 @@ UDINT rGeneratorMD::save(std::string path)
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-rGeneratorMD::rItem::rItem(const rSource* source, const std::string& name, bool isstdinput)
+rGeneratorMD::rItem::rItem(const rSource* source, bool isstdinput)
 {
 	m_source     = source;
-	m_name       = name;
+	m_name       = source->RTTI();
 	m_isStdInput = isstdinput;
 }
 
@@ -61,54 +65,54 @@ rGeneratorMD::rItem::~rItem()
 	;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addProperty(const std::string& name, const rBitsArray* bits)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, const rBitsArray* bits)
 {
 	m_properties.push_back(rProperty());
 	m_properties.back().m_name = name;
 	m_properties.back().m_bits = bits;
 	m_properties.back().m_type = ItemType::BITSFLAG;
 
-	return this;
+	return *this;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addProperty(const std::string& name, UDINT defval)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, UDINT defval)
 {
 	m_properties.push_back(rProperty());
 	m_properties.back().m_name   = name;
 	m_properties.back().m_intVal = defval;
 	m_properties.back().m_type   = ItemType::UDINT_VAL;
 
-	return this;
+	return *this;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addProperty(const std::string& name, LREAL defval)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, LREAL defval)
 {
 	m_properties.push_back(rProperty());
 	m_properties.back().m_name    = name;
 	m_properties.back().m_realVal = defval;
 	m_properties.back().m_type    = ItemType::LREAL_VAL;
 
-	return this;
+	return *this;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlstring, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlstring, bool isoptional)
 {
 	m_xml.push_back(xmlstring + (isoptional ? XML_OPTIONAL : ""));
 
-	return this;
+	return *this;
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional)
 {
 	return addXml(String_format("<%s>%s<%s/> %s", xmlname.c_str(), defval.c_str(), xmlname.c_str()), isoptional);
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional)
 {
 	return addXml(String_format("<%s>%u<%s/>", xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
 
-rGeneratorMD::rItem* rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional)
 {
 	return addXml(String_format("<%s>%g<%s/>", xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }

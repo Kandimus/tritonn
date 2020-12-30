@@ -402,6 +402,11 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 	return result;
 }
 
+UDINT rSource::generateMarkDown(rGeneratorMD& md)
+{
+	return TRITONN_RESULT_OK;
+}
+
 std::string rSource::getMarkDown() const
 {
 	std::string result = "";
