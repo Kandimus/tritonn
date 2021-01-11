@@ -49,7 +49,7 @@ public:
 		const char* XML_OPTIONAL = "<!-- Optional -->";
 
 	public:
-		rItem(const rSource* source, bool isstdinput);
+		rItem(rSource* source, bool isstdinput);
 		virtual ~rItem();
 
 		rItem& addProperty(const std::string& name, const rBitsArray* bits);
@@ -64,9 +64,9 @@ public:
 		std::string save();
 
 	protected:
-		const rSource* m_source;
-		std::string    m_name;
-		bool           m_isStdInput;
+		rSource*    m_source;
+		std::string m_name;
+		bool        m_isStdInput;
 		std::vector<rProperty>   m_properties;
 		std::vector<std::string> m_xml;
 	};
@@ -75,7 +75,7 @@ public:
 	rGeneratorMD();
 	virtual ~rGeneratorMD();
 
-	rGeneratorMD::rItem& add(const rSource* source, bool isstdinput);
+	rGeneratorMD::rItem& add(rSource* source, bool isstdinput);
 
 	UDINT save(std::string path);
 

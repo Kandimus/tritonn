@@ -273,6 +273,7 @@ UDINT rDataManager::LoadConfig()
 	{
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		SaveKernel();                         // Сохраняем описание ядра
+		saveMarkDown();
 	}
 
 	//--------------------------------------------
@@ -313,6 +314,12 @@ UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
 	rSampler smp;
+
+	smp.generateMarkDown(md);
+
+	md.save(DIR_MARKDOWN);
+
+	return TRITONN_RESULT_OK;
 }
 
 

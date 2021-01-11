@@ -803,8 +803,8 @@ UDINT rDataConfig::ResolveLinks(void)
 //				}
 				// Проверка на наличие требуемого параметра
 				if (link->Param.size()) {
-					if (src->CheckOutput(link->Param)) {
-						src->CheckOutput(link->Param);
+					if (src->checkOutput(link->Param)) {
+						src->checkOutput(link->Param);
 						return m_error.set(DATACFGERR_CHECKLINK, link->m_lineNum, link->FullTag);
 					}
 				}

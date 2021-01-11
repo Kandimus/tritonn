@@ -26,11 +26,11 @@ rGeneratorMD::~rGeneratorMD()
 {
 }
 
-rGeneratorMD::rItem& rGeneratorMD::add(const rSource* source, bool isstdinput)
+rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput)
 {
-	if (!source) {
-		return nullptr;
-	}
+//	if (!source) {
+//		return nullptr;
+//	}
 
 	m_items.push_back(rItem(source, isstdinput));
 
@@ -53,7 +53,7 @@ UDINT rGeneratorMD::save(std::string path)
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-rGeneratorMD::rItem::rItem(const rSource* source, bool isstdinput)
+rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput)
 {
 	m_source     = source;
 	m_name       = source->RTTI();

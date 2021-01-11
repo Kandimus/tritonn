@@ -108,10 +108,11 @@ std::string rVariableList::getMarkDown() const
 	result += ":-- |:--:|:--:|:--:|:--:|:--:|:--\n";
 	for (auto item : m_list) {
 		std::string strunit = "";
+		std::string name    = (item->getName().size() && item->getName()[0] == '.') ? item->getName().substr(1) : item->getName();
 
 		rTextManager::instance().Get(item->getUnit(), strunit);
 
-		result += item->getName() + " | ";
+		result += name + " | ";
 		result += NAME_TYPE[item->getType()] + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
 		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";

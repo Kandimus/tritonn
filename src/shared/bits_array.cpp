@@ -131,10 +131,10 @@ UDINT rBitsArray::getValue(const std::string &str, UDINT &err) const
 
 std::string rBitsArray::getMarkDown(const std::string& name) const
 {
-	std::string result = "#### " + name + "\n";
+	std::string result = "\n#### " + name + "\n";
 
 	for (auto& item : m_list) {
-		result += "* _" + item.m_name + "_ " + item.m_comment + "\n";
+		result += "* _" + item.m_name + "_ " + (item.m_comment.size() ? " - " : "") + item.m_comment + "\n";
 	}
 
 	return result;

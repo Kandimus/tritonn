@@ -228,7 +228,7 @@ UDINT rSource::ReinitLimitEvents()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::generateVars(rVariableList& list) const
+UDINT rSource::generateVars(rVariableList& list)
 {
 	for (auto link : m_inputs) {
 		link->generateVars(list);
@@ -407,12 +407,12 @@ UDINT rSource::generateMarkDown(rGeneratorMD& md)
 	return TRITONN_RESULT_OK;
 }
 
-std::string rSource::getMarkDown() const
+std::string rSource::getMarkDown()
 {
 	std::string result = "";
 
 	if (m_inputs.size()) {
-		result += "## Inputs\n";
+		result += "\n## Inputs\n";
 		result += "Input | Unit | Unit ID | Limits | Shadow | Comment\n";
 		result += ":-- |:--:|:--:|:--:|:--:|:--\n";
 
@@ -428,9 +428,8 @@ std::string rSource::getMarkDown() const
 			result += /*link->m_comment + */"\n";
 		}
 	}
-	result += "\n";
 
-	result += "## Outputs\n";
+	result += "\n## Outputs\n";
 	result += "Output | Unit | Unit ID | Limits | Comment\n";
 	result += ":-- |:--:|:--:|:--:|:--\n";
 	for (auto link : m_outputs) {
@@ -444,12 +443,11 @@ std::string rSource::getMarkDown() const
 		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value) + " | ";
 		result += /*link->m_comment + */"\n";
 	}
-	result += "\n";
 
 	rVariableList list;
 	generateVars(list);
 
-	result += "## Variable\n";
+	result += "\n## Variable\n";
 	result += list.getMarkDown();
 	result += "\n";
 
@@ -475,7 +473,7 @@ std::string rSource::getXmlInput() const
 	return result;
 }
 
-UDINT rSource::CheckOutput(const string &name)
+UDINT rSource::checkOutput(const string &name)
 {
 	string lowname = String_tolower(name);
 
