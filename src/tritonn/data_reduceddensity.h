@@ -34,6 +34,7 @@ public:
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT       generateMarkDown(rGeneratorMD& md);
 	virtual UDINT Calculate();
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);

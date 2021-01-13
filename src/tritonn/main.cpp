@@ -108,6 +108,7 @@ int main(int argc, char* argv[])
 		TRACEERROR("Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
 		exit(0);
 	}
+	rTextManager::instance().SetCurLang("ru");
 
 
 	//----------------------------------------------------------------------------------------------

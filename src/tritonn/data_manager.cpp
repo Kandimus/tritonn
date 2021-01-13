@@ -46,6 +46,7 @@
 #include "def_arguments.h"
 
 //TODO Эти модули нужны только для SaveKernel, может их потом вынести в отдельный файл?
+#include "generator_md.h"
 #include "modbustcpslave_manager.h"
 #include "opcua_manager.h"
 
@@ -272,6 +273,7 @@ UDINT rDataManager::LoadConfig()
 	{
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		SaveKernel();                         // Сохраняем описание ядра
+		saveMarkDown();
 	}
 
 	//--------------------------------------------
@@ -306,6 +308,20 @@ UDINT rDataManager::SetLang(const string &lang)
 	strncpy(m_sysVar.Lang, lang.c_str(), 8);
 
 	return 0;
+}
+
+UDINT rDataManager::saveMarkDown()
+{
+	rGeneratorMD md;
+	rSampler smp;
+	rReducedDens rd;
+
+	rd.generateMarkDown(md);
+	smp.generateMarkDown(md);
+
+	md.save(DIR_MARKDOWN);
+
+	return TRITONN_RESULT_OK;
 }
 
 

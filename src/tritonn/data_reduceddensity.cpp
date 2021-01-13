@@ -28,6 +28,7 @@
 #include "data_station.h"
 #include "data_reduceddensity.h"
 #include "xml_util.h"
+#include "generator_md.h"
 
 
 const UDINT REDUCEDDENS_LE_INPUTS  = 0x00000001;
@@ -196,6 +197,25 @@ UDINT rReducedDens::LoadFromXML(tinyxml2::XMLElement* element, rError& err, cons
 	return TRITONN_RESULT_OK;
 }
 
+
+UDINT rReducedDens::generateMarkDown(rGeneratorMD& md)
+{
+	Temp.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Pres.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	B15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens20.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	CTL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	CPL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	B.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Y.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Y15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+
+	md.add(this, true);
+
+	return TRITONN_RESULT_OK;
+}
 
 //-------------------------------------------------------------------------------------------------
 //

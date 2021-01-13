@@ -25,8 +25,9 @@
 #include "data_source.h"
 #include "text_manager.h"
 #include "xml_util.h"
+#include "text_manager.h"
 #include "error.h"
-
+#include "generator_md.h"
 
 
 rSource::rSource()
@@ -401,10 +402,113 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 	return result;
 }
 
+UDINT rSource::generateMarkDown(rGeneratorMD& md)
+{
+	UNUSED(md);
 
+	return TRITONN_RESULT_OK;
+}
 
+std::string rSource::getMarkDown()
+{
+	std::string result = "";
 
-UDINT rSource::CheckOutput(const string &name)
+	if (m_inputs.size()) {
+		result += "\n## Inputs\n";
+		result += "Input | Unit | Unit ID | Limits | Shadow | Comment\n";
+		result += ":-- |:--:|:--:|:--:|:--:|:--\n";
+
+		for (auto link : m_inputs) {
+			std::string strunit = "";
+
+			rTextManager::instance().Get(link->Unit, strunit);
+
+			result += link->IO_Name + " | ";
+			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
+			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
+			result += link->Shadow + " | ";
+			result += /*link->m_comment + */"\n";
+		}
+	}
+
+	result += "\n## Outputs\n";
+	result += "Output | Unit | Unit ID | Limits | Comment\n";
+	result += ":-- |:--:|:--:|:--:|:--\n";
+	for (auto link : m_outputs) {
+		std::string strunit = "";
+
+		rTextManager::instance().Get(link->Unit, strunit);
+
+		result += link->IO_Name + " | ";
+		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
+
+		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
+		result += /*link->m_comment + */"\n";
+	}
+
+	rVariableList list;
+	generateVars(list);
+
+	result += "\n## Variable\n";
+	result += list.getMarkDown();
+	result += "\n";
+
+	return result;
+}
+
+std::string rSource::getXmlInput() const
+{
+	std::string result = "";
+
+	if (m_inputs.size()) {
+		for (auto link : m_inputs) {
+			result += "\t<" + link->IO_Name + "><link alias=\"object's output\"/></" + link->IO_Name + ">";
+
+			if (link->Shadow.size()) {
+				result += "<!-- Optional -->";
+			}
+
+			result += "\n";
+		}
+
+		std::string strlink = "";
+
+		for (auto link : m_inputs) {
+			if (link->Limit.m_setup.Value != rLimit::Setup::OFF) {
+				strlink += String_format("\t<%s name=\"%s\" setup=\"%s\">\n",
+										 XmlName::LIMIT,
+										 link->IO_Name.c_str(),
+										 rLimit::m_flagsSetup.getNameByBits(link->Limit.m_setup.Value).c_str());
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::LOLO) {
+					strlink += String_format("\t\t<lolo>%g</lolo>\n", link->Limit.m_lolo.Value);
+				}
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::LO) {
+					strlink += String_format("\t\t<lo>%g</lo>\n", link->Limit.m_lo.Value);
+				}
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::HI) {
+					strlink += String_format("\t\t<hi>%g</hi>\n", link->Limit.m_hi.Value);
+				}
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::HIHI) {
+					strlink += String_format("\t\t<hihi>%g</hihi>\n", link->Limit.m_hihi.Value);
+				}
+
+				strlink += "\t</limit>\n";
+			}
+		}
+
+		if (strlink.size()) {
+			result += String_format("<%s> %s\n%s</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
+		}
+	}
+
+	return result;
+}
+
+UDINT rSource::checkOutput(const string &name)
 {
 	string lowname = String_tolower(name);
 

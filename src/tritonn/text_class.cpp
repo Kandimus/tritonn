@@ -244,7 +244,7 @@ UDINT rTextClass::Get(UDINT id, string &text)
 //
 UDINT rTextClass::Get(UDINT id, const string &lang, string &text)
 {
-	const string *result = GetPtr(id, lang);
+	const std::string *result = GetPtr(id, lang);
 
 	if(nullptr == result) return 1;
 

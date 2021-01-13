@@ -307,6 +307,7 @@ const std::string DIR_FTP              = DIR_HOME + "ftp\\";
 const std::string DIR_WWW              = DIR_HOME + "www\\";
 const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports\\";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag\\";
+const std::string DIR_MARKDOWN         = DIR_HOME + "help\\";
 const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
 const std::string FILE_RESTART         = DIR_HOME + "tritonn.restart";
 const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
@@ -319,6 +320,7 @@ const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
 const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports/";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
+const std::string DIR_MARKDOWN         = DIR_HOME + "help/";
 const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
 const std::string FILE_RESTART         = DIR_HOME + "tritonn.restart";
 const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
@@ -355,8 +357,8 @@ enum TT_TYPE
 
 
 // Размеры типов данных
-const UDINT  EPT_SIZE [TYPE__END] = {255, sizeof(SINT), sizeof(USINT), sizeof(INT), sizeof(UINT), sizeof(DINT), sizeof(UDINT), sizeof(REAL), sizeof(LREAL), sizeof(/*STRID*/UDINT)/*, 0*/};
-const string NAME_TYPE[TYPE__END] = {"UNDEF", "SINT", "USINT", "INT", "UINT", "DINT", "UDINT", "REAL", "LREAL", "STRID"/*, "DATA"*/};
+const UDINT       EPT_SIZE [TYPE__END] = {255, sizeof(SINT), sizeof(USINT), sizeof(INT), sizeof(UINT), sizeof(DINT), sizeof(UDINT), sizeof(REAL), sizeof(LREAL), sizeof(/*STRID*/UDINT)/*, 0*/};
+const std::string NAME_TYPE[TYPE__END] = {"UNDEF", "SINT", "USINT", "INT", "UINT", "DINT", "UDINT", "REAL", "LREAL", "STRID"/*, "DATA"*/};
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -481,7 +483,7 @@ enum rTritonn_Error
 	DATACFGERR_DO,                          // 164
 	DATACFGERR_SAMPLER_TOTALS,              //
 	DATACFGERR_SAMPLER_CAN,                 // 166
-	DATACFGERR_SAMPLER_MODE,                //
+	DATACFGERR_SAMPLER_METHOD,              //
 	DATACFGERR_SAMPLER_SETUP,               // 168
 	DATACFGERR_SAMPLER_RESERVE,             //
 	DATACFGERR_SAMPLER_RESERVE_NF,          // 170

@@ -24,8 +24,9 @@
 #include "variable_list.h"
 #include "xml_util.h"
 #include "text_id.h"
+#include "generator_md.h"
 
-rBitsArray rSampler::m_flagsMode;
+rBitsArray rSampler::m_flagsMethod;
 rBitsArray rSampler::m_flagsSetup;
 
 const UDINT LE_IO_START = 0x00000001;
@@ -36,21 +37,21 @@ const UDINT LE_IO_STOP  = 0x00000002;
 //
 rSampler::rSampler()
 {
-	if (m_flagsMode.empty()) {
-		m_flagsMode
-				.add("PERIOD", static_cast<UINT>(Mode::PERIOD))
-				.add("MASS"  , static_cast<UINT>(Mode::MASS))
-				.add("VOLUME", static_cast<UINT>(Mode::VOLUME));
+	if (m_flagsMethod.empty()) {
+		m_flagsMethod
+				.add("PERIOD", static_cast<UINT>(Method::PERIOD), "Отбор проб по времени")
+				.add("MASS"  , static_cast<UINT>(Method::MASS)  , "Отбор проб по данным массового расхода")
+				.add("VOLUME", static_cast<UINT>(Method::VOLUME), "Отбор проб по данным объемного расхода");
 	}
 
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"         , static_cast<UINT>(Setup::OFF))
-				.add("ERR2RESERVE" , static_cast<UINT>(Setup::ERR_RESERV))
-				.add("FILL2RESERVE", static_cast<UINT>(Setup::FILL_RESERV))
-				.add("SINGLECAN"   , static_cast<UINT>(Setup::SINGLE_CAN))
-				.add("DUALCAN"     , static_cast<UINT>(Setup::DUAL_CAN))
-				.add("AUTOSWITCH"  , static_cast<UINT>(Setup::AUTOSWITCH));
+				.add("OFF"         , static_cast<UINT>(Setup::OFF)        , "Отключить объект")
+				.add("ERR2RESERVE" , static_cast<UINT>(Setup::ERR_RESERV) , "При аварии перейти на резервный пробоотборник")
+				.add("FILL2RESERVE", static_cast<UINT>(Setup::FILL_RESERV), "При заполнении переходить на резервный пробоотборник")
+				.add("SINGLECAN"   , static_cast<UINT>(Setup::SINGLE_CAN) , "Используется только один бак пробоотборника")
+				.add("DUALCAN"     , static_cast<UINT>(Setup::DUAL_CAN)   , "Использовать два бака пробоотборника")
+				.add("AUTOSWITCH"  , static_cast<UINT>(Setup::AUTOSWITCH) , "При заполнении переходить на другой бак пробоотборника");
 	}
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
@@ -150,8 +151,8 @@ void rSampler::onStart()
 		return;
 	}
 
-	switch (m_mode) {
-		case Mode::PERIOD:
+	switch (m_method) {
+		case Method::PERIOD:
 			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
 			m_interval  = m_probePeriod / m_grabRemain;
 
@@ -161,7 +162,7 @@ void rSampler::onStart()
 			}
 			break;
 
-		case Mode::VOLUME:
+		case Method::VOLUME:
 			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
 			m_interval  = m_probeVolume / m_grabRemain;
 			m_state     = State::WORKVOLUME;
@@ -169,7 +170,7 @@ void rSampler::onStart()
 			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_VOLUME));
 			break;
 
-		case Mode::MASS:
+		case Method::MASS:
 			m_grabCount = static_cast<UDINT>(m_canVolume / m_grabVol + 0.5);
 			m_interval  = m_probeMass / m_grabRemain;
 			m_state     = State::WORKMASS;
@@ -178,9 +179,9 @@ void rSampler::onStart()
 			break;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_mode));
-			m_mode  = Mode::PERIOD;
-			m_state = State::ERROR;
+			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_method));
+			m_method = Method::PERIOD;
+			m_state  = State::ERROR;
 			return;
 	}
 
@@ -352,7 +353,7 @@ UDINT rSampler::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".mode"        , TYPE_UINT , rVariable::Flags::___L, &m_mode       , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(Alias + ".method"      , TYPE_UINT , rVariable::Flags::___L, &m_method     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".setup"       , TYPE_UINT , rVariable::Flags::___L, &m_setup.Value, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".select"      , TYPE_UINT , rVariable::Flags::____, &m_select     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	list.add(Alias + ".command"     , TYPE_UINT , rVariable::Flags::___L, &m_command    , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
@@ -407,8 +408,8 @@ UDINT rSampler::Can::loadFromXML(tinyxml2::XMLElement *element, rError &err)
 
 UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PERIOD)));
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
+	std::string strMethod = XmlUtils::getAttributeString(element, XmlName::METHOD, m_flagsMethod.getNameByBits (static_cast<UINT>(Method::PERIOD)));
+	std::string strSetup  = XmlUtils::getAttributeString(element, XmlName::SETUP , m_flagsSetup.getNameByBits(Setup::OFF));
 
 	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -433,9 +434,9 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.set(DATACFGERR_SAMPLER_CAN, element->GetLineNum(), "can A");
 	}
 
-	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
+	m_method = static_cast<Method>(m_flagsMethod.getValue(strMethod, fault));
 	if (fault) {
-		return err.set(DATACFGERR_SAMPLER_MODE, element->GetLineNum(), "");
+		return err.set(DATACFGERR_SAMPLER_METHOD, element->GetLineNum(), "");
 	}
 
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
@@ -481,9 +482,14 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		}
 	}
 
-	m_grabVol     = XmlUtils::getTextLREAL(xml_grabvol , 1.0  , fault);
-	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, 100  , fault);
-	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , 43200, fault);
+	m_grabVol     = XmlUtils::getTextLREAL(xml_grabvol , m_grabVol    , fault);
+	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, m_probeTest  , fault);
+	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , m_probePeriod, fault);
+
+	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
 
 	return TRITONN_RESULT_OK;
 }
@@ -544,19 +550,42 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 }
 
 
-UDINT rSampler::generateMD(std::string path)
+UDINT rSampler::generateMarkDown(rGeneratorMD& md)
 {
-	UNUSED(path);
-	std::string text = "";
+	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
 
-	text += "# " + std::string(RTTI()) + "\n";
+	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
+		m_can[ii].m_overflow.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_fault.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_weight.Limit.m_setup.Init(rLimit::Setup::OFF);
+	}
 
-	text += "## XML\n````xml\n";
-	text += String_format("<sampler name=\"alas\" method=\"%s\" setup=\"%s\" description=\"number\">\n",
-						  m_flagsMode.getNameByValue(0xFFFFFFFF).c_str(),
-						  m_flagsSetup.getNameByValue(0xFFFFFFFF).c_str());
-	text += "\t<totals>object's alias</totals>\n";
-	text += "\t<io_start><link alias=\"object's output\"/></io_start> <!-- Optional -->";
+	md.add(this, false)
+			.addProperty("method", &m_flagsMethod)
+			.addProperty("setup", &m_flagsSetup)
+			.addXml("<totals>object containing totals</totals>")
+			.addXml("<reserve>sampler object</reserve>", true)
+			.addXml(String_format("<%s><link alias=\"object's output\"/></%s> %s", XmlName::IOSTART, XmlName::IOSTART, rGeneratorMD::rItem::XML_OPTIONAL))
+			.addXml(String_format("<%s><link alias=\"object's output\"/></%s> %s", XmlName::IOSTOP , XmlName::IOSTOP , rGeneratorMD::rItem::XML_OPTIONAL))
+			.addXml(XmlName::GRABVOL, m_grabVol, true)
+			.addXml(XmlName::PERIOD , m_probePeriod, true)
+			.addXml(XmlName::GRABTEST, m_probeTest, true)
+			.addXml("<can_a>")
+			.addXml("\t<overflow><link alias=\"object's output\"/></overflow>")
+			.addXml("\t<fault><link alias=\"object's output\"/></fault>")
+			.addXml("\t<weight><link alias=\"object's output\"/></weight>")
+			.addXml(String_format("\t<volume1>%g</volume1>", m_can[0].m_volume))
+			.addXml("</can_a>")
+			.addXml("<can_b>")
+			.addXml("\t<overflow><link alias=\"object's output\"/></overflow>")
+			.addXml("\t<fault><link alias=\"object's output\"/></fault>")
+			.addXml("\t<weight><link alias=\"object's output\"/></weight>")
+			.addXml(String_format("\t<volume>%g</volume>", m_can[1].m_volume))
+			.addXml("</can_b>");
+
 	return TRITONN_RESULT_OK;
 }
 

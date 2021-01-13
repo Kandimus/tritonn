@@ -53,6 +53,7 @@ public:
 	// Конфигурация
 	UDINT    LoadConfig();
 	UDINT    SaveKernel();
+	UDINT    saveMarkDown();
 	const rConfigInfo *GetConfName() const;
 
 	// Работа с языками

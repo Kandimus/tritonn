@@ -21,11 +21,12 @@
 #include "event_class.h"
 
 
-class  rVariableList;
-class  rStation;
-class  rLink;
-class  rTotal;
-class  rError;
+class rVariableList;
+class rStation;
+class rLink;
+class rTotal;
+class rError;
+class rGeneratorMD;
 
 namespace tinyxml2 {
 	class XMLElement;
@@ -76,7 +77,8 @@ public:
 	virtual UDINT GetFault();
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT generateMD(std::string path) { return TRITONN_RESULT_OK; };
+	virtual UDINT       generateMarkDown(rGeneratorMD& md);
+	virtual std::string getXmlInput() const;
 	virtual UDINT generateVars(rVariableList& list);
 	virtual UDINT PreCalculate();
 	virtual UDINT Calculate();
@@ -92,7 +94,8 @@ protected:
 
 
 public:
-	UDINT CheckOutput(const string &name);
+	UDINT       checkOutput(const string &name);
+	std::string getMarkDown();
 
 };
 
