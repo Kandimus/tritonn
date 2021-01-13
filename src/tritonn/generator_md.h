@@ -46,8 +46,6 @@ public:
 			LREAL       m_realVal;
 		};
 
-		const char* XML_OPTIONAL = "<!-- Optional -->";
-
 	public:
 		rItem(rSource* source, bool isstdinput);
 		virtual ~rItem();
@@ -62,6 +60,9 @@ public:
 
 		std::string getName() const { return m_name; }
 		std::string save();
+
+	public:
+		static const char* XML_OPTIONAL;
 
 	protected:
 		rSource*    m_source;

@@ -486,6 +486,11 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, m_probeTest  , fault);
 	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , m_probePeriod, fault);
 
+	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -547,35 +552,40 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 
 UDINT rSampler::generateMarkDown(rGeneratorMD& md)
 {
+	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
+
+	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
+		m_can[ii].m_overflow.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_fault.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_weight.Limit.m_setup.Init(rLimit::Setup::OFF);
+	}
+
 	md.add(this, false)
 			.addProperty("method", &m_flagsMethod)
 			.addProperty("setup", &m_flagsSetup)
 			.addXml("<totals>object containing totals</totals>")
 			.addXml("<reserve>sampler object</reserve>", true)
+			.addXml(String_format("<%s><link alias=\"object's output\"/></%s> %s", XmlName::IOSTART, XmlName::IOSTART, rGeneratorMD::rItem::XML_OPTIONAL))
+			.addXml(String_format("<%s><link alias=\"object's output\"/></%s> %s", XmlName::IOSTOP , XmlName::IOSTOP , rGeneratorMD::rItem::XML_OPTIONAL))
 			.addXml(XmlName::GRABVOL, m_grabVol, true)
 			.addXml(XmlName::PERIOD , m_probePeriod, true)
 			.addXml(XmlName::GRABTEST, m_probeTest, true)
 			.addXml("<can_a>")
-			.addXml("\t<overflow><link alias=\"\"/></overflow>")
-			.addXml("\t<fault><link alias=\"\"/></fault>")
-			.addXml("\t<weight><link alias=\"\"/></weight>")
+			.addXml("\t<overflow><link alias=\"object's output\"/></overflow>")
+			.addXml("\t<fault><link alias=\"object's output\"/></fault>")
+			.addXml("\t<weight><link alias=\"object's output\"/></weight>")
 			.addXml(String_format("\t<volume1>%g</volume1>", m_can[0].m_volume))
 			.addXml("</can_a>")
 			.addXml("<can_b>")
-			.addXml("\t<overflow><link alias=\"\"/></overflow>")
-			.addXml("\t<fault><link alias=\"\"/></fault>")
-			.addXml("\t<weight><link alias=\"\"/></weight>")
+			.addXml("\t<overflow><link alias=\"object's output\"/></overflow>")
+			.addXml("\t<fault><link alias=\"object's output\"/></fault>")
+			.addXml("\t<weight><link alias=\"object's output\"/></weight>")
 			.addXml(String_format("\t<volume>%g</volume>", m_can[1].m_volume))
 			.addXml("</can_b>");
 
-//	text += "# " + std::string(RTTI()) + "\n";
-
-//	text += "## XML\n````xml\n";
-//	text += String_format("<sampler name=\"alas\" method=\"%s\" setup=\"%s\" description=\"number\">\n",
-//						  m_flagsMode.getNameByValue(0xFFFFFFFF).c_str(),
-//						  m_flagsSetup.getNameByValue(0xFFFFFFFF).c_str());
-//	text += "\t<totals>object's alias</totals>\n";
-//	text += "\t<io_start><link alias=\"object's output\"/></io_start> <!-- Optional -->";
 	return TRITONN_RESULT_OK;
 }
 

@@ -314,7 +314,9 @@ UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
 	rSampler smp;
+	rReducedDens rd;
 
+	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);

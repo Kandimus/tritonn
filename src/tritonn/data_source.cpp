@@ -27,7 +27,7 @@
 #include "xml_util.h"
 #include "text_manager.h"
 #include "error.h"
-
+#include "generator_md.h"
 
 
 rSource::rSource()
@@ -404,6 +404,8 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 
 UDINT rSource::generateMarkDown(rGeneratorMD& md)
 {
+	UNUSED(md);
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -423,7 +425,7 @@ std::string rSource::getMarkDown()
 
 			result += link->IO_Name + " | ";
 			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
-			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value) + " | ";
+			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
 			result += link->Shadow + " | ";
 			result += /*link->m_comment + */"\n";
 		}
@@ -440,7 +442,7 @@ std::string rSource::getMarkDown()
 		result += link->IO_Name + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
 
-		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value) + " | ";
+		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
 		result += /*link->m_comment + */"\n";
 	}
 
@@ -460,13 +462,46 @@ std::string rSource::getXmlInput() const
 
 	if (m_inputs.size()) {
 		for (auto link : m_inputs) {
-			result += "<" + link->IO_Name + "><link alias=\"object's output\"/></" + link->IO_Name + ">";
+			result += "\t<" + link->IO_Name + "><link alias=\"object's output\"/></" + link->IO_Name + ">";
 
 			if (link->Shadow.size()) {
 				result += "<!-- Optional -->";
 			}
 
 			result += "\n";
+		}
+
+		std::string strlink = "";
+
+		for (auto link : m_inputs) {
+			if (link->Limit.m_setup.Value != rLimit::Setup::OFF) {
+				strlink += String_format("\t<%s name=\"%s\" setup=\"%s\">\n",
+										 XmlName::LIMIT,
+										 link->IO_Name.c_str(),
+										 rLimit::m_flagsSetup.getNameByBits(link->Limit.m_setup.Value).c_str());
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::LOLO) {
+					strlink += String_format("\t\t<lolo>%g</lolo>\n", link->Limit.m_lolo.Value);
+				}
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::LO) {
+					strlink += String_format("\t\t<lo>%g</lo>\n", link->Limit.m_lo.Value);
+				}
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::HI) {
+					strlink += String_format("\t\t<hi>%g</hi>\n", link->Limit.m_hi.Value);
+				}
+
+				if (link->Limit.m_setup.Value & rLimit::Setup::HIHI) {
+					strlink += String_format("\t\t<hihi>%g</hihi>\n", link->Limit.m_hihi.Value);
+				}
+
+				strlink += "\t</limit>\n";
+			}
+		}
+
+		if (strlink.size()) {
+			result += String_format("<%s> %s\n%s</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
 		}
 	}
 

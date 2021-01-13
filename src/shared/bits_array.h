@@ -40,7 +40,7 @@ public:
 	rBitsArray& add(const std::string &name, UDINT value, const std::string& comment = std::string());
 	rBitsArray& add(const std::string &name, UINT  value, const std::string& comment = std::string());
 	rBitsArray& add(const std::string &name, USINT value, const std::string& comment = std::string());
-	std::string getNameByBits (UDINT value) const;
+	std::string getNameByBits (UDINT value, const std::string& delim = std::string("|")) const;
 	std::string getNameByValue(UDINT value) const;
 	UDINT       getBit  (const std::string &str, UDINT &err) const;
 	UDINT       getValue(const std::string &name, UDINT &err) const;

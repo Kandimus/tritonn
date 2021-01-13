@@ -46,14 +46,14 @@ rBitsArray& rBitsArray::add(const std::string &name, USINT value, const std::str
 //-------------------------------------------------------------------------------------------------
 // Возвращает строковое название флага, если выставлены несколько бит, то вернется срока с
 // несколькими флагами
-std::string rBitsArray::getNameByBits(UDINT value) const
+std::string rBitsArray::getNameByBits(UDINT value, const std::string& delim) const
 {
 	std::string result = "";
 
 	for (auto& item : m_list) {
 		if(item.m_value & value)
 		{
-			result += ((result.size()) ? "|" : "") + item.m_name;
+			result += ((result.size()) ? delim : "") + item.m_name;
 		}
 	}
 

@@ -18,6 +18,8 @@
 #include "bits_array.h"
 #include "simplefile.h"
 
+const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
+
 rGeneratorMD::rGeneratorMD()
 {
 }
