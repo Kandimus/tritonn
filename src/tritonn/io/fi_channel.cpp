@@ -72,6 +72,7 @@ UDINT rIOFIChannel::simulate()
 		case SimType::None: m_value = m_simValue; return TRITONN_RESULT_OK;
 
 		case SimType::Const: {
+printf("module: m_simValue = %i\n", m_simValue);
 			count = m_simValue;
 			break;
 		}

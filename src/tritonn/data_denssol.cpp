@@ -31,6 +31,7 @@
 #include "data_station.h"
 #include "data_denssol.h"
 #include "xml_util.h"
+#include "generator_md.h"
 
 
 const UDINT DENSSOL_LE_PERIOD    = 0x00000001;
@@ -103,21 +104,22 @@ UDINT rDensSol::Calculate()
 	rEvent event_s;
 	UDINT  err    = 0;
 
-	if(rSource::Calculate()) return 0;
+	if (rSource::Calculate()) {
+		return 0;
+	}
 
-	if(CheckExpr(err, DENSSOL_LE_INPUTS, event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
-													 event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr))
-	{
+	if (CheckExpr(err, DENSSOL_LE_INPUTS,
+				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr)) {
 		return SetFault();
 	}
 
 	//
-	if(CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD, event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
-																	  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr))
-	{
+	if (CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD,
+				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr)) {
 		return SetFault();
 	}
-
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
@@ -151,8 +153,6 @@ UDINT rDensSol::Calculate()
 	Dens.Value = UsedCoef.K0.Value + UsedCoef.K1.Value * Period.Value + UsedCoef.K2.Value * Period.Value * Period.Value;
 	Dens.Value = Dens.Value * (1.0 + UsedCoef.K18.Value * dTemp      ) + UsedCoef.K19.Value * dTemp;
 	Dens.Value = Dens.Value * (1.0 + K20                * Pres.Value ) + K21                * Pres.Value;
-
-
 
 	// Приведение плотности к 15 градусам
 	// по ГОСТ Р 50.2.076-2010
@@ -363,5 +363,24 @@ std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string
 }
 
 
+UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
+{
+	Dens.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Temp.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Pres.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Period.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens20.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	B.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	B15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Y.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Y15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	CTL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	CPL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+
+	md.add(this, true);
+
+	return TRITONN_RESULT_OK;
+}
 
 
