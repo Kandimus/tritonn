@@ -64,7 +64,6 @@ UDINT rIOFIChannel::processing()
 
 UDINT rIOFIChannel::simulate()
 {
-	UDINT timer = rTickCount::SysTick();
 	UDINT count = 0;
 	m_hardState = false;
 
@@ -96,10 +95,15 @@ printf("module: m_simValue = %i\n", m_simValue);
 		}
 	}
 
-	UDINT dt = timer - m_simTimer;
+	UDINT timer = rTickCount::SysTick();
+	UDINT dt    = timer - m_simTimer;
 
-	m_value       = count * (dt + m_simTimerRem) / 1000;
-	m_simTimerRem = dt - m_value * 1000 / m_simValue;
+//	m_value       = count * (dt + m_simTimerRem) / 1000;
+//	m_simTimerRem = dt - m_value * 1000 / m_simValue;
+
+	LREAL fcount  = count * dt / 1000.0;
+	m_value       = fcount + m_simCountRem;
+	m_simCountRem = fcount - m_value;
 
 	return TRITONN_RESULT_OK;
 }
