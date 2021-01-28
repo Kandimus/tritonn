@@ -71,7 +71,6 @@ UDINT rIOFIChannel::simulate()
 		case SimType::None: m_value = m_simValue; return TRITONN_RESULT_OK;
 
 		case SimType::Const: {
-printf("module: m_simValue = %i\n", m_simValue);
 			count = m_simValue;
 			break;
 		}
@@ -97,13 +96,21 @@ printf("module: m_simValue = %i\n", m_simValue);
 
 	UDINT timer = rTickCount::SysTick();
 	UDINT dt    = timer - m_simTimer;
+	LREAL fcount = 0;
+	UDINT curimp = 0;
 
+	if (m_simTimer) {
 //	m_value       = count * (dt + m_simTimerRem) / 1000;
 //	m_simTimerRem = dt - m_value * 1000 / m_simValue;
+		fcount  = count * dt / 1000.0;
+		curimp = floor(fcount + m_simCountRem);
+		m_simCountRem = fcount + m_simCountRem - curimp;
+	}
 
-	LREAL fcount  = count * dt / 1000.0;
-	m_value       = fcount + m_simCountRem;
-	m_simCountRem = fcount - m_value;
+	m_value       += curimp;
+	m_simTimer    = timer;
+
+printf("timer %u, count/sec %u, count %u, fcount %g, rem %g, value %u\n", timer, count, curimp, fcount, m_simCountRem, m_value);
 
 	return TRITONN_RESULT_OK;
 }

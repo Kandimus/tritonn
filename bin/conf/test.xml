@@ -431,7 +431,7 @@
 							<counter name="Period1" setup="" description="4020">
 								<io_link module="3" channel="0" />
 							</counter>
-							<counter name="Period2" setup="" description="4021">
+							<counter name="Period2" setup="AVERAGE" description="4021">
 							</counter>
 						</io>
 						<limits>

@@ -147,7 +147,8 @@ UDINT rCounter::Calculate()
 				m_period.Value  = m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
 				m_countPrev     = count;
 				m_tickPrev      = tick;
-if (m_module == 3 && m_channel == 0) {
+
+if (m_module == 3 && m_channel == 0 && m_freq.Value) {
 printf("period = %g, freq = %g, impulse = %g\n", m_period.Value, m_freq.Value, m_impulse.Value);
 }
 			}
@@ -163,7 +164,8 @@ printf("period = %g, freq = %g, impulse = %g\n", m_period.Value, m_freq.Value, m
 				for (auto value : m_averageFreq) {
 					average += value;
 				}
-				m_freq.Value = average / AVERAGE_MAX;
+				m_freq.Value   = average / AVERAGE_MAX;
+				m_period.Value = m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
 			}
 		}
 	}
