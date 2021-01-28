@@ -430,16 +430,16 @@ enum rTritonn_Error
 	DATACFGERR_STATIONS,
 	DATACFGERR_STATIONSNF,                  // 112
 	DATACFGERR_STATION,
-	DATACFGERR_STREAMS,                     // 114
-	DATACFGERR_STREAMSNF,
-	DATACFGERR_STREAM,                      // 116
-	DATACFGERR_DENSSOL,
-	DATACFGERR_DENSSOL_NOSTN,               // 118
-	DATACFGERR_SELECTOR,                    //
-	DATACFGERR_REDUCEDDENS,                 // 120
-	DATACFGERR_RESOLVELINK,                 //
-	DATACFGERR_CHECKLINK,                   // 122
-	DATACFGERR_UNUSED_123,                  // ----------------------------------------------------
+	DATACFGERR_STATION_UNITS,               // 114
+	DATACFGERR_STREAMS,                     //
+	DATACFGERR_STREAMSNF,                   // 116
+	DATACFGERR_STREAM,                      //
+	DATACFGERR_DENSSOL,                     // 118
+	DATACFGERR_DENSSOL_NOSTN,               //
+	DATACFGERR_SELECTOR,                    // 120
+	DATACFGERR_REDUCEDDENS,                 //
+	DATACFGERR_RESOLVELINK,                 // 122
+	DATACFGERR_CHECKLINK,                   //
 	DATACFGERR_MAX_AI,                      // 124
 	DATACFGERR_MAX_AO,                      //
 	DATACFGERR_MAX_FI,                      // 126

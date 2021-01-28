@@ -47,7 +47,6 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC));
 	}
 
-//	Unit       = U_UNDEF;
 	Maintenance   = true;
 	Linearization = false;
 //	rTotal   Total;

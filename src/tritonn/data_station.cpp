@@ -51,7 +51,7 @@ rStation::rStation() : Setup(0)
 {
 	if (m_flagsProduct.empty()) {
 		m_flagsProduct
-				.add("PETROLEUM"   , static_cast<USINT>(rDensity::Product::PETROLEUM))
+				.add("PETROLEUM"   , static_cast<USINT>(rDensity::Product::PETROLEUM), "")
 				.add("GAZOLENE"    , static_cast<USINT>(rDensity::Product::GAZOLENE))
 				.add("TRANSITION"  , static_cast<USINT>(rDensity::Product::TRANSITION))
 				.add("JETFUEL"     , static_cast<USINT>(rDensity::Product::JETFUEL))
@@ -61,18 +61,18 @@ rStation::rStation() : Setup(0)
 	}
 
 	m_product  = rDensity::Product::PETROLEUM;
-	UnitVolume = U_m3;
-	UnitMass   = U_t;
+	m_unitVolume = U_m3;
+	m_unitMass   = U_t;
 
 	Stream.clear();
 
-	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C       , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa     , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3   , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowMass    , UnitMass  , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , UnitVolume, SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, UnitVolume, SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, UnitVolume, SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_temp        , U_C                , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_pres        , U_MPa              , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_dens        , U_kg_m3            , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowMass    , getUnitFlowMass()  , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowVolume  , getUnitFlowVolume(), SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowVolume15, getUnitFlowVolume(), SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowVolume20, getUnitFlowVolume(), SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
 }
 
 
@@ -120,22 +120,25 @@ UDINT rStation::Calculate()
 	if(rSource::Calculate()) return 0;
 
 	// Сброс значений расхода
-	FlowMass.Value     = 0.0;
-	FlowVolume.Value   = 0.0;
-	FlowVolume15.Value = 0.0;
-	FlowVolume20.Value = 0.0;
+	m_flowMass.Value     = 0.0;
+	m_flowVolume.Value   = 0.0;
+	m_flowVolume15.Value = 0.0;
+	m_flowVolume20.Value = 0.0;
 
 	// Расчет весов по линиям и нарастающих
 	for (auto str : Stream) {
 		str->Calculate();
 
-		if(str->Maintenance) continue; // Линия в ремонте (не в учете)
+		// Линия в ремонте (не в учете)
+		if(str->Maintenance) {
+			continue;
+		}
 
 		// Расход
-		FlowMass.Value     += str->FlowMass.Value;
-		FlowVolume.Value   += str->FlowVolume.Value;
-		FlowVolume15.Value += str->FlowVolume15.Value;
-		FlowVolume20.Value += str->FlowVolume20.Value;
+		m_flowMass.Value     += str->FlowMass.Value;
+		m_flowVolume.Value   += str->FlowVolume.Value;
+		m_flowVolume15.Value += str->FlowVolume15.Value;
+		m_flowVolume20.Value += str->FlowVolume20.Value;
 
 		Total.Inc.Count     = 0;
 		Total.Inc.Mass     += str->Total.Inc.Mass;
@@ -143,7 +146,7 @@ UDINT rStation::Calculate()
 		Total.Inc.Volume15 += str->Total.Inc.Volume15;
 		Total.Inc.Volume20 += str->Total.Inc.Volume20;
 
-		UDINT check = Total.Calculate(UnitMass, UnitVolume);
+		UDINT check = Total.Calculate(m_unitMass, m_unitVolume);
 		if(check & TOTAL_MAX_MASS    ) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_MASS)    );
 		if(check & TOTAL_MAX_VOLUME  ) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME)  );
 		if(check & TOTAL_MAX_VOLUME15) rEventManager::instance().Add(ReinitEvent(EID_STATION_TOTAL_VOLUME15));
@@ -154,11 +157,13 @@ UDINT rStation::Calculate()
 	err = 0;
 
 	for (auto str : Stream) {
-		if(str->Maintenance) continue;
+		if (str->Maintenance) {
+			continue;
+		}
 
-		if(!Temp.isValid()) Temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , Temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(!Pres.isValid()) Pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , Pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
-		if(!Dens.isValid()) Dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, Dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!m_temp.isValid()) m_temp.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , m_temp.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!m_pres.isValid()) m_pres.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , m_pres.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
+		if(!m_dens.isValid()) m_dens.Value += (Total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, m_dens.Unit, err) * (str->Total.Inc.Mass / Total.Inc.Mass) : 0.0;
 	}
 
 	return TRITONN_RESULT_OK;
@@ -167,20 +172,18 @@ UDINT rStation::Calculate()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rStation::GetUnitFlowVolume()
+UDINT rStation::getUnitFlowVolume()
 {
-	switch(UnitVolume)
-	{
+	switch (m_unitVolume) {
 		case U_m3   : return U_m3_h;
 		case U_liter: return U_ltr_h;
 		default     : return U_UNDEF;
 	}
 }
 
-UDINT rStation::GetUnitFlowMass()
+UDINT rStation::getUnitFlowMass()
 {
-	switch(UnitMass)
-	{
+	switch (m_unitMass) {
 		case U_t : return U_t_h;
 		case U_kg: return U_kg_h;
 		default  : return U_UNDEF;
@@ -211,24 +214,24 @@ UDINT rStation::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(Alias + ".Product"               , TYPE_USINT, rVariable::Flags::RS_L, &m_product             , U_DIMLESS , ACCESS_SA);
-	list.add(Alias + ".Setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value           , U_DIMLESS , ACCESS_SA);
-	list.add(Alias + ".total.present.volume"  , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume  , UnitVolume, 0);
-	list.add(Alias + ".total.present.volume15", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume15, UnitVolume, 0);
-	list.add(Alias + ".total.present.volume20", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume20, UnitVolume, 0);
-	list.add(Alias + ".total.present.mass"    , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Mass    , UnitMass  , 0);
-	list.add(Alias + ".total.inc.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume      , UnitVolume, ACCESS_SA);
-	list.add(Alias + ".total.inc.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume15    , UnitVolume, ACCESS_SA);
-	list.add(Alias + ".total.inc.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume20    , UnitVolume, ACCESS_SA);
-	list.add(Alias + ".total.inc.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Mass        , UnitMass  , ACCESS_SA);
-	list.add(Alias + ".total.raw.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume      , UnitVolume, 0);
-	list.add(Alias + ".total.raw.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume15    , UnitVolume, 0);
-	list.add(Alias + ".total.raw.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume20    , UnitVolume, 0);
-	list.add(Alias + ".total.raw.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Mass        , UnitMass  , 0);
-	list.add(Alias + ".total.past.volume"     , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume     , UnitVolume, 0);
-	list.add(Alias + ".total.past.volume15"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume15   , UnitVolume, 0);
-	list.add(Alias + ".total.past.volume20"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume20   , UnitVolume, 0);
-	list.add(Alias + ".total.past.mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Mass       , UnitMass  , 0);
+	list.add(Alias + ".Product"               , TYPE_USINT, rVariable::Flags::RS_L, &m_product             , U_DIMLESS   , ACCESS_SA);
+	list.add(Alias + ".Setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &Setup.Value           , U_DIMLESS   , ACCESS_SA);
+	list.add(Alias + ".total.present.volume"  , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume  , m_unitVolume, 0);
+	list.add(Alias + ".total.present.volume15", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume15, m_unitVolume, 0);
+	list.add(Alias + ".total.present.volume20", TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Volume20, m_unitVolume, 0);
+	list.add(Alias + ".total.present.mass"    , TYPE_LREAL, rVariable::Flags::R___, &Total.Present.Mass    , m_unitMass  , 0);
+	list.add(Alias + ".total.inc.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume      , m_unitVolume, ACCESS_SA);
+	list.add(Alias + ".total.inc.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume15    , m_unitVolume, ACCESS_SA);
+	list.add(Alias + ".total.inc.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Volume20    , m_unitVolume, ACCESS_SA);
+	list.add(Alias + ".total.inc.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Inc.Mass        , m_unitMass  , ACCESS_SA);
+	list.add(Alias + ".total.raw.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume      , m_unitVolume, 0);
+	list.add(Alias + ".total.raw.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume15    , m_unitVolume, 0);
+	list.add(Alias + ".total.raw.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Volume20    , m_unitVolume, 0);
+	list.add(Alias + ".total.raw.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Raw.Mass        , m_unitMass  , 0);
+	list.add(Alias + ".total.past.volume"     , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume     , m_unitVolume, 0);
+	list.add(Alias + ".total.past.volume15"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume15   , m_unitVolume, 0);
+	list.add(Alias + ".total.past.volume20"   , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Volume20   , m_unitVolume, 0);
+	list.add(Alias + ".total.past.mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &Total.Past.Mass       , m_unitMass  , 0);
 
 	list.add(Alias + ".fault"                 , TYPE_UDINT, rVariable::Flags::R___, &Fault                 , U_DIMLESS , 0);
 
@@ -260,13 +263,25 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	Setup.Init(0);
 
 	// Параметры ниже могут отсутствовать в конфигурации, в этом случае они будут вычисляться как средневзвешанные
-	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), Temp)) return err.getError();
-	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement(XmlName::LINK), Pres)) return err.getError();
-	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens->FirstChildElement(XmlName::LINK), Dens)) return err.getError();
+	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
+	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement(XmlName::LINK), m_pres)) return err.getError();
+	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dens->FirstChildElement(XmlName::LINK), m_dens)) return err.getError();
 
 	if (xml_units) {
-		UnitMass   = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::MASS), U_t, fault);
-		UnitVolume = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::VOLUME), U_m3, fault);
+		m_unitMass   = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::MASS), U_t, fault);
+		m_unitVolume = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::VOLUME), U_m3, fault);
+
+		m_flowMass.Unit     = getUnitFlowMass();
+		m_flowVolume.Unit   = getUnitFlowVolume();
+		m_flowVolume15.Unit = getUnitFlowVolume();
+		m_flowVolume20.Unit = getUnitFlowVolume();
+		m_temp.Unit         = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::TEMP)   , m_temp.Unit, fault);
+		m_pres.Unit         = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::PRES)   , m_pres.Unit, fault);
+		m_dens.Unit         = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::DENSITY), m_dens.Unit, fault);
+
+		if (fault) {
+			return err.set(DATACFGERR_STATION_UNITS, xml_units->GetLineNum(), "");
+		}
 	}
 
 	ReinitLimitEvents();
@@ -278,13 +293,13 @@ UDINT rStation::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 
 std::string rStation::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	Temp.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Pres.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Dens.Limit.m_setup.Init(rLimit::Setup::NONE);
-	FlowMass.Limit.m_setup.Init(rLimit::Setup::NONE);
-	FlowVolume.Limit.m_setup.Init(rLimit::Setup::NONE);
-	FlowVolume15.Limit.m_setup.Init(rLimit::Setup::NONE);
-	FlowVolume20.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_temp.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_pres.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_dens.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_flowMass.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_flowVolume.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_flowVolume15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_flowVolume20.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

@@ -46,26 +46,26 @@ protected:
 	virtual UDINT InitLimitEvent(rLink &link);
 
 public:
-	UDINT GetUnitFlowVolume();
-	UDINT GetUnitFlowMass();
+	UDINT getUnitFlowVolume();
+	UDINT getUnitFlowMass();
 
-	// Inputs
-	rLink        Temp;
-	rLink        Pres;
-	rLink        Dens;
+	// Inputs/Outputs
+	rLink        m_temp;
+	rLink        m_pres;
+	rLink        m_dens;
 //TODO	rLink        Dens15; нужно ли добавлять?
 //TODO	rLink        Dens20; нужно ли добавлять?
 	// Outputs
-	rLink        FlowMass;
-	rLink        FlowVolume;
-	rLink        FlowVolume15;
-	rLink        FlowVolume20;
+	rLink        m_flowMass;
+	rLink        m_flowVolume;
+	rLink        m_flowVolume15;
+	rLink        m_flowVolume20;
 
 	rDensity::Product m_product;
 	rCmpUINT     Setup;
 	rTotal       Total;
-	UDINT        UnitVolume; // Единицы измерений объема станиции
-	UDINT        UnitMass; // Единицы измерений массы станиции
+	UDINT        m_unitVolume; // Единицы измерений объема станиции
+	UDINT        m_unitMass; // Единицы измерений массы станиции
 
 	std::vector<rStream*> Stream;
 

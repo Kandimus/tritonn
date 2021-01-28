@@ -81,6 +81,7 @@ public:
 	// Inputs
 	rLink       Counter;
 	rLink       Freq;
+	// Inputs/Outputs
 	rLink       Temp;
 	rLink       Pres;
 	rLink       Dens;
