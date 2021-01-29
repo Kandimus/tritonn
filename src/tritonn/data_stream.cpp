@@ -42,28 +42,28 @@ rStream::rStream() : Setup(STR_SETUP_OFF)
 {
 	if (m_flagsFlowmeter.empty()) {
 		m_flagsFlowmeter
-				.add("TURBINE"   , static_cast<UINT>(Type::TURBINE))
-				.add("CORIOLIS"  , static_cast<UINT>(Type::CORIOLIS))
-				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC));
+				.add("TURBINE"   , static_cast<UINT>(Type::TURBINE)   , "Турбинный ПР")
+				.add("CORIOLIS"  , static_cast<UINT>(Type::CORIOLIS)  , "Кориолисовый ПР")
+				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC), "Ультрозвуковой ПР");
 	}
 
 	Maintenance   = true;
 	Linearization = false;
 //	rTotal   Total;
 
-	InitLink(rLink::Setup::INPUT   , Counter     , U_imp   , SID::IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT   , Freq        , U_Hz    , SID::FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
-	InitLink(rLink::Setup::INOUTPUT, Temp        , U_C     , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Pres        , U_MPa   , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens        , U_kg_m3 , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Dens15      , U_kg_m3 , SID::DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, Dens20      , U_kg_m3 , SID::DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, B15         , U_1_C   , SID::B15              , XmlName::B15          , XmlName::DENSITY);
-	InitLink(rLink::Setup::INOUTPUT, Y15         , U_1_MPa , SID::Y15              , XmlName::Y15          , XmlName::DENSITY);
-	InitLink(rLink::Setup::OUTPUT  , FlowMass    , U_t_h   , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume  , U_m3_h  , SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume15, U_m3_h  , SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , FlowVolume20, U_m3_h  , SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , m_counter     , U_imp   , SID::IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT   , m_freq        , U_Hz    , SID::FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
+	InitLink(rLink::Setup::INOUTPUT, m_temp        , U_C     , SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_pres        , U_MPa   , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_dens        , U_kg_m3 , SID::DENSITY          , XmlName::DENSITY      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INOUTPUT, m_dens15      , U_kg_m3 , SID::DENSITY15        , XmlName::DENSITY15    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, m_dens20      , U_kg_m3 , SID::DENSITY20        , XmlName::DENSITY20    , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, m_b15         , U_1_C   , SID::B15              , XmlName::B15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::INOUTPUT, m_y15         , U_1_MPa , SID::Y15              , XmlName::Y15          , XmlName::DENSITY);
+	InitLink(rLink::Setup::OUTPUT  , m_flowMass    , U_t_h   , SID::FLOWRATE_MASS    , XmlName::FLOWRATEMASS , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowVolume  , U_m3_h  , SID::FLOWRATE_VOLUME  , XmlName::FLOWRATEVOL  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowVolume15, U_m3_h  , SID::FLOWRATE_VOLUME15, XmlName::FLOWRATEVOL15, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , m_flowVolume20, U_m3_h  , SID::FLOWRATE_VOLUME20, XmlName::FLOWRATEVOL20, rLink::SHADOW_NONE);
 }
 
 
@@ -161,11 +161,11 @@ UDINT rStream::Calculate()
 
 	// Расчитаем расход исходя из частоты
 	if (m_flowmeter == Type::CORIOLIS) {
-		FlowMass.Value   = Freq.Value     / CurKF      * 3600.0 * Factor.KeypadMF.Value;
-		FlowVolume.Value = FlowMass.Value / Dens.Value * 1000.0 * Factor.KeypadMF.Value;
+		m_flowMass.Value   = m_freq.Value     / CurKF        * 3600.0 * Factor.KeypadMF.Value;
+		m_flowVolume.Value = m_flowMass.Value / m_dens.Value * 1000.0 * Factor.KeypadMF.Value;
 	} else {
-		FlowVolume.Value = Freq.Value       / CurKF      * 3600.0 * Factor.KeypadMF.Value;
-		FlowMass.Value   = FlowVolume.Value * Dens.Value / 1000.0 * Factor.KeypadMF.Value;
+		m_flowVolume.Value = m_freq.Value       / CurKF        * 3600.0 * Factor.KeypadMF.Value;
+		m_flowMass.Value   = m_flowVolume.Value * m_dens.Value / 1000.0 * Factor.KeypadMF.Value;
 	}
 
 	return 0;
@@ -179,13 +179,13 @@ UDINT rStream::GetUnitKF()
 	if(Station == nullptr) return U_UNDEF;
 
 	if (m_flowmeter == Type::CORIOLIS) {
-		switch (Station->UnitMass) {
+		switch (Station->m_unitMass) {
 			case U_t : return U_imp_t;
 			case U_kg: return U_imp_kg;
 			default  : return U_UNDEF;
 		}
 	} else {
-		switch (Station->UnitVolume) {
+		switch (Station->m_unitVolume) {
 			case U_m3   : return U_imp_m3;
 			case U_liter: return U_imp_ltr;
 			default     : return U_UNDEF;
@@ -284,6 +284,7 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	tinyxml2::XMLElement* xml_b15     = element->FirstChildElement(XmlName::B15);
 	tinyxml2::XMLElement* xml_y15     = element->FirstChildElement(XmlName::Y15);
 	tinyxml2::XMLElement* xml_factors = element->FirstChildElement(XmlName::FACTORS);
+	tinyxml2::XMLElement* xml_units   = element->FirstChildElement(XmlName::UNITS);
 
 	UDINT fault = 0;
 	Linearization = XmlUtils::getAttributeUSINT(element, XmlName::LINEARIZATION, 0);
@@ -329,6 +330,23 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	if (fault) {
 		return err.set(DATACFGERR_STREAM, xml_factors->GetLineNum(), "fault load factors");
+	}
+
+	if (xml_units) {
+		m_unitMass   = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::MASS), U_t, fault);
+		m_unitVolume = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::VOLUME), U_m3, fault);
+
+		m_flowMass.Unit     = getUnitFlowMass();
+		m_flowVolume.Unit   = getUnitFlowVolume();
+		m_flowVolume15.Unit = getUnitFlowVolume();
+		m_flowVolume20.Unit = getUnitFlowVolume();
+		m_temp.Unit         = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::TEMP)   , m_temp.Unit, fault);
+		m_pres.Unit         = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::PRES)   , m_pres.Unit, fault);
+		m_dens.Unit         = XmlUtils::getTextUDINT(xml_units->FirstChildElement(XmlName::DENSITY), m_dens.Unit, fault);
+
+		if (fault) {
+			return err.set(DATACFGERR_STREAM_UNITS, xml_units->GetLineNum(), "");
+		}
 	}
 
 	//

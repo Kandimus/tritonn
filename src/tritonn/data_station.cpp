@@ -51,13 +51,13 @@ rStation::rStation() : Setup(0)
 {
 	if (m_flagsProduct.empty()) {
 		m_flagsProduct
-				.add("PETROLEUM"   , static_cast<USINT>(rDensity::Product::PETROLEUM), "")
-				.add("GAZOLENE"    , static_cast<USINT>(rDensity::Product::GAZOLENE))
-				.add("TRANSITION"  , static_cast<USINT>(rDensity::Product::TRANSITION))
-				.add("JETFUEL"     , static_cast<USINT>(rDensity::Product::JETFUEL))
-				.add("FUELOIL"     , static_cast<USINT>(rDensity::Product::FUELOIL))
-				.add("SMARTBENZENE", static_cast<USINT>(rDensity::Product::SMARTBENZENE))
-				.add("LUBRICANT"   , static_cast<USINT>(rDensity::Product::LUBRICANT));
+				.add("PETROLEUM"   , static_cast<USINT>(rDensity::Product::PETROLEUM)   , "Нефть")
+				.add("GAZOLENE"    , static_cast<USINT>(rDensity::Product::GAZOLENE)    , "Бензины")
+				.add("TRANSITION"  , static_cast<USINT>(rDensity::Product::TRANSITION)  , "Топливо, между бензинами и керосинами")
+				.add("JETFUEL"     , static_cast<USINT>(rDensity::Product::JETFUEL)     , "Керосины")
+				.add("FUELOIL"     , static_cast<USINT>(rDensity::Product::FUELOIL)     , "Дизельное топливо")
+				.add("SMARTBENZENE", static_cast<USINT>(rDensity::Product::SMARTBENZENE), "Автоматичский расчет группы нефтепродуктов")
+				.add("LUBRICANT"   , static_cast<USINT>(rDensity::Product::LUBRICANT)   , "Смазочные масла");
 	}
 
 	m_product  = rDensity::Product::PETROLEUM;

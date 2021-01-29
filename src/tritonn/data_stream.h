@@ -79,21 +79,21 @@ protected:
 
 public:
 	// Inputs
-	rLink       Counter;
-	rLink       Freq;
+	rLink       m_counter;
+	rLink       m_freq;
 	// Inputs/Outputs
-	rLink       Temp;
-	rLink       Pres;
-	rLink       Dens;
-	rLink       Dens15;
-	rLink       Dens20;
-	rLink       B15;
-	rLink       Y15;
+	rLink       m_temp;
+	rLink       m_pres;
+	rLink       m_dens;
+	rLink       m_dens15;
+	rLink       m_dens20;
+	rLink       m_b15;
+	rLink       m_y15;
 	//Outputs
-	rLink       FlowMass;
-	rLink       FlowVolume;
-	rLink       FlowVolume15;
-	rLink       FlowVolume20;
+	rLink       m_flowMass;
+	rLink       m_flowVolume;
+	rLink       m_flowVolume15;
+	rLink       m_flowVolume20;
 
 
 //	UDINT       Unit; //
