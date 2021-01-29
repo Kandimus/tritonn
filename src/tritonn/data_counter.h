@@ -44,9 +44,11 @@ public:
 	};
 
 	const UDINT AVERAGE_MAX = 5;
+	const UDINT CALCULATE_TIMER = 500;
 
 	rCounter();
 	virtual ~rCounter();
+
 	
 	// Виртуальные функции от rSource
 public:
@@ -54,23 +56,26 @@ public:
 
 	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT Calculate();
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT InitLimitEvent(rLink& link);
+
+private:
+	LREAL getPeriod();
 
 public:
 	// Inputs
 
 	//Outputs
-	rLink      m_freq;
-	rLink      m_period;
-	rLink      m_impulse;
+	rLink    m_freq;
+	rLink    m_period;
+	rLink    m_impulse;
 
 	// Variable
-	UDINT      m_count;                   // Текущее значение счетчика с модуля
-	rCmpUINT   m_setup;                   // Настройка сигнала
-	UINT       m_status;                  // Нах это???????
+	UDINT    m_count;                   // Текущее значение счетчика с модуля
+	rCmpUINT m_setup;                   // Настройка сигнала
+	UINT     m_status;                  // Нах это???????
 
 protected:
 	static rBitsArray m_flagsSetup;

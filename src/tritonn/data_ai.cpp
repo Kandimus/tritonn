@@ -415,7 +415,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 }
 
 
-std::string rAI::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
 {
 	m_present.Limit.m_setup.Init(rLimit::Setup::NONE);
 	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);

@@ -42,8 +42,8 @@ rCounter::rCounter() : m_setup(Setup::OFF)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE));
+				.add("OFF"    , static_cast<UINT>(Setup::OFF), "Отключить обработку сигнала")
+				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Включить устреднение частоты");
 	}
 
 	LockErr     = 0;
@@ -142,30 +142,31 @@ UDINT rCounter::Calculate()
 				m_tickPrev  = tick;
 				m_isInit    = true;
 			} else {
-				m_impulse.Value = count - m_countPrev;
-				m_freq.Value    = m_impulse.Value * 1000.0 / (static_cast<LREAL>(tick - m_tickPrev));
-				m_period.Value  = m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
-				m_countPrev     = count;
-				m_tickPrev      = tick;
+				if (tick - m_tickPrev >= CALCULATE_TIMER) {
+					m_impulse.Value = count - m_countPrev;
+					m_freq.Value    = m_impulse.Value * 1000.0 / (static_cast<LREAL>(tick - m_tickPrev));
+					m_period.Value  = getPeriod();
+					m_countPrev     = count;
+					m_tickPrev      = tick;
 
 if (m_module == 3 && m_channel == 0 && m_freq.Value) {
 printf("period = %g, freq = %g, impulse = %g\n", m_period.Value, m_freq.Value, m_impulse.Value);
 }
-			}
+					if (m_setup.Value & Setup::AVERAGE) {
+						m_averageFreq.push_back(m_freq.Value);
 
-			if (m_setup.Value & Setup::AVERAGE) {
-				m_averageFreq.push_back(m_freq.Value);
+						while (m_averageFreq.size() > AVERAGE_MAX) {
+							m_averageFreq.pop_front();
+						}
 
-				while (m_averageFreq.size() > AVERAGE_MAX) {
-					m_averageFreq.pop_front();
+						LREAL average = 0.0;
+						for (auto value : m_averageFreq) {
+							average += value;
+						}
+						m_freq.Value   = average / AVERAGE_MAX;
+						m_period.Value = getPeriod();
+					}
 				}
-
-				LREAL average = 0.0;
-				for (auto value : m_averageFreq) {
-					average += value;
-				}
-				m_freq.Value   = average / AVERAGE_MAX;
-				m_period.Value = m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
 			}
 		}
 	}
@@ -236,3 +237,7 @@ std::string rCounter::saveKernel(UDINT isio, const string &objname, const string
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
+LREAL rCounter::getPeriod()
+{
+	return m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
+}
