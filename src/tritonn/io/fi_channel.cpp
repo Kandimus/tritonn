@@ -64,12 +64,22 @@ UDINT rIOFIChannel::processing()
 
 UDINT rIOFIChannel::simulate()
 {
-	UDINT timer = rTickCount::SysTick();
 	UDINT count = 0;
 	m_hardState = false;
 
+	UDINT timer = rTickCount::SysTick();
+	if (timer - m_simTimer < 1000) {
+		return TRITONN_RESULT_OK;
+	}
+
+	++m_pullingCount;
+
 	switch(m_simType) {
-		case SimType::None: m_value = m_simValue; return TRITONN_RESULT_OK;
+		case SimType::None: {
+			m_value = 0;
+			m_freq  = 0;
+			return TRITONN_RESULT_OK;
+		}
 
 		case SimType::Const: {
 			count = m_simValue;
@@ -95,10 +105,9 @@ UDINT rIOFIChannel::simulate()
 		}
 	}
 
-	UDINT dt = timer - m_simTimer;
-
-	m_value       = count * (dt + m_simTimerRem) / 1000;
-	m_simTimerRem = dt - m_value * 1000 / m_simValue;
+	m_value   += count;
+	m_freq     = m_simValue;
+	m_simTimer = timer;
 
 	return TRITONN_RESULT_OK;
 }

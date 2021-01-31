@@ -13,6 +13,8 @@
 			<channel number="9" setup="INVERSED"/>
 		</module>
 		<module type="fi4" name="fi4_1" />
+		<module type="fi4" name="fi4_2">
+		</module>
 	</hardware>
 	<config>
 		<settings>
@@ -427,8 +429,9 @@
 								<io_link module="2" channel="3" />
 							</counter>
 							<counter name="Period1" setup="" description="4020">
+								<io_link module="3" channel="0" />
 							</counter>
-							<counter name="Period2" setup="" description="4021">
+							<counter name="Period2" setup="AVERAGE" description="4021">
 							</counter>
 						</io>
 						<limits>
@@ -441,7 +444,7 @@
 					</stream>
 				</streams>
 				<calculate>
-					<densitometer  name="Dens1" description="4022">
+					<densitometer  name="dens1" description="4022">
 						<period>     <link alias="sikn1.bik.io.period1:period"/></period>
 						<temperature><link alias="sikn1.BIK.IO.Temp1"/></temperature>
 						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>

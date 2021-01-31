@@ -31,6 +31,7 @@
 #include "data_station.h"
 #include "data_denssol.h"
 #include "xml_util.h"
+#include "generator_md.h"
 
 
 const UDINT DENSSOL_LE_PERIOD    = 0x00000001;
@@ -103,21 +104,9 @@ UDINT rDensSol::Calculate()
 	rEvent event_s;
 	UDINT  err    = 0;
 
-	if(rSource::Calculate()) return 0;
-
-	if(CheckExpr(err, DENSSOL_LE_INPUTS, event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
-													 event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr))
-	{
-		return SetFault();
+	if (rSource::Calculate()) {
+		return 0;
 	}
-
-	//
-	if(CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD, event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
-																	  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr))
-	{
-		return SetFault();
-	}
-
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
@@ -133,12 +122,24 @@ UDINT rDensSol::Calculate()
 	Coef.K21B.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K21B  ));
 
 	// Если введены новые коэффициенты
-	if(Accept)
-	{
+	if (m_accept) {
 		UsedCoef = Coef;
-		Accept   = 0;
+		m_accept = 0;
 
 		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_ACCEPT));
+	}
+
+	if (CheckExpr(err, DENSSOL_LE_INPUTS,
+				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr)) {
+		return SetFault();
+	}
+
+	//
+	if (CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD,
+				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr)) {
+		return SetFault();
 	}
 
 	// Расчет плотности
@@ -151,8 +152,6 @@ UDINT rDensSol::Calculate()
 	Dens.Value = UsedCoef.K0.Value + UsedCoef.K1.Value * Period.Value + UsedCoef.K2.Value * Period.Value * Period.Value;
 	Dens.Value = Dens.Value * (1.0 + UsedCoef.K18.Value * dTemp      ) + UsedCoef.K19.Value * dTemp;
 	Dens.Value = Dens.Value * (1.0 + K20                * Pres.Value ) + K21                * Pres.Value;
-
-
 
 	// Приведение плотности к 15 градусам
 	// по ГОСТ Р 50.2.076-2010
@@ -273,11 +272,11 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	list.add(Alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K2.Value      , U_COEFSOL, ACCESS_FACTORS);
 	list.add(Alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K18.Value     , U_COEFSOL, ACCESS_FACTORS);
 	list.add(Alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K19.Value     , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k20A"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k20B"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k21A"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k21B"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &Accept             , U_DIMLESS, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &m_accept           , U_DIMLESS, ACCESS_FACTORS);
 	list.add(Alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &Calibr.Value       , U_C      , ACCESS_FACTORS);
 	list.add(Alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value        , U_DIMLESS, ACCESS_FACTORS);
 
@@ -363,5 +362,24 @@ std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string
 }
 
 
+UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
+{
+	Dens.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Temp.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Pres.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Period.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Dens20.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	B.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	B15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Y.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	Y15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	CTL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	CPL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+
+	md.add(this, true);
+
+	return TRITONN_RESULT_OK;
+}
 
 

@@ -18,14 +18,15 @@
 #include "../variable_list.h"
 #include "../units.h"
 
-rIOBaseChannel::rIOBaseChannel()
-{
 
+UDINT rIOBaseChannel::getPullingCount()
+{
+	return m_pullingCount;
 }
 
-rIOBaseChannel::~rIOBaseChannel()
+UDINT rIOBaseChannel::processing()
 {
-
+	return TRITONN_RESULT_OK;
 }
 
 UDINT rIOBaseChannel::generateVars(const std::string &name, rVariableList &list, bool issimulate)

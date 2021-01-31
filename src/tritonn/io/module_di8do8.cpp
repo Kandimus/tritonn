@@ -57,6 +57,8 @@ rModuleDI8DO8::~rModuleDI8DO8()
 
 UDINT rModuleDI8DO8::processing(USINT issim)
 {
+	rIOBaseModule::processing(issim);
+
 	for (auto& channel : m_channelDI) {
 		if (issim) {
 			channel.simulate();

@@ -165,7 +165,7 @@ void rLogManager::PrintToTerminal(rPacketLog *packet)
 	// Получаем дату и время в структуре
 	localtime_r(&packet->Date.tv_sec, &dt);
 
-	fprintf(stderr, "%02i.%02i.%04i %02i:%02i:%02i.%03li [%s %s:%i] %s\n", dt.tm_mday, dt.tm_mon, dt.tm_year, dt.tm_hour, dt.tm_min, dt.tm_sec, packet->Date.tv_usec / 1000, logt, packet->FileName, packet->LineNo, packet->Text);
+	fprintf(stderr, "%02i.%02i.%04i %02i:%02i:%02i.%03li [%s %s:%i] %s\n", dt.tm_mday, dt.tm_mon + 1, dt.tm_year + 1900, dt.tm_hour, dt.tm_min, dt.tm_sec, packet->Date.tv_usec / 1000, logt, packet->FileName, packet->LineNo, packet->Text);
 }
 
 

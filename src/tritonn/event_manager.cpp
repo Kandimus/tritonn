@@ -54,12 +54,6 @@ UDINT rEventManager::Add(rEvent &event)
 	UDINT mask    = LM_EVENT;
 	UDINT log_obj = 0;
 
-//	if(event.GetEID() == 0)
-//	{
-//		int a = 1;
-//		a = 2;
-//	}
-
 	// Добавляем событие в кольцевой массив
 	Lock();
 	Event[Pos++] = event;

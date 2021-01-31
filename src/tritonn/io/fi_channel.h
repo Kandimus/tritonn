@@ -45,6 +45,7 @@ public:
 	virtual ~rIOFIChannel() {}
 
 	UDINT getValue() const { return m_value; }
+	LREAL getFreq()  const { return m_freq;  }
 
 public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
@@ -54,6 +55,7 @@ public:
 public:
 	UINT  m_setup        = 0;             // Настройка канала
 	UDINT m_value        = 0;             // Текущий накопитель
+	LREAL m_freq         = 0.0;           // Частота
 	USINT m_state        = 0;             // Статус канала
 
 	UINT m_simMax       = 10000;
@@ -66,5 +68,6 @@ private:
 	USINT m_simSinus    = 0;
 	UDINT m_simTimer    = 0;
 	UDINT m_simTimerRem = 0;
+	LREAL m_simCountRem = 0.0;
 };
 

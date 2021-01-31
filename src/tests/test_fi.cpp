@@ -56,6 +56,27 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 		CHECK  (ss("io.fi00.frequency.value")->getValueLREAL() == freq);
 		CHECK  (ss("io.fi00.period.value")->getValueLREAL() == 1000000.0 / freq);
 	}
+
+	SECTION("Set simulate IO (const) 2") {
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		LREAL freq = 5432.0;
+
+		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::Const));
+		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
+		ss.set();
+
+		mSleep(rTest::sleepValue + 1030);
+
+		ss.clear();
+		ss.add("io.fi00.frequency.value");
+		ss.add("io.fi00.period.value");
+		ss.get();
+
+		REQUIRE(ss("io.fi00.frequency.value"));
+		REQUIRE(ss("io.fi00.frequency.value"));
+		CHECK  (ss("io.fi00.frequency.value")->getValueLREAL() == freq);
+		CHECK  (ss("io.fi00.period.value")->getValueLREAL() == 1000000.0 / freq);
+	}
 /*
 	SECTION("Limits current (hihi, lolo)") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);

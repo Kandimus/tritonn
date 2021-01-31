@@ -50,6 +50,8 @@
 #include "modbustcpslave_manager.h"
 #include "opcua_manager.h"
 
+#include "tickcount.h"
+
 
 extern rSafityValue<DINT> gReboot;
 
@@ -315,9 +317,11 @@ UDINT rDataManager::saveMarkDown()
 	rGeneratorMD md;
 	rSampler smp;
 	rReducedDens rd;
+	rDensSol ds;
 
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
+	ds.generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);
 
