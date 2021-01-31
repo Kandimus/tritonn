@@ -42,11 +42,12 @@ public:
 	virtual ~rIOBaseModule();
 
 	virtual std::string getModuleType() = 0;
-	virtual UDINT processing(USINT issim) = 0;
+	virtual UDINT processing(USINT issim);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel) = 0;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual std::string saveKernel(const std::string& description);
+
 /*
 	Type  getType()         { return m_type; }
 	UINT  getNodeID()       { return m_nodeID; }

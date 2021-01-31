@@ -50,6 +50,8 @@
 #include "modbustcpslave_manager.h"
 #include "opcua_manager.h"
 
+#include "tickcount.h"
+
 
 extern rSafityValue<DINT> gReboot;
 

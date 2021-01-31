@@ -23,15 +23,19 @@ class rVariableList;
 class rIOBaseChannel
 {
 public:
-	rIOBaseChannel();
-	virtual ~rIOBaseChannel();
+	rIOBaseChannel() = default;
+	virtual ~rIOBaseChannel() = default;
 
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
-	virtual UDINT processing() = 0;
+	virtual UDINT processing();
 	virtual UDINT simulate() = 0;
+	virtual UDINT getPullingCount();
 
 public:
 	USINT m_simType = 0;
+
+protected:
+	UDINT m_pullingCount = 0;
 };
 
 

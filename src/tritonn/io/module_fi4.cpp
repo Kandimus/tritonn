@@ -45,6 +45,8 @@ rModuleFI4::~rModuleFI4()
 
 UDINT rModuleFI4::processing(USINT issim)
 {
+	rIOBaseModule::processing(issim);
+
 	for (auto& channel : m_channel) {
 		if (channel.m_setup & rIOFIChannel::Setup::OFF) {
 			continue;

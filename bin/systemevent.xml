@@ -147,26 +147,26 @@
 		<!-- EID_COUNTER_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
 		<str id="-536412045">$2 ($3). Не действительное значение.</str>
 
-		<!-- EID_DENSSOL_CALIBR -->
-		<str id="-1610088447"/>
-		<!-- EID_DENSSOL_K0 -->
-		<str id="-1610088446"/>
-		<!-- EID_DENSSOL_K1 -->
-		<str id="-1610088445"/>
-		<!-- EID_DENSSOL_K2 -->
-		<str id="-1610088444"/>
-		<!-- EID_DENSSOL_K18 -->
-		<str id="-1610088443"/>
-		<!-- EID_DENSSOL_K19 -->
-		<str id="-1610088442"/>
-		<!-- EID_DENSSOL_K20A -->
-		<str id="-1610088441"/>
-		<!-- EID_DENSSOL_K20B -->
-		<str id="-1610088440"/>
-		<!-- EID_DENSSOL_K21A -->
-		<str id="-1610088439"/>
-		<!-- EID_DENSSOL_K21B -->
-		<str id="-1610088438"/>
+		<!-- EID_DENSSOL_CALIBR - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088447">$2. Установлен калибровочный коэффициент: $3 °C. Прежнее значение: $4 °C.</str>
+		<!-- EID_DENSSOL_K0 - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088446">$2. Установлен коэффициент K0: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K1 - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088445">$2. Установлен коэффициент K1: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K2 - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088444">$2. Установлен коэффициент K2: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K18 - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088443">$2. Установлен коэффициент K18: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K19 - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088442">$2. Установлен коэффициент K19: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K20A - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088441">$2. Установлен коэффициент K20A: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K20B - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088440">$2. Установлен коэффициент K20B: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K21A - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088439">$2. Установлен коэффициент K21A: $3. Прежнее значение: $4.</str>
+		<!-- EID_DENSSOL_K21B - $1 ID, $2 Descr, $3 New Value, $4 Old Value -->
+		<str id="-1610088438">$2. Установлен коэффициент K21B: $3. Прежнее значение: $4.</str>
 		<!-- EID_DENSSOL_ACCEPT - $1 ID, $2 Descr -->
 		<str id="-1610088437">$2. Установленны новые коэфициенты.</str>
 		<!-- EID_DENSSOL_FAULT_INPUTS -->

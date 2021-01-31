@@ -73,6 +73,8 @@ UDINT rIOAIChannel::processing()
 {
 	m_state = false;
 
+	rIOBaseChannel::processing();
+
 	// Изменяем статус
 	if (m_ADC < getMinValue() || m_ADC > getMaxValue() || m_hardState) {
 		m_state = true;
@@ -106,6 +108,8 @@ UDINT rIOAIChannel::processing()
 UDINT rIOAIChannel::simulate()
 {
 	m_hardState = false;
+
+	++m_pullingCount;
 
 	switch(m_simType) {
 		case SimType::None:

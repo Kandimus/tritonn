@@ -76,7 +76,7 @@ public:
 
 	rDensSolCoef Coef;                    // Коэф-ты для установки пользователем
 	rDensSolCoef UsedCoef;                // Используемые коэф-ты
-	USINT        Accept;                  // Команда на принятие коэф-тов
+	USINT        m_accept = 0;            // Команда на принятие коэф-тов
 	rCmpLREAL    Calibr;                  // Температура калибровки
 	rCmpUINT     Setup;                   // Настройка плотномера
 	LREAL        K0;

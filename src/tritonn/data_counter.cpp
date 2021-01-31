@@ -132,6 +132,7 @@ UDINT rCounter::Calculate()
 
 		} else {
 			UDINT count = channel->getValue();
+			LREAL freq  = channel->getFreq();
 			UDINT tick  = rTickCount::SysTick();
 
 			if (!m_isInit) {
@@ -142,16 +143,14 @@ UDINT rCounter::Calculate()
 				m_tickPrev  = tick;
 				m_isInit    = true;
 			} else {
-				if (tick - m_tickPrev >= CALCULATE_TIMER) {
+				if (m_pullingCount != channel->getPullingCount()) {
 					m_impulse.Value = count - m_countPrev;
-					m_freq.Value    = m_impulse.Value * 1000.0 / (static_cast<LREAL>(tick - m_tickPrev));
+					m_freq.Value    = freq;
 					m_period.Value  = getPeriod();
 					m_countPrev     = count;
 					m_tickPrev      = tick;
+					m_pullingCount  = channel->getPullingCount();
 
-if (m_module == 3 && m_channel == 0 && m_freq.Value) {
-printf("period = %g, freq = %g, impulse = %g\n", m_period.Value, m_freq.Value, m_impulse.Value);
-}
 					if (m_setup.Value & Setup::AVERAGE) {
 						m_averageFreq.push_back(m_freq.Value);
 

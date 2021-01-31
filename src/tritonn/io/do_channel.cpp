@@ -66,6 +66,8 @@ UDINT rIODOChannel::simulate()
 {
 	m_hardState = false;
 
+	++m_pullingCount;
+
 	return TRITONN_RESULT_OK;
 }
 

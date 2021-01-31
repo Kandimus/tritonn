@@ -49,6 +49,8 @@ rModuleAI6::~rModuleAI6()
 
 UDINT rModuleAI6::processing(USINT issim)
 {
+	rIOBaseModule::processing(issim);
+
 	for (auto& channel : m_channel) {
 		if (issim) {
 			channel.simulate();

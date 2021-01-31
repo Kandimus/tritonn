@@ -32,10 +32,10 @@ rIOBaseModule::~rIOBaseModule()
 	pthread_mutex_destroy(&m_mutex);
 }
 
-
 UDINT rIOBaseModule::processing(USINT issim)
 {
 	UNUSED(issim);
+
 	return TRITONN_RESULT_OK;
 }
 

@@ -44,7 +44,7 @@ public:
 	};
 
 	const UDINT AVERAGE_MAX = 5;
-	const UDINT CALCULATE_TIMER = 500;
+	const UDINT CALCULATE_TIMER = 1000;
 
 	rCounter();
 	virtual ~rCounter();
@@ -82,6 +82,7 @@ protected:
 	bool  m_isInit = false;
 	UDINT m_countPrev = 0;
 	UDINT m_tickPrev  = 0;
+	UDINT m_pullingCount = 0;
 
 	std::list<LREAL> m_averageFreq;
 };

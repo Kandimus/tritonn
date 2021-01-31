@@ -108,19 +108,6 @@ UDINT rDensSol::Calculate()
 		return 0;
 	}
 
-	if (CheckExpr(err, DENSSOL_LE_INPUTS,
-				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
-				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr)) {
-		return SetFault();
-	}
-
-	//
-	if (CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD,
-				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
-				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr)) {
-		return SetFault();
-	}
-
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
 	Calibr.Compare   (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_CALIBR));
@@ -135,12 +122,24 @@ UDINT rDensSol::Calculate()
 	Coef.K21B.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K21B  ));
 
 	// Если введены новые коэффициенты
-	if(Accept)
-	{
+	if (m_accept) {
 		UsedCoef = Coef;
-		Accept   = 0;
+		m_accept = 0;
 
 		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_ACCEPT));
+	}
+
+	if (CheckExpr(err, DENSSOL_LE_INPUTS,
+				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr)) {
+		return SetFault();
+	}
+
+	//
+	if (CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD,
+				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr)) {
+		return SetFault();
 	}
 
 	// Расчет плотности
@@ -273,11 +272,11 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	list.add(Alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K2.Value      , U_COEFSOL, ACCESS_FACTORS);
 	list.add(Alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K18.Value     , U_COEFSOL, ACCESS_FACTORS);
 	list.add(Alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K19.Value     , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k20A"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k20B"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k21A"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k21B"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &Accept             , U_DIMLESS, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
+	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &m_accept           , U_DIMLESS, ACCESS_FACTORS);
 	list.add(Alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &Calibr.Value       , U_C      , ACCESS_FACTORS);
 	list.add(Alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value        , U_DIMLESS, ACCESS_FACTORS);
 
