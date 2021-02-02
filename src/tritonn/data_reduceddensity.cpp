@@ -37,7 +37,7 @@ const UDINT REDUCEDDENS_LE_DENSITY = 0x00000002;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rReducedDens::rReducedDens() : rSource()
+rReducedDens::rReducedDens(const rStation* owner) : rSource(owner)
 {
 	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE );
 	InitLink(rLink::Setup::INOUTPUT, Pres  , U_MPa    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE );
@@ -92,7 +92,6 @@ UDINT rReducedDens::Calculate()
 {
 	rEvent event_f;
 	rEvent event_s;
-	UDINT  limit = 0;
 
 	if(rSource::Calculate()) return 0;
 
@@ -103,8 +102,8 @@ UDINT rReducedDens::Calculate()
 //	}
 
 	// Проверка на корректность плотности
-	USINT product_id = static_cast<USINT>(Station->m_product);
-	limit = rDensity::Limit[0][product_id] <= Dens15.Value && Dens15.Value < rDensity::Limit[1][product_id];
+	rDensity::Product product_id = m_station->getProduct();
+	bool limit = rDensity::getMinLimit(product_id) <= Dens15.Value && Dens15.Value < rDensity::getMaxLimit(product_id);
 
 	if(CheckExpr(!limit, REDUCEDDENS_LE_DENSITY, ReinitEvent(event_f, EID_RDCDDENS_FAULT_DENSITY)<< Dens15.Value, ReinitEvent(event_s, EID_RDCDDENS_GOOD_DENSITY ) << Dens15.Value))
 	{

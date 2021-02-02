@@ -42,7 +42,7 @@ rBitsArray rAI::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rAI::rAI() : rSource(), KeypadValue(0.0), m_setup(0)
+rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode

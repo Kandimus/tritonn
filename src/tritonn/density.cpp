@@ -58,5 +58,19 @@ LREAL getY15(LREAL dens15)
 	return getY(dens15, 15.0);
 }
 
+LREAL getMinLimit(Product product)
+{
+	UDINT id = static_cast<UDINT>(product);
+
+	return id < 7 ? Limit[0][id] : 0.0;
+}
+
+LREAL getMaxLimit(Product product)
+{
+	UDINT id = static_cast<UDINT>(product);
+
+	return id < 7 ? Limit[1][id] : 0.0;
+}
+
 
 };

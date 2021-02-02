@@ -37,7 +37,7 @@ rBitsArray rDI::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rDI::rDI() : rSource(), m_keypadValue(0), m_setup(0)
+rDI::rDI(const rStation* owner) : rSource(owner), m_keypadValue(0), m_setup(0)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode

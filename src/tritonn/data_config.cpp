@@ -271,16 +271,15 @@ UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 		source = nullptr;
 
 		//TODO реализовать как в модулях IO
-		if (XmlName::AI == name) { if(SysVar->Max.m_ai >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI());      source->ID = SysVar->Max.m_ai++; }
-		if (XmlName::FI == name) { if(SysVar->Max.m_fi >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter()); source->ID = SysVar->Max.m_fi++; }
-		if (XmlName::DI == name) { if(SysVar->Max.m_di >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI());      source->ID = SysVar->Max.m_di++; }
-		if (XmlName::DO == name) { if(SysVar->Max.m_do >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO());      source->ID = SysVar->Max.m_do++; }
+		if (XmlName::AI == name) { if(SysVar->Max.m_ai >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      source->ID = SysVar->Max.m_ai++; }
+		if (XmlName::FI == name) { if(SysVar->Max.m_fi >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); source->ID = SysVar->Max.m_fi++; }
+		if (XmlName::DI == name) { if(SysVar->Max.m_di >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      source->ID = SysVar->Max.m_di++; }
+		if (XmlName::DO == name) { if(SysVar->Max.m_do >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      source->ID = SysVar->Max.m_do++; }
 
 		if (!source) {
 			return m_error.set(DATACFGERR_UNKNOWIO, obj->GetLineNum());
 		}
 
-		source->Station = owner;
 		if(source->LoadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
 			return m_error.getError();
 		}
@@ -317,17 +316,16 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		name   = obj->Name();
 		source = nullptr;
 
-		if (XmlName::DENSSOL     == name) { if(SysVar->Max.m_densSol     >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL, 0);  source = dynamic_cast<rSource*>(new rDensSol());     source->ID = SysVar->Max.m_densSol++;     }
-		if (XmlName::REDUCEDDENS == name) { if(SysVar->Max.m_reducedDens >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS, 0);  source = dynamic_cast<rSource*>(new rReducedDens()); source->ID = SysVar->Max.m_reducedDens++; }
-		if (XmlName::MSELECTOR   == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector());    source->ID = SysVar->Max.m_selector++;    }
-		if (XmlName::SELECTOR    == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector());    source->ID = SysVar->Max.m_selector++;    }
-		if (XmlName::SAMPLER     == name) { source = dynamic_cast<rSource*>(new rSampler()); source->ID = SysVar->Max.m_sampler++;    }
+		if (XmlName::DENSSOL     == name) { if(SysVar->Max.m_densSol     >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL, 0);  source = dynamic_cast<rSource*>(new rDensSol(owner));     source->ID = SysVar->Max.m_densSol++;     }
+		if (XmlName::REDUCEDDENS == name) { if(SysVar->Max.m_reducedDens >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS, 0);  source = dynamic_cast<rSource*>(new rReducedDens(owner)); source->ID = SysVar->Max.m_reducedDens++; }
+		if (XmlName::MSELECTOR   == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector(owner));    source->ID = SysVar->Max.m_selector++;    }
+		if (XmlName::SELECTOR    == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector(owner));    source->ID = SysVar->Max.m_selector++;    }
+		if (XmlName::SAMPLER     == name) { source = dynamic_cast<rSource*>(new rSampler(owner)); source->ID = SysVar->Max.m_sampler++;    }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);
 		}
 
-		source->Station = owner;
 		if(source->LoadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
 			return m_error.getError();
 		}
@@ -350,15 +348,15 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 //
 UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 {
-	tinyxml2::XMLElement* stations = root->FirstChildElement(XmlName::STATIONS);
+	tinyxml2::XMLElement* stations_xml = root->FirstChildElement(XmlName::STATIONS);
 
 	// Данного элемента нет в дереве
-	if(!stations) {
+	if(!stations_xml) {
 		return m_error.set(DATACFGERR_STATIONSNF, root->GetLineNum());
 	}
 
 	// Разбираем элементы
-	XML_FOR(station_xml, stations, XmlName::STATION) {
+	XML_FOR(station_xml, stations_xml, XmlName::STATION) {
 		if (SysVar->Max.m_station++ >= MAX_STATION) {
 			return m_error.set(DATACFGERR_MAX_STATION, station_xml->GetLineNum());
 		}
@@ -388,7 +386,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 			return m_error.getError();
 		}
 
-		if (TRITONN_RESULT_OK != LoadStream(station_xml, jstr, stn, stn->Alias)) {
+		if (TRITONN_RESULT_OK != loadStream(station_xml, jstr, stn, stn->Alias)) {
 			return m_error.getError();
 		}
 
@@ -401,7 +399,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix)
+UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix)
 {
 	tinyxml2::XMLElement* streams = root->FirstChildElement(XmlName::STREAMS);
 
@@ -415,8 +413,7 @@ UDINT rDataConfig::LoadStream(tinyxml2::XMLElement *root, cJSON *jroot, rStation
 			return m_error.set(DATACFGERR_MAX_STREAM, stream_xml->GetLineNum());
 		}
 
-		rStream* str = new rStream();
-		str->Station = owner;
+		rStream* str = new rStream(owner);
 
 		if (TRITONN_RESULT_OK != str->LoadFromXML(stream_xml, m_error, prefix)) {
 			return m_error.getError();

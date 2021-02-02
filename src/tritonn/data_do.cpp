@@ -37,7 +37,7 @@ rBitsArray rDO::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rDO::rDO() : rSource(), m_setup(0)
+rDO::rDO(const rStation* owner) : rSource(owner)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode

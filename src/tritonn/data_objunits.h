@@ -33,15 +33,15 @@ public:
 
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 
-	STRID getTemperature();
-	STRID getPressure();
-	STRID getDensity();
-	STRID getMass();
-	STRID getVolume();
-	STRID getFlowMass();
-	STRID getFlowVolume();
-	STRID getMassKF();
-	STRID getVolumeKF();
+	STRID getTemperature() const;
+	STRID getPressure() const;
+	STRID getDensity() const;
+	STRID getMass() const;
+	STRID getVolume() const;
+	STRID getFlowMass() const;
+	STRID getFlowVolume() const;
+	STRID getMassKF() const;
+	STRID getVolumeKF() const;
 
 private:
 	STRID m_temperature = U_C;

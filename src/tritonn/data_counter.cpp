@@ -38,7 +38,7 @@ rBitsArray rCounter::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rCounter::rCounter() : m_setup(Setup::OFF)
+rCounter::rCounter(const rStation* owner) : rSource(owner), m_setup(Setup::OFF)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup

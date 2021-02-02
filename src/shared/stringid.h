@@ -26,10 +26,12 @@ public:
 
 	rStringID & operator = (const UDINT &val) { ID = val; return *this; }
 	operator UDINT() { return ID; }
+	operator UDINT() const { return ID; }
 	operator UDINT*() { return &ID; }
-	operator std::string() { return "function not implemented"; }
+	operator std::string() const { return "function not implemented"; }
 
 	UDINT *GetPtr() { return &ID; }
+	UDINT  toUDINT() const { return ID; }
 
 protected:
 	UDINT ID;

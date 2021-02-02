@@ -45,7 +45,7 @@ public:
 
 	const UDINT AVERAGE_MAX = 5;
 
-	rCounter();
+	rCounter(const rStation* owner = nullptr);
 	virtual ~rCounter();
 	
 	// Виртуальные функции от rSource

@@ -35,4 +35,67 @@ UDINT rObjUnit::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
 	if (fault) {
 		return err.set(DATACFGERR_OBJECT_UNITS, xml_units->GetLineNum(), "");
 	}
+
+	return TRITONN_RESULT_OK;
+}
+
+STRID rObjUnit::getFlowVolume() const
+{
+	switch (m_volume.toUDINT()) {
+		case U_m3   : return U_m3_h;
+		case U_liter: return U_ltr_h;
+		default     : return U_UNDEF;
+	}
+}
+
+STRID rObjUnit::getFlowMass() const
+{
+	switch (m_mass.toUDINT()) {
+		case U_t : return U_t_h;
+		case U_kg: return U_kg_h;
+		default  : return U_UNDEF;
+	}
+}
+
+STRID rObjUnit::getTemperature() const
+{
+	return m_temperature;
+}
+
+STRID rObjUnit::getPressure() const
+{
+	return m_pressure;
+}
+
+STRID rObjUnit::getDensity() const
+{
+	return m_density;
+}
+
+STRID rObjUnit::getMass() const
+{
+	return m_mass;
+}
+
+STRID rObjUnit::getVolume() const
+{
+	return m_volume;
+}
+
+STRID rObjUnit::getMassKF() const
+{
+	switch (m_mass) {
+		case U_t : return U_imp_t;
+		case U_kg: return U_imp_kg;
+		default  : return U_UNDEF;
+	}
+}
+
+STRID rObjUnit::getVolumeKF() const
+{
+	switch (m_volume) {
+		case U_m3   : return U_imp_m3;
+		case U_liter: return U_imp_ltr;
+		default     : return U_UNDEF;
+	}
 }

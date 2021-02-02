@@ -35,7 +35,7 @@ const UDINT LE_IO_STOP  = 0x00000002;
 
 //-------------------------------------------------------------------------------------------------
 //
-rSampler::rSampler()
+rSampler::rSampler(const rStation* owner) : rSource(owner)
 {
 	if (m_flagsMethod.empty()) {
 		m_flagsMethod

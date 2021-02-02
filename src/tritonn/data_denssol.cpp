@@ -42,7 +42,7 @@ const UDINT DENSSOL_LE_ITERATION = 0x00000010;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rDensSol::rDensSol() : Setup(0)
+rDensSol::rDensSol(const rStation* owner) : rSource(owner), Setup(0)
 {
 	LockErr     = 0;
 	Calibr      = 20.0;
@@ -142,7 +142,7 @@ UDINT rDensSol::Calculate()
 	}
 
 	// Расчет плотности
-	rDensity::Product product = Station->m_product;
+	rDensity::Product product = m_station->m_product;
 	LREAL dTemp = Temp.Value - Calibr.Value;
 	LREAL K20   = UsedCoef.K20A.Value + UsedCoef.K20B.Value * Pres.Value;
 	LREAL K21   = UsedCoef.K21A.Value + UsedCoef.K21B.Value * Pres.Value;
@@ -333,7 +333,7 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	UsedCoef = Coef;
 
 	// Проверки
-	if (!Station) {
+	if (!m_station) {
 		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_FAULT_STATION));
 		return err.set(DATACFGERR_DENSSOL_NOSTN, element->GetLineNum(), "station is empty");
 	}

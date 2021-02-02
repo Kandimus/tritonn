@@ -41,7 +41,7 @@ const UDINT SOURCE_LE_UNIT   = 0x80000000;
 class rSource
 {
 public:
-	rSource();
+	rSource(const rStation* owner = nullptr);
 	virtual ~rSource();
 
 	std::string Alias     = ""; // Полное имя объекта, формируется из префикса и xml-атрибута "name"
@@ -49,14 +49,18 @@ public:
 	UDINT       ID        = 0;
 	UDINT       m_lineNum = 0;
 
-	rStation *Station;
+protected:
+	const rStation *m_station;
+	UDINT     Calculated;              // Флаг того, что вычисления в данный скан уже были сделаны
+	UDINT     Fault;                   // Флаг ошибки вычислений/канала
+	UDINT     LockErr;                 // Флаги, информация о ранее выданных ошибках
+	rEvent    Event;                   // Временная пременная, что бы постоянно не создавать
+
+public:
+	UDINT       checkOutput(const string &name);
+	std::string getMarkDown();
 
 protected:
-	UDINT  Calculated;              // Флаг того, что вычисления в данный скан уже были сделаны
-	UDINT  Fault;                   // Флаг ошибки вычислений/канала
-	UDINT  LockErr;                 // Флаги, информация о ранее выданных ошибках
-	rEvent Event;                   // Временная пременная, что бы постоянно не создавать
-
 	// Описание входов-выходов
 	//NOTE На данные структуры нельзя делать ссылки при формировании Variables
 	std::vector<rLink*> m_inputs;
@@ -83,7 +87,7 @@ public:
 	virtual UDINT PreCalculate();
 	virtual UDINT Calculate();
 	virtual UDINT PostCalculate();
-	virtual UDINT check(rError& err);
+	virtual UDINT check(rError& err); //TODO Зачем это? если проверять переменные, то нужно это делать после generateVars, а если если получать данные от станции то до этого. Дилема!
 
 	virtual const rTotal *getTotal(void) const { return nullptr; }
 
@@ -91,12 +95,6 @@ protected:
 	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const string &name, const string &shadow);
 	virtual UDINT InitLimitEvent(rLink &link) = 0;
 	virtual UDINT ReinitLimitEvents();
-
-
-public:
-	UDINT       checkOutput(const string &name);
-	std::string getMarkDown();
-
 };
 
 

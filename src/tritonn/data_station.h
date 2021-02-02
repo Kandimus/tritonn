@@ -21,6 +21,7 @@
 #include "data_link.h"
 #include "compared_values.h"
 #include "bits_array.h"
+#include "data_objunits.h"
 
 class rStream;
 
@@ -29,6 +30,9 @@ class rStation : public rSource
 public:
 	rStation();
 	virtual ~rStation();
+
+	rDensity::Product getProduct() const;
+	const rObjUnit& getUnit() const;
 
 	// Виртуальные функции от rSource
 public:
@@ -46,31 +50,28 @@ protected:
 	virtual UDINT InitLimitEvent(rLink &link);
 
 public:
-	UDINT getUnitFlowVolume();
-	UDINT getUnitFlowMass();
-
 	// Inputs/Outputs
-	rLink        m_temp;
-	rLink        m_pres;
-	rLink        m_dens;
+	rLink m_temp;
+	rLink m_pres;
+	rLink m_dens;
 //TODO	rLink        Dens15; нужно ли добавлять?
 //TODO	rLink        Dens20; нужно ли добавлять?
 	// Outputs
-	rLink        m_flowMass;
-	rLink        m_flowVolume;
-	rLink        m_flowVolume15;
-	rLink        m_flowVolume20;
+	rLink m_flowMass;
+	rLink m_flowVolume;
+	rLink m_flowVolume15;
+	rLink m_flowVolume20;
 
 	rDensity::Product m_product;
 	rCmpUINT     Setup;
-	rTotal       Total;
-	UDINT        m_unitVolume; // Единицы измерений объема станиции
-	UDINT        m_unitMass; // Единицы измерений массы станиции
 
 	std::vector<rStream*> Stream;
 
 private:
 	static rBitsArray m_flagsProduct;
+
+	rTotal       m_total;
+	rObjUnit     m_unit;
 };
 
 

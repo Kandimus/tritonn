@@ -17,12 +17,9 @@
 
 
 #include "def.h"
+#include "event_class.h"
 
-
-const UDINT TOTAL_MAX_MASS     = 0x00000001;
-const UDINT TOTAL_MAX_VOLUME   = 0x00000002;
-const UDINT TOTAL_MAX_VOLUME15 = 0x00000002;
-const UDINT TOTAL_MAX_VOLUME20 = 0x00000002;
+class rObjUnit;
 
 struct rBaseTotal
 {
@@ -34,19 +31,30 @@ struct rBaseTotal
 };
 
 
-struct rTotal
+class rTotal
 {
-	rBaseTotal Past;    // Нарастающие на прошлом скане
-	rBaseTotal Raw;     // Сырые текущие нарастающие (обрезанные до 5 знаков)
-	rBaseTotal Inc;     // Инкремент нарастающих на текущем скане (обрезанные до 5 знаков)
-	rBaseTotal Present; // Текущие нарастающие
+public:
+	rTotal(rEvent& mass, rEvent& volume, rEvent& volume15, rEvent& volume20);
+	virtual ~rTotal() = default;
 
-	UDINT Calculate(UDINT unitmass, UDINT unitvol);
+	void Calculate(const rObjUnit& unit);
 
 	static LREAL Sub(LREAL sub1, LREAL sub2);
 	static void  Clear(rBaseTotal &total);
 
 protected:
-	UDINT CheckMax();
+	void checkMax();
+
+public:
+	rBaseTotal Past;    // Нарастающие на прошлом скане
+	rBaseTotal Raw;     // Сырые текущие нарастающие (обрезанные до 5 знаков)
+	rBaseTotal Inc;     // Инкремент нарастающих на текущем скане (обрезанные до 5 знаков)
+	rBaseTotal Present; // Текущие нарастающие
+
+protected:
+	rEvent m_eventMass;
+	rEvent m_eventVolume;
+	rEvent m_eventVolume15;
+	rEvent m_eventVolume20;
 };
 

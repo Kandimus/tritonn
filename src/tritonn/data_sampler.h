@@ -81,7 +81,7 @@ private:
 	};
 
 public:
-	rSampler();
+	rSampler(const rStation* owner = nullptr);
 	virtual ~rSampler();
 	
 	// Виртуальные функции от rSource

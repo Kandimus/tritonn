@@ -49,13 +49,6 @@
 				</units>
 				<streams>
 					<stream name="Line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4002">
-						<units>
-							<volume>112</volume>
-							<mass>96</mass>
-							<temperature>16</temperature>
-							<pressure>32</pressure>
-							<density>48</density>
-						</units>
 						<impulse><link alias="SIKN_123.Line1.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
 						<pressure><link alias="SIKN_123.Line1.IO.Pres"/></pressure>

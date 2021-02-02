@@ -57,7 +57,7 @@ public:
 		KEYPAD = 1,          // Ручное переключение на симуляцию
 	};
 
-	rDI();
+	rDI(const rStation* owner = nullptr);
 	virtual ~rDI();
 	
 	// Виртуальные функции от rSource

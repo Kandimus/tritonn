@@ -42,7 +42,7 @@ struct rDensSolCoef
 class rDensSol : public rSource
 {
 public:
-	rDensSol();
+	rDensSol(const rStation* owner = nullptr);
 	virtual ~rDensSol();
 	
 	// Виртуальные функции от rSource
