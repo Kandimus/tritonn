@@ -65,6 +65,8 @@ rSampler::rSampler(const rStation* owner) : rSource(owner)
 
 	InitLink(rLink::Setup::OUTPUT, m_grab    , U_discrete, SID::GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::OUTPUT, m_selected, U_discrete, SID::CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
+
+	// Нарастающие подцепим в chack()
 }
 
 
@@ -185,7 +187,7 @@ void rSampler::onStart()
 			return;
 	}
 
-	m_lastTotal     = *m_totals;
+	m_lastRawTotal   = m_totals->Raw;
 	m_grabRemain    = m_grabCount;
 	m_canRemain     = m_can[m_select].m_volume;
 	m_timeStart     = rTickCount::UnixTime();
@@ -206,7 +208,7 @@ void rSampler::onStartTest(void)
 	m_noflow        = false;
 	m_interval      = 2000 * m_probeTest;
 	m_state         = State::TEST;
-	m_lastTotal     = *m_totals;
+	m_lastRawTotal  = m_totals->Raw;
 	m_grabCount     = m_probeTest;
 	m_grabRemain    = m_grabCount;
 	m_grabPresent   = 0;
@@ -258,7 +260,8 @@ void rSampler::onWorkTimer(bool checkflow)
 	auto tick = rTickCount::SysTick();
 
 	if (checkflow) {
-		if (m_totals->Raw.Volume - m_lastTotal.Raw.Volume < 0.00000000000001) {
+		//if (m_totals->Raw.Volume - m_lastRawTotal.Volume < 0.00001) {
+		if (m_totals->Inc.Volume < 0.00001) {
 			m_noflow = true;
 		} else {
 			if (m_noflow) {
@@ -279,7 +282,7 @@ void rSampler::onWorkTimer(bool checkflow)
 		m_canPresent    += m_grabVol;
 		m_canRemain     -= m_grabVol;
 		m_timerInterval += static_cast<UDINT>(m_interval); // учитываем то время, что прое*али
-		m_lastTotal      = *m_totals;
+		m_lastRawTotal   = m_totals->Raw;
 
 		++m_grabPresent;
 		--m_grabRemain;
@@ -308,14 +311,14 @@ void rSampler::onWorkVolume(bool isMass)
 			break;
 	}
 
-	LREAL currvol = isMass ? m_totals->Raw.Mass   : m_totals->Raw.Volume;
-	LREAL lastvol = isMass ? m_lastTotal.Raw.Mass : m_lastTotal.Raw.Volume;
+	LREAL currvol = isMass ? m_totals->Raw.Mass  : m_totals->Raw.Volume;
+	LREAL lastvol = isMass ? m_lastRawTotal.Mass : m_lastRawTotal.Volume;
 
 	if (currvol > lastvol + m_interval) {
 		m_grab.Value    = true;
 		m_canPresent   += m_grabVol;
 		m_canRemain    -= m_grabVol;
-		m_lastTotal     = *m_totals;
+		m_lastRawTotal  = m_totals->Raw;
 
 		++m_grabPresent;
 		--m_grabRemain;

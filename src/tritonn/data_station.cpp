@@ -144,10 +144,10 @@ UDINT rStation::Calculate()
 		m_flowVolume20.Value += str->m_flowVolume20.Value;
 
 		m_total.Inc.Count     = 0;
-		m_total.Inc.Mass     += str->Total.Inc.Mass;
-		m_total.Inc.Volume   += str->Total.Inc.Volume;
-		m_total.Inc.Volume15 += str->Total.Inc.Volume15;
-		m_total.Inc.Volume20 += str->Total.Inc.Volume20;
+		m_total.Inc.Mass     += str->m_total.Inc.Mass;
+		m_total.Inc.Volume   += str->m_total.Inc.Volume;
+		m_total.Inc.Volume15 += str->m_total.Inc.Volume15;
+		m_total.Inc.Volume20 += str->m_total.Inc.Volume20;
 
 		m_total.Calculate(m_unit);
 	}
@@ -160,9 +160,9 @@ UDINT rStation::Calculate()
 			continue;
 		}
 
-		if(!m_temp.isValid()) m_temp.Value += (m_total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , m_temp.Unit, err) * (str->Total.Inc.Mass / m_total.Inc.Mass) : 0.0;
-		if(!m_pres.isValid()) m_pres.Value += (m_total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , m_pres.Unit, err) * (str->Total.Inc.Mass / m_total.Inc.Mass) : 0.0;
-		if(!m_dens.isValid()) m_dens.Value += (m_total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, m_dens.Unit, err) * (str->Total.Inc.Mass / m_total.Inc.Mass) : 0.0;
+		if(!m_temp.isValid()) m_temp.Value += (m_total.Inc.Mass > 0.0) ? str->GetValue(XmlName::TEMP   , m_temp.Unit, err) * (str->m_total.Inc.Mass / m_total.Inc.Mass) : 0.0;
+		if(!m_pres.isValid()) m_pres.Value += (m_total.Inc.Mass > 0.0) ? str->GetValue(XmlName::PRES   , m_pres.Unit, err) * (str->m_total.Inc.Mass / m_total.Inc.Mass) : 0.0;
+		if(!m_dens.isValid()) m_dens.Value += (m_total.Inc.Mass > 0.0) ? str->GetValue(XmlName::DENSITY, m_dens.Unit, err) * (str->m_total.Inc.Mass / m_total.Inc.Mass) : 0.0;
 	}
 
 	return TRITONN_RESULT_OK;

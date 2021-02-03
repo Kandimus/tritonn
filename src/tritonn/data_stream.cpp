@@ -254,7 +254,7 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 {
 	std::string strFlowMeter = XmlUtils::getAttributeString(element, XmlName::FLOWMETER, m_flagsFlowmeter.getNameByBits(static_cast<USINT>(Type::CORIOLIS)));
 
-	if (m_station) {
+	if (!m_station) {
 		return err.set(DATACFGERR_STREAM_NOSTN, element ? element->GetLineNum() : -1, "");
 	}
 
@@ -298,8 +298,6 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_y15   , m_y15   , m_dens   , XmlName::Y15)      ) return err.getError();
 
 	// Загрузка факторов
-	tinyxml2::XMLElement* points_xml = factors_xml->FirstChildElement(XmlName::POINTS);
-
 	m_setFactor.KeypadKF.Init(XmlUtils::getTextLREAL(factors_xml->FirstChildElement(XmlName::KEYPAD_KF), 0.0, fault));
 	m_setFactor.KeypadMF.Init(XmlUtils::getTextLREAL(factors_xml->FirstChildElement(XmlName::KEYPAD_MF), 0.0, fault));
 
@@ -307,24 +305,26 @@ UDINT rStream::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 		return err.set(DATACFGERR_STREAM_FACTORS, factors_xml->GetLineNum(), "fault load keypad factors");
 	}
 
-	XML_FOR(point_xml, points_xml, XmlName::POINT) {
-		rFactorPoint point;
+	tinyxml2::XMLElement* points_xml = factors_xml->FirstChildElement(XmlName::POINTS);
+	if (points_xml) {
+		XML_FOR(point_xml, points_xml, XmlName::POINT) {
+			rFactorPoint point;
 
-		point.Hz.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::HERTZ), 0.0, fault));
-		point.Kf.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::KF   ), 0.0, fault));
-		point.m_id = m_setFactor.m_point.size();
+			point.Hz.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::HERTZ), 0.0, fault));
+			point.Kf.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::KF   ), 0.0, fault));
+			point.m_id = m_setFactor.m_point.size();
 
-		if (fault) {
-			return err.set(DATACFGERR_STREAM_FACTORS, point_xml->GetLineNum(), "fault load point");
+			if (fault) {
+				return err.set(DATACFGERR_STREAM_FACTORS, point_xml->GetLineNum(), "fault load point");
+			}
+
+			m_setFactor.m_point.push_back(point);
 		}
 
-		m_setFactor.m_point.push_back(point);
+		if (m_setFactor.m_point.size() > rFlowFactor::MAXPOINTS) {
+			return err.set(DATACFGERR_STREAM_TOMANYPOINTS, points_xml->GetLineNum(), "");
+		}
 	}
-
-	if (m_setFactor.m_point.size() > rFlowFactor::MAXPOINTS) {
-		return err.set(DATACFGERR_STREAM_TOMANYPOINTS, points_xml->GetLineNum(), "");
-	}
-
 	m_curFactor = m_setFactor;
 
 	// Необходимо переустановить единицы измерения
