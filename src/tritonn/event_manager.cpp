@@ -54,6 +54,12 @@ UDINT rEventManager::Add(rEvent &event)
 	UDINT mask    = LM_EVENT;
 	UDINT log_obj = 0;
 
+	if(event.GetEID() == 0)
+	{
+		TRACEERROR("Fault add event. EID is null.");
+		return -1;
+	}
+
 	// Добавляем событие в кольцевой массив
 	Lock();
 	Event[Pos++] = event;

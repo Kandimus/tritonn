@@ -35,6 +35,21 @@ rEvent::~rEvent()
 	Size = 0;
 }
 
+rEvent& rEvent::operator = (const rEvent& event)
+{
+	if (&event == this) {
+		return *this;
+	}
+
+	EID  = event.EID;
+	Size = event.Size;
+
+	gettimeofday(&Timestamp, NULL);
+
+	memcpy(Data, event.Data, MAX_EVENT_DATA);
+
+	return *this;
+}
 
 //-------------------------------------------------------------------------------------------------
 //

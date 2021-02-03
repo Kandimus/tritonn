@@ -81,7 +81,7 @@ private:
 	};
 
 public:
-	rSampler();
+	rSampler(const rStation* owner = nullptr);
 	virtual ~rSampler();
 	
 	// Виртуальные функции от rSource
@@ -136,7 +136,7 @@ private:
 	const rTotal*   m_totals  = nullptr;
 	const rSampler* m_reserve = nullptr;
 
-	rTotal      m_lastTotal;
+	rBaseTotal  m_lastRawTotal;
 	std::string m_totalsAlias  = "";
 	std::string m_reserveAlias = "";
 

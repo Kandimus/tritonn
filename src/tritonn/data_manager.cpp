@@ -335,7 +335,7 @@ UDINT rDataManager::SaveKernel()
 {
 	std::string text = "";
 	auto stn     = new rStation();
-	auto str     = new rStream();
+	auto str     = new rStream(stn);
 	auto ssel    = new rSelector();
 	auto msel    = new rSelector();
 	auto denssol = new rDensSol();
@@ -349,11 +349,6 @@ UDINT rDataManager::SaveKernel()
 	auto rvar    = new rRVar();
 	auto mbSlTCP = new rModbusTCPSlaveManager();
 //	auto opcua   = new rOPCUAManager();
-
-	stn->UnitVolume = U_m3;
-	stn->UnitMass   = U_t;
-
-	str->Station    = stn;
 
 	ssel->GenerateIO();
 

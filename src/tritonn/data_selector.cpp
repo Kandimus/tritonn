@@ -37,7 +37,7 @@ rBitsArray rSelector::m_flagsMode;
 
 //-------------------------------------------------------------------------------------------------
 //
-rSelector::rSelector() : Select(-1)
+rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup

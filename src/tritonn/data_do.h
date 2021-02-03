@@ -50,7 +50,7 @@ public:
 		KEYPAD = 1,          // Ручное переключение на симуляцию
 	};
 
-	rDO();
+	rDO(const rStation* owner = nullptr);
 	virtual ~rDO();
 	
 	// Виртуальные функции от rSource

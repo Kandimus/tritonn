@@ -46,11 +46,11 @@ public:
 	void  Clear();
 
 	rEvent &Reinit(UDINT eid);
-	DINT    GetType()   { return (EID >> 30) & 0x0003; } // Получить тип сообщения (см EMT_*)
-	DINT    GetSource() { return (EID >> 29) & 0x0001; } // Получить источник сообщения (0 - 3Тонн, 1 - пользователь)
-	DINT    GetObject() { return (EID >> 16) & 0x03FF; } //
-	DINT    GetID()     { return  EID        & 0xFFFF; } //
-	UDINT   GetEID()    { return EID; }
+	DINT    GetType()   const { return (EID >> 30) & 0x0003; } // Получить тип сообщения (см EMT_*)
+	DINT    GetSource() const { return (EID >> 29) & 0x0001; } // Получить источник сообщения (0 - 3Тонн, 1 - пользователь)
+	DINT    GetObject() const { return (EID >> 16) & 0x03FF; } //
+	DINT    GetID()     const { return  EID        & 0xFFFF; } //
+	UDINT   GetEID()    const { return EID; }
 	
 	void *GetParamByID(UDINT ID, UDINT &type);
 
@@ -65,15 +65,17 @@ public:
 	UDINT AddLREAL(LREAL val) { EVENT_ADDDATA(TYPE_LREAL, LREAL); }
 	UDINT AddSTR  (STRID val) { EVENT_ADDDATA(TYPE_STRID, UDINT); }
 
-	rEvent & operator << (const SINT  &val) { AddSINT (val); return *this; }
-	rEvent & operator << (const USINT &val) { AddUSINT(val); return *this; }
-	rEvent & operator << (const INT   &val) { AddINT  (val); return *this; }
-	rEvent & operator << (const UINT  &val) { AddUINT (val); return *this; }
-	rEvent & operator << (const DINT  &val) { AddDINT (val); return *this; }
-	rEvent & operator << (const UDINT &val) { AddUDINT(val); return *this; }
-	rEvent & operator << (const REAL  &val) { AddREAL (val); return *this; }
-	rEvent & operator << (const LREAL &val) { AddLREAL(val); return *this; }
-	rEvent & operator << (const STRID &val) { AddSTR  (val); return *this; }
+	rEvent& operator << (const SINT  &val) { AddSINT (val); return *this; }
+	rEvent& operator << (const USINT &val) { AddUSINT(val); return *this; }
+	rEvent& operator << (const INT   &val) { AddINT  (val); return *this; }
+	rEvent& operator << (const UINT  &val) { AddUINT (val); return *this; }
+	rEvent& operator << (const DINT  &val) { AddDINT (val); return *this; }
+	rEvent& operator << (const UDINT &val) { AddUDINT(val); return *this; }
+	rEvent& operator << (const REAL  &val) { AddREAL (val); return *this; }
+	rEvent& operator << (const LREAL &val) { AddLREAL(val); return *this; }
+	rEvent& operator << (const STRID &val) { AddSTR  (val); return *this; }
+
+	rEvent& operator = (const rEvent& event);
 
 private:
 	UDT         Timestamp; // 8 байт

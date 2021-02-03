@@ -46,7 +46,7 @@ public:
 	const UDINT AVERAGE_MAX = 5;
 	const UDINT CALCULATE_TIMER = 1000;
 
-	rCounter();
+	rCounter(const rStation* owner = nullptr);
 	virtual ~rCounter();
 
 	

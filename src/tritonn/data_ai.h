@@ -70,7 +70,7 @@ public:
 		UINT      Code_20mA;         // Минимальный код АЦП
 	};
 
-	rAI();
+	rAI(const rStation* owner = nullptr);
 	virtual ~rAI();
 	
 	// Виртуальные функции от rSource

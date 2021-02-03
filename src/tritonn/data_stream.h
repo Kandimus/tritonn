@@ -29,16 +29,21 @@ const UINT STR_SETUP_OFF      = 0x0001;
 
 struct rFactorPoint
 {
+	UDINT     m_id;
 	rCmpLREAL Hz;
 	rCmpLREAL Kf;
 };
 
 struct rFlowFactor
 {
+	enum {
+		MAXPOINTS = 12
+	};
+
 	rCmpLREAL KeypadKF;
 	rCmpLREAL KeypadMF;
 
-	rFactorPoint Point[MAX_FACTOR_POINT];
+	std::vector<rFactorPoint> m_point;
 };
 
 
@@ -54,7 +59,7 @@ public:
 	};
 
 public:
-	rStream();
+	rStream(const rStation* owner = nullptr);
 	virtual ~rStream();
 
 	// Виртуальные функции от rSource
@@ -66,33 +71,35 @@ public:
 	virtual UDINT generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
 	virtual UDINT Calculate();
-
 	virtual const rTotal *getTotal(void) const;
+
+	void setUnits();
 
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);
 
 protected:
-	LREAL CalcualateKF();
-	UDINT CalcTotal();
-	UDINT GetUnitKF();
+	LREAL calcualateKF();
+	void  calcTotal();
+	UDINT getUnitKF();
 
 public:
 	// Inputs
-	rLink       Counter;
-	rLink       Freq;
-	rLink       Temp;
-	rLink       Pres;
-	rLink       Dens;
-	rLink       Dens15;
-	rLink       Dens20;
-	rLink       B15;
-	rLink       Y15;
+	rLink m_counter;
+	rLink m_freq;
+	// Inputs/Outputs
+	rLink m_temp;
+	rLink m_pres;
+	rLink m_dens;
+	rLink m_dens15;
+	rLink m_dens20;
+	rLink m_b15;
+	rLink m_y15;
 	//Outputs
-	rLink       FlowMass;
-	rLink       FlowVolume;
-	rLink       FlowVolume15;
-	rLink       FlowVolume20;
+	rLink m_flowMass;
+	rLink m_flowVolume;
+	rLink m_flowVolume15;
+	rLink m_flowVolume20;
 
 
 //	UDINT       Unit; //
@@ -100,11 +107,11 @@ public:
 	Type        m_flowmeter;     // Тип расходомера
 	USINT       Maintenance;   // 1 - Линия в ремонте
 	USINT       Linearization; // Флаг использования кусочно-линейной апроксимации, а не одного К-фактора
-	rFlowFactor Factor;
-	rFlowFactor SetFactor;
+	rFlowFactor m_curFactor;
+	rFlowFactor m_setFactor;
 	LREAL       CurKF;
 	UDINT       AcceptKF;
-	rTotal      Total;
+	rTotal      m_total;
 
 private:
 	static rBitsArray m_flagsFlowmeter;

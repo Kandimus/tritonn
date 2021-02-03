@@ -30,7 +30,7 @@
 #include "generator_md.h"
 
 
-rSource::rSource()
+rSource::rSource(const rStation* owner)
 {
 	Alias      = "";
 	Descr      = 0;
@@ -38,7 +38,7 @@ rSource::rSource()
 	Calculated = 0;
 	Fault      = 0;
 	LockErr    = 0;
-	Station    = nullptr;
+	m_station  = owner;
 }
 
 rSource::~rSource()

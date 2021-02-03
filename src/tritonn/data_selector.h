@@ -27,7 +27,7 @@
 class rSelector : public rSource
 {
 public:
-	rSelector();
+	rSelector(const rStation* owner = nullptr);
 	virtual ~rSelector();
 	
 	// Виртуальные функции от rSource
