@@ -104,19 +104,19 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlstring, b
 	return *this;
 }
 
-rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional, const std::string& prefix)
 {
-	return addXml(String_format("<%s>%s<%s/> %s", xmlname.c_str(), defval.c_str(), xmlname.c_str()), isoptional);
+	return addXml(String_format("%s<%s>%s<%s/> %s", prefix.c_str(), xmlname.c_str(), defval.c_str(), xmlname.c_str()), isoptional);
 }
 
-rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional, const std::string& prefix)
 {
-	return addXml(String_format("<%s>%u<%s/>", xmlname.c_str(), defval, xmlname.c_str()), isoptional);
+	return addXml(String_format("%s<%s>%u<%s/>", prefix.c_str(), xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
 
-rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional, const std::string& prefix)
 {
-	return addXml(String_format("<%s>%g<%s/>", xmlname.c_str(), defval, xmlname.c_str()), isoptional);
+	return addXml(String_format("%s<%s>%g<%s/>", prefix.c_str(), xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
 
 std::string rGeneratorMD::rItem::save()

@@ -45,9 +45,9 @@ const UDINT DENSSOL_LE_ITERATION = 0x00000010;
 //
 rDensSol::rDensSol(const rStation* owner) : rSource(owner), Setup(0)
 {
-	LockErr     = 0;
-	Calibr      = 20.0;
-//	Setup       = DNSSOL_SETUP_OFF;
+	LockErr   = 0;
+	m_calibrT = 20.0;
+//	Setup     = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
 	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
@@ -110,7 +110,7 @@ UDINT rDensSol::Calculate()
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
-	Calibr.Compare   (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_CALIBR));
+	m_calibrT.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_CALIBR));
 	Coef.K0.Compare  (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K0    ));
 	Coef.K1.Compare  (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K1    ));
 	Coef.K2.Compare  (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K2    ));
@@ -144,7 +144,7 @@ UDINT rDensSol::Calculate()
 
 	// Расчет плотности
 	rDensity::Product product = m_station->m_product;
-	LREAL dTemp = Temp.Value - Calibr.Value;
+	LREAL dTemp = Temp.Value - m_calibrT.Value;
 	LREAL K20   = UsedCoef.K20A.Value + UsedCoef.K20B.Value * Pres.Value;
 	LREAL K21   = UsedCoef.K21A.Value + UsedCoef.K21B.Value * Pres.Value;
 	UDINT limit = 0;
@@ -277,7 +277,7 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	list.add(Alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
 	list.add(Alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
 	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &m_accept           , U_DIMLESS, ACCESS_FACTORS);
-	list.add(Alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &Calibr.Value       , U_C      , ACCESS_FACTORS);
+	list.add(Alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &m_calibrT.Value    , U_C      , ACCESS_FACTORS);
 	list.add(Alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value        , U_DIMLESS, ACCESS_FACTORS);
 
 	list.add(Alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R___, &Fault              , U_DIMLESS, 0);
@@ -309,22 +309,22 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_period->FirstChildElement(XmlName::LINK), Period)) return err.getError();
 
 	UDINT fault = 0;
-	Coef.K0.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k0")  , 0.0, fault));
-	Coef.K1.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k1")  , 0.0, fault));
-	Coef.K2.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k2")  , 0.0, fault));
-	Coef.K18.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k18") , 0.0, fault));
-	Coef.K19.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k19") , 0.0, fault));
-	Coef.K20A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k20a"), 0.0, fault));
-	Coef.K20B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k20b"), 0.0, fault));
-	Coef.K21A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k21a"), 0.0, fault));
-	Coef.K21B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement("k21b"), 0.0, fault));
+	Coef.K0.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K0)  , 0.0, fault));
+	Coef.K1.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K1)  , 0.0, fault));
+	Coef.K2.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K2)  , 0.0, fault));
+	Coef.K18.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K18) , 0.0, fault));
+	Coef.K19.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K19) , 0.0, fault));
+	Coef.K20A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K20A), 0.0, fault));
+	Coef.K20B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K20B), 0.0, fault));
+	Coef.K21A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K21A), 0.0, fault));
+	Coef.K21B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K21B), 0.0, fault));
 
 	if (fault) {
 		return err.set(DATACFGERR_DENSSOL, xml_koef->GetLineNum(), "");
 	}
 
 	// Не обязательный параметр
-	Calibr.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::CALIBR), 20.0, fault));
+	m_calibrT.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::CALIBR), 20.0, fault));
 
 	fault = 0;
 
@@ -377,7 +377,19 @@ UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
 	CTL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
 	CPL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
 
-	md.add(this, true);
+	md.add(this, true)
+			.addXml(XmlName::CALIBR, m_calibrT.Value)
+			.addXml(String_format("<%s>", XmlName::FACTORS))
+			.addXml(XmlName::K0  , Coef.K0.Value)
+			.addXml(XmlName::K1  , Coef.K1.Value)
+			.addXml(XmlName::K2  , Coef.K2.Value)
+			.addXml(XmlName::K18 , Coef.K18.Value)
+			.addXml(XmlName::K19 , Coef.K19.Value)
+			.addXml(XmlName::K20A, Coef.K20A.Value)
+			.addXml(XmlName::K20B, Coef.K20B.Value)
+			.addXml(XmlName::K21A, Coef.K21A.Value)
+			.addXml(XmlName::K21B, Coef.K21B.Value)
+			.addXml(String_format("</%s>", XmlName::FACTORS));
 
 	return TRITONN_RESULT_OK;
 }
