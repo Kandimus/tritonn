@@ -54,7 +54,7 @@ private:
 	virtual LREAL GetValue();
 
 public:
-	void  Init(UINT setup, UDINT unit, rSource *owner, const std::string &ioname, STRID descr);
+	void  Init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment);
 	void  CalculateLimit();
 	STRID GetSourceUnit();
 	const rSource* getOwner() const;
@@ -65,6 +65,7 @@ public:
 	std::string Param   = "";         // Имя параметра-источника (из примера "present")
 	std::string IO_Name = "";         // Собственное имя источника данных
 	std::string m_varName = "";       // Имя для генерации переменных
+	std::string m_comment = "";
 	rSource*    m_source = nullptr;    // Источник данных
 
 	STRID       Unit    = U_any;      // Требуемые ед.измерения

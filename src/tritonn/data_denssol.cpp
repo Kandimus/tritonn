@@ -50,18 +50,18 @@ rDensSol::rDensSol(const rStation* owner) : rSource(owner), Setup(0)
 //	Setup     = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
-	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INOUTPUT, Pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT   , Period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , Dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , B15   , U_1_C    , SID::B15        , XmlName::B15      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , Y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , CTL   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE, "Вычисленная плотность в текущих условиях");
+	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE, "Температура измрения плотности");
+	InitLink(rLink::Setup::INOUTPUT, Pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE, "Давление измерения плотности");
+	InitLink(rLink::Setup::INPUT   , Period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE, "Период плотномера");
+	InitLink(rLink::Setup::OUTPUT  , Dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE, "Вычисленная плотность при 15 °C");
+	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE, "Вычисленная плотность при 20 °C");
+	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения в текущих условиях");
+	InitLink(rLink::Setup::OUTPUT  , B15   , U_1_C    , SID::B15        , XmlName::B15      , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения при 15 °C");
+	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости в текущих условиях");
+	InitLink(rLink::Setup::OUTPUT  , Y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости при 15 °C");
+	InitLink(rLink::Setup::OUTPUT  , CTL   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния температуры");
+	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния давления");
 }
 
 
@@ -380,15 +380,15 @@ UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
 	md.add(this, true)
 			.addXml(XmlName::CALIBR, m_calibrT.Value)
 			.addXml(String_format("<%s>", XmlName::FACTORS))
-			.addXml(XmlName::K0  , Coef.K0.Value)
-			.addXml(XmlName::K1  , Coef.K1.Value)
-			.addXml(XmlName::K2  , Coef.K2.Value)
-			.addXml(XmlName::K18 , Coef.K18.Value)
-			.addXml(XmlName::K19 , Coef.K19.Value)
-			.addXml(XmlName::K20A, Coef.K20A.Value)
-			.addXml(XmlName::K20B, Coef.K20B.Value)
-			.addXml(XmlName::K21A, Coef.K21A.Value)
-			.addXml(XmlName::K21B, Coef.K21B.Value)
+			.addXml(XmlName::K0  , Coef.K0.Value, false, "\t")
+			.addXml(XmlName::K1  , Coef.K1.Value, false, "\t")
+			.addXml(XmlName::K2  , Coef.K2.Value, false, "\t")
+			.addXml(XmlName::K18 , Coef.K18.Value, false, "\t")
+			.addXml(XmlName::K19 , Coef.K19.Value, false, "\t")
+			.addXml(XmlName::K20A, Coef.K20A.Value, false, "\t")
+			.addXml(XmlName::K20B, Coef.K20B.Value, false, "\t")
+			.addXml(XmlName::K21A, Coef.K21A.Value, false, "\t")
+			.addXml(XmlName::K21B, Coef.K21B.Value, false, "\t")
 			.addXml(String_format("</%s>", XmlName::FACTORS));
 
 	return TRITONN_RESULT_OK;

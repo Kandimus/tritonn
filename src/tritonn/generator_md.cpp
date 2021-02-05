@@ -99,14 +99,14 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, L
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlstring, bool isoptional)
 {
-	m_xml.push_back(xmlstring + (isoptional ? XML_OPTIONAL : ""));
+	m_xml.push_back(xmlstring + (isoptional ? string(" ") + XML_OPTIONAL : ""));
 
 	return *this;
 }
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, const std::string& defval, bool isoptional, const std::string& prefix)
 {
-	return addXml(String_format("%s<%s>%s<%s/> %s", prefix.c_str(), xmlname.c_str(), defval.c_str(), xmlname.c_str()), isoptional);
+	return addXml(prefix + "<" + xmlname + ">" + defval + "<" + xmlname + "/>", isoptional);
 }
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, UDINT defval, bool isoptional, const std::string& prefix)

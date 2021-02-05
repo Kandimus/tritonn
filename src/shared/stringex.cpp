@@ -17,8 +17,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <cstdarg>
 #include <algorithm>
+#include <string.h>
+#include <vector>
 //#include <cmath>
 //#include <unistd.h>
 //#include <iostream>
@@ -53,7 +54,7 @@ int String_IsValidHex(const char *str, unsigned int &val)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-int String_BufferSize(const char *format, va_list arg_ptr)
+int String_BufferSize___(const char *format, va_list arg_ptr)
 {
 	return vsnprintf(NULL, 0, format, arg_ptr) + 1; // safe byte for \0
 }
@@ -85,29 +86,24 @@ std::string String_vaformat(const char *format, va_list arg_ptr)
 	return result;
 }
 
-
 std::string String_format(const char *format, ...)
 {
-	va_list arg2;
-//	va_list arg;
-//	va_start(arg, format);
-	//std::string result = String_vaformat(format, arg); //WARNING Тут падает на x64
-	//char *buff = new char[vsnprintf(NULL, 0, format, arg) + 1];
-	char *buff = (char*)malloc(4096);
-//	va_end(arg);
-
-//	if(!buff) {
-//		return "";
-//	}
+	va_list arg;
+//	std::string result = String_vaformat(format, arg); //WARNING Тут падает на x64
+//	char *buff = new char[vsnprintf(NULL, 0, format, arg) + 2];
+	char *buff = new char[4096];
+	memset(buff, 0, 4096);
 
 //	va_list arg2;
-	va_start(arg2, format);
-	vsprintf(buff, format, arg2);
-	va_end(arg2);
+//	va_start(arg2, format);
+//	vsprintf(buff, format, arg2);
+//	va_end(arg2);
+	va_start(arg, format);
+	vsnprintf(buff, 4096, format, arg);
+	va_end(arg);
 
 	std::string result = buff;
-	//delete[] buff;
-	free(buff);
+	delete[] buff;
 
 	return result;
 }
