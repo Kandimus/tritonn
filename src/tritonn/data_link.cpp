@@ -141,13 +141,14 @@ LREAL rLink::GetValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 
 //-------------------------------------------------------------------------------------------------
 //
-void rLink::Init(UINT setup, UDINT unit, rSource *owner, const string &ioname, STRID descr)
+void rLink::Init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment)
 {
-	Unit    = unit;
-	m_owner = owner;
-	IO_Name = ioname;
-	Descr   = descr;
-	m_setup = setup;
+	Unit      = unit;
+	m_owner   = owner;
+	IO_Name   = ioname;
+	Descr     = descr;
+	m_setup   = setup;
+	m_comment = comment;
 }
 
 

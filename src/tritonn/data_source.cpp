@@ -193,12 +193,11 @@ rEvent &rSource::ReinitEvent(UDINT eid)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const string &name, const string &shadow)
+UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment)
 {
-	link.Init(setup, unit, this, name, nameid);
+	link.Init(setup, unit, this, name, nameid, comment);
 
 	link.Shadow = shadow;
-	link.Descr  = nameid;
 
 	if(setup & rLink::Setup::INPUT ) m_inputs.push_back (&link);
 	if(setup & rLink::Setup::OUTPUT) m_outputs.push_back(&link);
@@ -427,7 +426,7 @@ std::string rSource::getMarkDown()
 			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
 			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
 			result += link->Shadow + " | ";
-			result += /*link->m_comment + */"\n";
+			result += link->m_comment + "\n";
 		}
 	}
 
@@ -443,7 +442,7 @@ std::string rSource::getMarkDown()
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
 
 		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
-		result += /*link->m_comment + */"\n";
+		result += link->m_comment + "\n";
 	}
 
 	rVariableList list;
@@ -475,33 +474,33 @@ std::string rSource::getXmlInput() const
 
 		for (auto link : m_inputs) {
 			if (link->Limit.m_setup.Value != rLimit::Setup::OFF) {
-				strlink += String_format("\t<%s name=\"%s\" setup=\"%s\">\n",
+				strlink += String_format("\t\t<%s name=\"%s\" setup=\"%s\">\n",
 										 XmlName::LIMIT,
 										 link->IO_Name.c_str(),
 										 rLimit::m_flagsSetup.getNameByBits(link->Limit.m_setup.Value).c_str());
 
 				if (link->Limit.m_setup.Value & rLimit::Setup::LOLO) {
-					strlink += String_format("\t\t<lolo>%g</lolo>\n", link->Limit.m_lolo.Value);
+					strlink += String_format("\t\t\t<lolo>%g</lolo>\n", link->Limit.m_lolo.Value);
 				}
 
 				if (link->Limit.m_setup.Value & rLimit::Setup::LO) {
-					strlink += String_format("\t\t<lo>%g</lo>\n", link->Limit.m_lo.Value);
+					strlink += String_format("\t\t\t<lo>%g</lo>\n", link->Limit.m_lo.Value);
 				}
 
 				if (link->Limit.m_setup.Value & rLimit::Setup::HI) {
-					strlink += String_format("\t\t<hi>%g</hi>\n", link->Limit.m_hi.Value);
+					strlink += String_format("\t\t\t<hi>%g</hi>\n", link->Limit.m_hi.Value);
 				}
 
 				if (link->Limit.m_setup.Value & rLimit::Setup::HIHI) {
-					strlink += String_format("\t\t<hihi>%g</hihi>\n", link->Limit.m_hihi.Value);
+					strlink += String_format("\t\t\t<hihi>%g</hihi>\n", link->Limit.m_hihi.Value);
 				}
 
-				strlink += "\t</limit>\n";
+				strlink += "\t\t</limit>\n";
 			}
 		}
 
 		if (strlink.size()) {
-			result += String_format("<%s> %s\n%s</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
+			result += String_format("\t<%s> %s\n%s\t</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
 		}
 	}
 

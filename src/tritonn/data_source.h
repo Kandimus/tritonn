@@ -92,7 +92,7 @@ public:
 	virtual const rTotal *getTotal(void) const { return nullptr; }
 
 protected:
-	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const string &name, const string &shadow);
+	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment = "");
 	virtual UDINT InitLimitEvent(rLink &link) = 0;
 	virtual UDINT ReinitLimitEvents();
 };

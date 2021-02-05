@@ -54,9 +54,9 @@ public:
 		rItem& addProperty(const std::string& name, UDINT defval);
 		rItem& addProperty(const std::string& name, LREAL defval);
 		rItem& addXml(const std::string& xmlstring, bool isoptional = false);
-		rItem& addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false);
-		rItem& addXml(const std::string& xmlname, UDINT defval, bool isoptional = false);
-		rItem& addXml(const std::string& xmlname, LREAL defval, bool isoptional = false);
+		rItem& addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false, const std::string& prefix = "");
+		rItem& addXml(const std::string& xmlname, UDINT defval, bool isoptional = false, const std::string& prefix = "");
+		rItem& addXml(const std::string& xmlname, LREAL defval, bool isoptional = false, const std::string& prefix = "");
 
 		std::string getName() const { return m_name; }
 		std::string save();

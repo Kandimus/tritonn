@@ -105,7 +105,7 @@ std::string rVariableList::getMarkDown() const
 	std::string result = "";
 
 	result += "Variable | Type | Unit | Unit ID | Readonly | Access | Comment\n";
-	result += ":-- |:--:|:--:|:--:|:--:|:--:|:--\n";
+	result += ":-- |:--:|:--:|:--:|:--:|:-- |:--\n";
 	for (auto item : m_list) {
 		std::string strunit = "";
 		std::string name    = (item->getName().size() && item->getName()[0] == '.') ? item->getName().substr(1) : item->getName();
@@ -116,7 +116,7 @@ std::string rVariableList::getMarkDown() const
 		result += NAME_TYPE[item->getType()] + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
 		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";
-		result += String_format("0x%x", item->getAccess()) + " | ";
+		result += String_format("0x%08x", item->getAccess()) + " | ";
 		result += "\n";
 	}
 
