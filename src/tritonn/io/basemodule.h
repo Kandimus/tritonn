@@ -32,10 +32,11 @@ class rIOBaseModule
 public:
 	enum class Type : UINT
 	{
-		UNDEF  = 0x0000,     //
-		AI6    = 0x0001,     //
-		DI8DO8 = 0x0002,
-		FI4    = 0x0003,
+		UNDEF  = 0,     //
+		AI6    = 1,     //
+		DI8DO8 = 2,
+		FI4    = 3,
+		CRM    = 4,
 	};
 
 	rIOBaseModule();

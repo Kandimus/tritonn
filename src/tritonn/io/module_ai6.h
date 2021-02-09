@@ -55,7 +55,6 @@ public:
 	USINT getState(USINT id);
 
 private:
-	static rBitsArray m_flagsSetup;
 	std::vector<rIOAIChannel> m_channel;
 };
 

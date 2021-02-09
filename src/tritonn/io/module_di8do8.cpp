@@ -19,30 +19,19 @@
 #include "../error.h"
 #include "../xml_util.h"
 
-rBitsArray  rModuleDI8DO8::m_flagsDISetup;
 rBitsArray  rModuleDI8DO8::m_flagsDOSetup;
 
 rModuleDI8DO8::rModuleDI8DO8()
 {
-	if (m_flagsDISetup.empty()) {
-		m_flagsDISetup
-				.add("OFF"     , static_cast<UINT>(rIODIChannel::Setup::OFF))
-				.add("BOUNCE"  , static_cast<UINT>(rIODIChannel::Setup::BOUNCE))
-				.add("INVERSED", static_cast<UINT>(rIODIChannel::Setup::INVERSED));
-	}
-
-	if (m_flagsDOSetup.empty()) {
-		m_flagsDOSetup
-				.add("OFF"     , static_cast<UINT>(rIODOChannel::Setup::OFF))
-				.add("INVERSED", static_cast<UINT>(rIODOChannel::Setup::INVERSED));
-	}
-
+	USINT index = 0;
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
-		m_channelDI.push_back(rIODIChannel());
+		m_channelDI.push_back(rIODIChannel(index));
+		++index;
 	}
 
 	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
-		m_channelDO.push_back(rIODOChannel());
+		m_channelDO.push_back(rIODOChannel(index));
+		++index;
 	}
 
 	m_type = Type::DI8DO8;
@@ -121,22 +110,20 @@ UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
-		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
-		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
+		USINT number = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
 
 		if (number >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
 			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide number");
 		}
 
-		UDINT fault = 0;
 		if (number < CHANNEL_DI_COUNT) {
-			m_channelDI[number].m_setup = m_flagsDISetup.getValue(strSetup, fault);
+			m_channelDI[number].loadFromXML(channel_xml, err);
 		} else {
-			m_channelDO[number - CHANNEL_DI_COUNT].m_setup = m_flagsDOSetup.getValue(strSetup, fault);
+			m_channelDO[number - CHANNEL_DI_COUNT].loadFromXML(channel_xml, err);
 		}
 
-		if (fault) {
-			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide setup");
+		if (err.getError()) {
+			return err.getError();
 		}
 	}
 

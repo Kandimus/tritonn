@@ -16,6 +16,7 @@
 #pragma once
 
 #include <list>
+#include "bits_array.h"
 #include "basechannel.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,12 +34,13 @@ public:
 	};
 
 public:
-	rIODOChannel() {}
-	virtual ~rIODOChannel() {}
+	rIODOChannel(USINT index);
+	virtual ~rIODOChannel() = default;
 
 	USINT getValue() { return m_value; }
 
 public:
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate();
@@ -57,5 +59,7 @@ private:
 	USINT m_hardState    = 0;
 	USINT m_oldValue     = 0;
 	UDINT m_pulseTimer   = 0;
+
+	static rBitsArray m_flagsSetup;
 };
 
