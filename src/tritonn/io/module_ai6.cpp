@@ -19,31 +19,16 @@
 #include "../error.h"
 #include "../xml_util.h"
 
-rBitsArray  rModuleAI6::m_flagsSetup;
-
 rModuleAI6::rModuleAI6()
 {
-	if (m_flagsSetup.empty()) {
-		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE))
-				.add("NOICE"  , static_cast<UINT>(rIOAIChannel::Setup::NOICE));
-	}
-
 	while(m_channel.size() < CHANNEL_COUNT) {
-		m_channel.push_back(rIOAIChannel());
+		m_channel.push_back(rIOAIChannel(static_cast<USINT>(m_channel.size())));
 	}
 
 	m_type = Type::AI6;
 
 	m_channel[0].m_simSpeed = 1111;
 	m_channel[0].m_simType  = rIOAIChannel::SimType::Linear;
-}
-
-
-rModuleAI6::~rModuleAI6()
-{
-
 }
 
 
@@ -80,10 +65,11 @@ UDINT rModuleAI6::generateVars(const std::string& prefix, rVariableList& list, b
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	for (UDINT ii = 0; ii < CHANNEL_COUNT; ++ii) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
-		m_channel[ii].generateVars(p, list, issimulate);
+	for (auto& channel : m_channel) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel.m_index);
+		channel.generateVars(p, list, issimulate);
 	}
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -95,18 +81,14 @@ UDINT rModuleAI6::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
-		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
-		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
+		USINT number = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
 
 		if (number >= CHANNEL_COUNT) {
 			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide number");
 		}
 
-		UDINT fault = 0;
-		m_channel[number].m_setup = m_flagsSetup.getValue(strSetup, fault);
-
-		if (fault) {
-			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide setup");
+		if (m_channel[number].loadFromXML(channel_xml, err) != TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 	}
 

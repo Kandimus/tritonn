@@ -18,6 +18,21 @@
 #include "../variable_item.h"
 #include "../variable_list.h"
 #include "../units.h"
+#include "tinyxml2.h"
+#include "../error.h"
+#include "../xml_util.h"
+
+rBitsArray rIOAIChannel::m_flagsSetup;
+
+rIOAIChannel::rIOAIChannel(USINT index) : rIOBaseChannel(index)
+{
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF))
+				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE))
+				.add("NOICE"  , static_cast<UINT>(rIOAIChannel::Setup::NOICE));
+	}
+}
 
 
 UINT rIOAIChannel::getMinValue() const
@@ -45,28 +60,6 @@ UINT rIOAIChannel::getMaxValue() const
 UINT rIOAIChannel::getRange() const
 {
 	return getMaxValue() - getMinValue();
-}
-
-UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, bool issimulate)
-{
-	std::string p = name + ".";
-
-	rIOBaseChannel::generateVars(name, list, issimulate);
-
-	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0);
-	list.add(p + "adc"    , TYPE_UINT , rVariable::Flags::R___, &m_ADC    , U_DIMLESS , 0);
-	list.add(p + "current", TYPE_REAL , rVariable::Flags::R___, &m_current, U_DIMLESS , 0);
-	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state  , U_DIMLESS , 0);
-	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::____, &m_type   , U_DIMLESS , 0);
-
-	if (issimulate) {
-		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0);
-		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::____, &m_simMin  , U_DIMLESS , 0);
-		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::____, &m_simValue, U_DIMLESS , 0);
-		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::____, &m_simSpeed, U_DIMLESS , 0);
-	}
-
-	return TRITONN_RESULT_OK;
 }
 
 UDINT rIOAIChannel::processing()
@@ -165,3 +158,38 @@ UDINT rIOAIChannel::simulate()
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, bool issimulate)
+{
+	std::string p = name + ".";
+
+	rIOBaseChannel::generateVars(name, list, issimulate);
+
+	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0);
+	list.add(p + "adc"    , TYPE_UINT , rVariable::Flags::R___, &m_ADC    , U_DIMLESS , 0);
+	list.add(p + "current", TYPE_REAL , rVariable::Flags::R___, &m_current, U_DIMLESS , 0);
+	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state  , U_DIMLESS , 0);
+	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::____, &m_type   , U_DIMLESS , 0);
+
+	if (issimulate) {
+		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0);
+		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::____, &m_simMin  , U_DIMLESS , 0);
+		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::____, &m_simValue, U_DIMLESS , 0);
+		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::____, &m_simSpeed, U_DIMLESS , 0);
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rIOAIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
+{
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP , "");
+	UDINT       fault    = 0;
+
+	m_setup = m_flagsSetup.getValue(strSetup, fault);
+
+	if (fault) {
+		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalide setup");
+	}
+
+	return TRITONN_RESULT_OK;
+}

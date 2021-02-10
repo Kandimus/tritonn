@@ -19,27 +19,13 @@
 #include "../error.h"
 #include "../xml_util.h"
 
-rBitsArray rModuleFI4::m_flagsSetup;
-
 rModuleFI4::rModuleFI4()
 {
-	if (m_flagsSetup.empty()) {
-		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(rIOFIChannel::Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(rIOFIChannel::Setup::AVERAGE));
-	}
-
 	while(m_channel.size() < CHANNEL_COUNT) {
-		m_channel.push_back(rIOFIChannel());
+		m_channel.push_back(rIOFIChannel(m_channel.size()));
 	}
 
 	m_type = Type::FI4;
-}
-
-
-rModuleFI4::~rModuleFI4()
-{
-
 }
 
 
@@ -97,18 +83,14 @@ UDINT rModuleFI4::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
-		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
-		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
+		USINT number = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
 
 		if (number >= CHANNEL_COUNT) {
 			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalid module count");
 		}
 
-		UDINT fault = 0;
-		m_channel[number].m_setup = m_flagsSetup.getValue(strSetup, fault);
-
-		if (fault) {
-			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide setup");
+		if (m_channel[number].loadFromXML(channel_xml, err) !=  TRITONN_RESULT_OK) {
+			return err.getError();
 		}
 	}
 

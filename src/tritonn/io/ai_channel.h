@@ -16,6 +16,7 @@
 #pragma once
 
 #include <list>
+#include "bits_array.h"
 #include "basechannel.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,14 +77,15 @@ public:
 	const UDINT MAX_AVERAGE = 3;
 
 public:
-	rIOAIChannel() {}
-	virtual ~rIOAIChannel() {}
+	rIOAIChannel(USINT index);
+	virtual ~rIOAIChannel() = default;
 
 	UINT getMinValue() const;
 	UINT getMaxValue() const;
 	UINT getRange() const;
 
 public:
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate();
@@ -106,5 +108,7 @@ private:
 	USINT   m_hardState    = 0;             // Статус канала с модуля
 
 	std::list<UINT> m_average;
+
+	static rBitsArray m_flagsSetup;
 };
 

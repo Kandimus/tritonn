@@ -17,6 +17,7 @@
 
 #include <list>
 #include "basechannel.h"
+#include "bits_array.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -41,13 +42,14 @@ public:
 	};
 
 public:
-	rIOFIChannel();
-	virtual ~rIOFIChannel() {}
+	rIOFIChannel(USINT index);
+	virtual ~rIOFIChannel() = default;
 
 	UDINT getValue() const { return m_value; }
 	LREAL getFreq()  const { return m_freq;  }
 
 public:
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate();
@@ -69,5 +71,7 @@ private:
 	UDINT m_simTimer    = 0;
 	UDINT m_simTimerRem = 0;
 	LREAL m_simCountRem = 0.0;
+
+	static rBitsArray m_flagsSetup;
 };
 

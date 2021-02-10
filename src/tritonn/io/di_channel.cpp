@@ -19,9 +19,21 @@
 #include "../variable_list.h"
 #include "../units.h"
 #include "tickcount.h"
+#include "tinyxml2.h"
+#include "../error.h"
+#include "../xml_util.h"
 
-rIODIChannel::rIODIChannel()
+rBitsArray rIODIChannel::m_flagsSetup;
+
+rIODIChannel::rIODIChannel(USINT index) : rIOBaseChannel(index)
 {
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("OFF"     , static_cast<UINT>(rIODIChannel::Setup::OFF))
+				.add("BOUNCE"  , static_cast<UINT>(rIODIChannel::Setup::BOUNCE))
+				.add("INVERSED", static_cast<UINT>(rIODIChannel::Setup::INVERSED));
+	}
+
 	m_oldValue = m_value;
 	m_simTimer = rTickCount::SysTick();
 	srand(time(NULL));
@@ -119,3 +131,16 @@ UDINT rIODIChannel::simulate()
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rIODIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
+{
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP , "");
+	UDINT       fault    = 0;
+
+	m_setup = m_flagsSetup.getValue(strSetup, fault);
+
+	if (fault) {
+		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalide setup");
+	}
+
+	return TRITONN_RESULT_OK;
+}

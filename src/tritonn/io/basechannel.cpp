@@ -40,5 +40,3 @@ UDINT rIOBaseChannel::generateVars(const std::string &name, rVariableList &list,
 	return TRITONN_RESULT_OK;
 }
 
-
-

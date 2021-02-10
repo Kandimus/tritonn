@@ -17,7 +17,6 @@
 
 #include <vector>
 #include "def.h"
-#include "bits_array.h"
 #include "basemodule.h"
 #include "basechannel.h"
 #include "ai_channel.h"
@@ -36,7 +35,7 @@ public:
 	const UDINT CHANNEL_COUNT = 6;
 
 	rModuleAI6();
-	virtual ~rModuleAI6();
+	virtual ~rModuleAI6() = default;
 
 	static std::string getRTTI() { return "ai6"; }
 	
@@ -55,7 +54,6 @@ public:
 	USINT getState(USINT id);
 
 private:
-	static rBitsArray m_flagsSetup;
 	std::vector<rIOAIChannel> m_channel;
 };
 
