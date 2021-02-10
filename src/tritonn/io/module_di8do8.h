@@ -37,7 +37,7 @@ public:
 	const UDINT CHANNEL_DO_COUNT = 8;
 
 	rModuleDI8DO8();
-	virtual ~rModuleDI8DO8();
+	virtual ~rModuleDI8DO8() = default;
 
 	static std::string getRTTI() { return "di8do8"; }
 	

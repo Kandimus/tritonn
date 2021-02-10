@@ -2,14 +2,14 @@
 //===
 //=== module_crm.h
 //===
-//=== Copyright (c) 2020 by RangeSoft.
+//=== Copyright (c) 2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
 //===
-//=== Класс поверки (CRM)
+//=== Класс модуля поверочной установки (CRM)
 //===
 //=================================================================================================
 
@@ -37,7 +37,7 @@ public:
 	const UDINT CHANNEL_DI_COUNT = 4;
 
 	rModuleCRM();
-	virtual ~rModuleFI4() = default;
+	virtual ~rModuleCRM() = default;
 
 	static std::string getRTTI() { return "crm"; }
 	
@@ -54,9 +54,10 @@ public:
 	USINT abort();
 
 private:
-	static rBitsArray m_flagsSetup;
 	std::vector<rIODIChannel> m_channelDI;
 	rIOFIChannel m_channelFI;
+
+	static rBitsArray m_flagsSetup;
 };
 
 

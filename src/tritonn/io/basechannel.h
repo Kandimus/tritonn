@@ -28,7 +28,7 @@ class XMLElement;
 class rIOBaseChannel
 {
 public:
-	rIOBaseChannel(USINT index) : m_index(index) {};
+	rIOBaseChannel(USINT index) : m_index(index) {}
 	virtual ~rIOBaseChannel() = default;
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) = 0;

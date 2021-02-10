@@ -17,7 +17,6 @@
 
 #include <vector>
 #include "def.h"
-#include "bits_array.h"
 #include "basemodule.h"
 #include "basechannel.h"
 #include "fi_channel.h"
@@ -36,7 +35,7 @@ public:
 	const UDINT CHANNEL_COUNT = 4;
 
 	rModuleFI4();
-	virtual ~rModuleFI4();
+	virtual ~rModuleFI4() = default;
 
 	static std::string getRTTI() { return "fi4"; }
 	
@@ -53,7 +52,6 @@ public:
 	USINT getState(USINT id);
 
 private:
-	static rBitsArray m_flagsSetup;
 	std::vector<rIOFIChannel> m_channel;
 };
 

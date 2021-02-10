@@ -1,15 +1,15 @@
 ﻿//=================================================================================================
 //===
-//=== module_fi4.cpp
+//=== module_crm.cpp
 //===
-//=== Copyright (c) 2020 by RangeSoft.
+//=== Copyright (c) 2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
 //===
-//=== Класс частотного модуля CAN (FI)
+//=== Класс модуля поверочной установки (CRM)
 //===
 //=================================================================================================
 
@@ -19,18 +19,10 @@
 #include "../error.h"
 #include "../xml_util.h"
 
-rBitsArray rModuleCRM::m_flagsSetup;
-
-rModuleCRM::rModuleCRM()
+rModuleCRM::rModuleCRM() : m_channelFI(CHANNEL_DI_COUNT)
 {
-	if (m_flagsSetup.empty()) {
-		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(rIOFIChannel::Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(rIOFIChannel::Setup::AVERAGE));
-	}
-
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
-		m_channelDI.push_back(rIODIChannel());
+		m_channelDI.push_back(rIODIChannel(m_channelDI.size()));
 	}
 
 	m_type = Type::CRM;
@@ -53,6 +45,14 @@ UDINT rModuleCRM::processing(USINT issim)
 		channel.processing();
 	}
 
+	if (!(m_channelFI.m_setup & rIOFIChannel::Setup::OFF)) {
+		if (issim) {
+			m_channelFI.simulate();
+		}
+
+		m_channelFI.processing();
+	}
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -65,7 +65,13 @@ std::unique_ptr<rIOBaseChannel> rModuleCRM::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	auto module_ptr = std::make_unique<rIOFIChannel>(m_channel[num]);
+	if (num < CHANNEL_DI_COUNT) {
+		auto module_ptr = std::make_unique<rIODIChannel>(m_channelDI[num]);
+
+		return module_ptr;
+	}
+
+	auto module_ptr = std::make_unique<rIOFIChannel>(m_channelFI);
 
 	return module_ptr;
 }
@@ -75,10 +81,13 @@ UDINT rModuleCRM::generateVars(const std::string& prefix, rVariableList& list, b
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	for (UDINT ii = 0; ii < CHANNEL_DI_COUNT; ++ii) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
-		m_channel[ii].generateVars(p, list, issimulate);
+	for (auto& channel : m_channelDI) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel.m_index + 1);
+		channel.generateVars(p, list, issimulate);
 	}
+
+	std::string p = prefix + m_name + ".ch_" + String_format("%02i", m_channelFI.m_index + 1);
+	m_channelFI.generateVars(p, list, issimulate);
 
 	return TRITONN_RESULT_OK;
 }
@@ -91,18 +100,20 @@ UDINT rModuleCRM::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
-		USINT       number   = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
-		std::string strSetup = XmlUtils::getAttributeString(channel_xml, XmlName::SETUP, "");
+		USINT number = XmlUtils::getAttributeUSINT(channel_xml, XmlName::NUMBER, 0xFF);
 
-		if (number >= CHANNEL_COUNT) {
+		if (number > CHANNEL_DI_COUNT) {
 			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalid module count");
 		}
 
-		UDINT fault = 0;
-		m_channel[number].m_setup = m_flagsSetup.getValue(strSetup, fault);
+		if (number < CHANNEL_DI_COUNT) {
+			m_channelDI[number].loadFromXML(channel_xml, err);
+		} else {
+			m_channelFI.loadFromXML(channel_xml, err);
+		}
 
-		if (fault) {
-			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide setup");
+		if (err.getError()) {
+			return err.getError();
 		}
 	}
 

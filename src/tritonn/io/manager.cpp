@@ -28,6 +28,7 @@
 #include "module_ai6.h"
 #include "module_di8do8.h"
 #include "module_fi4.h"
+#include "module_crm.h"
 
 
 rIOManager::rIOManager() : rVariableClass(Mutex)
@@ -115,6 +116,9 @@ UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
 		} else if (type == rModuleFI4::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4());
 
+		} else if (type == rModuleCRM::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM());
+
 		} else {
 			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
 		}
@@ -135,14 +139,20 @@ std::string rIOManager::saveKernel()
 	rVariableList list;
 	rModuleAI6    ai6;
 	rModuleDI8DO8 di8do8;
+	rModuleFI4    fi4;
+	rModuleCRM    crm;
 
 	ai6.generateVars("hardware.", list, true);
 	di8do8.generateVars("hardware.", list, true);
+	fi4.generateVars("hardware.", list, true);
+	crm.generateVars("hardware.", list, true);
 
 	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
 
 	result += ai6.saveKernel("Module 6 current/voltage channels");
 	result += di8do8.saveKernel("Module 8 discrete input and 8 discrete output");
+	result += fi4.saveKernel("Module 4 frequency input");
+	result += crm.saveKernel("Module prove");
 
 	result += "</hardware>\n";
 

@@ -19,28 +19,19 @@
 #include "../error.h"
 #include "../xml_util.h"
 
-rBitsArray  rModuleDI8DO8::m_flagsDOSetup;
+rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
 rModuleDI8DO8::rModuleDI8DO8()
 {
-	USINT index = 0;
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
-		m_channelDI.push_back(rIODIChannel(index));
-		++index;
+		m_channelDI.push_back(rIODIChannel(static_cast<USINT>(m_channelDI.size())));
 	}
 
 	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
-		m_channelDO.push_back(rIODOChannel(index));
-		++index;
+		m_channelDO.push_back(rIODOChannel(static_cast<USINT>(CHANNEL_DI_COUNT + m_channelDO.size())));
 	}
 
 	m_type = Type::DI8DO8;
-}
-
-
-rModuleDI8DO8::~rModuleDI8DO8()
-{
-
 }
 
 
@@ -90,14 +81,14 @@ UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	for (UDINT ii = 0; ii < CHANNEL_DI_COUNT; ++ii) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
-		m_channelDI[ii].generateVars(p, list, issimulate);
+	for (auto& channel : m_channelDI) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel.m_index + 1);
+		channel.generateVars(p, list, issimulate);
 	}
 
-	for (UDINT ii = 0; ii < CHANNEL_DO_COUNT; ++ii) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", CHANNEL_DI_COUNT + ii + 1);
-		m_channelDO[ii].generateVars(p, list, issimulate);
+	for (auto& channel : m_channelDO) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel.m_index + 1);
+		channel.generateVars(p, list, issimulate);
 	}
 	return TRITONN_RESULT_OK;
 }

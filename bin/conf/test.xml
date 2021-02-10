@@ -13,8 +13,8 @@
 			<channel number="9" setup="INVERSED"/>
 		</module>
 		<module type="fi4" name="fi4_1" />
-		<module type="fi4" name="fi4_2">
-		</module>
+		<module type="fi4" name="fi4_2" />
+		<module type="crm" name="crm_1" />
 	</hardware>
 	<config>
 		<settings>
