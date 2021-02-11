@@ -28,12 +28,13 @@
 class rProve : public rSource, private rDataModule
 {
 public:
-	enum class Command : USINT
+	enum class Command : UINT
 	{
 		NONE = 0,
 		START,
 		STOP,
 		ABORT,
+		RESET,
 	};
 
 	enum Setup : UINT
@@ -57,6 +58,9 @@ public:
 protected:
 	virtual UDINT InitLimitEvent(rLink &link);
 
+private:
+	void onIdle();
+
 public:
 	// Inputs
 	rLink m_temp;
@@ -71,11 +75,11 @@ public:
 	// Outputs
 
 	// Внутренние переменные
-	Command m_command = Command::NONE;
-	Setup   m_setup   = Setup::NONE;
-	LREAL   m_inTemp  = 0;
-	LREAL   m_inPres  = 0;
-	UDINT   m_timerStab;
+	Command  m_command = Command::NONE;
+	rCmpUINT m_setup   = static_cast<UINT>(Setup::NONE);
+	LREAL    m_inTemp  = 0;
+	LREAL    m_inPres  = 0;
+	UDINT    m_timerStab;
 
 private:
 	enum class State : USINT

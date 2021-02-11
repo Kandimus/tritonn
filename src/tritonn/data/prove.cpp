@@ -34,13 +34,13 @@ rBitsArray rProve::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rProve::rProve(const rStation* owner) : rSource(owner)
+rProve::rProve(const rStation* owner) : rSource(owner), m_setup(static_cast<UINT>(Setup::NONE))
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("NONE"         , static_cast<UINT>(Setup::NONE))
 				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY))
-				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION)));
+				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION));
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
@@ -80,51 +80,35 @@ UDINT rProve::Calculate()
 
 	switch(m_state) {
 		case State::IDLE: onIdle(); break;
-		case State::IDLE
-	}
+		case State::START: onStart(); break;
+		case State::NOFLOW: onNoFlow(); break;
+	};
 
 	PostCalculate();
 		
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-UDINT rAI::SetFault()
+void rProve::onIdle()
 {
-	PhValue.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-	m_present.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	Current.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-	m_status        = Status::FAULT;
-	Fault           = 1;
-
-	return Fault;
+	switch(m_command) {
+		case Command::NONE: return;
+		case Command::START: m_state = State::START; return;
+	}
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rAI::generateVars(rVariableList& list)
+UDINT rProve::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.Unit, ACCESS_KEYPAD);
-	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.Unit, ACCESS_SCALES);
-	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.Unit, ACCESS_SCALES);
-	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS     , ACCESS_SA);
-	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS     , ACCESS_KEYPAD);
-	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS     , 0);
+	list.add(Alias + ".command"            , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".setup"              , TYPE_UINT , rVariable::Flags::____, &m_setup.Value, U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".state"              , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(Alias + ".average.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp     , U_C      , 0);
+	list.add(Alias + ".average.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres     , U_MPa    , 0);
+	list.add(Alias + ".timer.stabilization", TYPE_UDINT, rVariable::Flags::___L, &m_timerStab  , U_sec    , ACCESS_PROVE);
 
 	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
 
