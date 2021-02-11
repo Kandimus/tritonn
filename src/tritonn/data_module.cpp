@@ -22,19 +22,19 @@
 
 rDataModule::rDataModule()
 {
-	m_module  = 0xFF;
-	m_channel = 0xFF;
+	m_nochannel = false;
 }
 
-rDataModule::~rDataModule()
+rDataModule::rDataModule(bool nochannel)
 {
+	m_nochannel = nochannel;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool rDataModule::isSetModule() const
 {
-	return m_module != 0xFF && m_channel != 0xFF;
+	return m_module != 0xFF && (m_channel != 0xFF || m_nochannel);
 }
 
 

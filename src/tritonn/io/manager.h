@@ -42,6 +42,7 @@ public:
 	std::string saveKernel();
 
 	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);
+	std::unique_ptr<rIOBaseModule>  getModule(USINT module);
 
 protected:
 	virtual rThreadStatus Proccesing();

@@ -71,7 +71,7 @@ public:
 	};
 
 	rAI(const rStation* owner = nullptr);
-	virtual ~rAI();
+	virtual ~rAI() = default;
 	
 	// Виртуальные функции от rSource
 public:
@@ -93,7 +93,7 @@ public:
 	// Outputs
 	rLink       PhValue;                 // Текущее физическое значение
 	rLink       m_present;               // Результирующие значение
-	rLink       Current;                 // Значение тока/напряжения, пересчитанное из кода АЦП
+	rLink       m_current;               // Значение тока/напряжения, пересчитанное из кода АЦП
 
 	// Внутренние переменные
 	rCmpLREAL   KeypadValue;             // Значение ручного ввода

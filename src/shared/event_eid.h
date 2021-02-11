@@ -74,12 +74,13 @@ const UINT EVENT_OBJ_DI       = 0x000F;
 const UINT EVENT_OBJ_DO       = 0x0010;
 const UINT EVENT_OBJ_AO       = 0x0011;
 const UINT EVENT_OBJ_SAMPLER  = 0x0012;
-const UINT EVENT_OBJ__END     = 0x0013;
+const UINT EVENT_OBJ_PROVE    = 0x0013;
+const UINT EVENT_OBJ__END     = 0x0014;
 const UINT EVENT_OBJ_MAX      = 0x003F;
 
 const string EVENT_OBJ_DESC[EVENT_OBJ__END + 1] = {"UNDEF", "SYSTEM", "TCP", "LOG", "EVENT", "SELECTOR", "AI", "FI",
 												   "DENSSOL", "REDUCEDDENS", "STREAM", "STATION", "TEST", "REPORT", "VARIABLES", "DI",
-												   "DO", "AO", "SAMPLER", "USER"};
+												   "DO", "AO", "SAMPLER", "PROVE", "USER"};
 
 
 
@@ -88,20 +89,20 @@ const UDINT EID_UNDEF                = 0;
 
 //-------------------------------------------------------------------------------------------------
 // System
-CREATE_EID(EID_SYSTEM_START_WARM      , EMT_INFO   , EVENT_OBJ_SYSTEM , 1)
-CREATE_EID(EID_SYSTEM_START_COLD      , EMT_WARNING, EVENT_OBJ_SYSTEM , 2)
-CREATE_EID(EID_SYSTEM_RUNNING         , EMT_INFO   , EVENT_OBJ_SYSTEM , 3) // Тритонн запущен
-CREATE_EID(EID_SYSTEM_HALT            , EMT_ERROR  , EVENT_OBJ_SYSTEM , 4) // Возникла критическая ошибка
+CREATE_EID(EID_SYSTEM_START_WARM      , EMT_INFO   , EVENT_OBJ_SYSTEM  , 1)
+CREATE_EID(EID_SYSTEM_START_COLD      , EMT_WARNING, EVENT_OBJ_SYSTEM  , 2)
+CREATE_EID(EID_SYSTEM_RUNNING         , EMT_INFO   , EVENT_OBJ_SYSTEM  , 3) // Тритонн запущен
+CREATE_EID(EID_SYSTEM_HALT            , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 4) // Возникла критическая ошибка
 
-CREATE_EID(EID_SYSTEM_ERRUNIT         , EMT_ERROR  , EVENT_OBJ_SYSTEM , 10) // Ошибка конвертации ед. измерения
-CREATE_EID(EID_SYSTEM_ERROUTPUT       , EMT_ERROR  , EVENT_OBJ_SYSTEM , 11)
-CREATE_EID(EID_SYSTEM_ERROUTVAL       , EMT_ERROR  , EVENT_OBJ_SYSTEM , 12)
-CREATE_EID(EID_SYSTEM_CFGERROR        , EMT_ERROR  , EVENT_OBJ_SYSTEM , 20)  // Ошибка конфигурации
-CREATE_EID(EID_SYSTEM_FILEIOERROR     , EMT_ERROR  , EVENT_OBJ_SYSTEM , 21)  // Ошибки файлового в/в
+CREATE_EID(EID_SYSTEM_ERRUNIT         , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 10) // Ошибка конвертации ед. измерения
+CREATE_EID(EID_SYSTEM_ERROUTPUT       , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 11)
+CREATE_EID(EID_SYSTEM_ERROUTVAL       , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 12)
+CREATE_EID(EID_SYSTEM_CFGERROR        , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 20)  // Ошибка конфигурации
+CREATE_EID(EID_SYSTEM_FILEIOERROR     , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 21)  // Ошибки файлового в/в
 
-CREATE_EID(EID_SYSTEM_RESTART_WARM    , EMT_WARNING, EVENT_OBJ_SYSTEM , 30)  // Команда "Warm-restart"
-CREATE_EID(EID_SYSTEM_RESTART_COLD    , EMT_WARNING, EVENT_OBJ_SYSTEM , 31)  // Команда "Cold-restart"
-CREATE_EID(EID_SYSTEM_RESTART_UNKNOW  , EMT_ERROR  , EVENT_OBJ_SYSTEM , 32)  // Неизвестная команда перезагрузки
+CREATE_EID(EID_SYSTEM_RESTART_WARM    , EMT_WARNING, EVENT_OBJ_SYSTEM  , 30)  // Команда "Warm-restart"
+CREATE_EID(EID_SYSTEM_RESTART_COLD    , EMT_WARNING, EVENT_OBJ_SYSTEM  , 31)  // Команда "Cold-restart"
+CREATE_EID(EID_SYSTEM_RESTART_UNKNOW  , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 32)  // Неизвестная команда перезагрузки
 
 
 //-------------------------------------------------------------------------------------------------
@@ -364,4 +365,8 @@ CREATE_EID(EID_SAMPLER_SELECT_FAULT   , EMT_ERROR  , EVENT_OBJ_SAMPLER ,  12)
 CREATE_EID(EID_SAMPLER_START_FAULT    , EMT_ERROR  , EVENT_OBJ_SAMPLER ,  13)
 
 
-
+//-------------------------------------------------------------------------------------------------
+// PROVE
+CREATE_EID(EID_PROVE_BADCOMMAND       , EMT_ERROR  , EVENT_OBJ_PROVE   ,   1)
+CREATE_EID(EID_PROVE_MODULE           , EMT_ERROR  , EVENT_OBJ_PROVE   ,   2)
+CREATE_EID(EID_PROVE_NOFLOW           , EMT_ERROR  , EVENT_OBJ_PROVE   ,   3)

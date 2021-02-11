@@ -26,7 +26,7 @@
 #include "../variable_item.h"
 #include "../variable_list.h"
 #include "../io/manager.h"
-#include "../io/ai_channel.h"
+#include "../io/module_crm.h"
 #include "xml_util.h"
 #include "prove.h"
 
@@ -34,24 +34,32 @@ rBitsArray rProve::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rProve::rProve(const rStation* owner) : rSource(owner), m_setup(static_cast<UINT>(Setup::NONE))
+rProve::rProve(const rStation* owner)
+	: rSource(owner), rDataModule(true), m_setup(static_cast<UINT>(Setup::NONE))
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("NONE"         , static_cast<UINT>(Setup::NONE))
 				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY))
-				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION));
+				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION))
+				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE));
 	}
 
+
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(rLink::Setup::OUTPUT, m_temp, U_C  , SID::TEMPERATURE, XmlName::TEMP, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_pres, U_MPa, SID::PRESSURE   , XmlName::PRES, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT, m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::InitLimitEvent(rLink &link)
+UDINT rProve::InitLimitEvent(rLink &link)
 {
 	link.Limit.EventChangeAMin  = ReinitEvent(EID_AI_NEW_AMIN)  << link.Descr << link.Unit;
 	link.Limit.EventChangeWMin  = ReinitEvent(EID_AI_NEW_WMIN)  << link.Descr << link.Unit;
@@ -66,7 +74,7 @@ UDINT rAI::InitLimitEvent(rLink &link)
 	link.Limit.EventNan         = ReinitEvent(EID_AI_NAN)       << link.Descr << link.Unit;
 	link.Limit.EventNormal      = ReinitEvent(EID_AI_NORMAL)    << link.Descr << link.Unit;
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -78,10 +86,28 @@ UDINT rProve::Calculate()
 	
 	if(rSource::Calculate()) return TRITONN_RESULT_OK;
 
+	if (isSetModule()) {
+		auto module_ptr = rIOManager::instance().getModule(m_module);
+		auto module     = dynamic_cast<rModuleCRM*>(module_ptr.get());
+
+		if (!module) {
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_MODULE) << m_module);
+			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			return DATACFGERR_REALTIME_MODULELINK;
+		}
+
+		m_curFreq      = module->getFreq();
+		m_curDetectors = module->getDetectors();
+	}
+
 	switch(m_state) {
 		case State::IDLE: onIdle(); break;
 		case State::START: onStart(); break;
 		case State::NOFLOW: onNoFlow(); break;
+		case State::STABILIZATION: onStabilization(); break;
+		case State::STABERROR: onStabError(); break;
+		case State::VALVETOUP: onValveToUp(); break;
+		case State::WAITTOUP: onWaitToUp(); break;
 	};
 
 	PostCalculate();
@@ -92,9 +118,44 @@ UDINT rProve::Calculate()
 void rProve::onIdle()
 {
 	switch(m_command) {
-		case Command::NONE: return;
-		case Command::START: m_state = State::START; return;
+		case Command::NONE:
+			break;
+
+		case Command::START:
+			m_state = State::START;
+			return;
+
+		case Command::STOP:
+		case Command::ABORT:
+		case Command::RESET:
+			break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
+			break;
 	}
+
+	m_command = Command::NONE;
+}
+
+void rProve::onStart()
+{
+	m_inDens = 0;
+	m_inPres = 0;
+	m_inTemp = 0;
+
+	if (m_curFreq) {
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
+		m_state = State::NOFLOW;
+		return;
+	}
+
+	if (m_setup.Value & Setup::STABILIZATION) {
+		m_state = State::STABILIZATION;
+		return;
+	}
+
+	m_state = State::VALVETOUP;
 }
 
 
@@ -108,6 +169,7 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(Alias + ".state"              , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
 	list.add(Alias + ".average.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp     , U_C      , 0);
 	list.add(Alias + ".average.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres     , U_MPa    , 0);
+	list.add(Alias + ".average.density"    , TYPE_LREAL, rVariable::Flags::R__L, &m_inDens     , U_kg_m3  , 0);
 	list.add(Alias + ".timer.stabilization", TYPE_UDINT, rVariable::Flags::___L, &m_timerStab  , U_sec    , ACCESS_PROVE);
 
 	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);

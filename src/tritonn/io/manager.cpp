@@ -57,6 +57,17 @@ std::unique_ptr<rIOBaseChannel> rIOManager::getChannel(USINT module, USINT chann
 	return m_modules[module]->getChannel(channel);
 }
 
+std::unique_ptr<rIOBaseModule> rIOManager::getModule(USINT module)
+{
+	if (module >= m_modules.size()) {
+		return nullptr;
+	}
+
+	auto module_ptr = std::make_unique<rIOBaseModule>(m_modules);
+
+	return module_ptr;
+}
+
 rThreadStatus rIOManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;

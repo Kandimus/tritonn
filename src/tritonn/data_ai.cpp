@@ -67,13 +67,7 @@ rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
 	//NOTE Единицы измерения добавим после загрузки сигнала
 	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, Current  , U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
-}
-
-
-rAI::~rAI()
-{
-	;
+	InitLink(rLink::Setup::OUTPUT, m_current, U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
 
 
@@ -159,8 +153,8 @@ UDINT rAI::Calculate()
 
 		CheckExpr(channel->m_state, AI_LE_CODE_FAULT, event_fault.Reinit(EID_AI_CH_FAULT) << ID << Descr, event_success.Reinit(EID_AI_CH_OK) << ID << Descr);
 
-		PhValue.Value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
-		Current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
+		PhValue.Value   = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
+		m_current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
 
 		if (channel->m_state) {
 			Fault = true;
@@ -324,7 +318,7 @@ UDINT rAI::SetFault()
 {
 	PhValue.Value   = std::numeric_limits<LREAL>::quiet_NaN();
 	m_present.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	Current.Value   = std::numeric_limits<LREAL>::quiet_NaN();
+	m_current.Value = std::numeric_limits<LREAL>::quiet_NaN();
 	m_status        = Status::FAULT;
 	Fault           = 1;
 
@@ -419,7 +413,7 @@ std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::s
 {
 	m_present.Limit.m_setup.Init(rLimit::Setup::NONE);
 	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Current.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_current.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

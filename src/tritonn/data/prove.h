@@ -42,6 +42,18 @@ public:
 		NONE          = 0x0000,
 		VALVE_4WAY    = 0x0001,
 		STABILIZATION = 0x0002,
+		NOVALVE       = 0x0004,
+	};
+
+	enum class State : USINT
+	{
+		IDLE = 0,
+		START,
+		NOFLOW,
+		STABILIZATION,
+		STABERROR,
+		VALVETOUP,
+		WAITTOUP,
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -60,15 +72,17 @@ protected:
 
 private:
 	void onIdle();
+	void onStart();
 
 public:
 	// Inputs
 	rLink m_temp;
 	rLink m_pres;
-	rLink m_toOpen;
-	rLink m_toClose;
-	rLink m_isOpen;
-	rLink m_isClose;
+	rLink m_dens;
+	rLink m_open;
+	rLink m_close;
+	rLink m_opened;
+	rLink m_closed;
 
 	// Inoutputs
 
@@ -79,16 +93,12 @@ public:
 	rCmpUINT m_setup   = static_cast<UINT>(Setup::NONE);
 	LREAL    m_inTemp  = 0;
 	LREAL    m_inPres  = 0;
+	LREAL    m_inDens  = 0;
+	LREAL    m_curFreq = 0.0;
+	UINT     m_curDetectors = 0;
 	UDINT    m_timerStab;
 
 private:
-	enum class State : USINT
-	{
-		IDLE = 0,
-		START,
-		NOFLOW,
-	};
-
 	State m_state = State::IDLE;
 
 	static rBitsArray m_flagsSetup;
