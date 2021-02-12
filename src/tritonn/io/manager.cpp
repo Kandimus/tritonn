@@ -63,9 +63,7 @@ std::unique_ptr<rIOBaseModule> rIOManager::getModule(USINT module)
 		return nullptr;
 	}
 
-	auto module_ptr = std::make_unique<rIOBaseModule>(m_modules);
-
-	return module_ptr;
+	return m_modules[module]->getModulePtr();
 }
 
 rThreadStatus rIOManager::Proccesing()

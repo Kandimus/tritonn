@@ -48,10 +48,13 @@ public:
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
+	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleCRM>(*this); }
 
 public:
 	UDINT start();
 	USINT abort();
+	LREAL getFreq() const;
+	UINT  getDetectors() const;
 
 private:
 	std::vector<rIODIChannel> m_channelDI;

@@ -20,7 +20,9 @@
 #include "bits_array.h"
 #include "../compared_values.h"
 #include "../data_link.h"
+#include "tickcount.h"
 
+class rAI;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -51,9 +53,11 @@ public:
 		START,
 		NOFLOW,
 		STABILIZATION,
-		STABERROR,
+		ERRORSTAB,
 		VALVETOUP,
 		WAITTOUP,
+		VALVETODOWN,
+		ERRORTOUP,
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -73,6 +77,12 @@ protected:
 private:
 	void onIdle();
 	void onStart();
+	void onNoFlow();
+	void onStabilization();
+	void onValveToUp();
+
+
+	bool checkStab(const rAI& ai, LREAL val);
 
 public:
 	// Inputs
@@ -91,15 +101,37 @@ public:
 	// Внутренние переменные
 	Command  m_command = Command::NONE;
 	rCmpUINT m_setup   = static_cast<UINT>(Setup::NONE);
+	rCmpUINT m_strIdx;
 	LREAL    m_inTemp  = 0;
 	LREAL    m_inPres  = 0;
 	LREAL    m_inDens  = 0;
+	LREAL    m_strTemp = 0;
+	LREAL    m_strPres = 0;
+	LREAL    m_strDens = 0;
+
+	LREAL    m_maxStabTemp = 0.2;
+	LREAL    m_maxStabPres = 0.01;
+	LREAL    m_maxStabDens = 0.5;
+
 	LREAL    m_curFreq = 0.0;
 	UINT     m_curDetectors = 0;
-	UDINT    m_timerStab;
+
+	UDINT    m_tsStart = 1000;
+	UDINT    m_tsStab  = 20000;
+	UDINT    m_tsD1    = 20000;
+	UDINT    m_tsD2    = 20000;
+	UDINT    m_tsV     = 20000;
 
 private:
 	State m_state = State::IDLE;
+
+	LREAL m_stabDens = 0;
+	LREAL m_stabPres = 0;
+	LREAL m_stabTemp = 0;
+
+	rTickCount m_timerStart;
+	rTickCount m_timerStab;
+	rTickCount m_timerWaitUp;
 
 	static rBitsArray m_flagsSetup;
 };

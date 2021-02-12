@@ -48,6 +48,7 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual std::string saveKernel(const std::string& description);
+	virtual std::unique_ptr<rIOBaseModule> getModulePtr() = 0;
 
 /*
 	Type  getType()         { return m_type; }

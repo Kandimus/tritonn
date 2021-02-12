@@ -78,7 +78,9 @@ rThreadStatus rDisplayManager::Proccesing()
 	rTickCount    tperiod;
 	rTickCount    tautocmd;
 
-//	PacketRcvd.Set(1);
+	if (!Auto) {
+		tperiod.start(1000);
+	}
 
 	// Автоматическое выполнение (без вывода на экран)
 	if(!Hide)
@@ -132,9 +134,9 @@ rThreadStatus rDisplayManager::Proccesing()
 			command = "";
 		}
 
-		if(tperiod.GetCount() >= 1000 && !Auto)
+		if(tperiod.isFinished())
 		{
-			tperiod.Reset();
+			tperiod.reset();
 
 			if(PacketGetData.Count)
 			{

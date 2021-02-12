@@ -214,7 +214,7 @@ rThreadStatus rOPCUAManager::Proccesing()
 	UA_Boolean waitInternal  = false;
 	rTickCount tick;
 
-	tick.Reset();
+	tick.start(500);
 
 	while(true)
 	{
@@ -226,14 +226,14 @@ rThreadStatus rOPCUAManager::Proccesing()
 		}
 
 
-		if(tick.GetCount() >= 500)
+		if(tick.isFinished())
 		{
 			rLocker lock(Mutex); lock.Nop();
 
 			m_snapshot.resetAssign();
 
 			m_snapshot.get();
-			tick.Reset();
+			tick.reset();
 
 			rVariableClass::processing();
 			rThreadClass::EndProccesing();

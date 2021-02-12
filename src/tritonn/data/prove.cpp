@@ -22,6 +22,7 @@
 #include "text_id.h"
 #include "../event_manager.h"
 #include "../data_manager.h"
+#include "../data_ai.h"
 #include "../error.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
@@ -100,15 +101,31 @@ UDINT rProve::Calculate()
 		m_curDetectors = module->getDetectors();
 	}
 
+	switch(m_command) {
+		case Command::NONE:
+		case Command::START:
+		case Command::STOP:
+		case Command::ABORT:
+		case Command::RESET: break;
+
+		default:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
+			break;
+	}
+
 	switch(m_state) {
 		case State::IDLE: onIdle(); break;
 		case State::START: onStart(); break;
-		case State::NOFLOW: onNoFlow(); break;
 		case State::STABILIZATION: onStabilization(); break;
-		case State::STABERROR: onStabError(); break;
 		case State::VALVETOUP: onValveToUp(); break;
 		case State::WAITTOUP: onWaitToUp(); break;
+
+		case State::NOFLOW:
+		case State::ERRORSTAB:
+		case State::ERRORTOUP: onErrorState(); break;
 	};
+
+	m_command = Command::NONE;
 
 	PostCalculate();
 		
@@ -118,31 +135,42 @@ UDINT rProve::Calculate()
 void rProve::onIdle()
 {
 	switch(m_command) {
-		case Command::NONE:
-			break;
-
 		case Command::START:
 			m_state = State::START;
-			return;
-
-		case Command::STOP:
-		case Command::ABORT:
-		case Command::RESET:
 			break;
 
-		default:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
-			break;
+		default: break;
 	}
-
-	m_command = Command::NONE;
 }
 
 void rProve::onStart()
 {
-	m_inDens = 0;
-	m_inPres = 0;
-	m_inTemp = 0;
+	switch(m_command) {
+		case Command::STOP:
+		case Command::ABORT:
+			m_state = State::IDLE;
+			break;
+
+		default: break;
+	}
+
+	if (!m_timerStart.isStarted()) {
+		m_inDens  = 0;
+		m_inPres  = 0;
+		m_inTemp  = 0;
+		m_strDens = 0;
+		m_strPres = 0;
+		m_strTemp = 0;
+		m_timerStart.start(m_tsStart);
+		//TODO Переключить линию
+		return;
+	}
+
+	if (!m_timerStart.isFinished()) {
+		return;
+	}
+
+	m_timerStart.stop();
 
 	if (m_curFreq) {
 		rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
@@ -158,18 +186,102 @@ void rProve::onStart()
 	m_state = State::VALVETOUP;
 }
 
+void rProve::onStabilization()
+{
+	if (!m_timerStab.isStarted()) {
+		m_stabTemp = m_temp.Value;
+		m_stabPres = m_pres.Value;
+		m_stabDens = m_dens.Value;
+
+		m_timerStab.start(m_tsStab);
+		return;
+	}
+
+	if (m_timerStab.isFinished()) {
+		m_timerStab.stop();
+		m_state = State::VALVETOUP;
+	}
+
+	LREAL delta = 0;
+
+	delta = std::fabs(m_temp.Value - m_stabTemp);
+	if (delta > m_maxStabTemp) {
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_STABTEMP) << delta << m_maxStabTemp);
+		m_state = State::ERRORSTAB;
+	}
+
+	delta = std::fabs(m_pres.Value - m_stabPres);
+	if (delta > m_maxStabPres) {
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_STABPRES) << delta << m_maxStabPres);
+		m_state = State::ERRORSTAB;
+	}
+
+	delta = std::fabs(m_dens.Value - m_stabDens);
+	if (delta > m_maxStabDens) {
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_STABDENS) << delta << m_maxStabDens);
+		m_state = State::ERRORSTAB;
+	}
+}
+
+void rProve::onValveToUp()
+{
+	if (m_opened.Value > 0 && m_closed.Value == 0) {
+		m_state = State::VALVETODOWN;
+		return;
+	}
+
+	m_open.Value = 1;
+	m_state = State::WAITTOUP;
+	rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
+}
+
+void rProve::onWaitToUp()
+{
+	if (!m_timerWaitUp.isStarted()) {
+		m_timerWaitUp.start(2.0 * (m_tsD1 + m_tsD2 + m_tsV));
+		return;
+	}
+
+	if (m_timerWaitUp.isFinished()) {
+		m_timerWaitUp.stop();
+
+		if (m_opened.Value > 0 && m_closed.Value == 0) {
+			m_state = State::VALVETODOWN;
+			return;
+		}
+
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTOUP));
+		m_state = State::ERRORTOUP;
+	}
+}
+
+
+void rProve::onErrorState()
+{
+	switch(m_command) {
+		case Command::RESET:
+			m_state = State::IDLE;
+			break;
+
+		default: break;
+	}
+}
+
 
 UDINT rProve::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".command"            , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".setup"              , TYPE_UINT , rVariable::Flags::____, &m_setup.Value, U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".state"              , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(Alias + ".average.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp     , U_C      , 0);
-	list.add(Alias + ".average.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres     , U_MPa    , 0);
-	list.add(Alias + ".average.density"    , TYPE_LREAL, rVariable::Flags::R__L, &m_inDens     , U_kg_m3  , 0);
+	list.add(Alias + ".command"                   , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".setup"                     , TYPE_UINT , rVariable::Flags::____, &m_setup.Value, U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".state"                     , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(Alias + ".average.prove.temperature" , TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp     , U_C      , 0);
+	list.add(Alias + ".average.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres     , U_MPa    , 0);
+	list.add(Alias + ".average.prove.density"     , TYPE_LREAL, rVariable::Flags::R__L, &m_inDens     , U_kg_m3  , 0);
+	list.add(Alias + ".average.stream.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_stnTemp    , U_C      , 0);
+	list.add(Alias + ".average.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_stnPres    , U_MPa    , 0);
+	list.add(Alias + ".average.stream.density"    , TYPE_LREAL, rVariable::Flags::R__L, &m_stnDens    , U_kg_m3  , 0);
 	list.add(Alias + ".timer.stabilization", TYPE_UDINT, rVariable::Flags::___L, &m_timerStab  , U_sec    , ACCESS_PROVE);
 
 	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
@@ -241,6 +353,10 @@ std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::s
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
+bool rProve::checkStab(const rAI& ai, LREAL val)
+{
+	return
+}
 
 
 
