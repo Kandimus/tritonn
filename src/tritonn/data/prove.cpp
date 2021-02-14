@@ -119,10 +119,14 @@ UDINT rProve::Calculate()
 		case State::STABILIZATION: onStabilization(); break;
 		case State::VALVETOUP: onValveToUp(); break;
 		case State::WAITTOUP: onWaitToUp(); break;
+		case State::VALVETODOWN: onValveToDown(); break;
+		case State::WAITD1: onWaitD1(); break;
 
 		case State::NOFLOW:
 		case State::ERRORSTAB:
-		case State::ERRORTOUP: onErrorState(); break;
+		case State::ERRORTOUP:
+		case State::ERRORTODOWN:
+			onErrorState(); break;
 	};
 
 	m_command = Command::NONE;
@@ -232,13 +236,13 @@ void rProve::onValveToUp()
 
 	m_open.Value = 1;
 	m_state = State::WAITTOUP;
-	rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
 }
 
 void rProve::onWaitToUp()
 {
 	if (!m_timerWaitUp.isStarted()) {
-		m_timerWaitUp.start(2.0 * (m_tsD1 + m_tsD2 + m_tsV));
+		m_timerWaitUp.start(2.0 * (m_tsD1 + m_tsD2 + m_tsVolume));
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
 		return;
 	}
 
@@ -252,6 +256,29 @@ void rProve::onWaitToUp()
 
 		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTOUP));
 		m_state = State::ERRORTOUP;
+	}
+}
+
+void rProve::onValveToDown()
+{
+	if (!m_timerValve.isStarted()) {
+		//TODO MODULE -> start
+		m_close.Value = 1;
+		m_timerValve.start(m_tsValve);
+		return;
+	}
+
+	if (m_closed.Value > 0 && m_opened.Value == 0) {
+		m_state = State::WAITD1;
+		m_timerValve.stop();
+	}
+
+	if(m_timerValve.isFinished()) {
+		m_timerValve.stop();
+
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTDOWN));
+		m_state = State::ERRORTODOWN;
+		return;
 	}
 }
 
@@ -273,16 +300,23 @@ UDINT rProve::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".command"                   , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".setup"                     , TYPE_UINT , rVariable::Flags::____, &m_setup.Value, U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".state"                     , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(Alias + ".average.prove.temperature" , TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp     , U_C      , 0);
-	list.add(Alias + ".average.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres     , U_MPa    , 0);
-	list.add(Alias + ".average.prove.density"     , TYPE_LREAL, rVariable::Flags::R__L, &m_inDens     , U_kg_m3  , 0);
-	list.add(Alias + ".average.stream.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_stnTemp    , U_C      , 0);
-	list.add(Alias + ".average.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_stnPres    , U_MPa    , 0);
-	list.add(Alias + ".average.stream.density"    , TYPE_LREAL, rVariable::Flags::R__L, &m_stnDens    , U_kg_m3  , 0);
-	list.add(Alias + ".timer.stabilization", TYPE_UDINT, rVariable::Flags::___L, &m_timerStab  , U_sec    , ACCESS_PROVE);
+	list.add(Alias + ".command"                   , TYPE_UINT , rVariable::Flags::____, &m_command       , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".setup"                     , TYPE_UINT , rVariable::Flags::____, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".state"                     , TYPE_UINT , rVariable::Flags::R___, &m_state         , U_DIMLESS, 0);
+	list.add(Alias + ".volume1"                   , TYPE_LREAL, rVariable::Flags::____, &m_volume1.Value , U_m3     , ACCESS_PROVE);
+	list.add(Alias + ".volume2"                   , TYPE_LREAL, rVariable::Flags::____, &m_volume2.Value , U_m3     , ACCESS_PROVE);
+	list.add(Alias + ".diameter"                  , TYPE_LREAL, rVariable::Flags::____, &m_diameter.Value, U_m3     , ACCESS_PROVE);
+	list.add(Alias + ".average.prove.temperature" , TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp        , U_C      , 0);
+	list.add(Alias + ".average.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres        , U_MPa    , 0);
+	list.add(Alias + ".average.prove.density"     , TYPE_LREAL, rVariable::Flags::R__L, &m_inDens        , U_kg_m3  , 0);
+	list.add(Alias + ".average.stream.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_strTemp       , U_C      , 0);
+	list.add(Alias + ".average.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_strPres       , U_MPa    , 0);
+	list.add(Alias + ".average.stream.density"    , TYPE_LREAL, rVariable::Flags::R__L, &m_strDens       , U_kg_m3  , 0);
+	list.add(Alias + ".timer.start"               , TYPE_UDINT, rVariable::Flags::___L, &m_tsStart       , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.stabilization"       , TYPE_UDINT, rVariable::Flags::___L, &m_tsStab        , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.detector1"           , TYPE_UDINT, rVariable::Flags::___L, &m_tsD1          , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.detector2"           , TYPE_UDINT, rVariable::Flags::___L, &m_tsD2          , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.valve"               , TYPE_UDINT, rVariable::Flags::___L, &m_tsValve       , U_msec   , ACCESS_PROVE);
 
 	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
 

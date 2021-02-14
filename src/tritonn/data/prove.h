@@ -58,6 +58,10 @@ public:
 		WAITTOUP,
 		VALVETODOWN,
 		ERRORTOUP,
+		ERRORTODOWN,
+		ANTIBOUNSE1,
+		WAITD1,
+
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -80,7 +84,11 @@ private:
 	void onNoFlow();
 	void onStabilization();
 	void onValveToUp();
+	void onWaitToUp();
+	void onValveToDown();
+	void onWaitD1();
 
+	void onErrorState();
 
 	bool checkStab(const rAI& ai, LREAL val);
 
@@ -99,9 +107,12 @@ public:
 	// Outputs
 
 	// Внутренние переменные
-	Command  m_command = Command::NONE;
-	rCmpUINT m_setup   = static_cast<UINT>(Setup::NONE);
-	rCmpUINT m_strIdx;
+	Command   m_command = Command::NONE;
+	rCmpUINT  m_setup   = static_cast<UINT>(Setup::NONE);
+	rCmpUINT  m_strIdx;
+	rCmpLREAL m_volume1;
+	rCmpLREAL m_volume2;
+	rCmpLREAL m_diameter;
 	LREAL    m_inTemp  = 0;
 	LREAL    m_inPres  = 0;
 	LREAL    m_inDens  = 0;
@@ -116,11 +127,12 @@ public:
 	LREAL    m_curFreq = 0.0;
 	UINT     m_curDetectors = 0;
 
-	UDINT    m_tsStart = 1000;
-	UDINT    m_tsStab  = 20000;
-	UDINT    m_tsD1    = 20000;
-	UDINT    m_tsD2    = 20000;
-	UDINT    m_tsV     = 20000;
+	UDINT    m_tsStart  = 1000;
+	UDINT    m_tsStab   = 20000;
+	UDINT    m_tsD1     = 20000;
+	UDINT    m_tsD2     = 20000; //TODO а не следует ли это убрать? т.к. ожидание 2 детектора это и есть tsVolume
+	UDINT    m_tsVolume = 20000;
+	UDINT    m_tsValve  = 5000;
 
 private:
 	State m_state = State::IDLE;
@@ -132,6 +144,7 @@ private:
 	rTickCount m_timerStart;
 	rTickCount m_timerStab;
 	rTickCount m_timerWaitUp;
+	rTickCount m_timerValve;
 
 	static rBitsArray m_flagsSetup;
 };
