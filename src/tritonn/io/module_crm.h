@@ -34,6 +34,14 @@ friend class rIOManager;
 
 public:
 
+	enum Detector : UINT
+	{
+		Det1 = 0x0001,
+		Det2 = 0x0002,
+		Det3 = 0x0004,
+		Det4 = 0x0008,
+	};
+
 	const UDINT CHANNEL_DI_COUNT = 4;
 
 	rModuleCRM();

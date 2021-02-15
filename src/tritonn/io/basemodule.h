@@ -49,6 +49,7 @@ public:
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual std::string saveKernel(const std::string& description);
 	virtual std::unique_ptr<rIOBaseModule> getModulePtr() = 0;
+	virtual std::string getAlias() const;
 
 /*
 	Type  getType()         { return m_type; }
@@ -78,7 +79,8 @@ public:
 
 protected:
 	pthread_mutex_t m_mutex;
-	std::string     m_name;
+	std::string     m_name  = "";
+	std::string     m_alias = "";
 };
 
 

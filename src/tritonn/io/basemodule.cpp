@@ -39,10 +39,18 @@ UDINT rIOBaseModule::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+std::string rIOBaseModule::getAlias() const
+{
+	return m_alias;
+}
+
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
 	UNUSED(issimulate);
-	std::string p = prefix + m_name + ".";
+
+	m_alias = prefix + m_name;
+
+	std::string p = m_alias + ".";
 
 	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R___, &m_type        , U_DIMLESS , 0);
 	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R___, &m_nodeID      , U_DIMLESS , 0);

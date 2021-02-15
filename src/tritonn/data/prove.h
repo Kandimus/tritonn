@@ -59,9 +59,15 @@ public:
 		VALVETODOWN,
 		ERRORTOUP,
 		ERRORTODOWN,
-		ANTIBOUNSE1,
+		ANTIBOUNSE1, // 10
 		WAITD1,
-
+		ERRORD1,
+		WAITD2,
+		ERRORD2,
+		CALCULATE,
+		RETURNBALL,
+		ERRORRETURN,
+		FINISH,
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -87,10 +93,14 @@ private:
 	void onWaitToUp();
 	void onValveToDown();
 	void onWaitD1();
+	void onWaitD2();
+	void onCalсulate();
+	void onReturnBall();
 
 	void onErrorState();
 
-	bool checkStab(const rAI& ai, LREAL val);
+	void moduleStart();
+	void moduleStop();
 
 public:
 	// Inputs
@@ -124,15 +134,17 @@ public:
 	LREAL    m_maxStabPres = 0.01;
 	LREAL    m_maxStabDens = 0.5;
 
-	LREAL    m_curFreq = 0.0;
-	UINT     m_curDetectors = 0;
+	std::string m_moduleName = "";
+	LREAL       m_moduleFreq = 0.0;
+	UINT        m_moduleDetectors = 0;
 
 	UDINT    m_tsStart  = 1000;
-	UDINT    m_tsStab   = 20000;
-	UDINT    m_tsD1     = 20000;
-	UDINT    m_tsD2     = 20000; //TODO а не следует ли это убрать? т.к. ожидание 2 детектора это и есть tsVolume
-	UDINT    m_tsVolume = 20000;
-	UDINT    m_tsValve  = 5000;
+	UDINT    m_tsStab   = 10000;
+	UDINT    m_tsD1     = 8000;  // Время от старта до 1(2) детектора
+	UDINT    m_tsD2     = 8000;  // Время от 3(4) детектора до попадания шара в корзину
+	UDINT    m_tsVolume = 20000; //
+	UDINT    m_tsValve  = 5000;  //
+	UDINT    m_tsFinish = 5000;
 
 private:
 	State m_state = State::IDLE;
@@ -141,10 +153,7 @@ private:
 	LREAL m_stabPres = 0;
 	LREAL m_stabTemp = 0;
 
-	rTickCount m_timerStart;
-	rTickCount m_timerStab;
-	rTickCount m_timerWaitUp;
-	rTickCount m_timerValve;
+	rTickCount m_timer;
 
 	static rBitsArray m_flagsSetup;
 };

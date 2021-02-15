@@ -97,9 +97,12 @@ UDINT rProve::Calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		m_curFreq      = module->getFreq();
-		m_curDetectors = module->getDetectors();
+		m_moduleName      = module->getAlias();
+		m_moduleFreq      = module->getFreq();
+		m_moduleDetectors = module->getDetectors();
 	}
+
+	//TODO Сообщения от детекторов
 
 	switch(m_command) {
 		case Command::NONE:
@@ -121,11 +124,18 @@ UDINT rProve::Calculate()
 		case State::WAITTOUP: onWaitToUp(); break;
 		case State::VALVETODOWN: onValveToDown(); break;
 		case State::WAITD1: onWaitD1(); break;
+		case State::WAITD2: onWaitD2(); break;
+		case State::CALCULATE: onCalсulate(); break;
+		case State::RETURNBALL: onReturnBall(); break;
+		case State::FINISH: onFinish(); break;
 
 		case State::NOFLOW:
 		case State::ERRORSTAB:
 		case State::ERRORTOUP:
 		case State::ERRORTODOWN:
+		case State::ERRORD1:
+		case State::ERRORD2:
+		case State::ERRORRETURN:
 			onErrorState(); break;
 	};
 
@@ -158,51 +168,49 @@ void rProve::onStart()
 		default: break;
 	}
 
-	if (!m_timerStart.isStarted()) {
+	if (!m_timer.isStarted()) {
 		m_inDens  = 0;
 		m_inPres  = 0;
 		m_inTemp  = 0;
 		m_strDens = 0;
 		m_strPres = 0;
 		m_strTemp = 0;
-		m_timerStart.start(m_tsStart);
+		m_timer.start(m_timerStart);
 		//TODO Переключить линию
 		return;
 	}
 
-	if (!m_timerStart.isFinished()) {
-		return;
+	if (m_timer.isFinished()) {
+		m_timer.stop();
+
+		if (m_curFreq) {
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
+			m_state = State::NOFLOW;
+			return;
+		}
+
+		if (m_setup.Value & Setup::STABILIZATION) {
+			m_state = State::STABILIZATION;
+			return;
+		}
+
+		m_state = State::VALVETOUP;
 	}
-
-	m_timerStart.stop();
-
-	if (m_curFreq) {
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
-		m_state = State::NOFLOW;
-		return;
-	}
-
-	if (m_setup.Value & Setup::STABILIZATION) {
-		m_state = State::STABILIZATION;
-		return;
-	}
-
-	m_state = State::VALVETOUP;
 }
 
 void rProve::onStabilization()
 {
-	if (!m_timerStab.isStarted()) {
+	if (!m_timer.isStarted()) {
 		m_stabTemp = m_temp.Value;
 		m_stabPres = m_pres.Value;
 		m_stabDens = m_dens.Value;
 
-		m_timerStab.start(m_tsStab);
+		m_timer.start(m_timerStab);
 		return;
 	}
 
-	if (m_timerStab.isFinished()) {
-		m_timerStab.stop();
+	if (m_timer.isFinished()) {
+		m_timer.stop();
 		m_state = State::VALVETOUP;
 	}
 
@@ -240,14 +248,14 @@ void rProve::onValveToUp()
 
 void rProve::onWaitToUp()
 {
-	if (!m_timerWaitUp.isStarted()) {
-		m_timerWaitUp.start(2.0 * (m_tsD1 + m_tsD2 + m_tsVolume));
+	if (!m_timer.isStarted()) {
+		m_timer.start(2.0 * (m_timerD1 + m_timerD2 + m_timerVolume));
 		rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
 		return;
 	}
 
-	if (m_timerWaitUp.isFinished()) {
-		m_timerWaitUp.stop();
+	if (m_timer.isFinished()) {
+		m_timer.stop();
 
 		if (m_opened.Value > 0 && m_closed.Value == 0) {
 			m_state = State::VALVETODOWN;
@@ -261,23 +269,119 @@ void rProve::onWaitToUp()
 
 void rProve::onValveToDown()
 {
-	if (!m_timerValve.isStarted()) {
-		//TODO MODULE -> start
+	if (!m_timer.isStarted()) {
+		moduleStart();
+
 		m_close.Value = 1;
-		m_timerValve.start(m_tsValve);
+		m_timer.start(m_timerValve);
+		return;
+	}
+
+	if(m_timer.isFinished()) {
+		m_timer.stop();
+		moduleStop();
+
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTDOWN));
+		m_state = State::ERRORTODOWN;
 		return;
 	}
 
 	if (m_closed.Value > 0 && m_opened.Value == 0) {
 		m_state = State::WAITD1;
-		m_timerValve.stop();
+		m_timer.stop();
+		return;
+	}
+}
+
+void rProve::onWaitD1()
+{
+	if (!m_timer.isStart()) {
+		m_timer.start(m_timerD1);
+		return;
 	}
 
-	if(m_timerValve.isFinished()) {
-		m_timerValve.stop();
+	if (m_timer.isFinished()) {
+		moduleStop();
+		m_timer.stop();
+		m_state = State::ERRORD1;
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORD1));
+	}
 
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTDOWN));
-		m_state = State::ERRORTODOWN;
+	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+		m_timer.stop();
+		m_state = State::WAITD2;
+		return;
+	}
+}
+
+void rProve::onWaitD2()
+{
+	if (!m_timer.isStart()) {
+		m_timer.start(m_timerVolume);
+		return;
+	}
+
+	if (m_timer.isFinished()) {
+		moduleStop();
+		m_timer.stop();
+		m_state = State::ERRORD2;
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORD2));
+	}
+
+	if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+		m_timer.stop();
+		m_state = State::CALCULATE;
+		return;
+	}
+}
+
+void rProve::onCalсulate()
+{
+	if (!m_timer.isStart()) {
+		m_timer.start(m_timerD2);
+		//TODO Получить данные с модуля
+		return;
+	}
+
+	if (m_timer.isFinished()) {
+		m_timer.stop();
+		m_state = State::RETURNBALL;
+		return;
+	}
+}
+
+void rProve::onReturnBall()
+{
+	if (!m_timer.isStarted()) {
+		m_open.Value = 1;
+		m_timer.start(m_timerValve);
+//!		rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
+		return;
+	}
+
+	if (m_timer.isFinished()) {
+		m_timer.stop();
+		m_state = State::ERRORRETURN;
+		return;
+	}
+
+	if (m_opened.Value > 0 && m_closed.Value == 0) {
+		m_timer.stop();
+		m_state = State::FINISH;
+		return;
+	}
+}
+
+void rProve::onFinish()
+{
+	if (!m_timer.isStarted()) {
+		m_timer.start(m_timerFinish);
+		return;
+	}
+
+	if (m_timer.isFinished()) {
+		m_timer.stop();
+		m_state = State::IDLE;
 		return;
 	}
 }
@@ -300,23 +404,26 @@ UDINT rProve::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".command"                   , TYPE_UINT , rVariable::Flags::____, &m_command       , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".setup"                     , TYPE_UINT , rVariable::Flags::____, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".state"                     , TYPE_UINT , rVariable::Flags::R___, &m_state         , U_DIMLESS, 0);
-	list.add(Alias + ".volume1"                   , TYPE_LREAL, rVariable::Flags::____, &m_volume1.Value , U_m3     , ACCESS_PROVE);
-	list.add(Alias + ".volume2"                   , TYPE_LREAL, rVariable::Flags::____, &m_volume2.Value , U_m3     , ACCESS_PROVE);
-	list.add(Alias + ".diameter"                  , TYPE_LREAL, rVariable::Flags::____, &m_diameter.Value, U_m3     , ACCESS_PROVE);
-	list.add(Alias + ".average.prove.temperature" , TYPE_LREAL, rVariable::Flags::R__L, &m_inTemp        , U_C      , 0);
-	list.add(Alias + ".average.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R__L, &m_inPres        , U_MPa    , 0);
-	list.add(Alias + ".average.prove.density"     , TYPE_LREAL, rVariable::Flags::R__L, &m_inDens        , U_kg_m3  , 0);
-	list.add(Alias + ".average.stream.temperature", TYPE_LREAL, rVariable::Flags::R__L, &m_strTemp       , U_C      , 0);
-	list.add(Alias + ".average.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__L, &m_strPres       , U_MPa    , 0);
-	list.add(Alias + ".average.stream.density"    , TYPE_LREAL, rVariable::Flags::R__L, &m_strDens       , U_kg_m3  , 0);
-	list.add(Alias + ".timer.start"               , TYPE_UDINT, rVariable::Flags::___L, &m_tsStart       , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.stabilization"       , TYPE_UDINT, rVariable::Flags::___L, &m_tsStab        , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.detector1"           , TYPE_UDINT, rVariable::Flags::___L, &m_tsD1          , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.detector2"           , TYPE_UDINT, rVariable::Flags::___L, &m_tsD2          , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.valve"               , TYPE_UDINT, rVariable::Flags::___L, &m_tsValve       , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command       , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state         , U_DIMLESS, 0);
+	list.add(Alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::___L, &m_timerStart    , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::___L, &m_timerStab     , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::___L, &m_timerD1       , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::___L, &m_timerD2       , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::___L, &m_timerVolume   , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::___L, &m_timerValve    , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
+	list.add(Alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
+	list.add(Alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
+	list.add(Alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
+	list.add(Alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_inTemp        , U_C      , 0);
+	list.add(Alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_inTemp        , U_C      , 0);
+	list.add(Alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_inPres        , U_MPa    , 0);
+	list.add(Alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_inDens        , U_kg_m3  , 0);
+	list.add(Alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp       , U_C      , 0);
+	list.add(Alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres       , U_MPa    , 0);
+	list.add(Alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens       , U_kg_m3  , 0);
 
 	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
 
@@ -378,7 +485,7 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 }
 
 
-std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
+std::string rProve::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
 {
 	m_present.Limit.m_setup.Init(rLimit::Setup::NONE);
 	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);
@@ -387,12 +494,21 @@ std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::s
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
-bool rProve::checkStab(const rAI& ai, LREAL val)
+void rProve::moduleStart()
 {
-	return
+	rSnapshot ss(rDataManager::instance().getVariableClass(), 0xFFFFFFFF);
+
+	ss.add(m_moduleName + ".start", 1);
+	ss.set();
 }
 
+void rProve::moduleStop()
+{
+	rSnapshot ss(rDataManager::instance().getVariableClass(), 0xFFFFFFFF);
 
+	ss.add(m_moduleName + ".stop", 1);
+	ss.set();
+}
 
 
 
