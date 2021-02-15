@@ -48,13 +48,13 @@ rProve::rProve(const rStation* owner)
 
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(rLink::Setup::INPUT, m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT, m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT, m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT, m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT, m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
+	InitLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
 }
 
 
@@ -117,17 +117,19 @@ UDINT rProve::Calculate()
 	}
 
 	switch(m_state) {
-		case State::IDLE: onIdle(); break;
-		case State::START: onStart(); break;
+		case State::IDLE:          onIdle();          break;
+		case State::START:         onStart();         break;
 		case State::STABILIZATION: onStabilization(); break;
-		case State::VALVETOUP: onValveToUp(); break;
-		case State::WAITTOUP: onWaitToUp(); break;
-		case State::VALVETODOWN: onValveToDown(); break;
-		case State::WAITD1: onWaitD1(); break;
-		case State::WAITD2: onWaitD2(); break;
-		case State::CALCULATE: onCalсulate(); break;
-		case State::RETURNBALL: onReturnBall(); break;
-		case State::FINISH: onFinish(); break;
+		case State::VALVETOUP:     onValveToUp();     break;
+		case State::WAITTOUP:      onWaitToUp();      break;
+		case State::VALVETODOWN:   onValveToDown();   break;
+		case State::WAITD1:        onWaitD1();        break;
+		case State::WAITD2:        onWaitD2();        break;
+		case State::CALCULATE:     onCalсulate();     break;
+		case State::RETURNBALL:    onReturnBall();    break;
+		case State::FINISH:        onFinish();        break;
+
+		case State::ANTIBOUNSE1: m_state = State::IDLE; break;
 
 		case State::NOFLOW:
 		case State::ERRORSTAB:
@@ -151,6 +153,7 @@ void rProve::onIdle()
 	switch(m_command) {
 		case Command::START:
 			m_state = State::START;
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDSTART));
 			break;
 
 		default: break;
@@ -159,19 +162,15 @@ void rProve::onIdle()
 
 void rProve::onStart()
 {
-	switch(m_command) {
-		case Command::STOP:
-		case Command::ABORT:
-			m_state = State::IDLE;
-			break;
-
-		default: break;
+	if (checkCommand()) {
+		return;
 	}
 
 	if (!m_timer.isStarted()) {
-		m_inDens  = 0;
-		m_inPres  = 0;
-		m_inTemp  = 0;
+		m_prvFreq = 0;
+		m_prvDens = 0;
+		m_prvPres = 0;
+		m_prvTemp = 0;
 		m_strDens = 0;
 		m_strPres = 0;
 		m_strTemp = 0;
@@ -183,7 +182,7 @@ void rProve::onStart()
 	if (m_timer.isFinished()) {
 		m_timer.stop();
 
-		if (m_curFreq) {
+		if (m_moduleFreq < 0.001) {
 			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
 			m_state = State::NOFLOW;
 			return;
@@ -200,6 +199,10 @@ void rProve::onStart()
 
 void rProve::onStabilization()
 {
+	if (checkCommand()) {
+		return;
+	}
+
 	if (!m_timer.isStarted()) {
 		m_stabTemp = m_temp.Value;
 		m_stabPres = m_pres.Value;
@@ -237,6 +240,10 @@ void rProve::onStabilization()
 
 void rProve::onValveToUp()
 {
+	if (checkCommand()) {
+		return;
+	}
+
 	if (m_opened.Value > 0 && m_closed.Value == 0) {
 		m_state = State::VALVETODOWN;
 		return;
@@ -248,6 +255,10 @@ void rProve::onValveToUp()
 
 void rProve::onWaitToUp()
 {
+	if (checkCommand()) {
+		return;
+	}
+
 	if (!m_timer.isStarted()) {
 		m_timer.start(2.0 * (m_timerD1 + m_timerD2 + m_timerVolume));
 		rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
@@ -269,6 +280,10 @@ void rProve::onWaitToUp()
 
 void rProve::onValveToDown()
 {
+	if (checkCommand()) {
+		return;
+	}
+
 	if (!m_timer.isStarted()) {
 		moduleStart();
 
@@ -295,7 +310,11 @@ void rProve::onValveToDown()
 
 void rProve::onWaitD1()
 {
-	if (!m_timer.isStart()) {
+	if (checkCommand()) {
+		return;
+	}
+
+	if (!m_timer.isStarted()) {
 		m_timer.start(m_timerD1);
 		return;
 	}
@@ -316,7 +335,11 @@ void rProve::onWaitD1()
 
 void rProve::onWaitD2()
 {
-	if (!m_timer.isStart()) {
+	if (checkCommand()) {
+		return;
+	}
+
+	if (!m_timer.isStarted()) {
 		m_timer.start(m_timerVolume);
 		return;
 	}
@@ -337,7 +360,11 @@ void rProve::onWaitD2()
 
 void rProve::onCalсulate()
 {
-	if (!m_timer.isStart()) {
+	if (checkCommand()) {
+		return;
+	}
+
+	if (!m_timer.isStarted()) {
 		m_timer.start(m_timerD2);
 		//TODO Получить данные с модуля
 		return;
@@ -352,6 +379,10 @@ void rProve::onCalсulate()
 
 void rProve::onReturnBall()
 {
+	if (checkCommand()) {
+		return;
+	}
+
 	if (!m_timer.isStarted()) {
 		m_open.Value = 1;
 		m_timer.start(m_timerValve);
@@ -374,6 +405,10 @@ void rProve::onReturnBall()
 
 void rProve::onFinish()
 {
+	if (checkCommand()) {
+		return;
+	}
+
 	if (!m_timer.isStarted()) {
 		m_timer.start(m_timerFinish);
 		return;
@@ -398,6 +433,20 @@ void rProve::onErrorState()
 	}
 }
 
+bool rProve::checkCommand()
+{
+	switch(m_command) {
+		case Command::ABORT:
+			m_state = State::IDLE;
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDABORT));
+			return true;
+
+		default: break;
+	}
+
+	return false;
+}
+
 
 UDINT rProve::generateVars(rVariableList& list)
 {
@@ -413,14 +462,14 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(Alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::___L, &m_timerD2       , U_msec   , ACCESS_PROVE);
 	list.add(Alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::___L, &m_timerVolume   , U_msec   , ACCESS_PROVE);
 	list.add(Alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::___L, &m_timerValve    , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
-	list.add(Alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
-	list.add(Alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
-	list.add(Alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_timerValve    , U_msec   , 0);
-	list.add(Alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_inTemp        , U_C      , 0);
-	list.add(Alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_inTemp        , U_C      , 0);
-	list.add(Alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_inPres        , U_MPa    , 0);
-	list.add(Alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_inDens        , U_kg_m3  , 0);
+	list.add(Alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[0]   , U_imp    , 0);
+	list.add(Alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[0]    , U_sec    , 0);
+	list.add(Alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[1]   , U_imp    , 0);
+	list.add(Alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[1]    , U_sec    , 0);
+	list.add(Alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_prvFreq       , U_Hz     , 0);
+	list.add(Alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_prvTemp       , U_C      , 0);
+	list.add(Alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_prvPres       , U_MPa    , 0);
+	list.add(Alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvDens       , U_kg_m3  , 0);
 	list.add(Alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp       , U_C      , 0);
 	list.add(Alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres       , U_MPa    , 0);
 	list.add(Alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens       , U_kg_m3  , 0);
@@ -433,7 +482,7 @@ UDINT rProve::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));

@@ -34,7 +34,6 @@ public:
 	{
 		NONE = 0,
 		START,
-		STOP,
 		ABORT,
 		RESET,
 	};
@@ -96,8 +95,10 @@ private:
 	void onWaitD2();
 	void onCalсulate();
 	void onReturnBall();
-
+	void onFinish();
+	bool checkCommand();
 	void onErrorState();
+
 
 	void moduleStart();
 	void moduleStop();
@@ -120,15 +121,15 @@ public:
 	Command   m_command = Command::NONE;
 	rCmpUINT  m_setup   = static_cast<UINT>(Setup::NONE);
 	rCmpUINT  m_strIdx;
-	rCmpLREAL m_volume1;
-	rCmpLREAL m_volume2;
-	rCmpLREAL m_diameter;
-	LREAL    m_inTemp  = 0;
-	LREAL    m_inPres  = 0;
-	LREAL    m_inDens  = 0;
-	LREAL    m_strTemp = 0;
-	LREAL    m_strPres = 0;
-	LREAL    m_strDens = 0;
+	LREAL     m_prvFreq = 0;
+	LREAL     m_prvTemp = 0;
+	LREAL     m_prvPres = 0;
+	LREAL     m_prvDens = 0;
+	LREAL     m_prvCount[2];
+	LREAL     m_prvTime[2];
+	LREAL     m_strTemp = 0;
+	LREAL     m_strPres = 0;
+	LREAL     m_strDens = 0;
 
 	LREAL    m_maxStabTemp = 0.2;
 	LREAL    m_maxStabPres = 0.01;
@@ -138,13 +139,13 @@ public:
 	LREAL       m_moduleFreq = 0.0;
 	UINT        m_moduleDetectors = 0;
 
-	UDINT    m_tsStart  = 1000;
-	UDINT    m_tsStab   = 10000;
-	UDINT    m_tsD1     = 8000;  // Время от старта до 1(2) детектора
-	UDINT    m_tsD2     = 8000;  // Время от 3(4) детектора до попадания шара в корзину
-	UDINT    m_tsVolume = 20000; //
-	UDINT    m_tsValve  = 5000;  //
-	UDINT    m_tsFinish = 5000;
+	UDINT    m_timerStart  = 1000;
+	UDINT    m_timerStab   = 10000;
+	UDINT    m_timerD1     = 8000;  // Время от старта до 1(2) детектора
+	UDINT    m_timerD2     = 8000;  // Время от 3(4) детектора до попадания шара в корзину
+	UDINT    m_timerVolume = 20000; //
+	UDINT    m_timerValve  = 5000;  //
+	UDINT    m_timerFinish = 5000;
 
 private:
 	State m_state = State::IDLE;
