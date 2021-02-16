@@ -350,6 +350,9 @@
 					</stream>
 				</streams>
 				<calculate>
+					<prove name="prove" setup="STABILIZATION" description="">
+						<temperature><link alias="" /></temperature>
+					</prove>
 					<densitometer  name="Dens1" description="4022">
 						<period>     <link alias="sikn_123.bik.io.period1:period"/></period>
 						<temperature><link alias="SIKN_123.BIK.IO.Temp1"/></temperature>

@@ -3,8 +3,8 @@
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module type="AI6" name="ai6_1" ver="1.0">
-			<channel number="0" setup="NOICE" type=""/>
-			<channel number="1" setup="NOICE | AVERAGE" type=""/>
+			<channel number="0" setup="NOICE"/>
+			<channel number="1" setup="NOICE | AVERAGE"/>
 		</module>
 		<module type="di8do8" name="di8do8_1">
 			<channel number="0" setup=""/>

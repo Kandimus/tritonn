@@ -107,7 +107,6 @@ UDINT rProve::Calculate()
 	switch(m_command) {
 		case Command::NONE:
 		case Command::START:
-		case Command::STOP:
 		case Command::ABORT:
 		case Command::RESET: break;
 
@@ -127,16 +126,17 @@ UDINT rProve::Calculate()
 		case State::WAITD2:        onWaitD2();        break;
 		case State::CALCULATE:     onCalсulate();     break;
 		case State::RETURNBALL:    onReturnBall();    break;
-		case State::FINISH:        onFinish();        break;
 
-		case State::ANTIBOUNSE1: m_state = State::IDLE; break;
+		case State::FINISH:
+		case State::ABORT:         onFinish();        break;
 
-		case State::NOFLOW:
+		case State::ERRORFLOW:
 		case State::ERRORSTAB:
 		case State::ERRORTOUP:
 		case State::ERRORTODOWN:
 		case State::ERRORD1:
 		case State::ERRORD2:
+		case State::ERRORDETECTOR:
 		case State::ERRORRETURN:
 			onErrorState(); break;
 	};
@@ -184,7 +184,7 @@ void rProve::onStart()
 
 		if (m_moduleFreq < 0.001) {
 			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
-			m_state = State::NOFLOW;
+			m_state = State::ERRORFLOW;
 			return;
 		}
 
@@ -326,6 +326,12 @@ void rProve::onWaitD1()
 		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORD1));
 	}
 
+	if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+		m_timer.stop();
+		m_state = State::ERRORDETECTOR;
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORDETECTORS) << m_moduleDetectors);
+	}
+
 	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
 		m_timer.stop();
 		m_state = State::WAITD2;
@@ -349,6 +355,12 @@ void rProve::onWaitD2()
 		m_timer.stop();
 		m_state = State::ERRORD2;
 		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORD2));
+	}
+
+	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+		m_timer.stop();
+		m_state = State::ERRORDETECTOR;
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORDETECTORS) << m_moduleDetectors);
 	}
 
 	if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
@@ -405,10 +417,6 @@ void rProve::onReturnBall()
 
 void rProve::onFinish()
 {
-	if (checkCommand()) {
-		return;
-	}
-
 	if (!m_timer.isStarted()) {
 		m_timer.start(m_timerFinish);
 		return;
