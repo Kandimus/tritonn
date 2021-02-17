@@ -40,10 +40,11 @@ rProve::rProve(const rStation* owner)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("NONE"         , static_cast<UINT>(Setup::NONE))
-				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY))
-				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION))
-				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE));
+				.add("NONE"         , Setup::NONE)
+				.add("4WAY"         , Setup::VALVE_4WAY)
+				.add("STABILIZATION", Setup::STABILIZATION)
+				.add("NOVALVE"      , Setup::NOVALVE)
+				.add("ONEDETECTOR"  , Setup::ONEDETECTOR);
 	}
 
 
@@ -116,7 +117,9 @@ UDINT rProve::Calculate()
 	}
 
 	switch(m_state) {
-		case State::IDLE:          onIdle();          break;
+		case State::IDLE:
+		case State::FINISH:        onIdle();          break;
+
 		case State::START:         onStart();         break;
 		case State::STABILIZATION: onStabilization(); break;
 		case State::VALVETOUP:     onValveToUp();     break;
@@ -127,8 +130,7 @@ UDINT rProve::Calculate()
 		case State::CALCULATE:     onCalсulate();     break;
 		case State::RETURNBALL:    onReturnBall();    break;
 
-		case State::FINISH:
-		case State::ABORT:         onFinish();        break;
+		case State::ABORT:         onAbort();         break;
 
 		case State::ERRORFLOW:
 		case State::ERRORSTAB:
@@ -137,8 +139,7 @@ UDINT rProve::Calculate()
 		case State::ERRORD1:
 		case State::ERRORD2:
 		case State::ERRORDETECTOR:
-		case State::ERRORRETURN:
-			onErrorState(); break;
+		case State::ERRORRETURN:   onErrorState();    break;
 	};
 
 	m_command = Command::NONE;
@@ -156,6 +157,14 @@ void rProve::onIdle()
 			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDSTART));
 			break;
 
+		case Command::ABORT:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOTSTARTED));
+			break;
+
+		case Command::RESET:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDRESET));
+			break;
+
 		default: break;
 	}
 }
@@ -167,15 +176,9 @@ void rProve::onStart()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_prvFreq = 0;
-		m_prvDens = 0;
-		m_prvPres = 0;
-		m_prvTemp = 0;
-		m_strDens = 0;
-		m_strPres = 0;
-		m_strTemp = 0;
+		clearAverage();
+		connectToLine();
 		m_timer.start(m_timerStart);
-		//TODO Переключить линию
 		return;
 	}
 
@@ -415,10 +418,10 @@ void rProve::onReturnBall()
 	}
 }
 
-void rProve::onFinish()
+void rProve::onAbort()
 {
 	if (!m_timer.isStarted()) {
-		m_timer.start(m_timerFinish);
+		m_timer.start(m_timerAbort);
 		return;
 	}
 
@@ -455,6 +458,38 @@ bool rProve::checkCommand()
 	return false;
 }
 
+DINT rProve::checkDetectors(bool first)
+{
+	if (m_setup.Value & Setup::ONEDETECTOR) {
+		return m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2 | rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+	}
+
+	if (first) {
+		if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+			return -1;
+		}
+
+		return m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2);
+	}
+
+	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+		return -1;
+	}
+
+	return m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+}
+
+
+void rProve::clearAverage()
+{
+	m_prvFreq = 0;
+	m_prvDens = 0;
+	m_prvPres = 0;
+	m_prvTemp = 0;
+	m_strDens = 0;
+	m_strPres = 0;
+	m_strTemp = 0;
+}
 
 UDINT rProve::generateVars(rVariableList& list)
 {

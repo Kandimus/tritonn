@@ -44,6 +44,7 @@ public:
 		VALVE_4WAY    = 0x0001,
 		STABILIZATION = 0x0002,
 		NOVALVE       = 0x0004,
+		ONEDETECTOR   = 0x0008,
 	};
 
 	enum class State : USINT
@@ -96,10 +97,14 @@ private:
 	void onWaitD2();
 	void onCalсulate();
 	void onReturnBall();
-	void onFinish();
-	bool checkCommand();
+	void onAbort();
 	void onErrorState();
 
+	bool checkCommand();
+	DINT checkDetectors(bool first);
+
+	void clearAverage();
+	void connectToLine();
 
 	void moduleStart();
 	void moduleStop();
@@ -146,7 +151,7 @@ public:
 	UDINT    m_timerD2     = 8000;  // Время от 3(4) детектора до попадания шара в корзину
 	UDINT    m_timerVolume = 20000; //
 	UDINT    m_timerValve  = 5000;  //
-	UDINT    m_timerFinish = 5000;
+	UDINT    m_timerAbort  = 5000;
 
 private:
 	State m_state = State::IDLE;
