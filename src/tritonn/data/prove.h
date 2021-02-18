@@ -45,6 +45,8 @@ public:
 		STABILIZATION = 0x0002,
 		NOVALVE       = 0x0004,
 		ONEDETECTOR   = 0x0008,
+		BOUNCE        = 0x0010,
+		SIMULATE      = 0x0020,
 	};
 
 	enum class State : USINT
@@ -102,12 +104,16 @@ private:
 
 	bool checkCommand();
 	DINT checkDetectors(bool first);
+	bool checkStab(LREAL start, LREAL present, LREAL maxstab, UDINT eid);
 
 	void clearAverage();
 	void connectToLine();
+	void detectorsProcessing();
 
 	void moduleStart();
 	void moduleStop();
+
+	void setState(State state);
 
 public:
 	// Inputs
@@ -125,7 +131,7 @@ public:
 
 	// Внутренние переменные
 	Command   m_command = Command::NONE;
-	rCmpUINT  m_setup   = static_cast<UINT>(Setup::NONE);
+	UINT      m_setup   = static_cast<UINT>(Setup::NONE);
 	rCmpUINT  m_strIdx;
 	LREAL     m_prvFreq = 0;
 	LREAL     m_prvTemp = 0;
@@ -136,22 +142,22 @@ public:
 	LREAL     m_strTemp = 0;
 	LREAL     m_strPres = 0;
 	LREAL     m_strDens = 0;
+	UINT      m_curDet  = 0;
+	UINT      m_fixDet  = 0;
 
 	LREAL    m_maxStabTemp = 0.2;
 	LREAL    m_maxStabPres = 0.01;
 	LREAL    m_maxStabDens = 0.5;
+	LREAL    m_maxStabFreq = 10.0;
 
-	std::string m_moduleName = "";
-	LREAL       m_moduleFreq = 0.0;
-	UINT        m_moduleDetectors = 0;
-
-	UDINT    m_timerStart  = 1000;
-	UDINT    m_timerStab   = 10000;
-	UDINT    m_timerD1     = 8000;  // Время от старта до 1(2) детектора
-	UDINT    m_timerD2     = 8000;  // Время от 3(4) детектора до попадания шара в корзину
-	UDINT    m_timerVolume = 20000; //
-	UDINT    m_timerValve  = 5000;  //
-	UDINT    m_timerAbort  = 5000;
+	UDINT    m_tStart  = 1000;
+	UDINT    m_tStab   = 10000;
+	UDINT    m_tD1     = 8000;  // Время от старта до 1(2) детектора
+	UDINT    m_tD2     = 8000;  // Время от 3(4) детектора до попадания шара в корзину
+	UDINT    m_tVolume = 20000; //
+	UDINT    m_tValve  = 5000;  //
+	UDINT    m_tAbort  = 5000;
+	UDINT    m_tBounce = 1000;
 
 private:
 	State m_state = State::IDLE;
@@ -159,8 +165,15 @@ private:
 	LREAL m_stabDens = 0;
 	LREAL m_stabPres = 0;
 	LREAL m_stabTemp = 0;
+	LREAL m_stabFreq = 0;
+
+	std::string m_moduleName = "";
+	LREAL       m_moduleFreq = 0.0;
+	UINT        m_moduleDet  = 0;
+
 
 	rTickCount m_timer;
+	rTickCount m_timerBounce;
 
 	static rBitsArray m_flagsSetup;
 };

@@ -44,9 +44,10 @@ rProve::rProve(const rStation* owner)
 				.add("4WAY"         , Setup::VALVE_4WAY)
 				.add("STABILIZATION", Setup::STABILIZATION)
 				.add("NOVALVE"      , Setup::NOVALVE)
-				.add("ONEDETECTOR"  , Setup::ONEDETECTOR);
+				.add("ONEDETECTOR"  , Setup::ONEDETECTOR)
+				.add("BOUNCE"       , Setup::BOUNCE)
+				.add("SIMULATE"     , Setup::SIMULATE);
 	}
-
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
 	InitLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
@@ -98,12 +99,12 @@ UDINT rProve::Calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		m_moduleName      = module->getAlias();
-		m_moduleFreq      = module->getFreq();
-		m_moduleDetectors = module->getDetectors();
+		m_moduleName = module->getAlias();
+		m_moduleFreq = module->getFreq();
+		m_moduleDet  = module->getDetectors();
 	}
 
-	//TODO Сообщения от детекторов
+	detectorsProcessing();
 
 	switch(m_command) {
 		case Command::NONE:
@@ -153,8 +154,8 @@ void rProve::onIdle()
 {
 	switch(m_command) {
 		case Command::START:
-			m_state = State::START;
 			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDSTART));
+			setState(State::START);
 			break;
 
 		case Command::ABORT:
@@ -178,7 +179,7 @@ void rProve::onStart()
 	if (!m_timer.isStarted()) {
 		clearAverage();
 		connectToLine();
-		m_timer.start(m_timerStart);
+		m_timer.start(m_tStart);
 		return;
 	}
 
@@ -186,17 +187,16 @@ void rProve::onStart()
 		m_timer.stop();
 
 		if (m_moduleFreq < 0.001) {
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOFLOW));
-			m_state = State::ERRORFLOW;
+			setState(State::ERRORFLOW);
 			return;
 		}
 
-		if (m_setup.Value & Setup::STABILIZATION) {
-			m_state = State::STABILIZATION;
+		if (m_setup & Setup::STABILIZATION) {
+			setState(State::STABILIZATION);
 			return;
 		}
 
-		m_state = State::VALVETOUP;
+		setState(State::VALVETOUP);
 	}
 }
 
@@ -210,36 +210,35 @@ void rProve::onStabilization()
 		m_stabTemp = m_temp.Value;
 		m_stabPres = m_pres.Value;
 		m_stabDens = m_dens.Value;
+		m_stabFreq = m_moduleFreq;
 
-		m_timer.start(m_timerStab);
+		m_timer.start(m_tStab);
 		return;
 	}
 
 	if (m_timer.isFinished()) {
 		m_timer.stop();
-		m_state = State::VALVETOUP;
+		setState(State::VALVETOUP);
+		return;
 	}
 
-	LREAL delta = 0;
-
-	delta = std::fabs(m_temp.Value - m_stabTemp);
-	if (delta > m_maxStabTemp) {
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_STABTEMP) << delta << m_maxStabTemp);
-		m_state = State::ERRORSTAB;
+	if (checkStab(m_stabTemp, m_temp.Value, m_maxStabTemp, EID_PROVE_ERRORSTABTEMP)) {
+		return;
 	}
 
-	delta = std::fabs(m_pres.Value - m_stabPres);
-	if (delta > m_maxStabPres) {
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_STABPRES) << delta << m_maxStabPres);
-		m_state = State::ERRORSTAB;
+	if (checkStab(m_stabPres, m_pres.Value, m_maxStabPres, EID_PROVE_ERRORSTABPRES)) {
+		return;
 	}
 
-	delta = std::fabs(m_dens.Value - m_stabDens);
-	if (delta > m_maxStabDens) {
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_STABDENS) << delta << m_maxStabDens);
-		m_state = State::ERRORSTAB;
+	if (checkStab(m_stabDens, m_dens.Value, m_maxStabDens, EID_PROVE_ERRORSTABDENS)) {
+		return;
+	}
+
+	if (checkStab(m_stabFreq, m_moduleFreq, m_maxStabFreq, EID_PROVE_ERRORSTABFREQ)) {
+		return;
 	}
 }
+
 
 void rProve::onValveToUp()
 {
@@ -248,13 +247,15 @@ void rProve::onValveToUp()
 	}
 
 	if (m_opened.Value > 0 && m_closed.Value == 0) {
-		m_state = State::VALVETODOWN;
+		setState(State::VALVETODOWN);
 		return;
 	}
 
-	m_open.Value = 1;
-	m_state = State::WAITTOUP;
+	m_close.Value = 0;
+	m_open.Value  = 1;
+	setState(State::WAITTOUP);
 }
+
 
 void rProve::onWaitToUp()
 {
@@ -263,8 +264,7 @@ void rProve::onWaitToUp()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_timer.start(2.0 * (m_timerD1 + m_timerD2 + m_timerVolume));
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
+		m_timer.start(2.0 * (m_tD1 + m_tD2 + m_tVolume));
 		return;
 	}
 
@@ -272,14 +272,15 @@ void rProve::onWaitToUp()
 		m_timer.stop();
 
 		if (m_opened.Value > 0 && m_closed.Value == 0) {
-			m_state = State::VALVETODOWN;
+			setState(State::VALVETODOWN);
 			return;
 		}
 
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTOUP));
-		m_state = State::ERRORTOUP;
+		setState(State::ERRORTOUP);
+		return;
 	}
 }
+
 
 void rProve::onValveToDown()
 {
@@ -288,28 +289,26 @@ void rProve::onValveToDown()
 	}
 
 	if (!m_timer.isStarted()) {
-		moduleStart();
-
 		m_close.Value = 1;
-		m_timer.start(m_timerValve);
+		m_open.Value  = 0;
+		m_timer.start(m_tValve);
 		return;
 	}
 
 	if(m_timer.isFinished()) {
 		m_timer.stop();
-		moduleStop();
 
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORTDOWN));
-		m_state = State::ERRORTODOWN;
+		setState(State::ERRORTODOWN);
 		return;
 	}
 
 	if (m_closed.Value > 0 && m_opened.Value == 0) {
-		m_state = State::WAITD1;
 		m_timer.stop();
+		setState(State::WAITD1);
 		return;
 	}
 }
+
 
 void rProve::onWaitD1()
 {
@@ -318,26 +317,28 @@ void rProve::onWaitD1()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_timer.start(m_timerD1);
+		m_timer.start(m_tD1);
+		moduleStart();
 		return;
 	}
 
 	if (m_timer.isFinished()) {
 		moduleStop();
 		m_timer.stop();
-		m_state = State::ERRORD1;
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORD1));
+		setState(State::ERRORD1);
+		return;
 	}
 
-	if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+	DINT result = checkDetectors(true);
+	if (-1 == result) {
 		m_timer.stop();
-		m_state = State::ERRORDETECTOR;
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORDETECTORS) << m_moduleDetectors);
+		setState(State::ERRORDETECTOR);
+		return;
 	}
 
-	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+	if (result) {
 		m_timer.stop();
-		m_state = State::WAITD2;
+		setState(State::WAITD2);
 		return;
 	}
 }
@@ -349,29 +350,31 @@ void rProve::onWaitD2()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_timer.start(m_timerVolume);
+		m_timer.start(m_tVolume);
 		return;
 	}
 
 	if (m_timer.isFinished()) {
 		moduleStop();
 		m_timer.stop();
-		m_state = State::ERRORD2;
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORD2));
+		setState(State::ERRORD2);
+		return;
 	}
 
-	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+	DINT result = checkDetectors(false);
+	if (-1 == result) {
 		m_timer.stop();
-		m_state = State::ERRORDETECTOR;
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_ERRORDETECTORS) << m_moduleDetectors);
+		setState(State::ERRORDETECTOR);
+		return;
 	}
 
-	if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+	if (result) {
 		m_timer.stop();
-		m_state = State::CALCULATE;
+		setState(State::CALCULATE);
 		return;
 	}
 }
+
 
 void rProve::onCalсulate()
 {
@@ -380,17 +383,18 @@ void rProve::onCalсulate()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_timer.start(m_timerD2);
+		m_timer.start(m_tD2);
 		//TODO Получить данные с модуля
 		return;
 	}
 
 	if (m_timer.isFinished()) {
 		m_timer.stop();
-		m_state = State::RETURNBALL;
+		setState(State::RETURNBALL);
 		return;
 	}
 }
+
 
 void rProve::onReturnBall()
 {
@@ -399,21 +403,21 @@ void rProve::onReturnBall()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_open.Value = 1;
-		m_timer.start(m_timerValve);
-//!		rEventManager::instance().Add(ReinitEvent(EID_PROVE_WAITTOUP));
+		m_close.Value = 0;
+		m_open.Value  = 1;
+		m_timer.start(m_tValve);
 		return;
 	}
 
 	if (m_timer.isFinished()) {
 		m_timer.stop();
-		m_state = State::ERRORRETURN;
+		setState(State::ERRORRETURN);
 		return;
 	}
 
 	if (m_opened.Value > 0 && m_closed.Value == 0) {
 		m_timer.stop();
-		m_state = State::FINISH;
+		setState(State::FINISH);
 		return;
 	}
 }
@@ -421,13 +425,13 @@ void rProve::onReturnBall()
 void rProve::onAbort()
 {
 	if (!m_timer.isStarted()) {
-		m_timer.start(m_timerAbort);
+		m_timer.start(m_tAbort);
 		return;
 	}
 
 	if (m_timer.isFinished()) {
 		m_timer.stop();
-		m_state = State::IDLE;
+		setState(State::IDLE);
 		return;
 	}
 }
@@ -436,8 +440,17 @@ void rProve::onAbort()
 void rProve::onErrorState()
 {
 	switch(m_command) {
+		case Command::START:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_ISERROR));
+			break;
+
+		case Command::ABORT:
+			setState(State::IDLE);
+			break;
+
 		case Command::RESET:
 			m_state = State::IDLE;
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDRESET));
 			break;
 
 		default: break;
@@ -447,10 +460,18 @@ void rProve::onErrorState()
 bool rProve::checkCommand()
 {
 	switch(m_command) {
+		case Command::START:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_ALREADYSTARTED));
+			break;
+
 		case Command::ABORT:
-			m_state = State::IDLE;
 			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDABORT));
+			setState(State::IDLE);
 			return true;
+
+		case Command::RESET:
+			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOTERROR));
+			break;
 
 		default: break;
 	}
@@ -458,30 +479,47 @@ bool rProve::checkCommand()
 	return false;
 }
 
+
 DINT rProve::checkDetectors(bool first)
 {
-	if (m_setup.Value & Setup::ONEDETECTOR) {
-		return m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2 | rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+	if (m_setup & Setup::ONEDETECTOR) {
+		return m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2 | rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
 	}
 
 	if (first) {
-		if (m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+		if (m_fixDet & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
 			return -1;
 		}
 
-		return m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2);
+		return m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2);
 	}
 
-	if (m_moduleDetectors & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+	if (m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
 		return -1;
 	}
 
-	return m_moduleDetectors & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+	return m_fixDet & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+}
+
+
+bool rProve::checkStab(LREAL start, LREAL present, LREAL maxstab, UDINT eid)
+{
+	LREAL delta = std::fabs(present - start);
+
+	if (delta > maxstab) {
+		rEventManager::instance().Add(ReinitEvent(eid) << delta << maxstab);
+		setState(State::ERRORSTAB);
+		return true;
+	}
+
+	return false;
 }
 
 
 void rProve::clearAverage()
 {
+	m_fixDet  = 0;
+
 	m_prvFreq = 0;
 	m_prvDens = 0;
 	m_prvPres = 0;
@@ -491,33 +529,92 @@ void rProve::clearAverage()
 	m_strTemp = 0;
 }
 
+void rProve::detectorsProcessing()
+{
+	if (!m_timerBounce.isStarted()) {
+		if ((m_fixDet & m_moduleDet) != m_moduleDet) {
+			m_fixDet |= m_moduleDet;
+			m_curDet  = m_moduleDet;
+
+			if (m_setup & Setup::BOUNCE) {
+				m_timerBounce.start(m_tBounce);
+			}
+		}
+		return;
+	}
+
+	if (m_timerBounce.isFinished()) {
+		m_timerBounce.stop();
+	}
+}
+
+void rProve::setState(State state)
+{
+	rEvent event;
+
+	m_state = state;
+
+	switch(m_state)
+	{
+		case State::IDLE:          event.Reinit(EID_PROVE_STATE_IDLE);        break;
+		case State::START:         event.Reinit(EID_PROVE_STATE_START);       break;
+		case State::STABILIZATION: event.Reinit(EID_PROVE_STATE_STAB);        break;
+		case State::VALVETOUP:     event.Reinit(EID_PROVE_STATE_VALVETOUP);   break;
+		case State::WAITTOUP:      event.Reinit(EID_PROVE_STATE_WAITTOUP);    break;
+		case State::VALVETODOWN:   event.Reinit(EID_PROVE_STATE_VALVETODOWN); break;
+		case State::WAITD1:        event.Reinit(EID_PROVE_STATE_WAITD1);      break;
+		case State::WAITD2:        event.Reinit(EID_PROVE_STATE_WAITD2);      break;
+		case State::CALCULATE:     event.Reinit(EID_PROVE_STATE_CALCULATE);   break;
+		case State::RETURNBALL:    event.Reinit(EID_PROVE_STATE_RETURNBALL);  break;
+		case State::FINISH:        event.Reinit(EID_PROVE_STATE_FINISH);      break;
+		case State::ABORT:         event.Reinit(EID_PROVE_STATE_ABORT);       break;
+		case State::ERRORFLOW:     event.Reinit(EID_PROVE_STATE_ERRORFLOW);   break;
+		case State::ERRORSTAB:     event.Reinit(EID_PROVE_STATE_ERRORSTAB);   break;
+		case State::ERRORTOUP:     event.Reinit(EID_PROVE_STATE_ERRORTOUP);   break;
+		case State::ERRORTODOWN:   event.Reinit(EID_PROVE_STATE_ERRORTDOWN);  break;
+		case State::ERRORD1:       event.Reinit(EID_PROVE_STATE_ERRORD1);     break;
+		case State::ERRORD2:       event.Reinit(EID_PROVE_STATE_ERRORD2);     break;
+		case State::ERRORDETECTOR: event.Reinit(EID_PROVE_STATE_ERRORDETS);   break;
+		case State::ERRORRETURN:   event.Reinit(EID_PROVE_STATE_ERRORRETURN); break;
+	}
+
+	rEventManager::instance().Add(event);
+}
+
 UDINT rProve::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command       , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state         , U_DIMLESS, 0);
-	list.add(Alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::___L, &m_timerStart    , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::___L, &m_timerStab     , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::___L, &m_timerD1       , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::___L, &m_timerD2       , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::___L, &m_timerVolume   , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::___L, &m_timerValve    , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[0]   , U_imp    , 0);
-	list.add(Alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[0]    , U_sec    , 0);
-	list.add(Alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[1]   , U_imp    , 0);
-	list.add(Alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[1]    , U_sec    , 0);
-	list.add(Alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_prvFreq       , U_Hz     , 0);
-	list.add(Alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_prvTemp       , U_C      , 0);
-	list.add(Alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_prvPres       , U_MPa    , 0);
-	list.add(Alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvDens       , U_kg_m3  , 0);
-	list.add(Alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp       , U_C      , 0);
-	list.add(Alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres       , U_MPa    , 0);
-	list.add(Alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens       , U_kg_m3  , 0);
+	list.add(Alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup      , U_DIMLESS, ACCESS_PROVE);
+	list.add(Alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(Alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::____, &m_tStart     , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::____, &m_tStab      , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::____, &m_tD1        , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::____, &m_tD2        , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::____, &m_tVolume    , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::____, &m_tValve     , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".timer.bounce"             , TYPE_UDINT, rVariable::Flags::____, &m_tBounce    , U_msec   , ACCESS_PROVE);
+	list.add(Alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[0], U_imp    , 0);
+	list.add(Alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[0] , U_sec    , 0);
+	list.add(Alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[1], U_imp    , 0);
+	list.add(Alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[1] , U_sec    , 0);
+	list.add(Alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_prvFreq    , U_Hz     , 0);
+	list.add(Alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_prvTemp    , U_C      , 0);
+	list.add(Alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_prvPres    , U_MPa    , 0);
+	list.add(Alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvDens    , U_kg_m3  , 0);
+	list.add(Alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp    , U_C      , 0);
+	list.add(Alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres    , U_MPa    , 0);
+	list.add(Alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens    , U_kg_m3  , 0);
+	list.add(Alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R___, &m_curDet     , U_DIMLESS, 0);
+	list.add(Alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R___, &m_fixDet     , U_DIMLESS, 0);
+	list.add(Alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::____, &m_maxStabTemp, U_C      , ACCESS_PROVE);
+	list.add(Alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::____, &m_maxStabPres, U_MPa    , ACCESS_PROVE);
+	list.add(Alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::____, &m_maxStabDens, U_kg_m3  , ACCESS_PROVE);
+	list.add(Alias + ".stabilization.frequency"  , TYPE_LREAL, rVariable::Flags::____, &m_maxStabFreq, U_Hz     , ACCESS_PROVE);
 
-	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
+	list.add(Alias + ".fault"                    , TYPE_UDINT, rVariable::Flags::R___, &Fault        , U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }
