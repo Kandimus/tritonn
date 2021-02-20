@@ -47,4 +47,4 @@ Set log mask as *hex*
 Simulate IO modules
 
 ## 3thparty libs ##
->>sudo apt install libncurses5-dev
+    sudo apt install libncurses5-dev
