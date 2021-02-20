@@ -46,7 +46,8 @@ public:
 		NOVALVE       = 0x0004,
 		ONEDETECTOR   = 0x0008,
 		BOUNCE        = 0x0010,
-		SIMULATE      = 0x0020,
+		NOSELECTSTR   = 0x0020,
+		SIMULATE      = 0x0040,
 	};
 
 	enum class State : USINT
@@ -97,7 +98,7 @@ private:
 	void onValveToDown();
 	void onWaitD1();
 	void onWaitD2();
-	void onCalсulate();
+	void onCalculate();
 	void onReturnBall();
 	void onAbort();
 	void onErrorState();
@@ -107,6 +108,7 @@ private:
 	bool checkStab(LREAL start, LREAL present, LREAL maxstab, UDINT eid);
 
 	void clearAverage();
+	void calcAverage();
 	void connectToLine();
 	void detectorsProcessing();
 
@@ -167,9 +169,16 @@ private:
 	LREAL m_stabTemp = 0;
 	LREAL m_stabFreq = 0;
 
+	LREAL m_curStrTemp = 0;
+	LREAL m_curStrPres = 0;
+	LREAL m_curStrDens = 0;
+
+	bool  m_enableAverage = false;
+
 	std::string m_moduleName = "";
 	LREAL       m_moduleFreq = 0.0;
 	UINT        m_moduleDet  = 0;
+	UDINT       m_moduleCount = 0;
 
 
 	rTickCount m_timer;

@@ -12,6 +12,7 @@
 			<channel number="9" setup="INVERSED"/>
 		</module>
 		<module type="fi4" name="fi4_1">
+		<module type="crm" name="crm_1">
 		</module>
 	</hardware>
 	<config>
@@ -349,9 +350,20 @@
 						</limits>
 					</stream>
 				</streams>
+				<io>
+				</io>
 				<calculate>
-					<prove name="prove" setup="STABILIZATION" description="">
+					<prove name="prove" setup="STABILIZATION | BOUNCE" description="">
+						<io_link module="3"/>
 						<temperature><link alias="" /></temperature>
+						<pressure><link alias="" /></pressure>
+						<density><link alias="" /></density>
+						<valve>
+							<open><link alias="" /></open>
+							<close><link alias="" /></close>
+							<opened><link alias="" /></opened>
+							<closed><link alias="" /></closed>
+						</valve>
 					</prove>
 					<densitometer  name="Dens1" description="4022">
 						<period>     <link alias="sikn_123.bik.io.period1:period"/></period>

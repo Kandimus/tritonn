@@ -19,7 +19,7 @@
 #include <string.h>
 #include "tinyxml2.h"
 #include "event_eid.h"
-#include "text_id.h"
+#include "../text_id.h"
 #include "../event_manager.h"
 #include "../data_manager.h"
 #include "../data_ai.h"
@@ -28,7 +28,7 @@
 #include "../variable_list.h"
 #include "../io/manager.h"
 #include "../io/module_crm.h"
-#include "xml_util.h"
+#include "../xml_util.h"
 #include "prove.h"
 
 rBitsArray rProve::m_flagsSetup;
@@ -40,13 +40,13 @@ rProve::rProve(const rStation* owner)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("NONE"         , Setup::NONE)
-				.add("4WAY"         , Setup::VALVE_4WAY)
-				.add("STABILIZATION", Setup::STABILIZATION)
-				.add("NOVALVE"      , Setup::NOVALVE)
-				.add("ONEDETECTOR"  , Setup::ONEDETECTOR)
-				.add("BOUNCE"       , Setup::BOUNCE)
-				.add("SIMULATE"     , Setup::SIMULATE);
+				.add("NONE"         , static_cast<UINT>(Setup::NONE))
+				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY))
+				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION))
+				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE))
+				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR))
+				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE))
+				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE));
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
@@ -99,12 +99,14 @@ UDINT rProve::Calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		m_moduleName = module->getAlias();
-		m_moduleFreq = module->getFreq();
-		m_moduleDet  = module->getDetectors();
+		m_moduleName  = module->getAlias();
+		m_moduleFreq  = module->getFreq();
+		m_moduleDet   = module->getDetectors();
+		m_moduleCount = module->getCounter();
 	}
 
 	detectorsProcessing();
+	calcAverage();
 
 	switch(m_command) {
 		case Command::NONE:
@@ -128,7 +130,7 @@ UDINT rProve::Calculate()
 		case State::VALVETODOWN:   onValveToDown();   break;
 		case State::WAITD1:        onWaitD1();        break;
 		case State::WAITD2:        onWaitD2();        break;
-		case State::CALCULATE:     onCalсulate();     break;
+		case State::CALCULATE:     onCalculate();     break;
 		case State::RETURNBALL:    onReturnBall();    break;
 
 		case State::ABORT:         onAbort();         break;
@@ -376,7 +378,7 @@ void rProve::onWaitD2()
 }
 
 
-void rProve::onCalсulate()
+void rProve::onCalculate()
 {
 	if (checkCommand()) {
 		return;
@@ -520,13 +522,17 @@ void rProve::clearAverage()
 {
 	m_fixDet  = 0;
 
-	m_prvFreq = 0;
-	m_prvDens = 0;
-	m_prvPres = 0;
-	m_prvTemp = 0;
-	m_strDens = 0;
-	m_strPres = 0;
+	m_prvFreq     = 0;
+	m_prvTemp     = 0;
+	m_prvPres     = 0;
+	m_prvDens     = 0;
+	m_prvCount[0] = 0;
+	m_prvCount[1] = 0;
+	m_prvTime[0]  = 0;
+	m_prvTime[1]  = 0;
 	m_strTemp = 0;
+	m_strPres = 0;
+	m_strDens = 0;
 }
 
 void rProve::detectorsProcessing()
@@ -581,6 +587,24 @@ void rProve::setState(State state)
 	rEventManager::instance().Add(event);
 }
 
+void rProve::calcAverage()
+{
+	if (!m_enableAverage) {
+		return;
+	}
+
+	UDINT dCount = m_moduleCount - m_averageCount;
+	if (dCount) {
+		m_prvFreq = (m_moduleFreq * dCount) + (m_prvFreq * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvDens = (m_dens.Value * dCount) + (m_prvDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvTemp = (m_temp.Value * dCount) + (m_prvTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvPres = (m_pres.Value * dCount) + (m_prvPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strDens = (m_curStrDens * dCount) + (m_strDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strTemp = (m_curStrTemp * dCount) + (m_strTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strPres = (m_curStrPres * dCount) + (m_strPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+	}
+}
+
 UDINT rProve::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
@@ -624,49 +648,28 @@ UDINT rProve::generateVars(rVariableList& list)
 //
 UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::STABILIZATION | Setup::BOUNCE);
 
 	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
 	}
 
 	tinyxml2::XMLElement* xml_module = element->FirstChildElement(XmlName::IOLINK);
-	tinyxml2::XMLElement* xml_limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
-	tinyxml2::XMLElement* xml_unit   = element->FirstChildElement(XmlName::UNIT);
-	tinyxml2::XMLElement* xml_scale  = element->FirstChildElement(XmlName::SCALE);
-
-	// Если аналоговый сигнал не привязан к каналу, то разрешаем менять его значение
 	if (xml_module) {
 		if (rDataModule::loadFromXML(xml_module, err) != TRITONN_RESULT_OK) {
 			return err.getError();
 		}
 	} else {
-		m_present.m_setup |= rLink::Setup::WRITABLE;
+		return err.set(DATACFGERR_PORVE_MISSINGMODULE, "");
 	}
 
-	if (!xml_limits || !xml_unit || !xml_scale) {
-		return err.set(DATACFGERR_AI, element->GetLineNum(), "cant found limits or unit or scale");
-	}
+	tinyxml2::XMLElement* xml_temp = element->FirstChildElement(XmlName::TEMP);
+	tinyxml2::XMLElement* xml_pres = element->FirstChildElement(XmlName::PRES);
+	tinyxml2::XMLElement* xml_dens = element->FirstChildElement(XmlName::DENS);
 
-	UDINT fault = 0;
-	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
-
-	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
-
-	KeypadValue.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD) , 0.0, fault));
-	m_scale.Min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MIN), 0.0, fault));
-	m_scale.Max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MAX), 0.0, fault));
-
-	STRID Unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, fault);
-
-	if (fault) {
-		return err.set(DATACFGERR_AI, element->GetLineNum(), "");
-	}
-
-	// Подправляем единицы измерения, исходя из конфигурации AI
-	m_present.Unit = Unit;
-	PhValue.Unit   = Unit;
+	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
+	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
+	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
 
 	ReinitLimitEvents();
 
@@ -689,6 +692,8 @@ void rProve::moduleStart()
 
 	ss.add(m_moduleName + ".start", 1);
 	ss.set();
+
+	m_enableAverage = true;
 }
 
 void rProve::moduleStop()
@@ -697,6 +702,8 @@ void rProve::moduleStop()
 
 	ss.add(m_moduleName + ".stop", 1);
 	ss.set();
+
+	m_enableAverage = false;
 }
 
 
