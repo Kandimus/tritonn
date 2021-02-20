@@ -1,4 +1,3 @@
 cmake_install.cmake
 CMakeLists.txt.user
-src/tritonn/tritonn_version.h
 src/tests/simpletest.gen.cpp
