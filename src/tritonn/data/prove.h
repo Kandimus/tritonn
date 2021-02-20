@@ -72,6 +72,7 @@ public:
 		ERRORD2,
 		ERRORDETECTOR,
 		ERRORRETURN,
+		ERRORSTREAMID,
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -111,6 +112,7 @@ private:
 	void calcAverage();
 	void connectToLine();
 	void detectorsProcessing();
+	bool connectToLine();
 
 	void moduleStart();
 	void moduleStop();
@@ -162,7 +164,7 @@ public:
 	UDINT    m_tBounce = 1000;
 
 private:
-	State m_state = State::IDLE;
+	State m_state    = State::IDLE;
 
 	LREAL m_stabDens = 0;
 	LREAL m_stabPres = 0;
@@ -174,15 +176,15 @@ private:
 	LREAL m_curStrDens = 0;
 
 	bool  m_enableAverage = false;
+	UDINT m_averageCount  = 0;
 
-	std::string m_moduleName = "";
-	LREAL       m_moduleFreq = 0.0;
-	UINT        m_moduleDet  = 0;
+	std::string m_moduleName  = "";
+	LREAL       m_moduleFreq  = 0.0;
+	UINT        m_moduleDet   = 0;
 	UDINT       m_moduleCount = 0;
 
-
-	rTickCount m_timer;
-	rTickCount m_timerBounce;
+	rTickCount  m_timer;
+	rTickCount  m_timerBounce;
 
 	static rBitsArray m_flagsSetup;
 };

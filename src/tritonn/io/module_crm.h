@@ -63,6 +63,7 @@ public:
 	USINT abort();
 	LREAL getFreq() const;
 	UINT  getDetectors() const;
+	UDINT getCounter() const;
 
 private:
 	std::vector<rIODIChannel> m_channelDI;

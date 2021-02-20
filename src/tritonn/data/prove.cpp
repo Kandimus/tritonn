@@ -21,11 +21,13 @@
 #include "event_eid.h"
 #include "../text_id.h"
 #include "../event_manager.h"
+#include "../data_config.h"
 #include "../data_manager.h"
 #include "../data_ai.h"
 #include "../error.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
+#include "../data_snapshot.h"
 #include "../io/manager.h"
 #include "../io/module_crm.h"
 #include "../xml_util.h"
@@ -554,6 +556,17 @@ void rProve::detectorsProcessing()
 	}
 }
 
+bool rProve::connectToLine()
+{
+	if (m_strIdx.Value >= m_station->getStreamCount()) {
+		rEventManager::instance().Add(ReinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
+		setState(State::ERRORSTREAMID);
+		return false;
+	}
+
+	m_station->setStreamFreqOut(m_strIdx.Value);
+}
+
 void rProve::setState(State state)
 {
 	rEvent event;
@@ -648,7 +661,7 @@ UDINT rProve::generateVars(rVariableList& list)
 //
 UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::STABILIZATION | Setup::BOUNCE);
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::STABILIZATION | Setup::BOUNCE));
 
 	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -660,12 +673,12 @@ UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 			return err.getError();
 		}
 	} else {
-		return err.set(DATACFGERR_PORVE_MISSINGMODULE, "");
+		return err.set(DATACFGERR_PORVE_MISSINGMODULE, element->GetLineNum());
 	}
 
 	tinyxml2::XMLElement* xml_temp = element->FirstChildElement(XmlName::TEMP);
 	tinyxml2::XMLElement* xml_pres = element->FirstChildElement(XmlName::PRES);
-	tinyxml2::XMLElement* xml_dens = element->FirstChildElement(XmlName::DENS);
+	tinyxml2::XMLElement* xml_dens = element->FirstChildElement(XmlName::DENSITY);
 
 	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
 	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
@@ -679,9 +692,6 @@ UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 
 std::string rProve::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
 {
-	m_present.Limit.m_setup.Init(rLimit::Setup::NONE);
-	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Current.Limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
@@ -694,6 +704,7 @@ void rProve::moduleStart()
 	ss.set();
 
 	m_enableAverage = true;
+	m_averageCount  = m_moduleCount;
 }
 
 void rProve::moduleStop()
