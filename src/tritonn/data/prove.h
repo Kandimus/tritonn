@@ -110,7 +110,6 @@ private:
 
 	void clearAverage();
 	void calcAverage();
-	void connectToLine();
 	void detectorsProcessing();
 	bool connectToLine();
 

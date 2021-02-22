@@ -27,6 +27,7 @@
 #include "variable_list.h"
 #include "data_station.h"
 #include "data_stream.h"
+#include "data_snapshot.h"
 
 
 const UDINT STREAM_LE_INPUTS     = 0x00000001;
@@ -187,7 +188,41 @@ const rTotal *rStream::getTotal(void) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
+UDINT rStream::enableFreqOut() const
+{
+	if (m_freq.isValid()) {
+		std::string moduleAlias = m_freq.getModuleAlias();
 
+		if (moduleAlias.size()) {
+			rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SYSTEM);
+			//TODO может заменить "hardware" константой?
+			ss.add("hardware." + moduleAlias + ".outtype", 0); //TODO Подставить нужное число
+			ss.set();
+
+			return TRITONN_RESULT_OK;
+		}
+	}
+
+	return DATACFGERR_STREAM_NOFREQCHANNEL;
+}
+
+UDINT rStream::disableFreqOut() const
+{
+	if (m_freq.isValid()) {
+		std::string moduleAlias = m_freq.getModuleAlias();
+
+		if (moduleAlias.size()) {
+			rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SYSTEM);
+
+			ss.add("hardware." + moduleAlias + ".outtype", m_freq.getChannelNumber()); //TODO Подставить нужное число
+			ss.set();
+
+			return TRITONN_RESULT_OK;
+		}
+	}
+
+	return DATACFGERR_STREAM_NOFREQCHANNEL;
+}
 
 //-------------------------------------------------------------------------------------------------
 //

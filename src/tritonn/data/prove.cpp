@@ -23,6 +23,7 @@
 #include "../event_manager.h"
 #include "../data_config.h"
 #include "../data_manager.h"
+#include "../data_station.h"
 #include "../data_ai.h"
 #include "../error.h"
 #include "../variable_item.h"
@@ -144,7 +145,9 @@ UDINT rProve::Calculate()
 		case State::ERRORD1:
 		case State::ERRORD2:
 		case State::ERRORDETECTOR:
-		case State::ERRORRETURN:   onErrorState();    break;
+		case State::ERRORRETURN:
+		case State::ERRORSTREAMID:
+			onErrorState();    break;
 	};
 
 	m_command = Command::NONE;
@@ -182,7 +185,10 @@ void rProve::onStart()
 
 	if (!m_timer.isStarted()) {
 		clearAverage();
-		connectToLine();
+		if (!connectToLine())
+		{
+			return;
+		}
 		m_timer.start(m_tStart);
 		return;
 	}
@@ -268,7 +274,7 @@ void rProve::onWaitToUp()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_timer.start(2.0 * (m_tD1 + m_tD2 + m_tVolume));
+		m_timer.start(2 * (m_tD1 + m_tD2 + m_tVolume));
 		return;
 	}
 
@@ -565,6 +571,7 @@ bool rProve::connectToLine()
 	}
 
 	m_station->setStreamFreqOut(m_strIdx.Value);
+	return false;
 }
 
 void rProve::setState(State state)
@@ -595,6 +602,7 @@ void rProve::setState(State state)
 		case State::ERRORD2:       event.Reinit(EID_PROVE_STATE_ERRORD2);     break;
 		case State::ERRORDETECTOR: event.Reinit(EID_PROVE_STATE_ERRORDETS);   break;
 		case State::ERRORRETURN:   event.Reinit(EID_PROVE_STATE_ERRORRETURN); break;
+		case State::ERRORSTREAMID: event.Reinit(EID_PROVE_STATE_ERRORRSTRID); break;
 	}
 
 	rEventManager::instance().Add(event);

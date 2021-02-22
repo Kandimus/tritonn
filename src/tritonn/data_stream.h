@@ -62,6 +62,9 @@ public:
 	rStream(const rStation* owner = nullptr);
 	virtual ~rStream();
 
+	UDINT enableFreqOut() const;
+	UDINT disableFreqOut() const;
+
 	// Виртуальные функции от rSource
 public:
 	virtual const char *RTTI() const { return "stream"; }

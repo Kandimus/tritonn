@@ -33,6 +33,9 @@ public:
 
 	rDensity::Product getProduct() const;
 	const rObjUnit& getUnit() const;
+	UDINT addStream(rStream* str);
+	UDINT getStreamCount() const;
+	UDINT setStreamFreqOut(UDINT strid) const;
 
 	// Виртуальные функции от rSource
 public:
@@ -65,10 +68,10 @@ public:
 	rDensity::Product m_product;
 	rCmpUINT     Setup;
 
-	std::vector<rStream*> Stream;
-
 private:
 	static rBitsArray m_flagsProduct;
+
+	std::vector<rStream*> m_stream;
 
 	rTotal       m_total;
 	rObjUnit     m_unit;

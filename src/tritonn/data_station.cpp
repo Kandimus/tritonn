@@ -67,7 +67,7 @@ rStation::rStation() :
 
 	m_product  = rDensity::Product::PETROLEUM;
 
-	Stream.clear();
+	m_stream.clear();
 
 	InitLink(rLink::Setup::INOUTPUT, m_temp        , m_unit.getTemperature(), SID::TEMPERATURE      , XmlName::TEMP         , rLink::SHADOW_NONE);
 	InitLink(rLink::Setup::INOUTPUT, m_pres        , m_unit.getPressure()   , SID::PRESSURE         , XmlName::PRES         , rLink::SHADOW_NONE);
@@ -81,7 +81,7 @@ rStation::rStation() :
 
 rStation::~rStation()
 {
-	Stream.clear();
+	m_stream.clear();
 }
 
 
@@ -129,7 +129,7 @@ UDINT rStation::Calculate()
 	m_flowVolume20.Value = 0.0;
 
 	// Расчет весов по линиям и нарастающих
-	for (auto str : Stream) {
+	for (auto str : m_stream) {
 		str->Calculate();
 
 		// Линия в ремонте (не в учете)
@@ -155,7 +155,7 @@ UDINT rStation::Calculate()
 	// Расчет параметров станции
 	err = 0;
 
-	for (auto str : Stream) {
+	for (auto str : m_stream) {
 		if (str->Maintenance) {
 			continue;
 		}
@@ -182,6 +182,29 @@ const rTotal *rStation::getTotal(void) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
+UDINT rStation::addStream(rStream* str)
+{
+	m_stream.push_back(str);
+	return m_stream.size() - 1;
+}
+
+UDINT rStation::getStreamCount() const
+{
+	return m_stream.size();
+}
+
+UDINT rStation::setStreamFreqOut(UDINT strid) const
+{
+	if (strid >= m_stream.size()) {
+		return DATACFGERR_STATION_WRONGSTREAM;
+	}
+
+	for (auto item : m_stream) {
+		item->disableFreqOut();
+	}
+
+	return m_stream[strid]->enableFreqOut();
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

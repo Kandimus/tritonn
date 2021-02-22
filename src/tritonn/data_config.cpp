@@ -429,7 +429,7 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 		cJSON_AddItemToArray (jroot, jitm);
 
 		// Кросс-линк станции и линии
-		owner->Stream.push_back(str);
+		owner->addStream(str);
 
 		if (TRITONN_RESULT_OK != LoadIO(stream_xml, CfgJSON_IO, owner, str->Alias + ".io")) {
 			return m_error.getError();

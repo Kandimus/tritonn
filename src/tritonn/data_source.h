@@ -89,7 +89,10 @@ public:
 	virtual UDINT PostCalculate();
 	virtual UDINT check(rError& err); //TODO Зачем это? если проверять переменные, то нужно это делать после generateVars, а если если получать данные от станции то до этого. Дилема!
 
-	virtual const rTotal *getTotal(void) const { return nullptr; }
+	virtual const rTotal* getTotal(void) const     { return nullptr; }
+	virtual std::string   getModuleAlias() const   { return std::string(); };
+	virtual USINT         getModuleNumber() const  { return 0xFF; };
+	virtual USINT         getChannelNumber() const { return 0xFF; };
 
 protected:
 	virtual UDINT InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment = "");
