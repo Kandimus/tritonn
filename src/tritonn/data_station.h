@@ -39,18 +39,16 @@ public:
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "station"; }
+	virtual const char* RTTI() const { return "station"; }
 
-	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT Calculate();
-
+	virtual UDINT       calculate();
 	virtual const rTotal *getTotal(void) const;
 
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 public:
 	// Inputs/Outputs

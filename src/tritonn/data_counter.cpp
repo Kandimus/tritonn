@@ -139,9 +139,9 @@ UDINT rCounter::Calculate()
 				m_impulse.Value = 0;
 				m_freq.Value    = 0.0;
 				m_period.Value  = 0.0;
-				m_countPrev = count;
-				m_tickPrev  = tick;
-				m_isInit    = true;
+				m_countPrev     = count;
+				m_tickPrev      = tick;
+				m_isInit        = true;
 			} else {
 				if (m_pullingCount != channel->getPullingCount()) {
 					m_impulse.Value = count - m_countPrev;

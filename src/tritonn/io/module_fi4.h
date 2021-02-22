@@ -54,6 +54,7 @@ public:
 
 private:
 	std::vector<rIOFIChannel> m_channel;
+	USINT m_outtype = 0;
 };
 
 

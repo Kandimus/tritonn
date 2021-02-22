@@ -31,7 +31,7 @@ public:
 	rObjUnit() = default;
 	virtual ~rObjUnit() = default;
 
-	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
+	UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 
 	STRID getTemperature() const;
 	STRID getPressure() const;

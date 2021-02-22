@@ -29,34 +29,34 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "rdcdens"; }
+	virtual const char* RTTI() const { return "rdcdens"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
+	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT       generateMarkDown(rGeneratorMD& md);
-	virtual UDINT Calculate();
+	virtual UDINT       calculate();
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink &link);
 
 public:
 	// Inputs
-	rLink Dens15;
-	rLink B15;
-	rLink Temp;
-	rLink Pres;
+	rLink m_dens15;
+	rLink m_b15;
+	rLink m_temp;
+	rLink m_pres;
 
 	// Outputs
-	rLink Dens;
-	rLink Dens20;
-	rLink CTL;
-	rLink CPL;
-	rLink B;
-	rLink Y;
-	rLink Y15;
+	rLink m_dens;
+	rLink m_dens20;
+	rLink m_ctl;
+	rLink m_cpl;
+	rLink m_b;
+	rLink m_y;
+	rLink m_y15;
 
 protected:
-	UDINT SetFault();
+	UDINT setFault();
 
 };
 

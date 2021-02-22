@@ -82,29 +82,29 @@ private:
 
 public:
 	rSampler(const rStation* owner = nullptr);
-	virtual ~rSampler();
+	virtual ~rSampler() = default;
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "sampler"; }
+	virtual const char* RTTI() const { return "sampler"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT       generateMarkDown(rGeneratorMD& md);
-	virtual UDINT Calculate();
-	virtual UDINT check(rError& err);
+	virtual UDINT       calculate();
+	virtual UDINT       check(rError& err);
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 public:
 	// Inputs, Inoutputs
-	rLink m_ioStart;
-	rLink m_ioStop;
+	rLink    m_ioStart;
+	rLink    m_ioStop;
 
 	// Outputs
-	rLink m_grab;
-	rLink m_selected;
+	rLink    m_grab;
+	rLink    m_selected;
 
 	Can      m_can[CAN_MAX];
 	Command  m_command;

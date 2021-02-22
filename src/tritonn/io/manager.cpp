@@ -25,6 +25,7 @@
 #include "../threadmaster.h"
 #include "../xml_util.h"
 #include "../error.h"
+#include "defines.h"
 #include "module_ai6.h"
 #include "module_di8do8.h"
 #include "module_fi4.h"
@@ -66,6 +67,15 @@ std::unique_ptr<rIOBaseModule> rIOManager::getModule(USINT module)
 	return m_modules[module]->getModulePtr();
 }
 
+std::string rIOManager::getModuleAlias(USINT module) const
+{
+	if (module >= m_modules.size()) {
+		return "";
+	}
+
+	return m_modules[module]->getAlias();
+}
+
 rThreadStatus rIOManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
@@ -94,7 +104,7 @@ rThreadStatus rIOManager::Proccesing()
 UDINT rIOManager::generateVars(rVariableClass* parent)
 {
 	for (auto module : m_modules) {
-		module->generateVars("hardware.", m_varList, rSimpleArgs::instance().isSet(rArg::Simulate));
+		module->generateVars(IO::HARWARE_PREFIX, m_varList, rSimpleArgs::instance().isSet(rArg::Simulate));
 	}
 
 	if (parent) {
@@ -151,10 +161,10 @@ std::string rIOManager::saveKernel()
 	rModuleFI4    fi4;
 	rModuleCRM    crm;
 
-	ai6.generateVars("hardware.", list, true);
-	di8do8.generateVars("hardware.", list, true);
-	fi4.generateVars("hardware.", list, true);
-	crm.generateVars("hardware.", list, true);
+	ai6.generateVars   (IO::HARWARE_PREFIX, list, true);
+	di8do8.generateVars(IO::HARWARE_PREFIX, list, true);
+	fi4.generateVars   (IO::HARWARE_PREFIX, list, true);
+	crm.generateVars   (IO::HARWARE_PREFIX, list, true);
 
 	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
 

@@ -24,7 +24,7 @@ class rVariableList;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rLimit //: public rSource
+class rLimit
 {
 public:
 	enum Setup
@@ -54,14 +54,12 @@ public:
 	virtual ~rLimit();
 
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list, const string &owner_name, STRID owner_unit);
-
-public:
-	virtual UINT Calculate(LREAL val, UDINT check);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
+	virtual UDINT generateVars(rVariableList& list, const std::string& owner_name, STRID owner_unit);
+	virtual UINT  calculate(LREAL val, UDINT check);
 
 protected:
-	void SendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend);
+	void sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend);
 
 public:
 	rCmpLREAL m_lolo;

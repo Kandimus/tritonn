@@ -19,10 +19,6 @@
 #include "compared_values.h"
 
 
-// Внутренние флаги
-const LREAL DENSITY15_CONVERGENCE = 0.0005;
-
-
 struct rDensSolCoef
 {
 	rCmpLREAL K0;
@@ -43,49 +39,48 @@ class rDensSol : public rSource
 {
 public:
 	rDensSol(const rStation* owner = nullptr);
-	virtual ~rDensSol();
+	virtual ~rDensSol() = default;
 	
+protected:
+	UDINT setFault();
+
 	// Виртуальные функции от rSource
 public:
 	virtual const char *RTTI() const { return "denssol"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
+	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT       generateMarkDown(rGeneratorMD& md);
-	virtual UDINT Calculate();
+	virtual UDINT       calculate();
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 public:
 	// Inputs, Inoutputs
-	rLink        Period;
-	rLink        Temp;
-	rLink        Pres;
+	rLink        m_period;
+	rLink        m_temp;
+	rLink        m_pres;
 
 	// Outputs
-	rLink        Dens;
-	rLink        Dens15;
-	rLink        Dens20;
-	rLink        B;
-	rLink        Y;
-	rLink        CTL;
-	rLink        CPL;
-	rLink        B15;
-	rLink        Y15;
+	rLink        m_dens;
+	rLink        m_dens15;
+	rLink        m_dens20;
+	rLink        m_b;
+	rLink        m_y;
+	rLink        m_ctl;
+	rLink        m_cpl;
+	rLink        m_b15;
+	rLink        m_y15;
 
-	rDensSolCoef Coef;                    // Коэф-ты для установки пользователем
-	rDensSolCoef UsedCoef;                // Используемые коэф-ты
+	rDensSolCoef m_setCoef;               // Коэф-ты для установки пользователем
+	rDensSolCoef m_curCoef;               // Используемые коэф-ты
 	USINT        m_accept = 0;            // Команда на принятие коэф-тов
 	rCmpLREAL    m_calibrT;               // Температура калибровки
-	rCmpUINT     Setup;                   // Настройка плотномера
-	LREAL        K0;
-	LREAL        K1;
-	LREAL        K2;
-
-protected:
-	UDINT SetFault();
-
+	rCmpUINT     m_setup;                   // Настройка плотномера
+	LREAL        m_k0;
+	LREAL        m_k1;
+	LREAL        m_k2;
 };
 
 

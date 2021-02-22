@@ -28,6 +28,7 @@
 #include "data_station.h"
 #include "data_stream.h"
 #include "data_snapshot.h"
+#include "io/defines.h"
 
 
 const UDINT STREAM_LE_INPUTS     = 0x00000001;
@@ -103,14 +104,6 @@ UDINT rStream::InitLimitEvent(rLink &link)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rStream::GetFault(void)
-{
-	return 1;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
 UDINT rStream::Calculate()
 {
 	rEvent event_s;
@@ -178,25 +171,15 @@ UDINT rStream::getUnitKF()
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-const rTotal *rStream::getTotal(void) const
-{
-	return &m_total;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
 UDINT rStream::enableFreqOut() const
 {
-	if (m_freq.isValid()) {
-		std::string moduleAlias = m_freq.getModuleAlias();
+	if (m_counter.isValid()) {
+		std::string moduleAlias = m_counter.getModuleAlias();
 
 		if (moduleAlias.size()) {
 			rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SYSTEM);
-			//TODO может заменить "hardware" константой?
-			ss.add("hardware." + moduleAlias + ".outtype", 0); //TODO Подставить нужное число
+
+			ss.add(IO::HARWARE_PREFIX + moduleAlias + "." + IO::VARNAME_OUTTYPE, 0); //TODO Подставить нужное число
 			ss.set();
 
 			return TRITONN_RESULT_OK;
@@ -208,13 +191,13 @@ UDINT rStream::enableFreqOut() const
 
 UDINT rStream::disableFreqOut() const
 {
-	if (m_freq.isValid()) {
-		std::string moduleAlias = m_freq.getModuleAlias();
+	if (m_counter.isValid()) {
+		std::string moduleAlias = m_counter.getModuleAlias();
 
 		if (moduleAlias.size()) {
 			rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SYSTEM);
 
-			ss.add("hardware." + moduleAlias + ".outtype", m_freq.getChannelNumber()); //TODO Подставить нужное число
+			ss.add(IO::HARWARE_PREFIX + moduleAlias + "." + IO::VARNAME_OUTTYPE, m_counter.getChannelNumber() + 1); //TODO Подставить нужное число
 			ss.set();
 
 			return TRITONN_RESULT_OK;

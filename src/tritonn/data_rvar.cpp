@@ -38,12 +38,6 @@ rRVar::rRVar() : rSource(), Setup(0)
 }
 
 
-rRVar::~rRVar()
-{
-	;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 //
 UDINT rRVar::InitLimitEvent(rLink &link)

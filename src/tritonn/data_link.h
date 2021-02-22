@@ -44,39 +44,41 @@ public:
 public:
 	virtual const char *RTTI() const { return "link"; }
 
-	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT Calculate();
+	virtual UDINT getFault();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT calculate();
 	virtual UDINT generateVars(rVariableList& list);
 
 private:
-	virtual UDINT InitLimitEvent(rLink &link);
-	virtual LREAL GetValue();
+	virtual UDINT initLimitEvent(rLink &link);
+	virtual LREAL getValue(const std::string& name, UDINT unit, UDINT& err);
+
+	virtual LREAL getValue();
 
 public:
-	void  Init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment);
-	void  CalculateLimit();
-	STRID GetSourceUnit();
+	void  init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment);
+	void  calculateLimit();
+	STRID getSourceUnit();
 	const rSource* getOwner() const;
 	bool  isValid() const;
 
 public:
-	std::string FullTag = "";         // Полное имя тега-источника (пример "sikn.line.io.temp:present")
-	std::string Param   = "";         // Имя параметра-источника (из примера "present")
-	std::string IO_Name = "";         // Собственное имя источника данных
-	std::string m_varName = "";       // Имя для генерации переменных
+	std::string m_fullTag = "";         // Полное имя тега-источника (пример "sikn.line.io.temp:present")
+	std::string m_param   = "";         // Имя параметра-источника (из примера "present")
+	std::string m_ioName  = "";          // Собственное имя источника данных
+	std::string m_varName = "";         // Имя для генерации переменных
 	std::string m_comment = "";
-	rSource*    m_source = nullptr;    // Источник данных
+	rSource*    m_source  = nullptr;    // Источник данных
 
-	STRID       Unit    = U_any;      // Требуемые ед.измерения
-	LREAL       Value   = 0.0;        // Полученное значение
-	rLimit      Limit;
+	STRID       m_unit    = U_any;      // Требуемые ед.измерения
+	LREAL       m_value   = 0.0;        // Полученное значение
+	rLimit      m_limit;
 
-	UINT        m_setup = 0;
-	std::string Shadow  = "";
+	UINT        m_setup   = 0;
+	std::string m_shadow  = "";
 
 //private:
-	virtual LREAL GetValue(const string &name, UDINT unit, UDINT &err);
+
 
 protected:
 	rSource* m_owner = nullptr;    // Куда привязаны

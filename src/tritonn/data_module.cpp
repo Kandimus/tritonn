@@ -18,6 +18,7 @@
 #include "data_config.h"
 #include "data_module.h"
 #include "xml_util.h"
+#include "io/manager.h"
 
 
 rDataModule::rDataModule()
@@ -34,14 +35,23 @@ rDataModule::rDataModule(bool nochannel)
 
 bool rDataModule::isSetModule() const
 {
-	return m_module != 0xFF && (m_channel != 0xFF || m_nochannel);
+	return m_module != FAULT && (m_channel != FAULT || m_nochannel);
 }
 
 
+std::string rDataModule::getAlias() const
+{
+	if (m_module == FAULT) {
+		return "";
+	}
+
+	return rIOManager::instance().getModuleAlias(m_module);
+}
+
 UDINT rDataModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	m_module  = XmlUtils::getAttributeUSINT(element, XmlName::MODULE , 0xFF);
-	m_channel = XmlUtils::getAttributeUSINT(element, XmlName::CHANNEL, 0xFF);
+	m_module  = XmlUtils::getAttributeUSINT(element, XmlName::MODULE , FAULT);
+	m_channel = XmlUtils::getAttributeUSINT(element, XmlName::CHANNEL, FAULT);
 
 	if (!isSetModule()) {
 		return err.set(DATACFGERR_INVALID_MODULELINK, element->GetLineNum(), "");

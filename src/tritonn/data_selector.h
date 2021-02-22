@@ -28,17 +28,19 @@ class rSelector : public rSource
 {
 public:
 	rSelector(const rStation* owner = nullptr);
-	virtual ~rSelector();
+	virtual ~rSelector() = default;
+
+	void generateIO();
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return (Setup.Value & SELECTOR_SETUP_MULTI) ? "mselector" : "selector"; }
+	virtual const char* RTTI() const { return (Setup.Value & SELECTOR_SETUP_MULTI) ? "mselector" : "selector"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
-	virtual UDINT Calculate();
+	virtual UDINT calculate();
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT initLimitEvent(rLink &link);
 	
 public:
 	rLink    ValueIn  [MAX_SELECTOR_INPUT][MAX_SELECTOR_GROUP]; // Массив входных значений
@@ -53,9 +55,6 @@ public:
 	rCmpINT  Select;                                            // Переменная для управлением выбора
 	UINT     CountInputs;                                       // Количество используемых входных значений, не больше чем MAX_SELECTOR_DATA
 	UINT     CountGroups;
-
-public:
-	void GenerateIO();
 
 private:
 	static rBitsArray m_flagsSetup;
