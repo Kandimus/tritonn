@@ -65,9 +65,9 @@ protected:
 public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
 	virtual UDINT generateVars(rVariableClass* parent);
-	virtual UDINT CheckVars(rError& err);
-	virtual UDINT StartServer();
-	virtual rThreadClass *GetThreadClass();
+	virtual UDINT checkVars(rError& err);
+	virtual UDINT startServer();
+	virtual rThreadClass *getThreadClass();
 
 protected:
 	rSnapshot   m_snapshot;

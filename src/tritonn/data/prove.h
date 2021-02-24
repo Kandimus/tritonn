@@ -80,14 +80,14 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "prove"; }
+	virtual const char* RTTI() const { return "prove"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
-	virtual UDINT Calculate();
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
+	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
+	virtual UDINT       calculate();
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 private:
 	void onIdle();

@@ -29,7 +29,7 @@ class rStation : public rSource
 {
 public:
 	rStation();
-	virtual ~rStation();
+	virtual ~rStation() = default;
 
 	rDensity::Product getProduct() const;
 	const rObjUnit& getUnit() const;
@@ -64,7 +64,7 @@ public:
 	rLink m_flowVolume20;
 
 	rDensity::Product m_product;
-	rCmpUINT     Setup;
+	rCmpUINT m_setup;
 
 private:
 	static rBitsArray m_flagsProduct;

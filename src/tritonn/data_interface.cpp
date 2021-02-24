@@ -31,14 +31,6 @@ rInterface::rInterface(pthread_mutex_t& mutex)
 {
 }
 
-rInterface::~rInterface()
-{
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
-
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -50,7 +42,7 @@ UDINT rInterface::loadFromXML(tinyxml2::XMLElement *element, rError& err)
 		return err.set(DATACFGERR_INTERFACES_BADNAME, element->GetLineNum(), "fault name"); //TODO Можно еще алиас проверить на валидность имени
 	}
 
-	Alias  = String_tolower(strAlias);
+	m_alias = String_tolower(strAlias);
 
 	return TRITONN_RESULT_OK;
 }
@@ -74,7 +66,7 @@ std::string rInterface::saveKernel(const std::string& objname, const std::string
 			continue;
 		}
 
-		result += var->saveKernel(Alias.size() + 1, "\t\t");
+		result += var->saveKernel(m_alias.size() + 1, "\t\t");
 	}
 	result += "\t</values>\n</interface>\n";
 

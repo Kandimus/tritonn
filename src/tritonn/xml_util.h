@@ -169,6 +169,7 @@ const char PRESENT[]       = "present";
 const char PRES[]          = "pressure";
 const char PRODUCT[]       = "product";
 const char PROPERTIES[]    = "properties";
+const char PROVE[]         = "prove";
 const char REDUCEDDENS[]   = "reduceddens";
 const char REPORT[]        = "report";
 const char REPORTS[]       = "reports";

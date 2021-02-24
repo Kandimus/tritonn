@@ -51,7 +51,7 @@ public:
 	};
 
 	rDO(const rStation* owner = nullptr);
-	virtual ~rDO();
+	virtual ~rDO() = default;
 	
 	// Виртуальные функции от rSource
 public:
@@ -61,20 +61,24 @@ public:
 	virtual UDINT       generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT       calculate();
+
+	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
 protected:
 	virtual UDINT       initLimitEvent(rLink &link);
 
 public:
 	// Inputs, Inoutputs
-	rLink       m_present;               // Результирующие значение
+	rLink    m_present;               // Результирующие значение
 
 	// Output
 
 	// Внутренние переменные
-	USINT       m_physical;              // Текущее физическое значение
-	Mode        m_mode;                  // Режим работы
-	rCmpUINT    m_setup;                 // Настройка сигнала
-	Status      m_status;                //
+	USINT    m_physical;              // Текущее физическое значение
+	Mode     m_mode;                  // Режим работы
+	rCmpUINT m_setup;                 // Настройка сигнала
+	Status   m_status;                //
 //	UDINT       Security;                //
 
 private:

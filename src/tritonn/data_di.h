@@ -58,7 +58,7 @@ public:
 	};
 
 	rDI(const rStation* owner = nullptr);
-	virtual ~rDI();
+	virtual ~rDI() = default;
 	
 	// Виртуальные функции от rSource
 public:
@@ -68,11 +68,15 @@ public:
 	virtual UDINT       generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT       calculate();
+
+	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
 protected:
 	virtual UDINT       initLimitEvent(rLink &link);
 
 public:
-	UDINT SetFault();
+	UDINT setFault();
 
 public:
 	// Inputs, Inoutputs

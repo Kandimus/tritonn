@@ -89,7 +89,7 @@ protected:
 	virtual UDINT       initLimitEvent(rLink& link);
 
 public:
-	UDINT SetFault();
+	UDINT setFault();
 
 public:
 	// Inputs, Inoutputs

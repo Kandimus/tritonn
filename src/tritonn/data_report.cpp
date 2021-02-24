@@ -191,35 +191,32 @@ rReport::~rReport()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReport::InitLimitEvent(rLink &/*link*/)
+UDINT rReport::initLimitEvent(rLink& /*link*/)
 {
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReport::Calculate()
+UDINT rReport::calculate()
 {
-	if(rSource::Calculate()) return 0;
+	if (rSource::calculate()) {
+		return 0;
+	}
 
 	// Обработка периодических отчетов
-	if(Type == REPORT_PERIODIC)
-	{
-		if(Status == REPORT_STATUS_RUNNING)
-		{
+	if (Type == REPORT_PERIODIC) {
+		if (Status == REPORT_STATUS_RUNNING) {
 			// Проверка на завершение отчета
-			if(CheckFinishPeriodic())
-			{
+			if (CheckFinishPeriodic()) {
 				Store();
 				Start();
 			}
-		}
+
 		// Проверка на незавершенный отчет при WarmStart
-		else if(Status == REPORT_STATUS_IDLE)
-		{
-			if(Present.StartTime._UNIX)
-			{
+		} else if (Status == REPORT_STATUS_IDLE) {
+			if (Present.StartTime._UNIX) {
 				Time64_T curtime = timegm64(NULL);
 
 				// Если время отчета уже вышло, то сохраняем его с меткой "недействительный"
@@ -239,16 +236,14 @@ UDINT rReport::Calculate()
 		}
 	}
 	// Обработка партионных отчетов
-	else if(Type == REPORT_BATCH)
-	{
-
+	else if (Type == REPORT_BATCH) {
+		;
+	} else {
+		return 1;
 	}
-	else return 1;
 
 
-
-	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii)
-	{
+	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii) {
 		rReportTotal *total    = Present.AverageItems[ii];
 		LREAL         oldmass = 0.0;
 		LREAL         curmass = 0.0;
@@ -269,40 +264,25 @@ UDINT rReport::Calculate()
 		{
 			rReportItem *itm = total->Items[ii];
 
-			itm->Source.Calculate();
+			itm->Source.calculate();
 
 			if(curmass <= 0.0) continue;
 
-			itm->Value = ((itm->Value * inc) + (itm->Source.Value * oldmass)) / curmass;
+			itm->Value = ((itm->Value * inc) + (itm->Source.m_value * oldmass)) / curmass;
 		}
 	}
 
-	for(UDINT ii = 0; ii < Present.SnapshotItems.size(); ++ii)
-	{
-		rReportItem *itm = Present.SnapshotItems[ii];
-
-		itm->Source.Calculate();
-		itm->Value = itm->Source.Value;
+	for(auto item : Present.SnapshotItems) {
+		item->Source.calculate();
+		item->Value = item->Source.m_value;
 	}
 
 	//----------------------------------------------------------------------------------------------
 	// Обрабатываем Limits для выходных значений
-	PostCalculate();
+	postCalculate();
 		
-	return 0;
+	return TRITONN_RESULT_OK;
 }
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-
-
 
 
 //-------------------------------------------------------------------------------------------------
@@ -338,7 +318,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 		{
 			rReportItem *itm = tot->Items[jj];
 
-			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
+			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA);
 		}
 	}
 
@@ -348,7 +328,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 	{
 		rReportItem *itm = SnapshotItems[ii];
 
-		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.GetSourceUnit(), ACCESS_SA);
+		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA);
 	}
 }
 
@@ -358,7 +338,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 //
 UDINT rReport::generateVars(rVariableList& list)
 {
-	string name = Alias + ".";
+	string name = m_alias + ".";
 
 	rSource::generateVars(list);
 
@@ -415,12 +395,12 @@ tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strType = XmlUtils::getAttributeString(element, XmlName::TYPE, m_flagsType.getNameByBits(REPORT_PERIODIC));
 	UDINT fault = 0;
 
-	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.getError();
 	}
 
@@ -454,7 +434,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	//--------------------------------------------
 	// Загружаем DataSet
-	tinyxml2::XMLElement *dataset = GetDataSetElement(element, dsname->GetText());
+	auto dataset = GetDataSetElement(element, dsname->GetText());
 
 	if (!dataset) {
 		return err.set(DATACFGERR_REPORT, element->GetLineNum(), "can't found dataset");
@@ -463,7 +443,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	// Перебираем станции и линии в dataset
 	// Заполняем только объект Present
 	XML_FOR(total_xml, dataset, XmlName::TOTALS) {
-		rReportTotal* tot = new rReportTotal();
+		auto tot = new rReportTotal();
 
 		Present.AverageItems.push_back(tot);
 
@@ -494,7 +474,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	// Загружаем мгновенные данные из dataset
 	// Заполняем только объект Present
-	tinyxml2::XMLElement* snapshots_xml = dataset->FirstChildElement(XmlName::SNAPSHOTS);
+	auto snapshots_xml = dataset->FirstChildElement(XmlName::SNAPSHOTS);
 	if(snapshots_xml != nullptr)
 	{
 		XML_FOR(item_xml, snapshots_xml, XmlName::ITEM) {
@@ -517,7 +497,7 @@ UDINT rReport::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	Completed.CreateFrom(Present);
 	Archive.CreateFrom(Present);
 
-	ReinitLimitEvents();
+	reinitLimitEvents();
 
 	return TRITONN_RESULT_OK;
 }
@@ -588,7 +568,7 @@ UDINT rReport::Store()
 		p_itm->Value = 0.0;
 	}
 
-	rEventManager::instance().Add(ReinitEvent(EID_REPORT_GENERATED));
+	rEventManager::instance().Add(reinitEvent(EID_REPORT_GENERATED));
 
 	// Формируем XML дерево отчета
 	SaveToXML();
@@ -664,7 +644,7 @@ void rReportItem::Print(tinyxml2::XMLPrinter &printer)
 	printer.CloseElement();
 
 	printer.OpenElement("unit");
-	printer.PushText(Source.GetSourceUnit());
+	printer.PushText(Source.getSourceUnit());
 	printer.CloseElement();
 
 	printer.CloseElement();
@@ -771,12 +751,12 @@ UDINT rReport::SaveToXML(UDINT present)
 	printer.CloseElement(); // tritonn
 
 
-	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), Alias.c_str(), reptime._UNIX);
+	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), m_alias.c_str(), reptime._UNIX);
 	UDINT   result  = SimpleFileSave(filename, printer.CStr());
 
 	if(result != TRITONN_RESULT_OK)
 	{
-		rEventManager::instance().Add(ReinitEvent(EID_REPORT_GENERATED) << result);
+		rEventManager::instance().Add(reinitEvent(EID_REPORT_GENERATED) << result);
 		return 0;
 	}
 

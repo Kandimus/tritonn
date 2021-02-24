@@ -45,19 +45,9 @@ rLimit::rLimit() :
 }
 
 
-rLimit::~rLimit()
-{
-	;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 //
-
-
-//-------------------------------------------------------------------------------------------------
-//
-UINT rLimit::Calculate(LREAL val, UDINT check)
+UINT rLimit::calculate(LREAL val, UDINT check)
 {
 	Status oldStatus = m_status;
 
@@ -78,7 +68,7 @@ UINT rLimit::Calculate(LREAL val, UDINT check)
 
 	// Проверка на недопустимое число
 	if (std::isinf(val) || std::isnan(val)) {
-		SendEvent(EventNan, nullptr, nullptr, oldStatus == Status::ISNAN);
+		sendEvent(EventNan, nullptr, nullptr, oldStatus == Status::ISNAN);
 		m_status = Status::ISNAN;
 
 	} else {
@@ -91,27 +81,27 @@ UINT rLimit::Calculate(LREAL val, UDINT check)
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
 		else if((m_setup.Value & Setup::HIHI) && ((val > m_hihi.Value) || ((val > m_hihi.Value - Hysteresis.Value) && (oldStatus == Status::HIHI))))
 		{
-			SendEvent(EventAMax, &val, &m_hihi.Value, oldStatus == Status::HIHI);
+			sendEvent(EventAMax, &val, &m_hihi.Value, oldStatus == Status::HIHI);
 			m_status = Status::HIHI;
 		}
 		else if((m_setup.Value & Setup::LOLO) && ((val < m_lolo.Value) || ((val < m_lolo.Value + Hysteresis.Value) && (oldStatus == Status::LOLO))))
 		{
-			SendEvent(EventAMin, &val, &m_lolo.Value, oldStatus == Status::LOLO);
+			sendEvent(EventAMin, &val, &m_lolo.Value, oldStatus == Status::LOLO);
 			m_status = Status::LOLO;
 		}
 		else if((m_setup.Value & Setup::HI) && ((val > m_hi.Value) || ((val > m_hi.Value - Hysteresis.Value) && (oldStatus == Status::HI))))
 		{
-			SendEvent(EventWMax, &val, &m_hi.Value, oldStatus == Status::HI);
+			sendEvent(EventWMax, &val, &m_hi.Value, oldStatus == Status::HI);
 			m_status = Status::HI;
 		}
 		else if((m_setup.Value & Setup::LO) && ((val < m_lo.Value) || ((val < m_lo.Value + Hysteresis.Value) && (oldStatus == Status::LO))))
 		{
-			SendEvent(EventWMin, &val, &m_lo.Value, oldStatus == Status::LO);
+			sendEvent(EventWMin, &val, &m_lo.Value, oldStatus == Status::LO);
 			m_status = Status::LO;
 		}
 		else
 		{
-			SendEvent(EventNormal, &val, nullptr, oldStatus == Status::NORMAL);
+			sendEvent(EventNormal, &val, nullptr, oldStatus == Status::NORMAL);
 			m_status = Status::NORMAL;
 		}
 	}
@@ -145,7 +135,7 @@ UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLimit::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rLimit::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	UNUSED(err); UNUSED(prefix);
 
@@ -165,9 +155,11 @@ UDINT rLimit::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 
 
 //
-void rLimit::SendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend)
+void rLimit::sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend)
 {
-	if(dontsend) return;
+	if (dontsend) {
+		return;
+	}
 
 	rEvent event = e;
 

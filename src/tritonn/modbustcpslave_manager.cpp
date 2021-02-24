@@ -379,13 +379,13 @@ UDINT rModbusTCPSlaveManager::TypeCountReg(TT_TYPE type)
 }
 
 
-rThreadClass *rModbusTCPSlaveManager::GetThreadClass()
+rThreadClass *rModbusTCPSlaveManager::getThreadClass()
 {
 	return (rThreadClass *)this;
 }
 
 
-UDINT rModbusTCPSlaveManager::StartServer()
+UDINT rModbusTCPSlaveManager::startServer()
 {
 	UDINT result = rTCPClass::StartServer("", 0);
 
@@ -398,7 +398,7 @@ UDINT rModbusTCPSlaveManager::StartServer()
 
 //-------------------------------------------------------------------------------------------------
 // Проверка переменных, создание Snapshoot
-UDINT rModbusTCPSlaveManager::CheckVars(rError& err)
+UDINT rModbusTCPSlaveManager::checkVars(rError& err)
 {
 	UDINT address = 0;
 
@@ -523,7 +523,7 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 	UDINT       port  = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
 	std::string ip    = "0.0.0.0";
 
-	Alias    = "comms.modbus." + Alias;
+	m_alias  = "comms.modbus." + m_alias;
 	Name     = XmlUtils::getAttributeString(xml_root, XmlName::NAME    , "");
 	SlaveID  = XmlUtils::getAttributeUDINT (xml_root, XmlName::ID      , 0);
 	Security = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY, 0);
@@ -606,11 +606,11 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 
 UDINT rModbusTCPSlaveManager::generateVars(rVariableClass* parent)
 {
-	m_varList.add(Alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0);
-	m_varList.add(Alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0);
-	m_varList.add(Alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0);
-	m_varList.add(Alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0);
-	m_varList.add(Alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0);
+	m_varList.add(m_alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0);
+	m_varList.add(m_alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0);
+	m_varList.add(m_alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0);
+	m_varList.add(m_alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0);
+	m_varList.add(m_alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0);
 
 	if (parent) {
 		rVariableClass::linkToExternal(parent);

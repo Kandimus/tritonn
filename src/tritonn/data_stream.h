@@ -23,10 +23,6 @@
 
 class rVariable;
 
-
-const UINT STR_SETUP_OFF      = 0x0001;
-
-
 struct rFactorPoint
 {
 	UDINT     m_id;
@@ -58,9 +54,14 @@ public:
 		ULTRASONIC = 3,
 	};
 
+	enum Setup : UINT
+	{
+		OFF = 0x0001,
+	};
+
 public:
 	rStream(const rStation* owner = nullptr);
-	virtual ~rStream();
+	virtual ~rStream() =  default;
 
 	UDINT enableFreqOut() const;
 	UDINT disableFreqOut() const;
@@ -81,7 +82,7 @@ protected:
 protected:
 	LREAL calcualateKF();
 	void  calcTotal();
-	UDINT getUnitKF();
+	UDINT getUnitKF() const;
 
 public:
 	// Inputs
@@ -103,14 +104,14 @@ public:
 
 
 //	UDINT       Unit; //
-	rCmpUINT    Setup;
+	rCmpUINT    m_setup;
 	Type        m_flowmeter;     // Тип расходомера
-	USINT       Maintenance;   // 1 - Линия в ремонте
-	USINT       Linearization; // Флаг использования кусочно-линейной апроксимации, а не одного К-фактора
+	USINT       m_maintenance;   // 1 - Линия в ремонте
+	USINT       m_linearization; // Флаг использования кусочно-линейной апроксимации, а не одного К-фактора
 	rFlowFactor m_curFactor;
 	rFlowFactor m_setFactor;
-	LREAL       CurKF;
-	UDINT       AcceptKF;
+	LREAL       m_curKF;
+	UDINT       m_acceptKF;
 	rTotal      m_total;
 
 private:

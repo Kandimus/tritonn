@@ -34,7 +34,7 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const { return (Setup.Value & SELECTOR_SETUP_MULTI) ? "mselector" : "selector"; }
+	virtual const char* RTTI() const { return (m_setup.Value & SELECTOR_SETUP_MULTI) ? "mselector" : "selector"; }
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list);
@@ -50,7 +50,7 @@ public:
 	LREAL    Keypad   [MAX_SELECTOR_GROUP];                     // Значение подстановки
 	STRID    KpUnit   [MAX_SELECTOR_GROUP];                     //
 	string   NameInput[MAX_SELECTOR_GROUP];                     // Имена входов
-	rCmpUINT Setup;                                             // Настройка
+	rCmpUINT m_setup;                                             // Настройка
 	rCmpUINT Mode;
 	rCmpINT  Select;                                            // Переменная для управлением выбора
 	UINT     CountInputs;                                       // Количество используемых входных значений, не больше чем MAX_SELECTOR_DATA

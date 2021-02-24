@@ -25,7 +25,7 @@ class rReducedDens : public rSource
 {
 public:
 	rReducedDens(const rStation* owner = nullptr);
-	virtual ~rReducedDens();
+	virtual ~rReducedDens() = default;
 	
 	// Виртуальные функции от rSource
 public:

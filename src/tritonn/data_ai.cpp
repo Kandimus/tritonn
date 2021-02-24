@@ -59,34 +59,34 @@ rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
 				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD));
 	}
 
-	LockErr  = 0;
-	m_setup  = Setup::OFF;
-	m_mode   = Mode::PHIS;
-	m_status = Status::UNDEF;
+	m_lockErr = 0;
+	m_setup   = Setup::OFF;
+	m_mode    = Mode::PHIS;
+	m_status  = Status::UNDEF;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(rLink::Setup::OUTPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, PhValue  , U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_current, U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_phValue, U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_current, U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::InitLimitEvent(rLink &link)
+UDINT rAI::initLimitEvent(rLink& link)
 {
-	link.Limit.EventChangeAMin  = ReinitEvent(EID_AI_NEW_AMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMin  = ReinitEvent(EID_AI_NEW_WMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMax  = ReinitEvent(EID_AI_NEW_WMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeAMax  = ReinitEvent(EID_AI_NEW_AMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeHyst  = ReinitEvent(EID_AI_NEW_HYST)  << link.Descr << link.Unit;
-	link.Limit.EventChangeSetup = ReinitEvent(EID_AI_NEW_SETUP) << link.Descr << link.Unit;
-	link.Limit.EventAMin        = ReinitEvent(EID_AI_AMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMin        = ReinitEvent(EID_AI_WMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMax        = ReinitEvent(EID_AI_WMAX)      << link.Descr << link.Unit;
-	link.Limit.EventAMax        = ReinitEvent(EID_AI_AMAX)      << link.Descr << link.Unit;
-	link.Limit.EventNan         = ReinitEvent(EID_AI_NAN)       << link.Descr << link.Unit;
-	link.Limit.EventNormal      = ReinitEvent(EID_AI_NORMAL)    << link.Descr << link.Unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_AI_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_AI_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_AI_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_AI_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_AI_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_AI_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_AI_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_AI_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_AI_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_AI_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_AI_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_AI_NORMAL)    << link.m_descr << link.m_unit;
 
 	return 0;
 }
@@ -107,31 +107,31 @@ UDINT rAI::InitLimitEvent(rLink &link)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::Calculate()
+UDINT rAI::calculate()
 {
 	LREAL  Range     = 0; // Значение "чистого" диапазона от Min до Max
 	Status oldStatus = m_status;
-	rEvent event_success;
-	rEvent event_fault;
+	rEvent event_s;
+	rEvent event_f;
 	
-	if(rSource::Calculate()) return TRITONN_RESULT_OK;
+	if(rSource::calculate()) return TRITONN_RESULT_OK;
 
 	// Если аналоговый сигнал выключен, то выходим
 	if(m_setup.Value & rAI::Setup::OFF)
 	{
-		PhValue.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-		m_present.Value = std::numeric_limits<LREAL>::quiet_NaN();
-		m_mode          = Mode::PHIS;
-		m_status        = Status::UNDEF;
+		m_phValue.m_value = std::numeric_limits<LREAL>::quiet_NaN();
+		m_present.m_value = std::numeric_limits<LREAL>::quiet_NaN();
+		m_mode            = Mode::PHIS;
+		m_status          = Status::UNDEF;
 		return 0;
 	}
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
-	m_scale.Min.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_MIN)      << m_present.Unit);
-	m_scale.Max.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_MAX)      << m_present.Unit);
-	KeypadValue.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_AI_NEW_SIMULATE) << m_present.Unit);
-	m_setup.Compare(ReinitEvent(EID_AI_NEW_SETUP));
+	m_scale.Min.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MIN)      << m_present.m_unit);
+	m_scale.Max.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MAX)      << m_present.m_unit);
+	KeypadValue.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_SIMULATE) << m_present.m_unit);
+	m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
 	// Сообщения об изменении Mode формируем в ручную
 	
 	// Вычисляем диапазон по инж. величинам (для ускорения расчетов). Вычисляем тут, потому-что это значение еще пригодится при расчете шума
@@ -146,35 +146,33 @@ UDINT rAI::Calculate()
 		auto channel     = static_cast<rIOAIChannel*>(channel_ptr.get());
 
 		if (channel == nullptr) {
-			rEventManager::instance().Add(ReinitEvent(EID_AI_MODULE) << m_module << m_channel);
+			rEventManager::instance().Add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		CheckExpr(channel->m_state, AI_LE_CODE_FAULT, event_fault.Reinit(EID_AI_CH_FAULT) << ID << Descr, event_success.Reinit(EID_AI_CH_OK) << ID << Descr);
+		checkExpr(channel->m_state, AI_LE_CODE_FAULT,
+				  event_f.Reinit(EID_AI_CH_FAULT) << m_ID << m_descr,
+				  event_s.Reinit(EID_AI_CH_OK)    << m_ID << m_descr);
 
-		PhValue.Value   = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
-		m_current.Value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
+		m_phValue.m_value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
+		m_current.m_value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
 
 		if (channel->m_state) {
-			Fault = true;
+			m_fault = true;
 
-			if (m_mode == Mode::PHIS)
-			{
+			if (m_mode == Mode::PHIS) {
 				// если симуляция разрешена, то симулируем этот сигнал
-				if(m_setup.Value & Setup::ERR_KEYPAD)
-				{
+				if(m_setup.Value & Setup::ERR_KEYPAD) {
 					m_mode = Mode::AKEYPAD;
-				}
-				else if(m_setup.Value & Setup::ERR_LASTGOOD)
-				{
+				} else if(m_setup.Value & Setup::ERR_LASTGOOD) {
 					m_mode = Mode::LASTGOOD;
 				}
 
 				m_status = Status::FAULT; // выставляем флаг ошибки
 			}
 
-			SetFault();
+			setFault();
 		}
 	}
 	else //if !virtual
@@ -191,36 +189,36 @@ UDINT rAI::Calculate()
 	
 	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
 	// можно сделать через m_oldMode, но это не красиво
-	if(m_mode == Mode::MKEYPAD && !(LockErr & AI_LE_SIM_MANUAL))
+	if(m_mode == Mode::MKEYPAD && !(m_lockErr & AI_LE_SIM_MANUAL))
 	{
-		LockErr |= AI_LE_SIM_MANUAL;
-		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
+		m_lockErr |= AI_LE_SIM_MANUAL;
+		m_lockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
 		
-		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_MANUAL));
+		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_MANUAL));
 	}
 	
-	if(m_mode == Mode::AKEYPAD && !(LockErr & AI_LE_SIM_AUTO))
+	if(m_mode == Mode::AKEYPAD && !(m_lockErr & AI_LE_SIM_AUTO))
 	{
-		LockErr |= AI_LE_SIM_AUTO;
-		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_MANUAL | AI_LE_SIM_LAST);
+		m_lockErr |= AI_LE_SIM_AUTO;
+		m_lockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_MANUAL | AI_LE_SIM_LAST);
 		
-		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_AUTO));
+		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_AUTO));
 	}
 	
-	if(m_mode == Mode::LASTGOOD && !(LockErr & AI_LE_SIM_LAST))
+	if(m_mode == Mode::LASTGOOD && !(m_lockErr & AI_LE_SIM_LAST))
 	{
-		LockErr |= AI_LE_SIM_LAST;
-		LockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_MANUAL);
+		m_lockErr |= AI_LE_SIM_LAST;
+		m_lockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_MANUAL);
 		
-		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_LAST));
+		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_LAST));
 	}
 	
-	if(m_mode == Mode::PHIS && !(LockErr & AI_LE_SIM_OFF))
+	if(m_mode == Mode::PHIS && !(m_lockErr & AI_LE_SIM_OFF))
 	{
-		LockErr |= AI_LE_SIM_OFF;
-		LockErr &= ~(AI_LE_SIM_MANUAL | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
+		m_lockErr |= AI_LE_SIM_OFF;
+		m_lockErr &= ~(AI_LE_SIM_MANUAL | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
 		
-		rEventManager::instance().Add(ReinitEvent(EID_AI_SIM_OFF));
+		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_OFF));
 	}
 	
 	
@@ -231,20 +229,17 @@ UDINT rAI::Calculate()
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// Если сигнал за засимулирован, то значение равно значению симуляции
-	if(m_mode == Mode::MKEYPAD || m_mode == Mode::AKEYPAD)
-	{
-		m_present.Value = KeypadValue.Value;
+	if (m_mode == Mode::MKEYPAD || m_mode == Mode::AKEYPAD) {
+		m_present.m_value = KeypadValue.Value;
 	}
 	// Если используем последнее "хорошее" значение
-	else if(m_mode == Mode::LASTGOOD)
-	{
-		m_present.Value = m_lastGood;
+	else if (m_mode == Mode::LASTGOOD) {
+		m_present.m_value = m_lastGood;
 	}
 	// Если используем "физическое" значение
-	else if(isSetModule())
-	{
+	else if (isSetModule()) {
 		// Получаем значение с датчика
-		m_present.Value = PhValue.Value;
+		m_present.m_value = m_phValue.m_value;
 
 		// Проверяем округление 4 и 20мА
 		//TODO перенести в Module
@@ -252,13 +247,13 @@ UDINT rAI::Calculate()
 		{
 			LREAL d = 2.0 * Range / 100.0; // 2% зона нечуствительности
 
-			if(PhValue.Value < m_scale.Min.Value && m_present.Value >= m_scale.Min.Value - d)
+			if(m_phValue.m_value < m_scale.Min.Value && m_present.m_value >= m_scale.Min.Value - d)
 			{
-				m_present.Value = m_scale.Min.Value;
+				m_present.m_value = m_scale.Min.Value;
 			}
-			if(PhValue.Value > m_scale.Max.Value && m_present.Value <= m_scale.Max.Value + d)
+			if(m_phValue.m_value > m_scale.Max.Value && m_present.m_value <= m_scale.Max.Value + d)
 			{
-				m_present.Value = m_scale.Max.Value;
+				m_present.m_value = m_scale.Max.Value;
 			}
 		}
 	}
@@ -275,21 +270,17 @@ UDINT rAI::Calculate()
 		// Если значение больше чем инж. максимум
 		// ИЛИ
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
-		if(m_present.Value > m_scale.Max.Value)
-		{
-			if(oldStatus != Status::MAX)
-			{
-				rEventManager::instance().Add(ReinitEvent(EID_AI_MAX) << m_present.Unit << m_present.Value << m_scale.Max.Value);
+		if (m_present.m_value > m_scale.Max.Value) {
+			if (oldStatus != Status::MAX) {
+				rEventManager::instance().Add(reinitEvent(EID_AI_MAX) << m_present.m_unit << m_present.m_value << m_scale.Max.Value);
 			}
 
 			m_status = Status::MAX;
 		}
 		// Инженерный минимум
-		else if(m_present.Value < m_scale.Min.Value)
-		{
-			if(oldStatus != Status::MIN)
-			{
-				rEventManager::instance().Add(ReinitEvent(EID_AI_MIN) << m_present.Unit << m_present.Value << m_scale.Min.Value);
+		else if (m_present.m_value < m_scale.Min.Value) {
+			if(oldStatus != Status::MIN) {
+				rEventManager::instance().Add(reinitEvent(EID_AI_MIN) << m_present.m_unit << m_present.m_value << m_scale.Min.Value);
 			}
 
 			m_status = Status::MIN;
@@ -299,14 +290,14 @@ UDINT rAI::Calculate()
 			m_status = Status::NORMAL;
 
 			if (m_mode == Mode::PHIS) {
-				m_lastGood = m_present.Value;
+				m_lastGood = m_present.m_value;
 			}
 		}
 	}
 
 	//----------------------------------------------------------------------------------------------
 	// Обрабатываем Limits для выходных значений
-	PostCalculate();
+	postCalculate();
 		
 	return 0;
 }
@@ -314,15 +305,15 @@ UDINT rAI::Calculate()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-UDINT rAI::SetFault()
+UDINT rAI::setFault()
 {
-	PhValue.Value   = std::numeric_limits<LREAL>::quiet_NaN();
-	m_present.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	m_current.Value = std::numeric_limits<LREAL>::quiet_NaN();
-	m_status        = Status::FAULT;
-	Fault           = 1;
+	m_phValue.m_value = std::numeric_limits<LREAL>::quiet_NaN();
+	m_present.m_value = std::numeric_limits<LREAL>::quiet_NaN();
+	m_current.m_value = std::numeric_limits<LREAL>::quiet_NaN();
+	m_status          = Status::FAULT;
+	m_fault           = 1;
 
-	return Fault;
+	return m_fault;
 }
 
 
@@ -342,14 +333,14 @@ UDINT rAI::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.Unit, ACCESS_KEYPAD);
-	list.add(Alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.Unit, ACCESS_SCALES);
-	list.add(Alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.Unit, ACCESS_SCALES);
-	list.add(Alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS     , ACCESS_SA);
-	list.add(Alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS     , ACCESS_KEYPAD);
-	list.add(Alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS     , 0);
+	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.m_unit, ACCESS_KEYPAD);
+	list.add(m_alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES);
+	list.add(m_alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES);
+	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS       , ACCESS_SA);
+	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD);
+	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS       , 0);
 
-	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault            , U_DIMLESS     , 0);
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &m_fault          , U_DIMLESS       , 0);
 
 	return TRITONN_RESULT_OK;
 }
@@ -357,12 +348,12 @@ UDINT rAI::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsMode.getNameByBits (static_cast<UINT>(Mode::PHIS)));
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
 
-	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+	if (rSource::loadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
 	}
 
@@ -400,10 +391,10 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	// Подправляем единицы измерения, исходя из конфигурации AI
-	m_present.Unit = Unit;
-	PhValue.Unit   = Unit;
+	m_present.m_unit = Unit;
+	m_phValue.m_unit = Unit;
 
-	ReinitLimitEvents();
+	reinitLimitEvents();
 
 	return TRITONN_RESULT_OK;
 }
@@ -411,9 +402,9 @@ UDINT rAI::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 
 std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
 {
-	m_present.Limit.m_setup.Init(rLimit::Setup::NONE);
-	PhValue.Limit.m_setup.Init(rLimit::Setup::NONE);
-	m_current.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_present.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_phValue.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_current.m_limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

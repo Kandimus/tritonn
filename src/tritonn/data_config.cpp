@@ -41,6 +41,7 @@
 #include "data_stream.h"
 #include "data_rvar.h"
 #include "data_sampler.h"
+#include "data/prove.h"
 #include "modbustcpslave_manager.h"
 #include "opcua_manager.h"
 #include "structures.h"
@@ -227,7 +228,7 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 		return m_error.set(DATACFGERR_CONFIG, root->GetLineNum());
 	}
 
-	if (LoadIO(config, CfgJSON_IO, nullptr, "io") != TRITONN_RESULT_OK) {
+	if (loadIO(config, CfgJSON_IO, nullptr, "io") != TRITONN_RESULT_OK) {
 		return m_error.getError();
 	}
 
@@ -254,7 +255,7 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix)
+UDINT rDataConfig::loadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix)
 {
 	tinyxml2::XMLElement* xml_io = root->FirstChildElement(XmlName::IO);
 	rSource*    source = nullptr;
@@ -271,16 +272,16 @@ UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 		source = nullptr;
 
 		//TODO реализовать как в модулях IO
-		if (XmlName::AI == name) { if(SysVar->Max.m_ai >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      source->ID = SysVar->Max.m_ai++; }
-		if (XmlName::FI == name) { if(SysVar->Max.m_fi >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); source->ID = SysVar->Max.m_fi++; }
-		if (XmlName::DI == name) { if(SysVar->Max.m_di >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      source->ID = SysVar->Max.m_di++; }
-		if (XmlName::DO == name) { if(SysVar->Max.m_do >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      source->ID = SysVar->Max.m_do++; }
+		if (XmlName::AI == name) { if(SysVar->Max.m_ai >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      source->m_ID = SysVar->Max.m_ai++; }
+		if (XmlName::FI == name) { if(SysVar->Max.m_fi >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); source->m_ID = SysVar->Max.m_fi++; }
+		if (XmlName::DI == name) { if(SysVar->Max.m_di >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      source->m_ID = SysVar->Max.m_di++; }
+		if (XmlName::DO == name) { if(SysVar->Max.m_do >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      source->m_ID = SysVar->Max.m_do++; }
 
 		if (!source) {
 			return m_error.set(DATACFGERR_UNKNOWIO, obj->GetLineNum());
 		}
 
-		if(source->LoadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
+		if(source->loadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
 			return m_error.getError();
 		}
 
@@ -288,8 +289,8 @@ UDINT rDataConfig::LoadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 
 		cJSON *jsrc = cJSON_CreateObject();
 		cJSON *jitm = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->Alias.c_str()));
-		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->Descr));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->m_alias.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->m_descr));
 		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
 		cJSON_AddItemToArray(jroot, jitm);
 	}
@@ -316,17 +317,18 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		name   = obj->Name();
 		source = nullptr;
 
-		if (XmlName::DENSSOL     == name) { if(SysVar->Max.m_densSol     >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL, 0);  source = dynamic_cast<rSource*>(new rDensSol(owner));     source->ID = SysVar->Max.m_densSol++;     }
-		if (XmlName::REDUCEDDENS == name) { if(SysVar->Max.m_reducedDens >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS, 0);  source = dynamic_cast<rSource*>(new rReducedDens(owner)); source->ID = SysVar->Max.m_reducedDens++; }
-		if (XmlName::MSELECTOR   == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector(owner));    source->ID = SysVar->Max.m_selector++;    }
-		if (XmlName::SELECTOR    == name) { if(SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector(owner));    source->ID = SysVar->Max.m_selector++;    }
-		if (XmlName::SAMPLER     == name) { source = dynamic_cast<rSource*>(new rSampler(owner)); source->ID = SysVar->Max.m_sampler++;    }
+		if (XmlName::DENSSOL     == name) { if (SysVar->Max.m_densSol     >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL , 0); source = dynamic_cast<rSource*>(new rDensSol(owner));     source->m_ID = SysVar->Max.m_densSol++;     }
+		if (XmlName::REDUCEDDENS == name) { if (SysVar->Max.m_reducedDens >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS , 0); source = dynamic_cast<rSource*>(new rReducedDens(owner)); source->m_ID = SysVar->Max.m_reducedDens++; }
+		if (XmlName::MSELECTOR   == name) { if (SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector(owner));    source->m_ID = SysVar->Max.m_selector++;    }
+		if (XmlName::SELECTOR    == name) { if (SysVar->Max.m_selector    >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR, 0); source = dynamic_cast<rSource*>(new rSelector(owner));    source->m_ID = SysVar->Max.m_selector++;    }
+		if (XmlName::SAMPLER     == name) { if (SysVar->Max.m_sampler     >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_SAMPLER , 0); source = dynamic_cast<rSource*>(new rSampler(owner));     source->m_ID = SysVar->Max.m_sampler++;     }
+		if (XmlName::PROVE       == name) { if (SysVar->Max.m_sampler     >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_PROVE   , 0); source = dynamic_cast<rSource*>(new rProve(owner));       source->m_ID = SysVar->Max.m_prove++;       }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);
 		}
 
-		if(source->LoadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
+		if(source->loadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
 			return m_error.getError();
 		}
 
@@ -334,8 +336,8 @@ UDINT rDataConfig::LoadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 
 		cJSON* jitm = cJSON_CreateObject();
 		cJSON* jsrc = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->Alias.c_str()));
-		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->Descr));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->m_alias.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->m_descr));
 		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
 		cJSON_AddItemToArray(jroot, jitm);
 	}
@@ -363,7 +365,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 
 		rStation* stn = new rStation();
 
-		if (TRITONN_RESULT_OK != stn->LoadFromXML(station_xml, m_error, "")) {
+		if (TRITONN_RESULT_OK != stn->loadFromXML(station_xml, m_error, "")) {
 			return m_error.getError();
 		}
 
@@ -371,22 +373,22 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 		cJSON *jstn = cJSON_CreateObject();
 		cJSON *jobj = cJSON_CreateArray();
 		cJSON *jstr = cJSON_CreateArray();
-		cJSON_AddItemToObject(jstn, XmlName::ALIAS  , cJSON_CreateString(stn->Alias.c_str()));
-		cJSON_AddItemToObject(jstn, XmlName::DESC   , cJSON_CreateNumber(stn->Descr));
+		cJSON_AddItemToObject(jstn, XmlName::ALIAS  , cJSON_CreateString(stn->m_alias.c_str()));
+		cJSON_AddItemToObject(jstn, XmlName::DESC   , cJSON_CreateNumber(stn->m_descr));
 		cJSON_AddItemToObject(jstn, XmlName::STREAMS, jstr);
 		cJSON_AddItemToObject(jstn, XmlName::CALC   , jobj);
 		cJSON_AddItemToObject(jitm, stn->RTTI()    , jstn);
 		cJSON_AddItemToArray (jroot, jitm);
 
-		if (TRITONN_RESULT_OK != LoadIO(station_xml, CfgJSON_IO, stn, stn->Alias + ".io")) {
+		if (TRITONN_RESULT_OK != loadIO(station_xml, CfgJSON_IO, stn, stn->m_alias + ".io")) {
 			return m_error.getError();
 		}
 
-		if (TRITONN_RESULT_OK != LoadCalc(station_xml, jobj, stn, stn->Alias + ".obj")) {
+		if (TRITONN_RESULT_OK != LoadCalc(station_xml, jobj, stn, stn->m_alias + ".obj")) {
 			return m_error.getError();
 		}
 
-		if (TRITONN_RESULT_OK != loadStream(station_xml, jstr, stn, stn->Alias)) {
+		if (TRITONN_RESULT_OK != loadStream(station_xml, jstr, stn, stn->m_alias)) {
 			return m_error.getError();
 		}
 
@@ -415,15 +417,15 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 
 		rStream* str = new rStream(owner);
 
-		if (TRITONN_RESULT_OK != str->LoadFromXML(stream_xml, m_error, prefix)) {
+		if (TRITONN_RESULT_OK != str->loadFromXML(stream_xml, m_error, prefix)) {
 			return m_error.getError();
 		}
 
 		cJSON *jitm = cJSON_CreateObject();
 		cJSON *jstr = cJSON_CreateObject();
 		cJSON *jobj = cJSON_CreateArray();
-		cJSON_AddItemToObject(jstr, XmlName::ALIAS, cJSON_CreateString(str->Alias.c_str()));
-		cJSON_AddItemToObject(jstr, XmlName::DESC , cJSON_CreateNumber(str->Descr));
+		cJSON_AddItemToObject(jstr, XmlName::ALIAS, cJSON_CreateString(str->m_alias.c_str()));
+		cJSON_AddItemToObject(jstr, XmlName::DESC , cJSON_CreateNumber(str->m_descr));
 		cJSON_AddItemToObject(jstr, XmlName::CALC , jobj);
 		cJSON_AddItemToObject(jitm, str->RTTI()  , jstr);
 		cJSON_AddItemToArray (jroot, jitm);
@@ -431,11 +433,11 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 		// Кросс-линк станции и линии
 		owner->addStream(str);
 
-		if (TRITONN_RESULT_OK != LoadIO(stream_xml, CfgJSON_IO, owner, str->Alias + ".io")) {
+		if (TRITONN_RESULT_OK != loadIO(stream_xml, CfgJSON_IO, owner, str->m_alias + ".io")) {
 			return m_error.getError();
 		}
 
-		if (TRITONN_RESULT_OK != LoadCalc(stream_xml, jobj, owner, str->Alias + ".obj")) {
+		if (TRITONN_RESULT_OK != LoadCalc(stream_xml, jobj, owner, str->m_alias + ".obj")) {
 			return m_error.getError();
 		}
 
@@ -465,7 +467,7 @@ UDINT rDataConfig::LoadReport(tinyxml2::XMLElement* root)
 	XML_FOR(report_xml, reports, XmlName::REPORT) {
 		rReport* rpt = new rReport();
 
-		if (TRITONN_RESULT_OK != rpt->LoadFromXML(report_xml, m_error, "")) {
+		if (TRITONN_RESULT_OK != rpt->loadFromXML(report_xml, m_error, "")) {
 			return m_error.getError();
 		}
 	}
@@ -521,7 +523,7 @@ UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 	XML_FOR(xml_var, xml_vars, XmlName::VARIABLE) {
 		rSource* source = new rRVar();
 
-		if (TRITONN_RESULT_OK != source->LoadFromXML(xml_var, m_error, "")) {
+		if (TRITONN_RESULT_OK != source->loadFromXML(xml_var, m_error, "")) {
 			delete source;
 
 			return m_error.getError();
@@ -531,8 +533,8 @@ UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 
 		cJSON *jsrc = cJSON_CreateObject();
 //		cJSON *jitm = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->Alias.c_str()));
-		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->Descr));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->m_alias.c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->m_descr));
 //		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
 		cJSON_AddItemToArray(CfgJSON_VAR, /*jitm*/jsrc);
 	}
@@ -725,10 +727,10 @@ UDINT rDataConfig::LoadLink(tinyxml2::XMLElement* element, rLink& link, bool req
 		if (!required) {
 			return TRITONN_RESULT_OK;
 		}
-		return m_error.set(DATACFGERR_LINKNF, link.m_lineNum, String_format("source '%s' is null", link.FullTag.c_str()));
+		return m_error.set(DATACFGERR_LINKNF, link.m_lineNum, String_format("source '%s' is null", link.m_fullTag.c_str()));
 	}
 
-	if (TRITONN_RESULT_OK != link.LoadFromXML(element, m_error, "")) {
+	if (TRITONN_RESULT_OK != link.loadFromXML(element, m_error, "")) {
 		return m_error.getError();
 	}
 
@@ -753,9 +755,9 @@ UDINT rDataConfig::LoadShadowLink(tinyxml2::XMLElement *element, rLink &link, rL
 		}
 	}
 
-	link.Alias     = mainlink.Alias;
-	link.FullTag   = mainlink.Alias + ":" + name;
-	link.Param     = name;
+	link.m_alias   = mainlink.m_alias;
+	link.m_fullTag = mainlink.m_alias + ":" + name;
+	link.m_param   = name;
 	link.m_lineNum = mainlink.m_lineNum;
 
 	ListLink.push_back(&link);
@@ -767,7 +769,7 @@ UDINT rDataConfig::LoadShadowLink(tinyxml2::XMLElement *element, rLink &link, rL
 const rSource* rDataConfig::getSource(const std::string& alias)
 {
 	for (auto item : *ListSource) {
-		if (item->Alias == alias) {
+		if (item->m_alias == alias) {
 			return item;
 		}
 	}
@@ -793,16 +795,16 @@ UDINT rDataConfig::ResolveLinks(void)
 	for (auto link : ListLink) {
 		// Проходим все загруженные объекты
 		for (auto src : *ListSource) {
-			if (!strcasecmp(link->Alias.c_str(), src->Alias.c_str())) {
+			if (!strcasecmp(link->m_alias.c_str(), src->m_alias.c_str())) {
 //				std::string aa = src->Alias;
 //				if ("sikn1.line1.io.counter" == aa) {
 //					aa = aa + "@";
 //				}
 				// Проверка на наличие требуемого параметра
-				if (link->Param.size()) {
-					if (src->checkOutput(link->Param)) {
-						src->checkOutput(link->Param);
-						return m_error.set(DATACFGERR_CHECKLINK, link->m_lineNum, link->FullTag);
+				if (link->m_param.size()) {
+					if (src->checkOutput(link->m_param)) {
+						src->checkOutput(link->m_param);
+						return m_error.set(DATACFGERR_CHECKLINK, link->m_lineNum, link->m_fullTag);
 					}
 				}
 
@@ -812,7 +814,7 @@ UDINT rDataConfig::ResolveLinks(void)
 		}
 
 		if (!link->isValid()) {
-			return m_error.set(DATACFGERR_RESOLVELINK, link->m_lineNum, link->FullTag);
+			return m_error.set(DATACFGERR_RESOLVELINK, link->m_lineNum, link->m_fullTag);
 		}
 	}
 
@@ -833,7 +835,7 @@ UDINT rDataConfig::ResolveReports(void)
 					continue;
 				}
 
-				if (tot->Alias == scr->Alias) {
+				if (tot->Alias == scr->m_alias) {
 					tot->Source = scrtot;
 					break;
 				}

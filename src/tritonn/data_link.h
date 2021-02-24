@@ -38,11 +38,12 @@ public:
 
 	static const std::string SHADOW_NONE;
 
-	virtual ~rLink();
+	rLink() = default;
+	virtual ~rLink() = default;
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "link"; }
+	virtual const char* RTTI() const { return "link"; }
 
 	virtual UDINT getFault();
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);

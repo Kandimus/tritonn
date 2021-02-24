@@ -56,42 +56,34 @@ rSampler::rSampler(const rStation* owner) : rSource(owner)
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
 		std::string name = String_format("can_%c.", 'a' + ii);
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_overflow, U_discrete, SID::CANFILLED, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_fault   , U_discrete, SID::FAULT    , name + XmlName::FAULT    , rLink::SHADOW_NONE);
-		InitLink(rLink::Setup::INPUT , m_can[ii].m_weight  , U_g       , SID::CANMASS  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+		initLink(rLink::Setup::INPUT , m_can[ii].m_overflow, U_discrete, SID::CANFILLED, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
+		initLink(rLink::Setup::INPUT , m_can[ii].m_fault   , U_discrete, SID::FAULT    , name + XmlName::FAULT    , rLink::SHADOW_NONE);
+		initLink(rLink::Setup::INPUT , m_can[ii].m_weight  , U_g       , SID::CANMASS  , name + XmlName::MASS     , rLink::SHADOW_NONE);
 	}
-	InitLink(rLink::Setup::INPUT , m_ioStart , U_discrete, SID::CANIOSTART, XmlName::IOSTART, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_ioStop  , U_discrete, SID::CANIOSTOP , XmlName::IOSTOP , rLink::SHADOW_NONE);
-
-	InitLink(rLink::Setup::OUTPUT, m_grab    , U_discrete, SID::GRAB     , XmlName::GRAB     , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_selected, U_discrete, SID::CANSELECT, XmlName::SELECTED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_ioStart , U_discrete, SID::CANIOSTART, XmlName::IOSTART  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_ioStop  , U_discrete, SID::CANIOSTOP , XmlName::IOSTOP   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_grab    , U_discrete, SID::GRAB      , XmlName::GRAB     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_selected, U_discrete, SID::CANSELECT , XmlName::SELECTED , rLink::SHADOW_NONE);
 
 	// Нарастающие подцепим в chack()
 }
 
 
+//-------------------------------------------------------------------------------------------------
 //
-rSampler::~rSampler()
+UDINT rSampler::initLimitEvent(rLink& /*link*/)
 {
-	;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSampler::InitLimitEvent(rLink &/*link*/)
+UDINT rSampler::calculate()
 {
-	return 0;
-}
+	m_grab.m_value = false;
 
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rSampler::Calculate()
-{
-	m_grab.Value = false;
-
-	if (rSource::Calculate()) {
+	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
 	}
 
@@ -110,7 +102,7 @@ UDINT rSampler::Calculate()
 
 	m_command = Command::NONE;
 
-	PostCalculate();
+	postCalculate();
 
 	return TRITONN_RESULT_OK;
 }
@@ -128,7 +120,7 @@ void rSampler::onIdle(void)
 		case Command::RESUME : break;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
 			break;
 	}
 }
@@ -149,7 +141,7 @@ void rSampler::onStart()
 
 	if (m_select >= CAN_MAX) {
 		m_state = State::ERROR;
-		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_SELECT_FAULT));
+		rEventManager::instance().Add(reinitEvent(EID_SAMPLER_SELECT_FAULT));
 		return;
 	}
 
@@ -160,7 +152,7 @@ void rSampler::onStart()
 
 			if (checkInterval()) {
 				m_state  = State::WORKTIME;
-				rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_PERIOD));
+				rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_PERIOD));
 			}
 			break;
 
@@ -169,7 +161,7 @@ void rSampler::onStart()
 			m_interval  = m_probeVolume / m_grabRemain;
 			m_state     = State::WORKVOLUME;
 
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_VOLUME));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_VOLUME));
 			break;
 
 		case Method::MASS:
@@ -177,11 +169,11 @@ void rSampler::onStart()
 			m_interval  = m_probeMass / m_grabRemain;
 			m_state     = State::WORKMASS;
 
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_MASS));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_MASS));
 			break;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_method));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_method));
 			m_method = Method::PERIOD;
 			m_state  = State::ERROR;
 			return;
@@ -199,7 +191,7 @@ void rSampler::onStop(void)
 {
 	m_state = State::IDLE;
 
-	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+	rEventManager::instance().Add(reinitEvent(EID_SAMPLER_STOP));
 }
 
 
@@ -217,7 +209,7 @@ void rSampler::onStartTest(void)
 	m_timeStart     = rTickCount::UnixTime();
 	m_timerInterval = rTickCount::SysTick();
 
-	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_TEST));
+	rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_TEST));
 }
 
 
@@ -242,7 +234,7 @@ void rSampler::onWorkTimer(bool checkflow)
 		case Command::NONE: break;
 		case Command::STOP:
 			m_state = State::FINISH;
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_STOP));
 			return;
 
 		case Command::PAUSE:
@@ -250,7 +242,7 @@ void rSampler::onWorkTimer(bool checkflow)
 			return;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_DONT_STOP));
 			break;
 	}
 
@@ -277,7 +269,7 @@ void rSampler::onWorkTimer(bool checkflow)
 	}
 
 	if (tick >= m_timerInterval + m_interval) {
-		m_grab.Value     = true;
+		m_grab.m_value   = true;
 		m_timeRemain    -= static_cast<UDINT>(m_interval);
 		m_canPresent    += m_grabVol;
 		m_canRemain     -= m_grabVol;
@@ -289,7 +281,7 @@ void rSampler::onWorkTimer(bool checkflow)
 	}
 
 	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || m_grabRemain < 0.001 || isCanOverflow()) {
-		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
+		rEventManager::instance().Add(reinitEvent(EID_SAMPLER_FINISH));
 		m_state = State::FINISH;
 	}
 }
@@ -301,13 +293,13 @@ void rSampler::onWorkVolume(bool isMass)
 		case Command::NONE: break;
 		case Command::STOP:
 			m_state = State::FINISH;
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_STOP));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_STOP));
 			return;
 
 		case Command::PAUSE: onPause(); return;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_DONT_STOP));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_DONT_STOP));
 			break;
 	}
 
@@ -315,7 +307,7 @@ void rSampler::onWorkVolume(bool isMass)
 	LREAL lastvol = isMass ? m_lastRawTotal.Mass : m_lastRawTotal.Volume;
 
 	if (currvol > lastvol + m_interval) {
-		m_grab.Value    = true;
+		m_grab.m_value  = true;
 		m_canPresent   += m_grabVol;
 		m_canRemain    -= m_grabVol;
 		m_lastRawTotal  = m_totals->Raw;
@@ -325,7 +317,7 @@ void rSampler::onWorkVolume(bool isMass)
 	}
 
 	if (m_grabRemain < 0.001 || isCanOverflow()) {
-		rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_FINISH));
+		rEventManager::instance().Add(reinitEvent(EID_SAMPLER_FINISH));
 		m_state = State::FINISH;
 	}
 }
@@ -338,12 +330,12 @@ void rSampler::onWorkError()
 			break;
 
 		case Command::CONFIRM:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_CONFIRM));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_CONFIRM));
 			m_state = State::IDLE;
 			break;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
 			break;
 	}
 }
@@ -356,29 +348,29 @@ UDINT rSampler::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".method"      , TYPE_UINT , rVariable::Flags::___L, &m_method     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".setup"       , TYPE_UINT , rVariable::Flags::___L, &m_setup.Value, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".select"      , TYPE_UINT , rVariable::Flags::____, &m_select     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".command"     , TYPE_UINT , rVariable::Flags::___L, &m_command    , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(Alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow     , U_DIMLESS, 0);
-	list.add(Alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___L, &m_probePeriod, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___L, &m_probeVolume, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___L, &m_probeMass  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___L, &m_probeTest  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(Alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol    , U_ml     , 0);
-	list.add(Alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount  , U_DIMLESS, 0);
-	list.add(Alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent, U_DIMLESS, 0);
-	list.add(Alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain , U_DIMLESS, 0);
-	list.add(Alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::____, &m_canVolume  , U_ml     , 0);
-	list.add(Alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R___, &m_canPresent , U_ml     , 0);
-	list.add(Alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R___, &m_canRemain  , U_ml     , 0);
-	list.add(Alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R___, &m_interval   , U_DIMLESS, 0);
-	list.add(Alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain , U_msec   , 0);
-	list.add(Alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart  , U_sec    , 0);
+	list.add(m_alias + ".method"      , TYPE_UINT , rVariable::Flags::___L, &m_method     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".setup"       , TYPE_UINT , rVariable::Flags::___L, &m_setup.Value, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".select"      , TYPE_UINT , rVariable::Flags::____, &m_select     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".command"     , TYPE_UINT , rVariable::Flags::___L, &m_command    , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(m_alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow     , U_DIMLESS, 0);
+	list.add(m_alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___L, &m_probePeriod, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___L, &m_probeVolume, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___L, &m_probeMass  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___L, &m_probeTest  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
+	list.add(m_alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol    , U_ml     , 0);
+	list.add(m_alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount  , U_DIMLESS, 0);
+	list.add(m_alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent, U_DIMLESS, 0);
+	list.add(m_alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain , U_DIMLESS, 0);
+	list.add(m_alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::____, &m_canVolume  , U_ml     , 0);
+	list.add(m_alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R___, &m_canPresent , U_ml     , 0);
+	list.add(m_alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R___, &m_canRemain  , U_ml     , 0);
+	list.add(m_alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R___, &m_interval   , U_DIMLESS, 0);
+	list.add(m_alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain , U_msec   , 0);
+	list.add(m_alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart  , U_sec    , 0);
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		std::string prefix = Alias + String_format(".can_%c", 'a' + ii);
+		std::string prefix = m_alias + String_format(".can_%c", 'a' + ii);
 		list.add(prefix + ".volume", TYPE_LREAL, rVariable::Flags::___L, &m_can[ii].m_volume, U_ml, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
 	}
 
@@ -409,12 +401,12 @@ UDINT rSampler::Can::loadFromXML(tinyxml2::XMLElement *element, rError &err)
 }
 
 
-UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rSampler::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strMethod = XmlUtils::getAttributeString(element, XmlName::METHOD, m_flagsMethod.getNameByBits (static_cast<UINT>(Method::PERIOD)));
 	std::string strSetup  = XmlUtils::getAttributeString(element, XmlName::SETUP , m_flagsSetup.getNameByBits(Setup::OFF));
 
-	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+	if (rSource::loadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
 	}
 
@@ -489,10 +481,10 @@ UDINT rSampler::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	m_probeTest   = XmlUtils::getTextUINT (xml_grabtest, m_probeTest  , fault);
 	m_probePeriod = XmlUtils::getTextUDINT(xml_period  , m_probePeriod, fault);
 
-	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStart.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 	return TRITONN_RESULT_OK;
 }
@@ -538,15 +530,15 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 	UNUSED(isio);
 	UNUSED(isglobal);
 
-	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStart.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		m_can[ii].m_overflow.Limit.m_setup.Init(rLimit::Setup::OFF);
-		m_can[ii].m_fault.Limit.m_setup.Init(rLimit::Setup::OFF);
-		m_can[ii].m_weight.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_overflow.m_limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_fault.m_limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_weight.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	}
 
 	return rSource::saveKernel(false, objname, comment, false);
@@ -555,15 +547,15 @@ std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const s
 
 UDINT rSampler::generateMarkDown(rGeneratorMD& md)
 {
-	m_ioStart.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_ioStop.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_grab.Limit.m_setup.Init(rLimit::Setup::OFF);
-	m_selected.Limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStart.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_ioStop.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_grab.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_selected.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		m_can[ii].m_overflow.Limit.m_setup.Init(rLimit::Setup::OFF);
-		m_can[ii].m_fault.Limit.m_setup.Init(rLimit::Setup::OFF);
-		m_can[ii].m_weight.Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_overflow.m_limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_fault.m_limit.m_setup.Init(rLimit::Setup::OFF);
+		m_can[ii].m_weight.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	}
 
 	md.add(this, false)
@@ -599,7 +591,7 @@ bool rSampler::checkInterval(void)
 		return true;
 	}
 
-	rEventManager::instance().Add(ReinitEvent(EID_SAMPLER_START_FAULT));
+	rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_FAULT));
 	return false;
 }
 
@@ -616,47 +608,47 @@ void rSampler::recalcInterval(void)
 
 bool rSampler::isCanOverflow(void)
 {
-	return m_select < CAN_MAX && m_can[m_select].m_overflow.isValid() && m_can[m_select].m_overflow.Value > 0;
+	return m_select < CAN_MAX && m_can[m_select].m_overflow.isValid() && m_can[m_select].m_overflow.m_value > 0;
 }
 
 
 bool rSampler::isCanFault(void)
 {
-	return m_select < CAN_MAX && m_can[m_select].m_fault.isValid() && m_can[m_select].m_fault.Value > 0;
+	return m_select < CAN_MAX && m_can[m_select].m_fault.isValid() && m_can[m_select].m_fault.m_value > 0;
 }
 
 
 bool rSampler::checkIO(void)
 {
 	if (m_ioStop.isValid()){
-		if (m_ioStop.Value > 0 && !(LockErr & LE_IO_STOP)) {
-			LockErr |= LE_IO_STOP;
+		if (m_ioStop.m_value > 0 && !(m_lockErr & LE_IO_STOP)) {
+			m_lockErr |= LE_IO_STOP;
 
-			if (!(LockErr & LE_IO_START)) {
+			if (!(m_lockErr & LE_IO_START)) {
 				onStop();
 				return true;
 			}
 		}
 
-		if (static_cast<DINT>(m_ioStop.Value) == 0 && (LockErr & LE_IO_STOP))
+		if (static_cast<DINT>(m_ioStop.m_value) == 0 && (m_lockErr & LE_IO_STOP))
 		{
-			LockErr &= ~LE_IO_STOP;
+			m_lockErr &= ~LE_IO_STOP;
 		}
 
 	}
 
 	if (m_ioStart.isValid()) {
-		if (m_ioStart.Value > 0 && !(LockErr & LE_IO_START)) {
-			LockErr |= LE_IO_START;
+		if (m_ioStart.m_value > 0 && !(m_lockErr & LE_IO_START)) {
+			m_lockErr |= LE_IO_START;
 
-			if (!(LockErr & LE_IO_STOP)) {
+			if (!(m_lockErr & LE_IO_STOP)) {
 				onStart();
 				return true;
 			}
 		}
 
-		if (static_cast<DINT>(m_ioStart.Value) == 0 && (LockErr & LE_IO_START)) {
-			LockErr &= ~LE_IO_START;
+		if (static_cast<DINT>(m_ioStart.m_value) == 0 && (m_lockErr & LE_IO_START)) {
+			m_lockErr &= ~LE_IO_START;
 		}
 	}
 

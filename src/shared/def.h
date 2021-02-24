@@ -118,6 +118,7 @@ const UDINT  MAX_SELECTOR              = 16;
 const UDINT  MAX_DENSSOL               = 16;
 const UDINT  MAX_REDUCEDDENS           = 32;
 const UDINT  MAX_SAMPLER               = 32;
+const UDINT  MAX_PROVE                 = 2;
 
 const UDINT  MAX_AI_SPLINE             = 4;
 const UDINT  MAX_FI_SPLINE             = 4;
@@ -454,44 +455,46 @@ enum rTritonn_Error
 	DATACFGERR_MAX_SELECTOR,                // 138
 	DATACFGERR_MAX_STREAM,                  //
 	DATACFGERR_MAX_STATION,                 // 140
+	DATACFGERR_MAX_SAMPLER,                 //
+	DATACFGERR_MAX_PROVE,                   // 142
 	DATACFGERR_LIMIT,                       //
-	DATACFGERR_REPORT,                      // 142
+	DATACFGERR_REPORT,                      // 144
 	DATACFGERR_NOREPORTS,                   //
-	DATACFGERR_RESOLVETOTAL,                // 144
+	DATACFGERR_RESOLVETOTAL,                // 146
 	DATACFGERR_VAR,                         //
-	DATACFGERR_USERS_NF,                    // 146     Not Found Template BLOCKS
+	DATACFGERR_USERS_NF,                    // 148     Not Found Template BLOCKS
 	DATACFGERR_INTERNAL,                    //
-	DATACFGERR_USERS_PARSE,                 // 148
+	DATACFGERR_USERS_PARSE,                 // 150
 	DATACFGERR_INTERFACES_NF_TBLOKS,        //
-	DATACFGERR_INTERFACES_NF_BLOCKS,        // 150
+	DATACFGERR_INTERFACES_NF_BLOCKS,        // 152
 	DATACFGERR_INTERFACES_BADADDR,          //
-	DATACFGERR_INTERFACES_BADBLOCK,         // 152
+	DATACFGERR_INTERFACES_BADBLOCK,         // 154
 	DATACFGERR_INTERFACES_BADVAR,           //
-	DATACFGERR_INTERFACES_NF_VAR,           // 154
+	DATACFGERR_INTERFACES_NF_VAR,           // 156
 	DATACFGERR_INTERFACES_ADDROVERFLOW,     //
-	DATACFGERR_INCORRECT_IP,                // 156
+	DATACFGERR_INCORRECT_IP,                // 158
 	DATACFGERR_SECURITY_PARSE,              //
-	DATACFGERR_SECURITY_DESCRYPT,           // 158
+	DATACFGERR_SECURITY_DESCRYPT,           // 160
 	DATACFGERR_SECURITY_NF,                 //
-	DATACFGERR_OPCUA_USER_NF,               // 160
+	DATACFGERR_OPCUA_USER_NF,               // 162
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 162
+	DATACFGERR_OPCUA_VAR_NF,                // 164
 	DATACFGERR_UNKNOWN_MODULE,              //
-	DATACFGERR_IO_CHANNEL,                  // 164
+	DATACFGERR_IO_CHANNEL,                  // 166
 	DATACFGERR_INVALID_NAME,                //
-	DATACFGERR_INVALID_MODULELINK,          // 166
+	DATACFGERR_INVALID_MODULELINK,          // 168
 	DATACFGERR_REALTIME_MODULELINK,         //
-	DATACFGERR_NOTSYSTEXTFILE,              // 168
+	DATACFGERR_NOTSYSTEXTFILE,              // 170
 	DATACFGERR_INTERFACES_BADNAME,          //
-	DATACFGERR_DI,                          // 170
+	DATACFGERR_DI,                          // 172
 	DATACFGERR_DO,                          //
-	DATACFGERR_SAMPLER_TOTALS,              // 172
+	DATACFGERR_SAMPLER_TOTALS,              // 174
 	DATACFGERR_SAMPLER_CAN,                 //
-	DATACFGERR_SAMPLER_METHOD,              // 174
+	DATACFGERR_SAMPLER_METHOD,              // 176
 	DATACFGERR_SAMPLER_SETUP,               //
-	DATACFGERR_SAMPLER_RESERVE,             // 176
+	DATACFGERR_SAMPLER_RESERVE,             // 178
 	DATACFGERR_SAMPLER_RESERVE_NF,          //
-	DATACFGERR_OBJECT_UNITS,                // 178
+	DATACFGERR_OBJECT_UNITS,                // 180
 	DATACFGERR_PORVE_MISSINGMODULE,         //
 
 

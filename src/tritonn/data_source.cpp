@@ -55,7 +55,7 @@ rLink* rSource::getOutputByName(const std::string& name)
 	}
 
 	for(auto item : m_outputs) {
-		if(name == item->IO_Name) {
+		if(name == item->m_ioName) {
 			return item;
 		}
 	}
@@ -90,10 +90,10 @@ LREAL rSource::getValue(const std::string& name, UDINT unit, UDINT& err)
 	}
 
 	// Проводим к нужному типу
-	err = rUnits::ConvertValue(link->Value, link->Unit, result, unit);
+	err = rUnits::ConvertValue(link->m_value, link->m_unit, result, unit);
 
 	if(err) {
-		sendEventSetLE(SOURCE_LE_UNIT, m_event.Reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->Unit) << STRID(unit));
+		sendEventSetLE(SOURCE_LE_UNIT, m_event.Reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->m_unit) << STRID(unit));
 	}
 
 	return result;
@@ -115,7 +115,7 @@ STRID rSource::getValueUnit(const std::string& name, UDINT& err)
 		return 0xFFFFFFFF;
 	}
 
-	return link->Unit;
+	return link->m_unit;
 }
 
 
@@ -189,7 +189,7 @@ UDINT rSource::initLink(UINT setup, rLink& link, UDINT unit, UDINT nameid, const
 {
 	link.init(setup, unit, this, name, nameid, comment);
 
-	link.Shadow = shadow;
+	link.m_shadow = shadow;
 
 	if(setup & rLink::Setup::INPUT ) m_inputs.push_back (&link);
 	if(setup & rLink::Setup::OUTPUT) m_outputs.push_back(&link);
@@ -274,7 +274,7 @@ UDINT rSource::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 		std::string ioname = String_tolower(limit_xml->Attribute(XmlName::NAME));
 
 		for (auto item : m_inputs) {
-			if (item->IO_Name == ioname) {
+			if (item->m_ioName == ioname) {
 				link = item;
 				break;
 			}
@@ -282,7 +282,7 @@ UDINT rSource::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 		if (!link) {
 			for (auto item : m_outputs) {
-				if (item->IO_Name == ioname) {
+				if (item->m_ioName == ioname) {
 					link = item;
 					break;
 				}
@@ -293,7 +293,7 @@ UDINT rSource::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 			return err.set(DATACFGERR_LIMIT, limit_xml->GetLineNum(), ioname);
 		}
 
-		link->Limit.LoadFromXML(limit_xml, err, prefix);
+		link->m_limit.loadFromXML(limit_xml, err, prefix);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -344,26 +344,26 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 		for (auto link : m_inputs) {
 			UDINT shadow_count = 0;
 
-			result += String_format("\t\t<input name=\"%s\" unit=\"%i\"", link->IO_Name.c_str(), (UDINT)link->Unit);
+			result += String_format("\t\t<input name=\"%s\" unit=\"%i\"", link->m_ioName.c_str(), (UDINT)link->m_unit);
 
 			for (auto sublink : m_inputs) {
 				if (link == sublink) {
 					continue;
 				}
 
-				if (sublink->Shadow == link->IO_Name) {
+				if (sublink->m_shadow == link->m_ioName) {
 					if (0 == shadow_count) {
 						result += ">\n";
 					}
 
-					result += String_format("\t\t\t<shadow name=\"%s\"/>\n", sublink->IO_Name.c_str());
+					result += String_format("\t\t\t<shadow name=\"%s\"/>\n", sublink->m_ioName.c_str());
 					++shadow_count;
 				}
 			}
 
 			if (0 == shadow_count) {
-				if (link->Shadow.size()) {
-					result += String_format(" shadow=\"%s\"", link->Shadow.c_str());
+				if (link->m_shadow.size()) {
+					result += String_format(" shadow=\"%s\"", link->m_shadow.c_str());
 				}
 				result += "/>\n";
 			}
@@ -381,7 +381,7 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 
 		for (auto link : m_outputs) {
 			result += String_format("\t\t<output name=\"%s\" unit=\"%i\"%s/>\n",
-					link->IO_Name.c_str(), (UDINT)link->Unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
+					link->m_ioName.c_str(), (UDINT)link->m_unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
 		}
 
 		result += "\t\t<output name=\"fault\" unit=\"512\"/>\n"
@@ -412,12 +412,12 @@ std::string rSource::getMarkDown()
 		for (auto link : m_inputs) {
 			std::string strunit = "";
 
-			rTextManager::instance().Get(link->Unit, strunit);
+			rTextManager::instance().Get(link->m_unit, strunit);
 
-			result += link->IO_Name + " | ";
-			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
-			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
-			result += link->Shadow + " | ";
+			result += link->m_ioName + " | ";
+			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
+			result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
+			result += link->m_shadow + " | ";
 			result += link->m_comment + "\n";
 		}
 	}
@@ -428,12 +428,12 @@ std::string rSource::getMarkDown()
 	for (auto link : m_outputs) {
 		std::string strunit = "";
 
-		rTextManager::instance().Get(link->Unit, strunit);
+		rTextManager::instance().Get(link->m_unit, strunit);
 
-		result += link->IO_Name + " | ";
-		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
+		result += link->m_ioName + " | ";
+		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
 
-		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
+		result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
 		result += link->m_comment + "\n";
 	}
 
@@ -453,9 +453,9 @@ std::string rSource::getXmlInput() const
 
 	if (m_inputs.size()) {
 		for (auto link : m_inputs) {
-			result += "\t<" + link->IO_Name + "><link alias=\"object's output\"/></" + link->IO_Name + ">";
+			result += "\t<" + link->m_ioName + "><link alias=\"object's output\"/></" + link->m_ioName + ">";
 
-			if (link->Shadow.size()) {
+			if (link->m_shadow.size()) {
 				result += "<!-- Optional -->";
 			}
 
@@ -465,26 +465,26 @@ std::string rSource::getXmlInput() const
 		std::string strlink = "";
 
 		for (auto link : m_inputs) {
-			if (link->Limit.m_setup.Value != rLimit::Setup::OFF) {
+			if (link->m_limit.m_setup.Value != rLimit::Setup::OFF) {
 				strlink += String_format("\t\t<%s name=\"%s\" setup=\"%s\">\n",
 										 XmlName::LIMIT,
-										 link->IO_Name.c_str(),
-										 rLimit::m_flagsSetup.getNameByBits(link->Limit.m_setup.Value).c_str());
+										 link->m_ioName.c_str(),
+										 rLimit::m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value).c_str());
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::LOLO) {
-					strlink += String_format("\t\t\t<lolo>%g</lolo>\n", link->Limit.m_lolo.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::LOLO) {
+					strlink += String_format("\t\t\t<lolo>%g</lolo>\n", link->m_limit.m_lolo.Value);
 				}
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::LO) {
-					strlink += String_format("\t\t\t<lo>%g</lo>\n", link->Limit.m_lo.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::LO) {
+					strlink += String_format("\t\t\t<lo>%g</lo>\n", link->m_limit.m_lo.Value);
 				}
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::HI) {
-					strlink += String_format("\t\t\t<hi>%g</hi>\n", link->Limit.m_hi.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::HI) {
+					strlink += String_format("\t\t\t<hi>%g</hi>\n", link->m_limit.m_hi.Value);
 				}
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::HIHI) {
-					strlink += String_format("\t\t\t<hihi>%g</hihi>\n", link->Limit.m_hihi.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::HIHI) {
+					strlink += String_format("\t\t\t<hihi>%g</hihi>\n", link->m_limit.m_hihi.Value);
 				}
 
 				strlink += "\t\t</limit>\n";
@@ -507,7 +507,7 @@ UDINT rSource::checkOutput(const string &name)
 
 	for(auto link : m_outputs)
 	{
-		if(lowname == link->IO_Name) return 0;
+		if(lowname == link->m_ioName) return 0;
 	}
 
 	return 1;

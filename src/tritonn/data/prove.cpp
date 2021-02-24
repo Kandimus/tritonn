@@ -53,51 +53,53 @@ rProve::rProve(const rStation* owner)
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	InitLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rProve::InitLimitEvent(rLink &link)
+UDINT rProve::initLimitEvent(rLink &link)
 {
-	link.Limit.EventChangeAMin  = ReinitEvent(EID_AI_NEW_AMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMin  = ReinitEvent(EID_AI_NEW_WMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMax  = ReinitEvent(EID_AI_NEW_WMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeAMax  = ReinitEvent(EID_AI_NEW_AMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeHyst  = ReinitEvent(EID_AI_NEW_HYST)  << link.Descr << link.Unit;
-	link.Limit.EventChangeSetup = ReinitEvent(EID_AI_NEW_SETUP) << link.Descr << link.Unit;
-	link.Limit.EventAMin        = ReinitEvent(EID_AI_AMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMin        = ReinitEvent(EID_AI_WMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMax        = ReinitEvent(EID_AI_WMAX)      << link.Descr << link.Unit;
-	link.Limit.EventAMax        = ReinitEvent(EID_AI_AMAX)      << link.Descr << link.Unit;
-	link.Limit.EventNan         = ReinitEvent(EID_AI_NAN)       << link.Descr << link.Unit;
-	link.Limit.EventNormal      = ReinitEvent(EID_AI_NORMAL)    << link.Descr << link.Unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_AI_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_AI_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_AI_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_AI_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_AI_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_AI_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_AI_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_AI_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_AI_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_AI_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_AI_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_AI_NORMAL)    << link.m_descr << link.m_unit;
 
 	return TRITONN_RESULT_OK;
 }
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rProve::Calculate()
+UDINT rProve::calculate()
 {
-	rEvent event_success;
-	rEvent event_fault;
+	rEvent event_s;
+	rEvent event_f;
 	
-	if(rSource::Calculate()) return TRITONN_RESULT_OK;
+	if (rSource::calculate()) {
+		return TRITONN_RESULT_OK;
+	}
 
 	if (isSetModule()) {
 		auto module_ptr = rIOManager::instance().getModule(m_module);
 		auto module     = dynamic_cast<rModuleCRM*>(module_ptr.get());
 
 		if (!module) {
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_MODULE) << m_module);
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_MODULE) << m_module);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
@@ -118,7 +120,7 @@ UDINT rProve::Calculate()
 		case Command::RESET: break;
 
 		default:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
 			break;
 	}
 
@@ -152,7 +154,7 @@ UDINT rProve::Calculate()
 
 	m_command = Command::NONE;
 
-	PostCalculate();
+	postCalculate();
 		
 	return TRITONN_RESULT_OK;
 }
@@ -161,16 +163,16 @@ void rProve::onIdle()
 {
 	switch(m_command) {
 		case Command::START:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDSTART));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDSTART));
 			setState(State::START);
 			break;
 
 		case Command::ABORT:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOTSTARTED));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_NOTSTARTED));
 			break;
 
 		case Command::RESET:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDRESET));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDRESET));
 			break;
 
 		default: break;
@@ -217,9 +219,9 @@ void rProve::onStabilization()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_stabTemp = m_temp.Value;
-		m_stabPres = m_pres.Value;
-		m_stabDens = m_dens.Value;
+		m_stabTemp = m_temp.m_value;
+		m_stabPres = m_pres.m_value;
+		m_stabDens = m_dens.m_value;
 		m_stabFreq = m_moduleFreq;
 
 		m_timer.start(m_tStab);
@@ -232,15 +234,15 @@ void rProve::onStabilization()
 		return;
 	}
 
-	if (checkStab(m_stabTemp, m_temp.Value, m_maxStabTemp, EID_PROVE_ERRORSTABTEMP)) {
+	if (checkStab(m_stabTemp, m_temp.m_value, m_maxStabTemp, EID_PROVE_ERRORSTABTEMP)) {
 		return;
 	}
 
-	if (checkStab(m_stabPres, m_pres.Value, m_maxStabPres, EID_PROVE_ERRORSTABPRES)) {
+	if (checkStab(m_stabPres, m_pres.m_value, m_maxStabPres, EID_PROVE_ERRORSTABPRES)) {
 		return;
 	}
 
-	if (checkStab(m_stabDens, m_dens.Value, m_maxStabDens, EID_PROVE_ERRORSTABDENS)) {
+	if (checkStab(m_stabDens, m_dens.m_value, m_maxStabDens, EID_PROVE_ERRORSTABDENS)) {
 		return;
 	}
 
@@ -256,13 +258,13 @@ void rProve::onValveToUp()
 		return;
 	}
 
-	if (m_opened.Value > 0 && m_closed.Value == 0) {
+	if (m_opened.m_value > 0 && m_closed.m_value == 0) {
 		setState(State::VALVETODOWN);
 		return;
 	}
 
-	m_close.Value = 0;
-	m_open.Value  = 1;
+	m_close.m_value = 0;
+	m_open.m_value  = 1;
 	setState(State::WAITTOUP);
 }
 
@@ -281,7 +283,7 @@ void rProve::onWaitToUp()
 	if (m_timer.isFinished()) {
 		m_timer.stop();
 
-		if (m_opened.Value > 0 && m_closed.Value == 0) {
+		if (m_opened.m_value > 0 && m_closed.m_value == 0) {
 			setState(State::VALVETODOWN);
 			return;
 		}
@@ -299,8 +301,8 @@ void rProve::onValveToDown()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_close.Value = 1;
-		m_open.Value  = 0;
+		m_close.m_value = 1;
+		m_open.m_value  = 0;
 		m_timer.start(m_tValve);
 		return;
 	}
@@ -312,7 +314,7 @@ void rProve::onValveToDown()
 		return;
 	}
 
-	if (m_closed.Value > 0 && m_opened.Value == 0) {
+	if (m_closed.m_value > 0 && m_opened.m_value == 0) {
 		m_timer.stop();
 		setState(State::WAITD1);
 		return;
@@ -413,8 +415,8 @@ void rProve::onReturnBall()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_close.Value = 0;
-		m_open.Value  = 1;
+		m_close.m_value = 0;
+		m_open.m_value  = 1;
 		m_timer.start(m_tValve);
 		return;
 	}
@@ -425,7 +427,7 @@ void rProve::onReturnBall()
 		return;
 	}
 
-	if (m_opened.Value > 0 && m_closed.Value == 0) {
+	if (m_opened.m_value > 0 && m_closed.m_value == 0) {
 		m_timer.stop();
 		setState(State::FINISH);
 		return;
@@ -451,7 +453,7 @@ void rProve::onErrorState()
 {
 	switch(m_command) {
 		case Command::START:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_ISERROR));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_ISERROR));
 			break;
 
 		case Command::ABORT:
@@ -460,7 +462,7 @@ void rProve::onErrorState()
 
 		case Command::RESET:
 			m_state = State::IDLE;
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDRESET));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDRESET));
 			break;
 
 		default: break;
@@ -471,16 +473,16 @@ bool rProve::checkCommand()
 {
 	switch(m_command) {
 		case Command::START:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_ALREADYSTARTED));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_ALREADYSTARTED));
 			break;
 
 		case Command::ABORT:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_COMMANDABORT));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDABORT));
 			setState(State::IDLE);
 			return true;
 
 		case Command::RESET:
-			rEventManager::instance().Add(ReinitEvent(EID_PROVE_NOTERROR));
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_NOTERROR));
 			break;
 
 		default: break;
@@ -517,7 +519,7 @@ bool rProve::checkStab(LREAL start, LREAL present, LREAL maxstab, UDINT eid)
 	LREAL delta = std::fabs(present - start);
 
 	if (delta > maxstab) {
-		rEventManager::instance().Add(ReinitEvent(eid) << delta << maxstab);
+		rEventManager::instance().Add(reinitEvent(eid) << delta << maxstab);
 		setState(State::ERRORSTAB);
 		return true;
 	}
@@ -565,7 +567,7 @@ void rProve::detectorsProcessing()
 bool rProve::connectToLine()
 {
 	if (m_strIdx.Value >= m_station->getStreamCount()) {
-		rEventManager::instance().Add(ReinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
+		rEventManager::instance().Add(reinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
 		setState(State::ERRORSTREAMID);
 		return false;
 	}
@@ -616,13 +618,13 @@ void rProve::calcAverage()
 
 	UDINT dCount = m_moduleCount - m_averageCount;
 	if (dCount) {
-		m_prvFreq = (m_moduleFreq * dCount) + (m_prvFreq * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_prvDens = (m_dens.Value * dCount) + (m_prvDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_prvTemp = (m_temp.Value * dCount) + (m_prvTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_prvPres = (m_pres.Value * dCount) + (m_prvPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_strDens = (m_curStrDens * dCount) + (m_strDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_strTemp = (m_curStrTemp * dCount) + (m_strTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_strPres = (m_curStrPres * dCount) + (m_strPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvFreq = (m_moduleFreq   * dCount) + (m_prvFreq * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvDens = (m_dens.m_value * dCount) + (m_prvDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvTemp = (m_temp.m_value * dCount) + (m_prvTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_prvPres = (m_pres.m_value * dCount) + (m_prvPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strDens = (m_curStrDens   * dCount) + (m_strDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strTemp = (m_curStrTemp   * dCount) + (m_strTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strPres = (m_curStrPres   * dCount) + (m_strPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
 	}
 }
 
@@ -631,35 +633,35 @@ UDINT rProve::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup      , U_DIMLESS, ACCESS_PROVE);
-	list.add(Alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(Alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::____, &m_tStart     , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::____, &m_tStab      , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::____, &m_tD1        , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::____, &m_tD2        , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::____, &m_tVolume    , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::____, &m_tValve     , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".timer.bounce"             , TYPE_UDINT, rVariable::Flags::____, &m_tBounce    , U_msec   , ACCESS_PROVE);
-	list.add(Alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[0], U_imp    , 0);
-	list.add(Alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[0] , U_sec    , 0);
-	list.add(Alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[1], U_imp    , 0);
-	list.add(Alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[1] , U_sec    , 0);
-	list.add(Alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_prvFreq    , U_Hz     , 0);
-	list.add(Alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_prvTemp    , U_C      , 0);
-	list.add(Alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_prvPres    , U_MPa    , 0);
-	list.add(Alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvDens    , U_kg_m3  , 0);
-	list.add(Alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp    , U_C      , 0);
-	list.add(Alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres    , U_MPa    , 0);
-	list.add(Alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens    , U_kg_m3  , 0);
-	list.add(Alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R___, &m_curDet     , U_DIMLESS, 0);
-	list.add(Alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R___, &m_fixDet     , U_DIMLESS, 0);
-	list.add(Alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::____, &m_maxStabTemp, U_C      , ACCESS_PROVE);
-	list.add(Alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::____, &m_maxStabPres, U_MPa    , ACCESS_PROVE);
-	list.add(Alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::____, &m_maxStabDens, U_kg_m3  , ACCESS_PROVE);
-	list.add(Alias + ".stabilization.frequency"  , TYPE_LREAL, rVariable::Flags::____, &m_maxStabFreq, U_Hz     , ACCESS_PROVE);
+	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
+	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup      , U_DIMLESS, ACCESS_PROVE);
+	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
+	list.add(m_alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::____, &m_tStart     , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::____, &m_tStab      , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::____, &m_tD1        , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::____, &m_tD2        , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::____, &m_tVolume    , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::____, &m_tValve     , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".timer.bounce"             , TYPE_UDINT, rVariable::Flags::____, &m_tBounce    , U_msec   , ACCESS_PROVE);
+	list.add(m_alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[0], U_imp    , 0);
+	list.add(m_alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[0] , U_sec    , 0);
+	list.add(m_alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[1], U_imp    , 0);
+	list.add(m_alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[1] , U_sec    , 0);
+	list.add(m_alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_prvFreq    , U_Hz     , 0);
+	list.add(m_alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_prvTemp    , U_C      , 0);
+	list.add(m_alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_prvPres    , U_MPa    , 0);
+	list.add(m_alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvDens    , U_kg_m3  , 0);
+	list.add(m_alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp    , U_C      , 0);
+	list.add(m_alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres    , U_MPa    , 0);
+	list.add(m_alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens    , U_kg_m3  , 0);
+	list.add(m_alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R___, &m_curDet     , U_DIMLESS, 0);
+	list.add(m_alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R___, &m_fixDet     , U_DIMLESS, 0);
+	list.add(m_alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::____, &m_maxStabTemp, U_C      , ACCESS_PROVE);
+	list.add(m_alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::____, &m_maxStabPres, U_MPa    , ACCESS_PROVE);
+	list.add(m_alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::____, &m_maxStabDens, U_kg_m3  , ACCESS_PROVE);
+	list.add(m_alias + ".stabilization.frequency"  , TYPE_LREAL, rVariable::Flags::____, &m_maxStabFreq, U_Hz     , ACCESS_PROVE);
 
-	list.add(Alias + ".fault"                    , TYPE_UDINT, rVariable::Flags::R___, &Fault        , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"                    , TYPE_UDINT, rVariable::Flags::R___, &m_fault      , U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }
@@ -667,11 +669,11 @@ UDINT rProve::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::STABILIZATION | Setup::BOUNCE));
 
-	if (rSource::LoadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
+	if (rSource::loadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
 	}
 
@@ -684,15 +686,15 @@ UDINT rProve::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 		return err.set(DATACFGERR_PORVE_MISSINGMODULE, element->GetLineNum());
 	}
 
-	tinyxml2::XMLElement* xml_temp = element->FirstChildElement(XmlName::TEMP);
-	tinyxml2::XMLElement* xml_pres = element->FirstChildElement(XmlName::PRES);
-	tinyxml2::XMLElement* xml_dens = element->FirstChildElement(XmlName::DENSITY);
+	auto xml_temp = element->FirstChildElement(XmlName::TEMP);
+	auto xml_pres = element->FirstChildElement(XmlName::PRES);
+	auto xml_dens = element->FirstChildElement(XmlName::DENSITY);
 
 	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
 	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
 	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
 
-	ReinitLimitEvents();
+	reinitLimitEvents();
 
 	return TRITONN_RESULT_OK;
 }

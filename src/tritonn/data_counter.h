@@ -47,7 +47,7 @@ public:
 	const UDINT CALCULATE_TIMER = 1000;
 
 	rCounter(const rStation* owner = nullptr);
-	virtual ~rCounter();
+	virtual ~rCounter() = default;
 
 	
 	// Виртуальные функции от rSource

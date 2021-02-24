@@ -48,10 +48,10 @@ public:
 		HIHI,       // Значение выше аварийного максимума
 	};
 
-	const UINT   LIMIT_STATUS_MASK         = 0x00FF;     // Маска для извлечения статуса пределов
+	const UINT LIMIT_STATUS_MASK = 0x00FF;     // Маска для извлечения статуса пределов
 
 	rLimit();
-	virtual ~rLimit();
+	virtual ~rLimit() = default;
 
 public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);

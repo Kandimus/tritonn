@@ -30,11 +30,6 @@ const std::string rLink::SHADOW_NONE = "";
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-rLink::~rLink()
-{
-	;
-}
-
 const rSource* rLink::getOwner() const
 {
 	return m_owner;
@@ -48,7 +43,7 @@ bool rLink::isValid() const
 
 //-------------------------------------------------------------------------------------------------
 //
-LREAL rLink::GetValue()
+LREAL rLink::getValue()
 {
 	UDINT err    = 0;
 	LREAL result = 0;
@@ -58,15 +53,14 @@ LREAL rLink::GetValue()
 		return 0;
 	}
 
-	result = m_source->GetValue(Param, Unit, err);
+	result = m_source->getValue(m_param, m_unit, err);
 
 	//TODO Нужна обработка ошибки
-
 	return result;
 }
 
 
-STRID rLink::GetSourceUnit()
+STRID rLink::getSourceUnit()
 {
 	UDINT err = 0;
 
@@ -75,64 +69,63 @@ STRID rLink::GetSourceUnit()
 		return U_any;
 	}
 
-	return m_source->GetValueUnit(Param, err);
+	return m_source->getValueUnit(m_param, err);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLink::GetFault(void)
+UDINT rLink::getFault(void)
 {
 	if (!isValid()) {
 		return 1;
 	}
 
-	return m_source->GetFault();
+	return m_source->getFault();
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLink::Calculate()
+UDINT rLink::calculate()
 {
 	UDINT err = 0;
 
-	rSource::Calculate();
+	rSource::calculate();
 
 	if (!isValid()) {
 		return 1;
 	}
 
 	// Получаем значение линка
-	Value = m_source->GetValue(Param, Unit, err);
+	m_value = m_source->getValue(m_param, m_unit, err);
 
 	// Вычисляем пределы
-	Limit.Calculate(Value, true);
+	m_limit.calculate(m_value, true);
 
-	if(Value == std::numeric_limits<LREAL>::infinity() || Value == -std::numeric_limits<LREAL>::infinity() || std::isnan(Value))
-	{
-		Value = 0;
+	if(m_value == std::numeric_limits<LREAL>::infinity() || m_value == -std::numeric_limits<LREAL>::infinity() || std::isnan(m_value)) {
+		m_value = 0;
 	}
 
 	return err;
 }
 
 
-void rLink::CalculateLimit()
+void rLink::calculateLimit()
 {
-	Limit.Calculate(Value, true);
+	m_limit.calculate(m_value, true);
 }
 
 
 // Заглушка
-UDINT rLink::InitLimitEvent(rLink &/*link*/)
+UDINT rLink::initLimitEvent(rLink &/*link*/)
 {
 	return 1;
 }
 
 
 // Заглушка
-LREAL rLink::GetValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
+LREAL rLink::getValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 {
 	err = 1;
 	return 0;
@@ -141,12 +134,12 @@ LREAL rLink::GetValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 
 //-------------------------------------------------------------------------------------------------
 //
-void rLink::Init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment)
+void rLink::init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment)
 {
-	Unit      = unit;
+	m_unit    = unit;
 	m_owner   = owner;
-	IO_Name   = ioname;
-	Descr     = descr;
+	m_ioName  = ioname;
+	m_descr   = descr;
 	m_setup   = setup;
 	m_comment = comment;
 }
@@ -159,19 +152,17 @@ UDINT rLink::generateVars(rVariableList& list)
 	string name  = "";
 	UINT   flags = rVariable::Flags::READONLY;
 
-	if(nullptr == m_owner)
-	{
-		TRACEERROR("The link '%s' has no owner.", Alias.c_str());
+	if (!m_owner) {
+		TRACEERROR("The link '%s' has no owner.", m_alias.c_str());
 		return 0;
 	}
 
-	name = m_owner->Alias;
-	if(!(m_setup & Setup::NONAME))
-	{
+	name = m_owner->m_alias;
+	if (!(m_setup & Setup::NONAME)) {
 		if (m_setup & Setup::VARNAME) {
 			name += "." + m_varName;
 		} else {
-			name += "." + IO_Name;
+			name += "." + m_ioName;
 		}
 	}
 
@@ -180,12 +171,12 @@ UDINT rLink::generateVars(rVariableList& list)
 	}
 
 	if (m_setup & Setup::SIMPLE) {
-		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &Value, Unit, 0);
+		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value, m_unit, 0);
 	} else {
-		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &Value        , Unit     , 0);
-		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___              ,  Unit.GetPtr(), U_DIMLESS, 0);
+		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value        , m_unit   , 0);
+		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___              ,  m_unit.GetPtr(), U_DIMLESS, 0);
 
-		Limit.generateVars(list, name, Unit);
+		m_limit.generateVars(list, name, m_unit);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -194,30 +185,30 @@ UDINT rLink::generateVars(rVariableList& list)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-UDINT rLink::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rLink::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	UNUSED(prefix);
 
-	std::string* curstr = &Alias;
+	std::string* curstr = &m_alias;
 
-	FullTag   = XmlUtils::getAttributeString(element, XmlName::ALIAS, "");
+	m_fullTag = XmlUtils::getAttributeString(element, XmlName::ALIAS, "");
 	m_lineNum = element->GetLineNum();
 
-	if (FullTag.empty()) {
+	if (m_fullTag.empty()) {
 		return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag is empty");
 	}
 
-	FullTag = String_tolower(FullTag);
+	m_fullTag = String_tolower(m_fullTag);
 
 	// Делим полное имя на имя объекта и имя параметра (разбираем строчку "xxx:yyy")
-	for (auto ch : FullTag) {
+	for (auto ch : m_fullTag) {
 		if (ch == ':') {
 			// Двоеточие встретилось повторно
-			if (curstr == &Param) {
+			if (curstr == &m_param) {
 				return err.set(DATACFGERR_LINK, element->GetLineNum(), "tag name is fault");
 			}
 
-			curstr = &Param;
+			curstr = &m_param;
 			continue;
 		}
 
@@ -228,11 +219,11 @@ UDINT rLink::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS);
 
 	if (limits) {
-		if (TRITONN_RESULT_OK != Limit.LoadFromXML(limits, err, "")) {
+		if (TRITONN_RESULT_OK != m_limit.loadFromXML(limits, err, "")) {
 			return err.getError();
 		}
 	} else {
-		Limit.m_setup.Init(rLimit::Setup::OFF);
+		m_limit.m_setup.Init(rLimit::Setup::OFF);
 	}
 
 	return TRITONN_RESULT_OK;

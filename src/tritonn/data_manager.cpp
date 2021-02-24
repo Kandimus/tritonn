@@ -244,7 +244,7 @@ UDINT rDataManager::LoadConfig()
 
 	// Добавляем интерфейсы, создаем под них переменные
 	for(auto interface : ListInterface) {
-		rThreadMaster::instance().add(interface->GetThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->Alias);
+		rThreadMaster::instance().add(interface->getThreadClass(), TMF_DELETE | TMF_NOTRUN, interface->m_alias);
 	}
 
 	// Собираем переменные от объектов
@@ -350,10 +350,10 @@ UDINT rDataManager::SaveKernel()
 	auto mbSlTCP = new rModbusTCPSlaveManager();
 //	auto opcua   = new rOPCUAManager();
 
-	ssel->GenerateIO();
+	ssel->generateIO();
 
-	msel->Setup.Value |= SELECTOR_SETUP_MULTI;
-	msel->GenerateIO();
+	msel->m_setup.Value |= SELECTOR_SETUP_MULTI;
+	msel->generateIO();
 
 	text += String_format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 						  "<kernel ver=\"%i.%i\" xmlns=\"http://tritonn.ru\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://tritonn.ru ./kernel.xsd\">\n",
@@ -447,22 +447,22 @@ rThreadStatus rDataManager::Proccesing()
 		{
 			// Пердвычисления для всех объектов
 			for (auto item : ListSource) {
-				item->PreCalculate();
+				item->preCalculate();
 			}
 
 			// Основной расчет всех объектов
 			for (auto item : ListSource) {
-				item->Calculate();
+				item->calculate();
 			}
 
 			// Пердвычисления для отчетов
 			for (auto item : ListReport) {
-				item->PreCalculate();
+				item->preCalculate();
 			}
 
 			// Основной расчет отчетов
 			for (auto item : ListReport) {
-				item->Calculate();
+				item->calculate();
 			}
 		}
 
@@ -501,13 +501,13 @@ UDINT rDataManager::StartInterfaces()
 
 	// Проверяем переменные в интерфейсах
 	for (auto interface : ListInterface) {
-		if (interface->CheckVars(err) != TRITONN_RESULT_OK) {
+		if (interface->checkVars(err) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(err);
 		}
 	}
 
 	for (auto interface : ListInterface) {
-		interface->StartServer();
+		interface->startServer();
 	}
 
 	return TRITONN_RESULT_OK;
