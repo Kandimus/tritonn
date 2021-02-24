@@ -95,6 +95,8 @@ UDINT rProve::calculate()
 		return TRITONN_RESULT_OK;
 	}
 
+	m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
+
 	if (isSetModule()) {
 		auto module_ptr = rIOManager::instance().getModule(m_module);
 		auto module     = dynamic_cast<rModuleCRM*>(module_ptr.get());
@@ -204,7 +206,7 @@ void rProve::onStart()
 			return;
 		}
 
-		if (m_setup & Setup::STABILIZATION) {
+		if (m_setup.Value & Setup::STABILIZATION) {
 			setState(State::STABILIZATION);
 			return;
 		}
@@ -495,7 +497,7 @@ bool rProve::checkCommand()
 
 DINT rProve::checkDetectors(bool first)
 {
-	if (m_setup & Setup::ONEDETECTOR) {
+	if (m_setup.Value & Setup::ONEDETECTOR) {
 		return m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2 | rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
 	}
 
@@ -553,7 +555,7 @@ void rProve::detectorsProcessing()
 			m_fixDet |= m_moduleDet;
 			m_curDet  = m_moduleDet;
 
-			if (m_setup & Setup::BOUNCE) {
+			if (m_setup.Value & Setup::BOUNCE) {
 				m_timerBounce.start(m_tBounce);
 			}
 		}
@@ -635,7 +637,7 @@ UDINT rProve::generateVars(rVariableList& list)
 
 	// Variables
 	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
-	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup      , U_DIMLESS, ACCESS_PROVE);
+	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup.Value, U_DIMLESS, ACCESS_PROVE);
 	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
 	list.add(m_alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::____, &m_tStart     , U_msec   , ACCESS_PROVE);
 	list.add(m_alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::____, &m_tStab      , U_msec   , ACCESS_PROVE);
@@ -697,16 +699,17 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_dens)) return err.getError();
 
 	if (xml_valve) {
-		auto xml_open   = xml_valve->FirstChildElement(XmlName::OPEN);
-		auto xml_close  = xml_valve->FirstChildElement(XmlName::CLOSE);
 		auto xml_opened = xml_valve->FirstChildElement(XmlName::OPENED);
 		auto xml_closed = xml_valve->FirstChildElement(XmlName::CLOSED);
 
-		if (xml_open  ) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_open->FirstChildElement  (XmlName::LINK), m_open))   return err.getError();
-		if (xml_close ) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_close->FirstChildElement (XmlName::LINK), m_close))  return err.getError();
 		if (xml_opened) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_opened->FirstChildElement(XmlName::LINK), m_opened)) return err.getError();
 		if (xml_closed) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_closed->FirstChildElement(XmlName::LINK), m_closed)) return err.getError();
 	}
+
+	m_open.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_close.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_opened.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_closed.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 	reinitLimitEvents();
 
@@ -726,13 +729,11 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 
 	md.add(this, false)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
-			.addXml("<io_link module=\"3\"/>")
+			.addXml("<io_link module=\"module index\"/>")
 			.addLink(XmlName::TEMP, true)
 			.addLink(XmlName::PRES, true)
 			.addLink(XmlName::DENSITY, true)
 			.addXml(String_format("<%s>", XmlName::VALVE))
-			.addLink(XmlName::OPEN  , false, "\t")
-			.addLink(XmlName::CLOSE , false, "\t")
 			.addLink(XmlName::OPENED, false, "\t")
 			.addLink(XmlName::CLOSED, false, "\t")
 			.addXml(String_format("</%s>", XmlName::VALVE));

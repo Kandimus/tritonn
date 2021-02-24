@@ -1,7 +1,7 @@
 # sampler
 ## XML
 ````xml
-<sampler name="valid object name" method="text's bits" setup="text's bits" >
+<sampler name="valid object name" descr="string index" method="text's bits" setup="text's bits" >
 	totals <!-- Optional -->
 	<reserve>sampler object<reserve/> <!-- Optional -->
 	<io_start><link alias="object's output"/><io_start/> <!-- Optional -->

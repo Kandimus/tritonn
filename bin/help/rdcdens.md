@@ -1,7 +1,7 @@
 # rdcdens
 ## XML
 ````xml
-<rdcdens name="valid object name" >
+<rdcdens name="valid object name" descr="string index" >
 	<temperature><link alias="object's output"/></temperature>
 	<pressure><link alias="object's output"/></pressure>
 	<density15><link alias="object's output"/></density15>

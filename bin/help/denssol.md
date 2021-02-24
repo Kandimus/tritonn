@@ -1,7 +1,7 @@
 # denssol
 ## XML
 ````xml
-<denssol name="valid object name" >
+<denssol name="valid object name" descr="string index" >
 	<temperature><link alias="object's output"/></temperature>
 	<pressure><link alias="object's output"/></pressure>
 	<period><link alias="object's output"/></period>

@@ -134,7 +134,7 @@ public:
 
 	// Внутренние переменные
 	Command   m_command = Command::NONE;
-	UINT      m_setup   = static_cast<UINT>(Setup::NONE);
+	rCmpUINT  m_setup   = static_cast<UINT>(Setup::NONE);
 	rCmpUINT  m_strIdx;
 	LREAL     m_prvFreq = 0;
 	LREAL     m_prvTemp = 0;

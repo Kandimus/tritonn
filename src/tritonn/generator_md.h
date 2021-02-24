@@ -35,8 +35,6 @@ public:
 		LREAL_VAL,
 	};
 
-
-
 	class rItem
 	{
 		struct rProperty
@@ -82,10 +80,13 @@ public:
 
 	rGeneratorMD::rItem& add(rSource* source, bool isstdinput);
 
-	UDINT save(std::string path);
+	UDINT save(const std::string& path);
 
 protected:
 	std::vector<rItem> m_items;
 	std::string m_path;
+
+protected:
+	UDINT save_index(const std::string& path);
 };
 

@@ -31,23 +31,44 @@ rGeneratorMD::~rGeneratorMD()
 
 rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput)
 {
-//	if (!source) {
-//		return nullptr;
-//	}
-
 	m_items.push_back(rItem(source, isstdinput));
 
 
 	return m_items.back();
 }
 
-UDINT rGeneratorMD::save(std::string path)
+UDINT rGeneratorMD::save(const std::string& path)
 {
+	UDINT result = TRITONN_RESULT_OK;
+
+	result = save_index(path);
+	if (result != TRITONN_RESULT_OK) {
+		return result;
+	}
+
 	for (auto& item : m_items) {
-		SimpleFileSave(path + "/" + item.getName() + ".md", item.save());
+		result = SimpleFileSave(path + "/" + item.getName() + ".md", item.save());
+		if (result != TRITONN_RESULT_OK) {
+			return result;
+		}
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+UDINT rGeneratorMD::save_index(const std::string& path)
+{
+	std::string text = "<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"/>"
+					   "<title>Tritonn help</title></head><body>"
+					   "<h1>Tritonn help</h1>\n";
+
+	for (auto& item : m_items) {
+		text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+	}
+
+	text += "</body></html>";
+
+	return SimpleFileSave(path + "/index.html", text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
