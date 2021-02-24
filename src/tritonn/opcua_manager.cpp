@@ -177,36 +177,6 @@ rOPCUAManager::rOPCUAManager()
 	OPCServerConf.applicationDescription.applicationType = UA_APPLICATIONTYPE_SERVER;
 }
 
-
-rOPCUAManager::~rOPCUAManager()
-{
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-//-------------------------------------------------------------------------------------------------
-//
-
-
-//-------------------------------------------------------------------------------------------------
-//
-
-
-//-------------------------------------------------------------------------------------------------
-//
-
-
-
 //-------------------------------------------------------------------------------------------------
 //
 rThreadStatus rOPCUAManager::Proccesing()
@@ -214,7 +184,7 @@ rThreadStatus rOPCUAManager::Proccesing()
 	UA_Boolean waitInternal  = false;
 	rTickCount tick;
 
-	tick.Reset();
+	tick.start(500);
 
 	while(true)
 	{
@@ -226,14 +196,14 @@ rThreadStatus rOPCUAManager::Proccesing()
 		}
 
 
-		if(tick.GetCount() >= 500)
+		if(tick.isFinished())
 		{
 			rLocker lock(Mutex); lock.Nop();
 
 			m_snapshot.resetAssign();
 
 			m_snapshot.get();
-			tick.Reset();
+			tick.reset();
 
 			rVariableClass::processing();
 			rThreadClass::EndProccesing();
@@ -248,7 +218,7 @@ rThreadStatus rOPCUAManager::Proccesing()
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rOPCUAManager::StartServer()
+UDINT rOPCUAManager::startServer()
 {
 	UA_StatusCode result = TRITONN_RESULT_OK;
 //	rLocker lock(Mutex); lock.Nop();
@@ -303,7 +273,7 @@ UDINT rOPCUAManager::StartServer()
 }
 
 
-rThreadClass *rOPCUAManager::GetThreadClass()
+rThreadClass *rOPCUAManager::getThreadClass()
 {
 	return (rThreadClass *)this;
 }
@@ -484,7 +454,7 @@ UDINT rOPCUAManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError& err)
 
 	rInterface::loadFromXML(xml_root, err);
 
-	Alias = "comms.opcua";
+	m_alias = "comms.opcua";
 
 	if (!xml_root) {
 		return TRITONN_RESULT_OK;
@@ -597,7 +567,7 @@ UDINT rOPCUAManager::generateVars(rVariableClass* parent)
 }
 
 
-UDINT rOPCUAManager::CheckVars(rError& err)
+UDINT rOPCUAManager::checkVars(rError& err)
 {
 	UNUSED(err);
 	return TRITONN_RESULT_OK;

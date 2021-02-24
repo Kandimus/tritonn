@@ -71,29 +71,33 @@ public:
 	};
 
 	rAI(const rStation* owner = nullptr);
-	virtual ~rAI();
+	virtual ~rAI() = default;
 	
 	// Виртуальные функции от rSource
 public:
 	virtual const char *RTTI() const { return "ai"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal);
-	virtual UDINT Calculate();
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
+	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
+	virtual UDINT       calculate();
+
+	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 public:
-	UDINT SetFault();
+	UDINT setFault();
 
 public:
 	// Inputs, Inoutputs
 
 	// Outputs
-	rLink       PhValue;                 // Текущее физическое значение
+	rLink       m_phValue;               // Текущее физическое значение
 	rLink       m_present;               // Результирующие значение
-	rLink       Current;                 // Значение тока/напряжения, пересчитанное из кода АЦП
+	rLink       m_current;               // Значение тока/напряжения, пересчитанное из кода АЦП
 
 	// Внутренние переменные
 	rCmpLREAL   KeypadValue;             // Значение ручного ввода

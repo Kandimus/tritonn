@@ -54,12 +54,11 @@ rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
 	}
 
 	//TODO Нужно ли очищать свойства класса?
-	LockErr     = 0;
+	m_lockErr   = 0;
 	CountGroups = MAX_SELECTOR_GROUP; //  По умолчанию доступен максимальный селектор
 	CountInputs = MAX_SELECTOR_INPUT;
 
-	for(UDINT grp = 0; grp < MAX_SELECTOR_GROUP; ++grp)
-	{
+	for(UDINT grp = 0; grp < MAX_SELECTOR_GROUP; ++grp) {
 		Keypad[grp]    = 0.0;
 		KpUnit[grp]    = U_any;
 		NameInput[grp] = String_format("#username_%i", grp + 1);
@@ -70,29 +69,22 @@ rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
 }
 
 
-//
-rSelector::~rSelector()
-{
-	;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSelector::InitLimitEvent(rLink &link)
+UDINT rSelector::initLimitEvent(rLink &link)
 {
-	link.Limit.EventChangeAMin  = ReinitEvent(EID_SELECTOR_NEW_AMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMin  = ReinitEvent(EID_SELECTOR_NEW_WMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMax  = ReinitEvent(EID_SELECTOR_NEW_WMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeAMax  = ReinitEvent(EID_SELECTOR_NEW_AMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeHyst  = ReinitEvent(EID_SELECTOR_NEW_HYST)  << link.Descr << link.Unit;
-	link.Limit.EventChangeSetup = ReinitEvent(EID_SELECTOR_NEW_SETUP) << link.Descr << link.Unit;
-	link.Limit.EventAMin        = ReinitEvent(EID_SELECTOR_AMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMin        = ReinitEvent(EID_SELECTOR_WMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMax        = ReinitEvent(EID_SELECTOR_WMAX)      << link.Descr << link.Unit;
-	link.Limit.EventAMax        = ReinitEvent(EID_SELECTOR_AMAX)      << link.Descr << link.Unit;
-	link.Limit.EventNan         = ReinitEvent(EID_SELECTOR_NAN)       << link.Descr << link.Unit;
-	link.Limit.EventNormal      = ReinitEvent(EID_SELECTOR_NORMAL)    << link.Descr << link.Unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_SELECTOR_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_SELECTOR_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_SELECTOR_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_SELECTOR_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_SELECTOR_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_SELECTOR_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_SELECTOR_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_SELECTOR_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_SELECTOR_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_SELECTOR_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_SELECTOR_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_SELECTOR_NORMAL)    << link.m_descr << link.m_unit;
 
 	return 0;
 }
@@ -100,153 +92,132 @@ UDINT rSelector::InitLimitEvent(rLink &link)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSelector::Calculate()
+UDINT rSelector::calculate()
 {
 	UDINT faultGrp[MAX_SELECTOR_INPUT] = {0};
 
-	if(rSource::Calculate()) return 0;
+	if (rSource::calculate()) {
+		return TRITONN_RESULT_OK;
+	}
 
-	if(Setup.Value & SELECTOR_SETUP_OFF) return 0;
+	if (m_setup.Value & SELECTOR_SETUP_OFF) {
+		return TRITONN_RESULT_OK;
+	}
 
-
-	for(UDINT ii = 0; ii < CountInputs; ++ii)
-	{
-		for(UDINT grp = 0; grp < CountGroups; ++grp)
-		{
-			faultGrp[ii] += FaultIn[ii][grp].Value != 0.0;
+	for (UDINT ii = 0; ii < CountInputs; ++ii) {
+		for (UDINT grp = 0; grp < CountGroups; ++grp) {
+			faultGrp[ii] += FaultIn[ii][grp].m_value != 0.0;
 		}
 	}
 
 	// Проверка на изменение данных пользователем
-	Select.Compare(ReinitEvent(EID_SELECTOR_SELECTED));
-	Mode.Compare(ReinitEvent(EID_SELECTOR_MODE));
+	Select.Compare(reinitEvent(EID_SELECTOR_SELECTED));
+	Mode.Compare(reinitEvent(EID_SELECTOR_MODE));
 
 	// Если переменная переключатель находится в недопустимом режиме
 	//TODO Какие значения будут в выходах?
-	if(Select.Value >= CountInputs || Select.Value < -1)
-	{
-		rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_ERROR) << Select.Value);
+	if (Select.Value >= CountInputs || Select.Value < -1) {
+		rEventManager::instance().Add(reinitEvent(EID_SELECTOR_ERROR) << Select.Value);
 		Select.Init(-1);
-		Fault = 1;
+		m_fault = 1;
 		//return 0;
 	}
 
 	//----------------------------------------------------------------------------------------
 	// Автоматические переходы, по статусу ошибки
-	if(Select.Value != -1)
-	{
-		if(faultGrp[Select.Value])
-		{
-			switch(Mode.Value)
-			{
+	if (Select.Value != -1) {
+		if (faultGrp[Select.Value]) {
+			switch (Mode.Value) {
 				// Переходы запрещены
-				case SELECTOR_MODE_NOCHANGE:
-				{
-					SendEventSetLE(SELECTOR_LE_NOCHANGE, ReinitEvent(EID_SELECTOR_NOCHANGE) << Select.Value);
+				case SELECTOR_MODE_NOCHANGE: {
+					sendEventSetLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_NOCHANGE) << Select.Value);
 					break;
 				}
 
 				// Переход на значение ошибки
-				case SELECTOR_MODE_TOERROR:
-				{
-					rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
+				case SELECTOR_MODE_TOERROR: {
+					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
 
 					Select.Value = -1;
-					Fault        = 1;
+					m_fault      = 1;
 				}
 
 				// Переходим на следующий канал
-				default:
-				{
+				default: {
 					DINT count = 0;
 
-					LockErr &= ~(SELECTOR_LE_NOCHANGE);
+					m_lockErr &= ~(SELECTOR_LE_NOCHANGE);
 
-					do
-					{
+					do {
 						Select.Value += (Mode.Value == SELECTOR_MODE_CHANGENEXT) ? +1 : -1;
 					
 						if(Select.Value < 0)           Select.Value = CountInputs - 1;
 						if(Select.Value > CountInputs) Select.Value = 0;
 						
 						++count;
-					}
-					while(faultGrp[Select.Value] && count < CountInputs - 2);
+					} while (faultGrp[Select.Value] && count < CountInputs - 2);
 
-					if(faultGrp[Select.Value])
-					{
-						rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_NOTHINGNEXT) << Select.Value);
+					if (faultGrp[Select.Value]) {
+						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << Select.Value);
 
 						Select.Value = -1;
-					}
-					else
-					{
-						rEventManager::instance().Add(ReinitEvent(EID_SELECTOR_TONEXT) << Select.Value);
+					} else {
+						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TONEXT) << Select.Value);
 					}
 				}
 			} //switch
-		}
-		else
-		{
-			SendEventClearLE(SELECTOR_LE_NOCHANGE, ReinitEvent(EID_SELECTOR_CLEARERROR) << Select.Value);
+		} else {
+			sendEventClearLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_CLEARERROR) << Select.Value);
 		}
 	}
 
 	// Записываем в "выхода" требуемые значения входов, так же изменяем ед. измерения у "выходов"
-	for(UDINT grp = 0; grp < CountGroups; ++grp)
-	{
-		ValueOut[grp].Value = (Select.Value == -1) ? Keypad[grp] : ValueIn[Select.Value][grp].Value;
-		ValueOut[grp].Unit  = (Select.Value == -1) ? KpUnit[grp] : ValueIn[Select.Value][grp].Unit;
+	for (UDINT grp = 0; grp < CountGroups; ++grp) {
+		ValueOut[grp].m_value = (Select.Value == -1) ? Keypad[grp] : ValueIn[Select.Value][grp].m_value;
+		ValueOut[grp].m_unit  = (Select.Value == -1) ? KpUnit[grp] : ValueIn[Select.Value][grp].m_unit;
 	}
 
-	Fault = (Select.Value == -1) ? 1 : faultGrp[Select.Value];
+	m_fault = (Select.Value == -1) ? 1 : faultGrp[Select.Value];
 
-	PostCalculate();
+	postCalculate();
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 // Генерация Inputs/Outputs
-void rSelector::GenerateIO()
+void rSelector::generateIO()
 {
 	m_inputs.clear();
 	m_outputs.clear();
 
-	if(Setup.Value & SELECTOR_SETUP_MULTI)
-	{
+	if (m_setup.Value & SELECTOR_SETUP_MULTI) {
 		// Настройка выходов
-		for(UDINT grp = 0; grp < CountGroups; ++grp)
-		{
+		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			ValueOut[grp].m_varName = NameInput[grp] + ".output";
-			InitLink(rLink::Setup::OUTPUT | rLink::Setup::VARNAME, ValueOut[grp], ValueIn[0][grp].Unit, SID::SEL_GRP1_OUT + grp, NameInput[grp], rLink::SHADOW_NONE);
+			initLink(rLink::Setup::OUTPUT | rLink::Setup::VARNAME, ValueOut[grp], ValueIn[0][grp].m_unit, SID::SEL_GRP1_OUT + grp, NameInput[grp], rLink::SHADOW_NONE);
 		}
 
 		// Настройка входов
-		for(UDINT grp = 0; grp < CountGroups; ++grp)
-		{
-			for(UDINT ii = 0; ii < CountInputs; ++ii)
-			{
+		for (UDINT grp = 0; grp < CountGroups; ++grp) {
+			for (UDINT ii = 0; ii < CountInputs; ++ii) {
 				std::string i_name = String_format("%s.input_%i"      , NameInput[grp].c_str(), ii + 1);
 				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
-				InitLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].Unit, SID::SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
-				InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete           , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
+				initLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].m_unit, SID::SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
+				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete             , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
 			}
 		}
-	}
-	else
-	{
-		InitLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].Unit, SID::SEL_OUT, "output", rLink::SHADOW_NONE);
+	} else {
+		initLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].m_unit, SID::SEL_OUT, "output", rLink::SHADOW_NONE);
 
-		for(UDINT ii = 0; ii < CountInputs; ++ii)
-		{
+		for (UDINT ii = 0; ii < CountInputs; ++ii) {
 			string i_name = String_format("input_%i"      , ii + 1);
 			string f_name = String_format("input_%i.fault", ii + 1);
 
-			InitLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].Unit, SID::SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
-			InitLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_discrete         , SID::SEL_FLT1 + ii, f_name, i_name            );
+			initLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].m_unit, SID::SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
+			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_discrete           , SID::SEL_FLT1 + ii, f_name, i_name            );
 		}
 	}
 }
@@ -261,31 +232,27 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	rSource::generateVars(list);
 
-	list.add(Alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L, &Select.Value, U_DIMLESS, ACCESS_SELECT);
-	list.add(Alias + ".inputcount", TYPE_UINT , rVariable::Flags::R___, &CountInputs , U_DIMLESS, 0);
-	list.add(Alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value , U_DIMLESS, ACCESS_SA);
-	list.add(Alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
+	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L, &Select.Value, U_DIMLESS, ACCESS_SELECT);
+	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R___, &CountInputs , U_DIMLESS, 0);
+	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS__, &m_setup.Value , U_DIMLESS, ACCESS_SA);
+	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
 
-	list.add(Alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &Fault       , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &m_fault     , U_DIMLESS, 0);
 
 	// Мультиселектор
-	if(Setup.Value & SELECTOR_SETUP_MULTI)
-	{
-		list.add(Alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0);
+	if (m_setup.Value & SELECTOR_SETUP_MULTI) {
+		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0);
 
-		for(UDINT grp = 0; grp < CountGroups; ++grp)
-		{
-			alias_unit   = String_format("%s.%s.keypad.unit" , Alias.c_str(), NameInput[grp].c_str());
-			alias_keypad = String_format("%s.%s.keypad.value", Alias.c_str(), NameInput[grp].c_str());
+		for (UDINT grp = 0; grp < CountGroups; ++grp) {
+			alias_unit   = String_format("%s.%s.keypad.unit" , m_alias.c_str(), NameInput[grp].c_str());
+			alias_keypad = String_format("%s.%s.keypad.value", m_alias.c_str(), NameInput[grp].c_str());
 
 			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0);
 			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___L, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD);
 		}
-	}
-	else
-	{
-		list.add(Alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
-		list.add(Alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
+	} else {
+		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
+		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -294,17 +261,17 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix)
+UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(SELECTOR_SETUP_OFF));
 	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE, m_flagsMode.getNameByBits(SELECTOR_MODE_CHANGENEXT));
 
-	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
 	}
 
 	UDINT fault = 0;
-	Setup.Init(m_flagsSetup.getValue(strSetup, fault));
+	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 	Mode.Init (m_flagsMode.getValue(strMode, fault));
 
 	if (fault) {
@@ -352,10 +319,10 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 				}
 
 				// Принудительно выключаем пределы
-				FaultIn[ii][0].Limit.m_setup.Init(rLimit::Setup::OFF);
+				FaultIn[ii][0].m_limit.m_setup.Init(rLimit::Setup::OFF);
 
-				if (FaultIn[ii][0].Param.empty()) {
-					FaultIn[ii][0].Param = XmlName::FAULT;
+				if (FaultIn[ii][0].m_param.empty()) {
+					FaultIn[ii][0].m_param = XmlName::FAULT;
 				}
 
 				if (++ii >= MAX_SELECTOR_INPUT) {
@@ -379,7 +346,7 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 	// Мульти-селектор
 	else if (string(XmlName::MSELECTOR) == element->Name()) {
-		Setup.Init(Setup.Value | SELECTOR_SETUP_MULTI);
+		m_setup.Init(m_setup.Value | SELECTOR_SETUP_MULTI);
 
 		tinyxml2::XMLElement *xml_names   = element->FirstChildElement(XmlName::NAMES);
 		tinyxml2::XMLElement *xml_inputs  = element->FirstChildElement(XmlName::INPUTS);
@@ -447,12 +414,12 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 						return err.getError();
 					}
 
-					FaultIn[ii][grp].Limit.m_setup.Init(rLimit::Setup::OFF);
+					FaultIn[ii][grp].m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 					// Если параметр не задан, то принудетельно выставляем в fault, для того чтобы
 					// значение бралось из fault а не из выхода по умолчанию
-					if (FaultIn[ii][grp].Param.empty()) {
-						FaultIn[ii][grp].Param = XmlName::FAULT;
+					if (FaultIn[ii][grp].m_param.empty()) {
+						FaultIn[ii][grp].m_param = XmlName::FAULT;
 					}
 
 					if (++grp >= MAX_SELECTOR_GROUP) {
@@ -494,29 +461,10 @@ UDINT rSelector::LoadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "empty keypads");
 	}
 
-	GenerateIO();
+	generateIO();
 
 	return TRITONN_RESULT_OK;
 }
-
-
-/*
-UDINT rStream::SaveKernel(FILE *file, UDINT isio, const string &objname, const string &comment, UDINT isglobal)
-{
-	Counter.Limit.Setup.Init(LIMIT_SETUP_OFF);
-	Freq.Limit.Setup.Init();
-	Temp.Limit.Setup.Init(0);
-	Pres.Limit.Setup.Init(0);
-	Dens.Limit.Setup.Init(0);
-	Dens15.Limit.Setup.Init(0);
-	Dens20.Limit.Setup.Init(0);
-	B15.Limit.Setup.Init(0);
-	Y15.Limit.Setup.Init(0);
-
-
-	return rSource::SaveKernel(file, isio, objname, comment, isglobal);
-}
-*/
 
 
 

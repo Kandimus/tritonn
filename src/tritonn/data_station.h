@@ -29,25 +29,26 @@ class rStation : public rSource
 {
 public:
 	rStation();
-	virtual ~rStation();
+	virtual ~rStation() = default;
 
 	rDensity::Product getProduct() const;
 	const rObjUnit& getUnit() const;
+	UDINT addStream(rStream* str);
+	UDINT getStreamCount() const;
+	UDINT setStreamFreqOut(UDINT strid) const;
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "station"; }
+	virtual const char* RTTI() const { return "station"; }
 
-	virtual UDINT GetFault();
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT Calculate();
-
+	virtual UDINT       calculate();
 	virtual const rTotal *getTotal(void) const;
 
 protected:
-	virtual UDINT InitLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 public:
 	// Inputs/Outputs
@@ -63,12 +64,12 @@ public:
 	rLink m_flowVolume20;
 
 	rDensity::Product m_product;
-	rCmpUINT     Setup;
-
-	std::vector<rStream*> Stream;
+	rCmpUINT m_setup;
 
 private:
 	static rBitsArray m_flagsProduct;
+
+	std::vector<rStream*> m_stream;
 
 	rTotal       m_total;
 	rObjUnit     m_unit;

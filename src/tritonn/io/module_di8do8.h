@@ -48,6 +48,7 @@ public:
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
+	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleDI8DO8>(*this); }
 
 public:
 	USINT getValue(USINT id);

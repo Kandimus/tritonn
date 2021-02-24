@@ -34,6 +34,14 @@ friend class rIOManager;
 
 public:
 
+	enum Detector : UINT
+	{
+		Det1 = 0x0001,
+		Det2 = 0x0002,
+		Det3 = 0x0004,
+		Det4 = 0x0008,
+	};
+
 	const UDINT CHANNEL_DI_COUNT = 4;
 
 	rModuleCRM();
@@ -48,10 +56,14 @@ public:
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
+	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleCRM>(*this); }
 
 public:
 	UDINT start();
 	USINT abort();
+	LREAL getFreq() const;
+	UINT  getDetectors() const;
+	UDINT getCounter() const;
 
 private:
 	std::vector<rIODIChannel> m_channelDI;

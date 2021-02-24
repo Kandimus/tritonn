@@ -17,7 +17,7 @@
 #include "error.h"
 #include "xml_util.h"
 
-UDINT rObjUnit::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
+UDINT rObjUnit::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
 	tinyxml2::XMLElement* xml_units = element->FirstChildElement(XmlName::UNITS);
 

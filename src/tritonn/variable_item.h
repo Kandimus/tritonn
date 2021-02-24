@@ -74,7 +74,7 @@ public:
 
 	std::string saveToCSV();
 
-	bool operator < (const rVariable* right) { return this->m_hash < right->m_hash; };
+	bool operator < (const rVariable* right) { return this->m_hash < right->m_hash; }
 
 protected:
 	struct rExternal

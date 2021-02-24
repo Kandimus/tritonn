@@ -18,15 +18,62 @@
 
 rTickCount::rTickCount()
 {
-	gettimeofday(&tv, NULL); 
+	gettimeofday(&m_tv, NULL);
 }
 
-
-rTickCount::~rTickCount()
+bool rTickCount::isStarted() const
 {
-	;
+	return m_isStart;
 }
 
+void rTickCount::start(UDINT setting)
+{
+	reset();
+	m_setting = setting;
+}
+
+void rTickCount::reset()
+{
+	m_isStart = true;
+	gettimeofday(&m_tv, NULL);
+}
+
+void rTickCount::stop()
+{
+	m_isStart = false;
+}
+
+bool rTickCount::isFinished()
+{
+	return m_isStart && count() >= m_setting;
+}
+
+UDINT rTickCount::count()
+{
+	return getCount(false);
+}
+
+UDINT rTickCount::getCount(UDINT reset)
+{
+	UDINT   oldtick = 0;
+	UDINT   curtick = 0;
+	timeval curtv;
+
+	gettimeofday(&curtv, NULL);
+
+	oldtick = Tick(m_tv);
+	curtick = Tick(curtv);
+
+	if(reset)
+	{
+		m_tv = curtv;
+	}
+
+	return curtick - oldtick;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 UDINT rTickCount::Tick(timeval &tv)
 {
@@ -38,29 +85,6 @@ UDINT rTickCount::TickUs(timeval &tv)
 {
 	return tv.tv_sec * 1000000LL + tv.tv_usec;
 }
-
-
-UDINT rTickCount::Timer()
-{
-	return GetCount(true);
-}
-
-
-//
-UDINT rTickCount::GetCount()
-{
-
-	return GetCount(false);
-}
-
-
-UDINT rTickCount::Reset()
-{
-	gettimeofday(&tv, NULL);
-
-	return 0;
-}
-
 
 UDINT rTickCount::SysTick(void)
 {
@@ -86,25 +110,5 @@ UDINT rTickCount::UnixTime()
 	gettimeofday(&systv, NULL);
 
 	return systv.tv_sec;
-}
-
-
-UDINT rTickCount::GetCount(UDINT reset)
-{
-	UDINT   oldtick = 0;
-	UDINT   curtick = 0;
-	timeval curtv;
-
-	gettimeofday(&curtv, NULL);
-
-	oldtick = Tick(tv);
-	curtick = Tick(curtv);
-
-	if(reset)
-	{
-		tv = curtv;
-	}
-
-	return curtick - oldtick;
 }
 

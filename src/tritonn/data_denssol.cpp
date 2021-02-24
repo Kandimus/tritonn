@@ -37,56 +37,49 @@
 const UDINT DENSSOL_LE_PERIOD    = 0x00000001;
 const UDINT DENSSOL_LE_INPUTS    = 0x00000002;
 const UDINT DENSSOL_LE_VALUE     = 0x00000004;
-const UDINT DENSSOL_LE_STATION   = 0x00000008;
 const UDINT DENSSOL_LE_ITERATION = 0x00000010;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rDensSol::rDensSol(const rStation* owner) : rSource(owner), Setup(0)
+rDensSol::rDensSol(const rStation* owner) : rSource(owner), m_setup(0)
 {
-	LockErr   = 0;
+	m_lockErr = 0;
 	m_calibrT = 20.0;
 //	Setup     = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
-	InitLink(rLink::Setup::OUTPUT  , Dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE, "Вычисленная плотность в текущих условиях");
-	InitLink(rLink::Setup::INOUTPUT, Temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE, "Температура измрения плотности");
-	InitLink(rLink::Setup::INOUTPUT, Pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE, "Давление измерения плотности");
-	InitLink(rLink::Setup::INPUT   , Period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE, "Период плотномера");
-	InitLink(rLink::Setup::OUTPUT  , Dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE, "Вычисленная плотность при 15 °C");
-	InitLink(rLink::Setup::OUTPUT  , Dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE, "Вычисленная плотность при 20 °C");
-	InitLink(rLink::Setup::OUTPUT  , B     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения в текущих условиях");
-	InitLink(rLink::Setup::OUTPUT  , B15   , U_1_C    , SID::B15        , XmlName::B15      , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения при 15 °C");
-	InitLink(rLink::Setup::OUTPUT  , Y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости в текущих условиях");
-	InitLink(rLink::Setup::OUTPUT  , Y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости при 15 °C");
-	InitLink(rLink::Setup::OUTPUT  , CTL   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния температуры");
-	InitLink(rLink::Setup::OUTPUT  , CPL   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния давления");
-}
-
-
-rDensSol::~rDensSol()
-{
-	;
+	initLink(rLink::Setup::OUTPUT  , m_dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE, "Вычисленная плотность в текущих условиях");
+	initLink(rLink::Setup::INOUTPUT, m_temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE, "Температура измрения плотности");
+	initLink(rLink::Setup::INOUTPUT, m_pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE, "Давление измерения плотности");
+	initLink(rLink::Setup::INPUT   , m_period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE, "Период плотномера");
+	initLink(rLink::Setup::OUTPUT  , m_dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE, "Вычисленная плотность при 15 °C");
+	initLink(rLink::Setup::OUTPUT  , m_dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE, "Вычисленная плотность при 20 °C");
+	initLink(rLink::Setup::OUTPUT  , m_b     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения в текущих условиях");
+	initLink(rLink::Setup::OUTPUT  , m_b15   , U_1_C    , SID::B15        , XmlName::B15      , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения при 15 °C");
+	initLink(rLink::Setup::OUTPUT  , m_y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости в текущих условиях");
+	initLink(rLink::Setup::OUTPUT  , m_y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости при 15 °C");
+	initLink(rLink::Setup::OUTPUT  , m_ctl   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния температуры");
+	initLink(rLink::Setup::OUTPUT  , m_cpl   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния давления");
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDensSol::InitLimitEvent(rLink &link)
+UDINT rDensSol::initLimitEvent(rLink& link)
 {
-	link.Limit.EventChangeAMin  = ReinitEvent(EID_DENSSOL_NEW_AMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMin  = ReinitEvent(EID_DENSSOL_NEW_WMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMax  = ReinitEvent(EID_DENSSOL_NEW_WMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeAMax  = ReinitEvent(EID_DENSSOL_NEW_AMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeHyst  = ReinitEvent(EID_DENSSOL_NEW_HYST)  << link.Descr << link.Unit;
-	link.Limit.EventChangeSetup = ReinitEvent(EID_DENSSOL_NEW_SETUP) << link.Descr << link.Unit;
-	link.Limit.EventAMin        = ReinitEvent(EID_DENSSOL_AMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMin        = ReinitEvent(EID_DENSSOL_WMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMax        = ReinitEvent(EID_DENSSOL_WMAX)      << link.Descr << link.Unit;
-	link.Limit.EventAMax        = ReinitEvent(EID_DENSSOL_AMAX)      << link.Descr << link.Unit;
-	link.Limit.EventNan         = ReinitEvent(EID_DENSSOL_NAN)       << link.Descr << link.Unit;
-	link.Limit.EventNormal      = ReinitEvent(EID_DENSSOL_NORMAL)    << link.Descr << link.Unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_DENSSOL_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_DENSSOL_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_DENSSOL_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_DENSSOL_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_DENSSOL_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_DENSSOL_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_DENSSOL_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_DENSSOL_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_DENSSOL_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_DENSSOL_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_DENSSOL_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_DENSSOL_NORMAL)    << link.m_descr << link.m_unit;
 
 	return 0;
 }
@@ -98,60 +91,60 @@ UDINT rDensSol::InitLimitEvent(rLink &link)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDensSol::Calculate()
+UDINT rDensSol::calculate()
 {
 	rEvent event_f;
 	rEvent event_s;
 	UDINT  err    = 0;
 
-	if (rSource::Calculate()) {
+	if (rSource::calculate()) {
 		return 0;
 	}
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
-	m_calibrT.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_CALIBR));
-	Coef.K0.Compare  (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K0    ));
-	Coef.K1.Compare  (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K1    ));
-	Coef.K2.Compare  (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K2    ));
-	Coef.K18.Compare (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K18   ));
-	Coef.K19.Compare (COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K19   ));
-	Coef.K20A.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K20A  ));
-	Coef.K20B.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K20B  ));
-	Coef.K21A.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K21A  ));
-	Coef.K21B.Compare(COMPARE_LREAL_PREC, ReinitEvent(EID_DENSSOL_K21B  ));
+	m_calibrT.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_CALIBR));
+	m_setCoef.K0.Compare  (COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K0    ));
+	m_setCoef.K1.Compare  (COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K1    ));
+	m_setCoef.K2.Compare  (COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K2    ));
+	m_setCoef.K18.Compare (COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K18   ));
+	m_setCoef.K19.Compare (COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K19   ));
+	m_setCoef.K20A.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K20A  ));
+	m_setCoef.K20B.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K20B  ));
+	m_setCoef.K21A.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K21A  ));
+	m_setCoef.K21B.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_DENSSOL_K21B  ));
 
 	// Если введены новые коэффициенты
 	if (m_accept) {
-		UsedCoef = Coef;
-		m_accept = 0;
+		m_curCoef = m_setCoef;
+		m_accept  = 0;
 
-		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_ACCEPT));
+		rEventManager::instance().Add(reinitEvent(EID_DENSSOL_ACCEPT));
 	}
 
-	if (CheckExpr(err, DENSSOL_LE_INPUTS,
-				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << ID << Descr,
-				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << ID << Descr)) {
-		return SetFault();
+	if (checkExpr(err, DENSSOL_LE_INPUTS,
+				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << m_ID << m_descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << m_ID << m_descr)) {
+		return setFault();
 	}
 
 	//
-	if (CheckExpr(Period.Value < 1, DENSSOL_LE_PERIOD,
-				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << ID << Descr,
-				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << ID << Descr)) {
-		return SetFault();
+	if (checkExpr(m_period.m_value < 1, DENSSOL_LE_PERIOD,
+				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << m_ID << m_descr,
+				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << m_ID << m_descr)) {
+		return setFault();
 	}
 
 	// Расчет плотности
 	rDensity::Product product = m_station->m_product;
-	LREAL dTemp = Temp.Value - m_calibrT.Value;
-	LREAL K20   = UsedCoef.K20A.Value + UsedCoef.K20B.Value * Pres.Value;
-	LREAL K21   = UsedCoef.K21A.Value + UsedCoef.K21B.Value * Pres.Value;
+	LREAL dTemp = m_temp.m_value - m_calibrT.Value;
+	LREAL K20   = m_curCoef.K20A.Value + m_curCoef.K20B.Value * m_pres.m_value;
+	LREAL K21   = m_curCoef.K21A.Value + m_curCoef.K21B.Value * m_pres.m_value;
 	UDINT limit = 0;
 
-	Dens.Value = UsedCoef.K0.Value + UsedCoef.K1.Value * Period.Value + UsedCoef.K2.Value * Period.Value * Period.Value;
-	Dens.Value = Dens.Value * (1.0 + UsedCoef.K18.Value * dTemp      ) + UsedCoef.K19.Value * dTemp;
-	Dens.Value = Dens.Value * (1.0 + K20                * Pres.Value ) + K21                * Pres.Value;
+	m_dens.m_value = m_curCoef.K0.Value + m_curCoef.K1.Value * m_period.m_value + m_curCoef.K2.Value * m_period.m_value * m_period.m_value;
+	m_dens.m_value = m_dens.m_value * (1.0 + m_curCoef.K18.Value * dTemp         ) + m_curCoef.K19.Value * dTemp;
+	m_dens.m_value = m_dens.m_value * (1.0 + K20                 * m_pres.m_value) + K21                 * m_pres.m_value;
 
 	// Приведение плотности к 15 градусам
 	// по ГОСТ Р 50.2.076-2010
@@ -159,59 +152,63 @@ UDINT rDensSol::Calculate()
 	LREAL D15_2  = 0.0;
 	UDINT count_iteration = 0;
 	UDINT count_product   = 0;
-	USINT  oil_id         = rDensity::getTypeProduct(Dens.Value, product);
+	USINT oil_id          = rDensity::getTypeProduct(m_dens.m_value, product);
 
-	while(count_product < 3)
-	{
-		dTemp        = Temp.Value - 15.0;
-		OldD15       = -100000.0;
-		Dens15.Value = Dens.Value;
-		K0           = rDensity::K0[oil_id];
-		K1           = rDensity::K1[oil_id];
-		K2           = rDensity::K2[oil_id];
+	while (count_product < 3) {
+		dTemp            = m_temp.m_value - 15.0;
+		OldD15           = -100000.0;
+		m_dens15.m_value = m_dens.m_value;
+		m_k0             = rDensity::K0[oil_id];
+		m_k1             = rDensity::K1[oil_id];
+		m_k2             = rDensity::K2[oil_id];
 
-		while(std::abs(OldD15 - Dens15.Value) > DENSITY15_CONVERGENCE)
-		{
-			D15_2        = Dens15.Value * Dens15.Value;
-			OldD15       = Dens15.Value;
-			B15.Value    = (K0 + K1 * Dens15.Value) / (D15_2) + K2;
-			B.Value      = B15.Value + 1.6 * B15.Value * B15.Value * dTemp;
-			Y15.Value    = rDensity::getY15(Dens15.Value);
-			Y.Value      = rDensity::getY  (Dens15.Value, Temp.Value);
-			CPL.Value    = 1.0 / (1.0 - Y.Value * Pres.Value);
-			CTL.Value    = exp(-B15.Value * dTemp * (1 + 0.8 * B15.Value * dTemp));
-			Dens15.Value = (Dens.Value / CPL.Value) / CTL.Value;
+		while (std::abs(OldD15 - m_dens15.m_value) > rDensity::CONVERGENCE) {
+			D15_2            = m_dens15.m_value * m_dens15.m_value;
+			OldD15           = m_dens15.m_value;
+			m_b15.m_value    = (m_k0 + m_k1 * m_dens15.m_value) / (D15_2) + m_k2;
+			m_b.m_value      = m_b15.m_value + 1.6 * m_b15.m_value * m_b15.m_value * dTemp;
+			m_y15.m_value    = rDensity::getY15(m_dens15.m_value);
+			m_y.m_value      = rDensity::getY  (m_dens15.m_value, m_temp.m_value);
+			m_cpl.m_value    = 1.0 / (1.0 - m_y.m_value * m_pres.m_value);
+			m_ctl.m_value    = exp(-m_b15.m_value * dTemp * (1 + 0.8 * m_b15.m_value * dTemp));
+			m_dens15.m_value = (m_dens.m_value / m_cpl.m_value) / m_ctl.m_value;
 
 			if(++count_iteration >= 20) break;
 		}
 
 		// Проверка полученной плотности
-		if(CheckExpr(count_iteration >= 20, DENSSOL_LE_ITERATION, event_f.Reinit(EID_DENSSOL_FAULT_ITERATION) << ID << Descr,
-																					 event_s.Reinit(EID_DENSSOL_GOOD_ITERATION ) << ID << Descr))
-		{
-			return SetFault();
+		if(checkExpr(count_iteration >= 20, DENSSOL_LE_ITERATION,
+					 event_f.Reinit(EID_DENSSOL_FAULT_ITERATION) << m_ID << m_descr,
+					 event_s.Reinit(EID_DENSSOL_GOOD_ITERATION ) << m_ID << m_descr)) {
+
+			return setFault();
 		}
 
 		// Для бензинов, определяем куда попали по плотности, если
 		// тип изменился, то считаем еще раз.
-		if(oil_id == rDensity::getTypeProduct(Dens15.Value, product)) break;
+		if (oil_id == rDensity::getTypeProduct(m_dens15.m_value, product)) {
+			break;
+		}
 
-		oil_id = rDensity::getTypeProduct(Dens15.Value, product);
+		oil_id = rDensity::getTypeProduct(m_dens15.m_value, product);
 		++count_product;
 	}
 
 	//  Проверка полученной плотности
 	USINT product_id = static_cast<USINT>(product);
-	limit = rDensity::Limit[0][product_id] <= Dens15.Value && Dens15.Value < rDensity::Limit[1][product_id];
-	if(CheckExpr(!limit, DENSSOL_LE_VALUE, ReinitEvent(event_f, EID_DENSSOL_FAULT_VALUE) << Dens15.Value, ReinitEvent(event_s, EID_DENSSOL_GOOD_VALUE ) << Dens15.Value))
-	{
-		Fault = 1;
+	limit = rDensity::Limit[0][product_id] <= m_dens15.m_value && m_dens15.m_value < rDensity::Limit[1][product_id];
+
+	if(checkExpr(!limit, DENSSOL_LE_VALUE,
+				 reinitEvent(event_f, EID_DENSSOL_FAULT_VALUE) << m_dens15.m_value,
+				 reinitEvent(event_s, EID_DENSSOL_GOOD_VALUE ) << m_dens15.m_value)) {
+
+		m_fault = 1;
 	}
 
 	// Расчитаем плотность при 20 *С
-	Dens20.Value = rDensity::getDens20(Dens15.Value, B15.Value);
+	m_dens20.m_value = rDensity::getDens20(m_dens15.m_value, m_b15.m_value);
 
-	PostCalculate();
+	postCalculate();
 
 	return 0;
 }
@@ -219,23 +216,23 @@ UDINT rDensSol::Calculate()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDensSol::SetFault()
+UDINT rDensSol::setFault()
 {
-	Dens.Value   = std::numeric_limits<LREAL>::quiet_NaN();;
-	Dens15.Value = std::numeric_limits<LREAL>::quiet_NaN();;
-	Dens20.Value = std::numeric_limits<LREAL>::quiet_NaN();;
-	B.Value      = std::numeric_limits<LREAL>::quiet_NaN();;
-	Y.Value      = std::numeric_limits<LREAL>::quiet_NaN();;
-	CTL.Value    = std::numeric_limits<LREAL>::quiet_NaN();;
-	CPL.Value    = std::numeric_limits<LREAL>::quiet_NaN();;
-	B15.Value    = std::numeric_limits<LREAL>::quiet_NaN();;
-	Y15.Value    = std::numeric_limits<LREAL>::quiet_NaN();;
-	K0           = std::numeric_limits<LREAL>::quiet_NaN();;
-	K1           = std::numeric_limits<LREAL>::quiet_NaN();;
-	K2           = std::numeric_limits<LREAL>::quiet_NaN();;
-	Fault        = 1;
+	m_dens.m_value   = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_dens15.m_value = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_dens20.m_value = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_b.m_value      = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_y.m_value      = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_ctl.m_value    = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_cpl.m_value    = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_b15.m_value    = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_y15.m_value    = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_k0             = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_k1             = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_k2             = std::numeric_limits<LREAL>::quiet_NaN();;
+	m_fault          = 1;
 
-	return Fault;
+	return m_fault;
 }
 
 
@@ -255,32 +252,32 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".k0"               , TYPE_LREAL, rVariable::Flags::R___, &K0                 , U_DIMLESS, 0);
-	list.add(Alias + ".k1"               , TYPE_LREAL, rVariable::Flags::R___, &K1                 , U_DIMLESS, 0);
-	list.add(Alias + ".k2"               , TYPE_LREAL, rVariable::Flags::R___, &K2                 , U_DIMLESS, 0);
-	list.add(Alias + ".factor.k0"        , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K0.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k1"        , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K1.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k2"        , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K2.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k18"       , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K18.Value , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k19"       , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K19.Value , U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k20a"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K20A.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k20b"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K20B.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k21a"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K21A.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.k21b"      , TYPE_LREAL, rVariable::Flags::RS__, &UsedCoef.K21B.Value, U_COEFSOL, ACCESS_SA);
-	list.add(Alias + ".factor.set.k0"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K0.Value      , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k1"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K1.Value      , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___L, &Coef.K2.Value      , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K18.Value     , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___L, &Coef.K19.Value     , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K20B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21A.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___L, &Coef.K21B.Value    , U_COEFSOL, ACCESS_FACTORS);
-	list.add(Alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &m_accept           , U_DIMLESS, ACCESS_FACTORS);
-	list.add(Alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &m_calibrT.Value    , U_C      , ACCESS_FACTORS);
-	list.add(Alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &Setup.Value        , U_DIMLESS, ACCESS_FACTORS);
+	list.add(m_alias + ".k0"               , TYPE_LREAL, rVariable::Flags::R___, &m_k0                , U_DIMLESS, 0);
+	list.add(m_alias + ".k1"               , TYPE_LREAL, rVariable::Flags::R___, &m_k1                , U_DIMLESS, 0);
+	list.add(m_alias + ".k2"               , TYPE_LREAL, rVariable::Flags::R___, &m_k2                , U_DIMLESS, 0);
+	list.add(m_alias + ".factor.k0"        , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K0.Value  , U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k1"        , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K1.Value  , U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k2"        , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K2.Value  , U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k18"       , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K18.Value , U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k19"       , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K19.Value , U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k20a"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K20A.Value, U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k20b"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K20B.Value, U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k21a"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K21A.Value, U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.k21b"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K21B.Value, U_COEFSOL, ACCESS_SA);
+	list.add(m_alias + ".factor.set.k0"    , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K0.Value  , U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k1"    , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K1.Value  , U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K2.Value  , U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K18.Value , U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K19.Value , U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K20A.Value, U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K20B.Value, U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K21A.Value, U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K21B.Value, U_COEFSOL, ACCESS_FACTORS);
+	list.add(m_alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &m_accept            , U_DIMLESS, ACCESS_FACTORS);
+	list.add(m_alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &m_calibrT.Value     , U_C      , ACCESS_FACTORS);
+	list.add(m_alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &m_setup.Value       , U_DIMLESS, ACCESS_FACTORS);
 
-	list.add(Alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R___, &Fault              , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R___, &m_fault             , U_DIMLESS, 0);
 
 	return 0;
 }
@@ -288,9 +285,9 @@ UDINT rDensSol::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rDensSol::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.getError();
 	}
 
@@ -304,20 +301,20 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	}
 
 	// Обязательные линки и параметры, без которых работа не возможна
-	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement  (XmlName::LINK), Temp  )) return err.getError();
-	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement  (XmlName::LINK), Pres  )) return err.getError();
-	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_period->FirstChildElement(XmlName::LINK), Period)) return err.getError();
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement  (XmlName::LINK), m_temp  )) return err.getError();
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_pres->FirstChildElement  (XmlName::LINK), m_pres  )) return err.getError();
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_period->FirstChildElement(XmlName::LINK), m_period)) return err.getError();
 
 	UDINT fault = 0;
-	Coef.K0.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K0)  , 0.0, fault));
-	Coef.K1.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K1)  , 0.0, fault));
-	Coef.K2.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K2)  , 0.0, fault));
-	Coef.K18.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K18) , 0.0, fault));
-	Coef.K19.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K19) , 0.0, fault));
-	Coef.K20A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K20A), 0.0, fault));
-	Coef.K20B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K20B), 0.0, fault));
-	Coef.K21A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K21A), 0.0, fault));
-	Coef.K21B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K21B), 0.0, fault));
+	m_setCoef.K0.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K0)  , 0.0, fault));
+	m_setCoef.K1.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K1)  , 0.0, fault));
+	m_setCoef.K2.Init  (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K2)  , 0.0, fault));
+	m_setCoef.K18.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K18) , 0.0, fault));
+	m_setCoef.K19.Init (XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K19) , 0.0, fault));
+	m_setCoef.K20A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K20A), 0.0, fault));
+	m_setCoef.K20B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K20B), 0.0, fault));
+	m_setCoef.K21A.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K21A), 0.0, fault));
+	m_setCoef.K21B.Init(XmlUtils::getTextLREAL(xml_koef->FirstChildElement(XmlName::K21B), 0.0, fault));
 
 	if (fault) {
 		return err.set(DATACFGERR_DENSSOL, xml_koef->GetLineNum(), "");
@@ -329,15 +326,15 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 	fault = 0;
 
 	// Так как мы еще не загрузили данные из EEPROM, то принимает текущие коэф-ты за рабочие.
-	UsedCoef = Coef;
+	m_curCoef = m_setCoef;
 
 	// Проверки
 	if (!m_station) {
-		rEventManager::instance().Add(ReinitEvent(EID_DENSSOL_FAULT_STATION));
+		rEventManager::instance().Add(reinitEvent(EID_DENSSOL_FAULT_STATION));
 		return err.set(DATACFGERR_DENSSOL_NOSTN, element->GetLineNum(), "station is empty");
 	}
 
-	ReinitLimitEvents();
+	reinitLimitEvents();
 
 	return TRITONN_RESULT_OK;
 }
@@ -345,18 +342,18 @@ UDINT rDensSol::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 
 std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	Period.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Temp.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Pres.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Dens.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Dens15.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Dens20.Limit.m_setup.Init(rLimit::Setup::NONE);
-	B.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Y.Limit.m_setup.Init(rLimit::Setup::NONE);
-	CTL.Limit.m_setup.Init(rLimit::Setup::NONE);
-	CPL.Limit.m_setup.Init(rLimit::Setup::NONE);
-	B15.Limit.m_setup.Init(rLimit::Setup::NONE);
-	Y15.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_period.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_temp.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_pres.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_dens.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_dens15.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_dens20.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_b.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_y.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_ctl.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_cpl.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_b15.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_y15.m_limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
@@ -364,31 +361,31 @@ std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string
 
 UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
 {
-	Dens.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Temp.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Pres.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Period.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Dens15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Dens20.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	B.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	B15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Y.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	Y15.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	CTL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	CPL.Limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_dens.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_temp.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_pres.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_period.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_dens15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_dens20.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_b.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_b15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_y.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_y15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_ctl.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_cpl.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
 
 	md.add(this, true)
 			.addXml(XmlName::CALIBR, m_calibrT.Value)
 			.addXml(String_format("<%s>", XmlName::FACTORS))
-			.addXml(XmlName::K0  , Coef.K0.Value, false, "\t")
-			.addXml(XmlName::K1  , Coef.K1.Value, false, "\t")
-			.addXml(XmlName::K2  , Coef.K2.Value, false, "\t")
-			.addXml(XmlName::K18 , Coef.K18.Value, false, "\t")
-			.addXml(XmlName::K19 , Coef.K19.Value, false, "\t")
-			.addXml(XmlName::K20A, Coef.K20A.Value, false, "\t")
-			.addXml(XmlName::K20B, Coef.K20B.Value, false, "\t")
-			.addXml(XmlName::K21A, Coef.K21A.Value, false, "\t")
-			.addXml(XmlName::K21B, Coef.K21B.Value, false, "\t")
+			.addXml(XmlName::K0  , m_setCoef.K0.Value, false, "\t")
+			.addXml(XmlName::K1  , m_setCoef.K1.Value, false, "\t")
+			.addXml(XmlName::K2  , m_setCoef.K2.Value, false, "\t")
+			.addXml(XmlName::K18 , m_setCoef.K18.Value, false, "\t")
+			.addXml(XmlName::K19 , m_setCoef.K19.Value, false, "\t")
+			.addXml(XmlName::K20A, m_setCoef.K20A.Value, false, "\t")
+			.addXml(XmlName::K20B, m_setCoef.K20B.Value, false, "\t")
+			.addXml(XmlName::K21A, m_setCoef.K21A.Value, false, "\t")
+			.addXml(XmlName::K21B, m_setCoef.K21B.Value, false, "\t")
 			.addXml(String_format("</%s>", XmlName::FACTORS));
 
 	return TRITONN_RESULT_OK;

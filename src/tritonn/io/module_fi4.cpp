@@ -14,10 +14,13 @@
 //=================================================================================================
 
 #include "module_fi4.h"
+#include "defines.h"
 #include "locker.h"
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../variable_class.h"
+#include "../units.h"
 
 rModuleFI4::rModuleFI4()
 {
@@ -71,6 +74,9 @@ UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, b
 		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
 		m_channel[ii].generateVars(p, list, issimulate);
 	}
+
+	std::string p = prefix + m_name;
+	list.add(p + IO::VARNAME_OUTTYPE, TYPE_USINT, rVariable::Flags::RS__, &m_outtype, U_DIMLESS, ACCESS_SA);
 
 	return TRITONN_RESULT_OK;
 }

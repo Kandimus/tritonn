@@ -84,7 +84,7 @@ protected:
 	UDINT LoadConfig    (tinyxml2::XMLElement* root);
 	UDINT LoadStation   (tinyxml2::XMLElement* root, cJSON* jroot);
 	UDINT loadStream    (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
-	UDINT LoadIO        (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
+	UDINT loadIO        (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
 	UDINT LoadCalc      (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
 	UDINT LoadReport    (tinyxml2::XMLElement* root);
 	UDINT LoadCustom    (tinyxml2::XMLElement* root);

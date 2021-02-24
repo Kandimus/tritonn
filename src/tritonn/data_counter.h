@@ -47,19 +47,24 @@ public:
 	const UDINT CALCULATE_TIMER = 1000;
 
 	rCounter(const rStation* owner = nullptr);
-	virtual ~rCounter();
+	virtual ~rCounter() = default;
 
 	
 	// Виртуальные функции от rSource
 public:
 	virtual const char *RTTI() const { return "fi"; }
 
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT       generateVars(rVariableList& list);
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT Calculate();
+	virtual UDINT       calculate();
+
+	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
+
 protected:
-	virtual UDINT InitLimitEvent(rLink& link);
+	virtual UDINT       initLimitEvent(rLink& link);
 
 private:
 	LREAL getPeriod();

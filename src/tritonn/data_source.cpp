@@ -32,13 +32,7 @@
 
 rSource::rSource(const rStation* owner)
 {
-	Alias      = "";
-	Descr      = 0;
-	ID         = 0;
-	Calculated = 0;
-	Fault      = 0;
-	LockErr    = 0;
-	m_station  = owner;
+	m_station = owner;
 }
 
 rSource::~rSource()
@@ -50,7 +44,7 @@ rSource::~rSource()
 
 //-------------------------------------------------------------------------------------------------
 // Поиск выходного линка по его имени
-rLink *rSource::GetOutputByName(const string &name)
+rLink* rSource::getOutputByName(const std::string& name)
 {
 	if(m_outputs.empty()) {
 		return nullptr;
@@ -61,7 +55,7 @@ rLink *rSource::GetOutputByName(const string &name)
 	}
 
 	for(auto item : m_outputs) {
-		if(name == item->IO_Name) {
+		if(name == item->m_ioName) {
 			return item;
 		}
 	}
@@ -72,37 +66,34 @@ rLink *rSource::GetOutputByName(const string &name)
 
 //-------------------------------------------------------------------------------------------------
 // Выдача значения требуемого "выхода", с приведением к требуемым ед. измерения
-LREAL rSource::GetValue(const string &name, UDINT unit, UDINT &err)
+LREAL rSource::getValue(const std::string& name, UDINT unit, UDINT& err)
 {
 	LREAL  result = 0.0;
-	rLink *link   = nullptr;
+	rLink* link   = nullptr;
 
 	// Если значение переменных еще не вычислено, то вначале вычисляем объект, потом возращаем значение
-	if(!Calculated)
-	{
-		Calculate();
+	if (!m_isCalc) {
+		calculate();
 	}
 
-	if(name == XmlName::FAULT) return (LREAL)Fault;
+	if(name == XmlName::FAULT) return (LREAL)m_fault;
 
-	link = GetOutputByName(name);
+	link = getOutputByName(name);
 
-	if(nullptr == link)
-	{
+	if (!link) {
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTVAL) << ID << Descr << STRID(unit));
+		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.Reinit(EID_SYSTEM_ERROUTVAL) << m_ID << m_descr << STRID(unit));
 
 		return std::numeric_limits<LREAL>::quiet_NaN();
 	}
 
 	// Проводим к нужному типу
-	err = rUnits::ConvertValue(link->Value, link->Unit, result, unit);
+	err = rUnits::ConvertValue(link->m_value, link->m_unit, result, unit);
 
-	if(err)
-	{
-		SendEventSetLE(SOURCE_LE_UNIT, Event.Reinit(EID_SYSTEM_ERRUNIT) <<ID << Descr << STRID(link->Unit) << STRID(unit));
+	if(err) {
+		sendEventSetLE(SOURCE_LE_UNIT, m_event.Reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->m_unit) << STRID(unit));
 	}
 
 	return result;
@@ -111,48 +102,49 @@ LREAL rSource::GetValue(const string &name, UDINT unit, UDINT &err)
 
 //-------------------------------------------------------------------------------------------------
 // Выдаем ед.измерения требуемого выхода. Реализовано для отчетов
-STRID rSource::GetValueUnit(const string &name, UDINT &err)
+STRID rSource::getValueUnit(const std::string& name, UDINT& err)
 {
-	rLink *link = GetOutputByName(name);
+	auto link = getOutputByName(name);
 
-	if(nullptr == link)
-	{
+	if(!link) {
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		SendEventSetLE(SOURCE_LE_OUTPUT, Event.Reinit(EID_SYSTEM_ERROUTPUT) << ID << Descr);
+		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.Reinit(EID_SYSTEM_ERROUTPUT) << m_ID << m_descr);
 
 		return 0xFFFFFFFF;
 	}
 
-	return link->Unit;
+	return link->m_unit;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rSource::GetFault()
+UDINT rSource::getFault()
 {
-	return Fault;
+	return m_fault;
 }
 
 
-UDINT rSource::PreCalculate()
+UDINT rSource::preCalculate()
 {
-	Calculated = 0;
+	m_isCalc = false;
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
-UDINT rSource::Calculate()
+UDINT rSource::calculate()
 {
-	if(Calculated) return 1;
+	if (m_isCalc) {
+		return 1;
+	}
 
-	Calculated = 1;
-	Fault      = 0;
+	m_isCalc = true;
+	m_fault  = 0;
 
 	for (auto link : m_inputs) {
-		link->Calculate();
+		link->calculate();
 	}
 
 	return 0;
@@ -160,64 +152,64 @@ UDINT rSource::Calculate()
 
 
 
-UDINT rSource::PostCalculate()
+UDINT rSource::postCalculate()
 {
 	for (auto link : m_outputs) {
 		if (link->m_setup & rLink::Setup::INPUT) {
 			continue;
 		}
 
-		link->CalculateLimit();
+		link->calculateLimit();
 	}
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 // Переинициализируем временный Event, записывая ID объекта и строку с его описанием
-rEvent &rSource::ReinitEvent(rEvent &event, UDINT eid)
+rEvent& rSource::reinitEvent(rEvent& event, UDINT eid)
 {
-	event.Reinit(eid) << ID << Descr;
+	event.Reinit(eid) << m_ID << m_descr;
 
 	return event;
 }
 
 //-------------------------------------------------------------------------------------------------
 // Переинициализируем временный Event, записывая ID объекта и строку с его описанием
-rEvent &rSource::ReinitEvent(UDINT eid)
+rEvent& rSource::reinitEvent(UDINT eid)
 {
-	return ReinitEvent(Event, eid);
+	return reinitEvent(m_event, eid);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::InitLink(UINT setup, rLink &link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment)
+UDINT rSource::initLink(UINT setup, rLink& link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment)
 {
-	link.Init(setup, unit, this, name, nameid, comment);
+	link.init(setup, unit, this, name, nameid, comment);
 
-	link.Shadow = shadow;
+	link.m_shadow = shadow;
 
 	if(setup & rLink::Setup::INPUT ) m_inputs.push_back (&link);
 	if(setup & rLink::Setup::OUTPUT) m_outputs.push_back(&link);
 
 	// Вызываем функцию конечного класса
-	InitLimitEvent(link);
+	initLimitEvent(link);
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
-UDINT rSource::ReinitLimitEvents()
+UDINT rSource::reinitLimitEvents()
 {
 	for (auto link : m_inputs) {
-		InitLimitEvent(*link);
+		initLimitEvent(*link);
 	}
 
 	for (auto link : m_outputs) {
 		if (!(link->m_setup & rLink::Setup::INPUT)) {
-			InitLimitEvent(*link);
+			initLimitEvent(*link);
 		}
 	}
 
@@ -247,7 +239,7 @@ UDINT rSource::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rSource::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	if (!element) {
 		return err.set(DATACFGERR_CONFIG, 0, "element is null");
@@ -255,7 +247,7 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	m_lineNum = element->GetLineNum();
 
-	const char *strAlias = element->Attribute(XmlName::NAME);
+	auto strAlias = element->Attribute(XmlName::NAME);
 
 	//TODO Можно еще алиас проверить на валидность имени
 	if (!strAlias) {
@@ -263,12 +255,12 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	}
 
 	if (prefix.size()) {
-		Alias = prefix + ".";
+		m_alias = prefix + ".";
 	}
 
-	Alias += strAlias;
-	Alias  = String_tolower(Alias);
-	Descr  = XmlUtils::getAttributeUDINT(element, XmlName::DESC, 0);
+	m_alias += strAlias;
+	m_alias  = String_tolower(m_alias);
+	m_descr  = XmlUtils::getAttributeUDINT(element, XmlName::DESC, 0);
 
 	// Загружаем все пределы по всем входам и выходам
 	tinyxml2::XMLElement* limits = element->FirstChildElement(XmlName::LIMITS);
@@ -282,7 +274,7 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 		std::string ioname = String_tolower(limit_xml->Attribute(XmlName::NAME));
 
 		for (auto item : m_inputs) {
-			if (item->IO_Name == ioname) {
+			if (item->m_ioName == ioname) {
 				link = item;
 				break;
 			}
@@ -290,7 +282,7 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 		if (!link) {
 			for (auto item : m_outputs) {
-				if (item->IO_Name == ioname) {
+				if (item->m_ioName == ioname) {
 					link = item;
 					break;
 				}
@@ -301,7 +293,7 @@ UDINT rSource::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 			return err.set(DATACFGERR_LIMIT, limit_xml->GetLineNum(), ioname);
 		}
 
-		link->Limit.LoadFromXML(limit_xml, err, prefix);
+		link->m_limit.loadFromXML(limit_xml, err, prefix);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -340,7 +332,7 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 			continue;
 		}
 
-		result += var->saveKernel(Alias.size() + 1, "\t\t");
+		result += var->saveKernel(m_alias.size() + 1, "\t\t");
 	}
 	result += "\t</values>\n";
 
@@ -352,26 +344,26 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 		for (auto link : m_inputs) {
 			UDINT shadow_count = 0;
 
-			result += String_format("\t\t<input name=\"%s\" unit=\"%i\"", link->IO_Name.c_str(), (UDINT)link->Unit);
+			result += String_format("\t\t<input name=\"%s\" unit=\"%i\"", link->m_ioName.c_str(), (UDINT)link->m_unit);
 
 			for (auto sublink : m_inputs) {
 				if (link == sublink) {
 					continue;
 				}
 
-				if (sublink->Shadow == link->IO_Name) {
+				if (sublink->m_shadow == link->m_ioName) {
 					if (0 == shadow_count) {
 						result += ">\n";
 					}
 
-					result += String_format("\t\t\t<shadow name=\"%s\"/>\n", sublink->IO_Name.c_str());
+					result += String_format("\t\t\t<shadow name=\"%s\"/>\n", sublink->m_ioName.c_str());
 					++shadow_count;
 				}
 			}
 
 			if (0 == shadow_count) {
-				if (link->Shadow.size()) {
-					result += String_format(" shadow=\"%s\"", link->Shadow.c_str());
+				if (link->m_shadow.size()) {
+					result += String_format(" shadow=\"%s\"", link->m_shadow.c_str());
 				}
 				result += "/>\n";
 			}
@@ -389,7 +381,7 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 
 		for (auto link : m_outputs) {
 			result += String_format("\t\t<output name=\"%s\" unit=\"%i\"%s/>\n",
-					link->IO_Name.c_str(), (UDINT)link->Unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
+					link->m_ioName.c_str(), (UDINT)link->m_unit, (link == m_outputs[0]) ? " default=\"1\"" : "");
 		}
 
 		result += "\t\t<output name=\"fault\" unit=\"512\"/>\n"
@@ -420,12 +412,12 @@ std::string rSource::getMarkDown()
 		for (auto link : m_inputs) {
 			std::string strunit = "";
 
-			rTextManager::instance().Get(link->Unit, strunit);
+			rTextManager::instance().Get(link->m_unit, strunit);
 
-			result += link->IO_Name + " | ";
-			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
-			result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
-			result += link->Shadow + " | ";
+			result += link->m_ioName + " | ";
+			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
+			result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
+			result += link->m_shadow + " | ";
 			result += link->m_comment + "\n";
 		}
 	}
@@ -436,12 +428,12 @@ std::string rSource::getMarkDown()
 	for (auto link : m_outputs) {
 		std::string strunit = "";
 
-		rTextManager::instance().Get(link->Unit, strunit);
+		rTextManager::instance().Get(link->m_unit, strunit);
 
-		result += link->IO_Name + " | ";
-		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->Unit)) + " | ";
+		result += link->m_ioName + " | ";
+		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
 
-		result += link->Limit.m_flagsSetup.getNameByBits(link->Limit.m_setup.Value, ", ") + " | ";
+		result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
 		result += link->m_comment + "\n";
 	}
 
@@ -461,9 +453,9 @@ std::string rSource::getXmlInput() const
 
 	if (m_inputs.size()) {
 		for (auto link : m_inputs) {
-			result += "\t<" + link->IO_Name + "><link alias=\"object's output\"/></" + link->IO_Name + ">";
+			result += "\t<" + link->m_ioName + ">" + rGeneratorMD::rItem::XML_LINK + "</" + link->m_ioName + ">";
 
-			if (link->Shadow.size()) {
+			if (link->m_shadow.size()) {
 				result += "<!-- Optional -->";
 			}
 
@@ -473,26 +465,26 @@ std::string rSource::getXmlInput() const
 		std::string strlink = "";
 
 		for (auto link : m_inputs) {
-			if (link->Limit.m_setup.Value != rLimit::Setup::OFF) {
+			if (link->m_limit.m_setup.Value != rLimit::Setup::OFF) {
 				strlink += String_format("\t\t<%s name=\"%s\" setup=\"%s\">\n",
 										 XmlName::LIMIT,
-										 link->IO_Name.c_str(),
-										 rLimit::m_flagsSetup.getNameByBits(link->Limit.m_setup.Value).c_str());
+										 link->m_ioName.c_str(),
+										 rLimit::m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value).c_str());
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::LOLO) {
-					strlink += String_format("\t\t\t<lolo>%g</lolo>\n", link->Limit.m_lolo.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::LOLO) {
+					strlink += String_format("\t\t\t<lolo>%g</lolo>\n", link->m_limit.m_lolo.Value);
 				}
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::LO) {
-					strlink += String_format("\t\t\t<lo>%g</lo>\n", link->Limit.m_lo.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::LO) {
+					strlink += String_format("\t\t\t<lo>%g</lo>\n", link->m_limit.m_lo.Value);
 				}
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::HI) {
-					strlink += String_format("\t\t\t<hi>%g</hi>\n", link->Limit.m_hi.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::HI) {
+					strlink += String_format("\t\t\t<hi>%g</hi>\n", link->m_limit.m_hi.Value);
 				}
 
-				if (link->Limit.m_setup.Value & rLimit::Setup::HIHI) {
-					strlink += String_format("\t\t\t<hihi>%g</hihi>\n", link->Limit.m_hihi.Value);
+				if (link->m_limit.m_setup.Value & rLimit::Setup::HIHI) {
+					strlink += String_format("\t\t\t<hihi>%g</hihi>\n", link->m_limit.m_hihi.Value);
 				}
 
 				strlink += "\t\t</limit>\n";
@@ -515,7 +507,7 @@ UDINT rSource::checkOutput(const string &name)
 
 	for(auto link : m_outputs)
 	{
-		if(lowname == link->IO_Name) return 0;
+		if(lowname == link->m_ioName) return 0;
 	}
 
 	return 1;
@@ -525,25 +517,20 @@ UDINT rSource::checkOutput(const string &name)
 
 // Функция проверяет наличие флага по условию, блокирует этот флаг в переменной LockErr
 // и выдает сообщение
-UDINT rSource::CheckExpr(bool expr, UDINT flag, rEvent &event_fault, rEvent &event_success)
+UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& event_success)
 {
 	// Проверка полученных данных
-	if(expr)
-	{
-		if(!(LockErr & flag))
-		{
-			LockErr |= flag;
+	if (expr) {
+		if (!(m_lockErr & flag)) {
+			m_lockErr |= flag;
 
 			rEventManager::instance().Add(event_fault);
 		}
 
 		return 1;
-	}
-	else
-	{
-		if(LockErr & flag)
-		{
-			LockErr &= ~flag;
+	} else {
+		if (m_lockErr & flag) {
+			m_lockErr &= ~flag;
 
 			rEventManager::instance().Add(event_success);
 		}
@@ -553,13 +540,12 @@ UDINT rSource::CheckExpr(bool expr, UDINT flag, rEvent &event_fault, rEvent &eve
 }
 
 
-UDINT rSource::SendEventSetLE(UDINT flag, rEvent &event)
+UDINT rSource::sendEventSetLE(UDINT flag, rEvent &event)
 {
-	if(!(LockErr & flag))
-	{
+	if (!(m_lockErr & flag)) {
 		rEventManager::instance().Add(event);
 
-		LockErr |= flag;
+		m_lockErr |= flag;
 
 		return 1;
 	}
@@ -568,12 +554,11 @@ UDINT rSource::SendEventSetLE(UDINT flag, rEvent &event)
 }
 
 
-UDINT rSource::SendEventClearLE(UDINT flag, rEvent &event)
+UDINT rSource::sendEventClearLE(UDINT flag, rEvent &event)
 {
-	if(LockErr & flag)
-	{
+	if (m_lockErr & flag) {
 		rEventManager::instance().Add(event);
-		LockErr &= ~flag;
+		m_lockErr &= ~flag;
 
 		return 1;
 	}

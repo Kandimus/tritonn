@@ -25,11 +25,11 @@ class rVariableList;
 class rSystemVariable
 {
 public:
-	rSystemVariable() {}
-	~rSystemVariable() {}
+	rSystemVariable() = default;
+	~rSystemVariable() = default;
 
 	std::string saveKernel();
-	UDINT initVariables(rVariableList& list);
+	UDINT       initVariables(rVariableList& list);
 
 public:
 	rVersion    Ver;

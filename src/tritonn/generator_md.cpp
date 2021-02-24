@@ -19,6 +19,7 @@
 #include "simplefile.h"
 
 const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
+const char* rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
 
 rGeneratorMD::rGeneratorMD()
 {
@@ -119,12 +120,17 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, LRE
 	return addXml(String_format("%s<%s>%g<%s/>", prefix.c_str(), xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
 
+rGeneratorMD::rItem& rGeneratorMD::rItem::addLink(const std::string& xmlname, bool isoptional, const std::string& prefix)
+{
+	return addXml(prefix + "<" + xmlname + ">" + XML_LINK + "<" + xmlname + "/>", isoptional);
+}
+
 std::string rGeneratorMD::rItem::save()
 {
 	std::string result = "";
 
 	result += String_format("# %s\n## XML\n````xml\n", m_source->RTTI());
-	result += String_format("<%s name=\"valid object name\" ", m_source->RTTI());
+	result += String_format("<%s name=\"valid object name\" descr=\"string index\" ", m_source->RTTI());
 
 	for (auto& prop : m_properties) {
 		switch (prop.m_type) {

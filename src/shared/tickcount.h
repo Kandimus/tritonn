@@ -22,11 +22,16 @@ class rTickCount
 {
 public:
 	rTickCount();
-	virtual ~rTickCount();
+	virtual ~rTickCount() = default;
 
-	UDINT Timer();
-	UDINT GetCount();
-	UDINT Reset();
+	UDINT count();
+	void  start(UDINT setting);
+	bool  isFinished();
+	void  stop();
+	bool  isStarted() const;
+	void  reset();
+
+
 
 	static UDINT SysTick(void); // msec
 	static UDINT SysTickUs(void); // usec
@@ -35,8 +40,10 @@ public:
 	static UDINT UnixTime();
 
 protected:
-	timeval tv;
+	timeval m_tv;
+	UDINT   m_setting = 0;
+	bool    m_isStart = false;
 
-	UDINT GetCount(UDINT reset);
+	UDINT getCount(UDINT reset);
 };
 

@@ -13,6 +13,11 @@
 		</module>
 		<module type="fi4" name="fi4_1">
 		</module>
+		<module type="crm" name="crm_1">
+		</module>
+		<module name="ai6_2" type="AI6">
+			<channel number="0" setup="NOICE | AVERAGE" />
+		</module>
 	</hardware>
 	<config>
 		<settings>
@@ -349,7 +354,73 @@
 						</limits>
 					</stream>
 				</streams>
+				<io>
+					<ai name="temp_tpu" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+						<io_link module="4" channel="0"/>
+						<unit>16</unit>
+						<keypad>12.5</keypad>
+						<scale>
+							<min>-10</min>
+							<max>100</max>
+						</scale>
+						<limits>
+							<limit name="present" setup="HIHI | HI | LO | LOLO">
+								<hihi>5</hihi>
+								<hi>10</hi>
+								<lo>25</lo>
+								<lolo>35</lolo>
+								<hysteresis>0.1</hysteresis>
+							</limit>
+						</limits>
+					</ai>
+					<ai name="pres_tpu" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+						<io_link module="4" channel="1"/>
+						<unit>16</unit>
+						<keypad>12.5</keypad>
+						<scale>
+							<min>-10</min>
+							<max>100</max>
+						</scale>
+						<limits>
+							<limit name="present" setup="HIHI | HI | LO | LOLO">
+								<hihi>5</hihi>
+								<hi>10</hi>
+								<lo>25</lo>
+								<lolo>35</lolo>
+								<hysteresis>0.1</hysteresis>
+							</limit>
+						</limits>
+					</ai>
+					<di name="valve_opened" mode="PHIS" setup="" description="4003">
+						<io_link module="1" channel="0"/>
+						<keypad>0</keypad>
+					</di>
+					<di name="valve_closed" mode="PHIS" setup="" description="4003">
+						<io_link module="1" channel="0"/>
+						<keypad>0</keypad>
+					</di>
+					<do name="valve_open" mode="PHIS" setup="" description="4003">
+						<io_link module="1" channel="8"/>
+						<keypad>0</keypad>
+					</do>
+					<do name="valve_close" mode="PHIS" setup="" description="4003">
+						<io_link module="1" channel="8"/>
+						<keypad>0</keypad>
+					</do>
+				</io>
 				<calculate>
+					<prove name="prove" setup="STABILIZATION | BOUNCE" description="">
+						<io_link module="3" />
+						<temperature><link alias="sikn_123.io.temp_tpu" /></temperature>
+						<pressure><link alias="sikn_123.io.pres_tpu" /></pressure>
+						<density><link alias="sikn_123.obj.stndenstemp:dens" /></density>
+						<valve>
+							<open><link alias="sikn_123.io.valve_open" /></open>
+							<close><link alias="sikn_123.io.valve_close" /></close>
+							<opened><link alias="sikn_123.io.valve_opened" /></opened>
+							<closed><link alias="sikn_123.io.valve_closed" /></closed>
+						</valve>
+					</prove>
 					<densitometer  name="Dens1" description="4022">
 						<period>     <link alias="sikn_123.bik.io.period1:period"/></period>
 						<temperature><link alias="SIKN_123.BIK.IO.Temp1"/></temperature>

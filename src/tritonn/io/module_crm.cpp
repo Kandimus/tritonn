@@ -76,6 +76,24 @@ std::unique_ptr<rIOBaseChannel> rModuleCRM::getChannel(USINT num)
 	return module_ptr;
 }
 
+LREAL rModuleCRM::getFreq() const
+{
+	return m_channelFI.getFreq();
+}
+
+UDINT rModuleCRM::getCounter() const
+{
+	return m_channelFI.getValue();
+}
+
+UINT rModuleCRM::getDetectors() const
+{
+	return ((m_channelDI[0].getValue() != 0) << Detector::Det1) |
+		   ((m_channelDI[1].getValue() != 0) << Detector::Det2) |
+		   ((m_channelDI[2].getValue() != 0) << Detector::Det3) |
+		   ((m_channelDI[3].getValue() != 0) << Detector::Det4);
+
+}
 
 UDINT rModuleCRM::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {

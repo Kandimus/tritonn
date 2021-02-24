@@ -46,38 +46,32 @@ rCounter::rCounter(const rStation* owner) : rSource(owner), m_setup(Setup::OFF)
 				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Включить устреднение частоты");
 	}
 
-	LockErr     = 0;
+	m_lockErr   = 0;
 	m_countPrev = 0;
 	m_tickPrev  = 0;
 
-	InitLink(rLink::Setup::OUTPUT, m_impulse, U_imp  , SID::IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_freq   , U_Hz   , SID::FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
-	InitLink(rLink::Setup::OUTPUT, m_period , U_mksec, SID::PERIOD   , XmlName::PERIOD , rLink::SHADOW_NONE);
-}
-
-
-rCounter::~rCounter()
-{
-	;
+	initLink(rLink::Setup::OUTPUT, m_impulse, U_imp  , SID::IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_freq   , U_Hz   , SID::FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_period , U_mksec, SID::PERIOD   , XmlName::PERIOD , rLink::SHADOW_NONE);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::InitLimitEvent(rLink &link)
+UDINT rCounter::initLimitEvent(rLink &link)
 {
-	link.Limit.EventChangeAMin  = ReinitEvent(EID_COUNTER_NEW_AMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMin  = ReinitEvent(EID_COUNTER_NEW_WMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMax  = ReinitEvent(EID_COUNTER_NEW_WMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeAMax  = ReinitEvent(EID_COUNTER_NEW_AMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeHyst  = ReinitEvent(EID_COUNTER_NEW_HYST)  << link.Descr << link.Unit;
-	link.Limit.EventChangeSetup = ReinitEvent(EID_COUNTER_NEW_SETUP) << link.Descr << link.Unit;
-	link.Limit.EventAMin        = ReinitEvent(EID_COUNTER_AMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMin        = ReinitEvent(EID_COUNTER_WMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMax        = ReinitEvent(EID_COUNTER_WMAX)      << link.Descr << link.Unit;
-	link.Limit.EventAMax        = ReinitEvent(EID_COUNTER_AMAX)      << link.Descr << link.Unit;
-	link.Limit.EventNan         = ReinitEvent(EID_COUNTER_NAN)       << link.Descr << link.Unit;
-	link.Limit.EventNormal      = ReinitEvent(EID_COUNTER_NORMAL)    << link.Descr << link.Unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_COUNTER_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_COUNTER_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_COUNTER_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_COUNTER_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_COUNTER_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_COUNTER_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_COUNTER_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_COUNTER_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_COUNTER_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_COUNTER_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_COUNTER_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_COUNTER_NORMAL)    << link.m_descr << link.m_unit;
 
 	return 0;
 }
@@ -85,50 +79,53 @@ UDINT rCounter::InitLimitEvent(rLink &link)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::Calculate()
+UDINT rCounter::calculate()
 {
-	rEvent event_fault;
-	rEvent event_success;
+	rEvent event_f;
+	rEvent event_s;
 	
-	if(rSource::Calculate()) return 0;
+	if (rSource::calculate()) {
+		return TRITONN_RESULT_OK;
+	}
 
 	// Если сигнал выключен, то выходим
-	if(m_setup.Value & Setup::OFF)
-	{
+	if (m_setup.Value & Setup::OFF) {
 		//lStatusCh = OFAISTATUSCH_OK;		
-		m_count         = 0;
-		m_isInit        = false;
-		m_freq.Value    = 0.0;
-		m_period.Value  = 0.0;
-		m_impulse.Value = 0.0;
+		m_count           = 0;
+		m_isInit          = false;
+		m_freq.m_value    = 0.0;
+		m_period.m_value  = 0.0;
+		m_impulse.m_value = 0.0;
 
 		m_averageFreq.clear();
 
-		PostCalculate();
+		postCalculate();
 
 		return TRITONN_RESULT_OK;
 	}
 
-	Fault = false;
+	m_fault = false;
 
 	if(isSetModule()) {
 		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
 		auto channel     = static_cast<rIOFIChannel*>(channel_ptr.get());
 
 		if (channel == nullptr) {
-			rEventManager::instance().Add(ReinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
+			rEventManager::instance().Add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		CheckExpr(channel->m_state, FI_LE_CODE_FAULT, event_fault.Reinit(EID_COUNTER_CH_FAULT) << ID << Descr, event_success.Reinit(EID_COUNTER_CH_OK) << ID << Descr);
+		checkExpr(channel->m_state, FI_LE_CODE_FAULT,
+				  event_f.Reinit(EID_COUNTER_CH_FAULT) << m_ID << m_descr,
+				  event_s.Reinit(EID_COUNTER_CH_OK)    << m_ID << m_descr);
 
-		Fault = channel->m_state;
+		m_fault = channel->m_state;
 
 		if (channel->m_state) {
-			m_period.Value  = std::numeric_limits<LREAL>::quiet_NaN();
-			m_freq.Value    = std::numeric_limits<LREAL>::quiet_NaN();
-			m_impulse.Value = std::numeric_limits<LREAL>::quiet_NaN();
+			m_period.m_value  = std::numeric_limits<LREAL>::quiet_NaN();
+			m_freq.m_value    = std::numeric_limits<LREAL>::quiet_NaN();
+			m_impulse.m_value = std::numeric_limits<LREAL>::quiet_NaN();
 
 		} else {
 			UDINT count = channel->getValue();
@@ -136,23 +133,23 @@ UDINT rCounter::Calculate()
 			UDINT tick  = rTickCount::SysTick();
 
 			if (!m_isInit) {
-				m_impulse.Value = 0;
-				m_freq.Value    = 0.0;
-				m_period.Value  = 0.0;
-				m_countPrev = count;
-				m_tickPrev  = tick;
-				m_isInit    = true;
+				m_impulse.m_value = 0;
+				m_freq.m_value    = 0.0;
+				m_period.m_value  = 0.0;
+				m_countPrev       = count;
+				m_tickPrev        = tick;
+				m_isInit          = true;
 			} else {
 				if (m_pullingCount != channel->getPullingCount()) {
-					m_impulse.Value = count - m_countPrev;
-					m_freq.Value    = freq;
-					m_period.Value  = getPeriod();
-					m_countPrev     = count;
-					m_tickPrev      = tick;
-					m_pullingCount  = channel->getPullingCount();
+					m_impulse.m_value = count - m_countPrev;
+					m_freq.m_value    = freq;
+					m_period.m_value  = getPeriod();
+					m_countPrev       = count;
+					m_tickPrev        = tick;
+					m_pullingCount    = channel->getPullingCount();
 
 					if (m_setup.Value & Setup::AVERAGE) {
-						m_averageFreq.push_back(m_freq.Value);
+						m_averageFreq.push_back(m_freq.m_value);
 
 						while (m_averageFreq.size() > AVERAGE_MAX) {
 							m_averageFreq.pop_front();
@@ -162,15 +159,15 @@ UDINT rCounter::Calculate()
 						for (auto value : m_averageFreq) {
 							average += value;
 						}
-						m_freq.Value   = average / AVERAGE_MAX;
-						m_period.Value = getPeriod();
+						m_freq.m_value   = average / AVERAGE_MAX;
+						m_period.m_value = getPeriod();
 					}
 				}
 			}
 		}
 	}
 
-	PostCalculate();
+	postCalculate();
 	
 	return TRITONN_RESULT_OK;
 }
@@ -183,10 +180,10 @@ UDINT rCounter::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(Alias + ".count"   , TYPE_UINT , rVariable::Flags::R_H_, &m_count      , U_DIMLESS, 0);
-	list.add(Alias + ".setup"   , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value, U_DIMLESS, ACCESS_SA);
+	list.add(m_alias + ".count", TYPE_UINT , rVariable::Flags::R_H_, &m_count      , U_DIMLESS, 0);
+	list.add(m_alias + ".setup", TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value, U_DIMLESS, ACCESS_SA);
 
-	list.add(Alias + ".fault"   , TYPE_UDINT, rVariable::Flags::R___, &Fault        , U_DIMLESS, 0);
+	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R___, &m_fault      , U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }
@@ -194,11 +191,11 @@ UDINT rCounter::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCounter::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rCounter::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
 
-	if (TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.getError();
 	}
 
@@ -221,7 +218,7 @@ UDINT rCounter::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 		return err.set(DATACFGERR_FI, element->GetLineNum(), "setup fault");
 	}
 
-	ReinitLimitEvents();
+	reinitLimitEvents();
 
 	return TRITONN_RESULT_OK;
 }
@@ -229,14 +226,14 @@ UDINT rCounter::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 
 std::string rCounter::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
 {
-	m_impulse.Limit.m_setup.Init(rLimit::Setup::NONE);
-	m_freq.Limit.m_setup.Init(rLimit::Setup::NONE);
-	m_period.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_impulse.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_freq.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_period.m_limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
 
 LREAL rCounter::getPeriod()
 {
-	return m_freq.Value > 0.1 ? 1000000.0 / m_freq.Value : 0.0;
+	return m_freq.m_value > 0.1 ? 1000000.0 / m_freq.m_value : 0.0;
 }

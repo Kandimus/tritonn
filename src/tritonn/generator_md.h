@@ -35,6 +35,8 @@ public:
 		LREAL_VAL,
 	};
 
+
+
 	class rItem
 	{
 		struct rProperty
@@ -57,12 +59,14 @@ public:
 		rItem& addXml(const std::string& xmlname, const std::string& defval, bool isoptional = false, const std::string& prefix = "");
 		rItem& addXml(const std::string& xmlname, UDINT defval, bool isoptional = false, const std::string& prefix = "");
 		rItem& addXml(const std::string& xmlname, LREAL defval, bool isoptional = false, const std::string& prefix = "");
+		rItem& addLink(const std::string& xmlname, bool isoptional = false, const std::string& prefix = "");
 
 		std::string getName() const { return m_name; }
 		std::string save();
 
 	public:
 		static const char* XML_OPTIONAL;
+		static const char* XML_LINK;
 
 	protected:
 		rSource*    m_source;

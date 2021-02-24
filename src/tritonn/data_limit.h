@@ -24,7 +24,7 @@ class rVariableList;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rLimit //: public rSource
+class rLimit
 {
 public:
 	enum Setup
@@ -48,20 +48,18 @@ public:
 		HIHI,       // Значение выше аварийного максимума
 	};
 
-	const UINT   LIMIT_STATUS_MASK         = 0x00FF;     // Маска для извлечения статуса пределов
+	const UINT LIMIT_STATUS_MASK = 0x00FF;     // Маска для извлечения статуса пределов
 
 	rLimit();
-	virtual ~rLimit();
+	virtual ~rLimit() = default;
 
 public:
-	virtual UDINT LoadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list, const string &owner_name, STRID owner_unit);
-
-public:
-	virtual UINT Calculate(LREAL val, UDINT check);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
+	virtual UDINT generateVars(rVariableList& list, const std::string& owner_name, STRID owner_unit);
+	virtual UINT  calculate(LREAL val, UDINT check);
 
 protected:
-	void SendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend);
+	void sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend);
 
 public:
 	rCmpLREAL m_lolo;

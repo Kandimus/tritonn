@@ -28,15 +28,26 @@ class rError;
 class rDataModule
 {
 public:
-	rDataModule();
-	virtual ~rDataModule();
+	const USINT FAULT = 0xFF;
 
-	bool  isSetModule() const;
+	rDataModule();
+	rDataModule(bool nochannel);
+	virtual ~rDataModule() = default;
+
 	UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
-	
+
 public:
-	USINT m_module;
-	USINT m_channel;
+	bool        isSetModule() const;
+	USINT       getModule()   const { return m_module; }
+	USINT       getChannel()  const { return m_channel; }
+	std::string getAlias() const;
+	
+protected:
+	USINT m_module  = FAULT;
+	USINT m_channel = FAULT;
+
+private:
+	bool  m_nochannel = false;
 };
 
 

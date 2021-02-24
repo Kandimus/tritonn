@@ -119,10 +119,11 @@ void rThreadMaster::closeAll()
 rThreadStatus rThreadMaster::Proccesing()
 {
 	rTickCount savetimer;
-	rTickCount *notruntimer = new rTickCount(); // Таймер, для нитей, которые запускаются через TMF_NOTRUN
+//	rTickCount *notruntimer = new rTickCount(); // Таймер, для нитей, которые запускаются через TMF_NOTRUN
+	rTickCount notruntimer;
 
-	savetimer.Reset();
-	notruntimer->Reset();
+	savetimer.start(5 * 60 * 1000);
+	notruntimer.start(10 * 1000);
 
 	while(true)
 	{
@@ -150,23 +151,19 @@ rThreadStatus rThreadMaster::Proccesing()
 			}
 
 			// Снятие флага TMF_NOTRUN
-			if(notruntimer)
+			if(notruntimer.isFinished())
 			{
-				if(notruntimer->GetCount() >= 10 * 1000)
-				{
-					item->m_flags &= ~TMF_NOTRUN;
-					delete notruntimer;
-					notruntimer = nullptr;
-				}
+				item->m_flags &= ~TMF_NOTRUN;
+				notruntimer.stop();
 			}
 
 			calcThreadTimeInfo(item);
 		}
 
-		if(savetimer.GetCount() >= 5 * 60 * 1000)
+		if(savetimer.isFinished())
 		{
 			saveAllTimerInfo();
-			savetimer.Reset();
+			savetimer.reset();
 		}
 
 		m_curSysInfo.calculate();

@@ -27,68 +27,52 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rRVar::rRVar() : rSource(), Setup(0)
+rRVar::rRVar() : rSource(), m_setup(0)
 {
 	if (m_flagSetup.empty()) {
 		m_flagSetup
 				.add("CONST", VAR_SETUP_CONST);
 	}
 
-	InitLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, Value, U_any, SID::VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
-}
-
-
-rRVar::~rRVar()
-{
-	;
+	initLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, m_value, U_any, SID::VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rRVar::InitLimitEvent(rLink &link)
+UDINT rRVar::initLimitEvent(rLink& link)
 {
-	link.Limit.EventChangeAMin  = ReinitEvent(EID_VAR_NEW_AMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMin  = ReinitEvent(EID_VAR_NEW_WMIN)  << link.Descr << link.Unit;
-	link.Limit.EventChangeWMax  = ReinitEvent(EID_VAR_NEW_WMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeAMax  = ReinitEvent(EID_VAR_NEW_AMAX)  << link.Descr << link.Unit;
-	link.Limit.EventChangeHyst  = ReinitEvent(EID_VAR_NEW_HYST)  << link.Descr << link.Unit;
-	link.Limit.EventChangeSetup = ReinitEvent(EID_VAR_NEW_SETUP) << link.Descr << link.Unit;
-	link.Limit.EventAMin        = ReinitEvent(EID_VAR_AMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMin        = ReinitEvent(EID_VAR_WMIN)      << link.Descr << link.Unit;
-	link.Limit.EventWMax        = ReinitEvent(EID_VAR_WMAX)      << link.Descr << link.Unit;
-	link.Limit.EventAMax        = ReinitEvent(EID_VAR_AMAX)      << link.Descr << link.Unit;
-	link.Limit.EventNan         = ReinitEvent(EID_VAR_NAN)       << link.Descr << link.Unit;
-	link.Limit.EventNormal      = ReinitEvent(EID_VAR_NORMAL)    << link.Descr << link.Unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_VAR_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_VAR_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_VAR_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_VAR_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_VAR_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_VAR_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_VAR_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_VAR_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_VAR_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_VAR_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_VAR_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_VAR_NORMAL)    << link.m_descr << link.m_unit;
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rRVar::Calculate()
+UDINT rRVar::calculate()
 {
-	if(rSource::Calculate()) return 0;
+	if (rSource::calculate()) {
+		return TRITONN_RESULT_OK;
+	}
 
 	//----------------------------------------------------------------------------------------------
 	// Обрабатываем Limits для выходных значений
-	PostCalculate();
+	postCalculate();
 		
-	return 0;
+	return TRITONN_RESULT_OK;
 }
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -102,11 +86,11 @@ UDINT rRVar::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rRVar::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, "");
 
-	if(TRITONN_RESULT_OK != rSource::LoadFromXML(element, err, prefix)) {
+	if(TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.getError();
 	}
 
@@ -118,29 +102,29 @@ UDINT rRVar::LoadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	}
 
 	UDINT fault = 0;
-	Setup = m_flagSetup.getValue(strSetup, fault);
+	m_setup = m_flagSetup.getValue(strSetup, fault);
 
-	Value.Value = XmlUtils::getTextLREAL(xml_value, 0.0  , fault);
-	Value.Unit  = XmlUtils::getTextUDINT(xml_unit , U_any, fault);
+	m_value.m_value = XmlUtils::getTextLREAL(xml_value, 0.0  , fault);
+	m_value.m_unit  = XmlUtils::getTextUDINT(xml_unit , U_any, fault);
 
 	if (fault) {
 		return err.set(DATACFGERR_VAR, element->GetLineNum(), "");
 	}
 
 	// Если переменная константа, то снимаем флаг записи
-	if(Setup & VAR_SETUP_CONST) {
-		Value.m_setup &= ~rLink::Setup::WRITABLE;
+	if(m_setup & VAR_SETUP_CONST) {
+		m_value.m_setup &= ~rLink::Setup::WRITABLE;
 	}
 
-	ReinitLimitEvents();
+	reinitLimitEvents();
 
 	return TRITONN_RESULT_OK;
 }
 
 
-std::string rRVar::saveKernel(UDINT isio, const std::string &objname, const std::string &comment, UDINT isglobal)
+std::string rRVar::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
 {
-	Value.Limit.m_setup.Init(rLimit::Setup::NONE);
+	m_value.m_limit.m_setup.Init(rLimit::Setup::NONE);
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }
