@@ -255,7 +255,7 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataConfig::loadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *owner, const std::string& prefix)
+UDINT rDataConfig::loadIO(tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix)
 {
 	tinyxml2::XMLElement* xml_io = root->FirstChildElement(XmlName::IO);
 	rSource*    source = nullptr;
@@ -272,8 +272,15 @@ UDINT rDataConfig::loadIO(tinyxml2::XMLElement *root, cJSON *jroot, rStation *ow
 		source = nullptr;
 
 		//TODO реализовать как в модулях IO
-		if (XmlName::AI == name) { if(SysVar->Max.m_ai >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      source->m_ID = SysVar->Max.m_ai++; }
-		if (XmlName::FI == name) { if(SysVar->Max.m_fi >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); source->m_ID = SysVar->Max.m_fi++; }
+		if (XmlName::AI == name) {
+			if(SysVar->Max.m_ai >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0);
+			source = dynamic_cast<rSource*>(new rAI(owner));
+			source->m_ID = SysVar->Max.m_ai++;
+		} else if (XmlName::FI == name) {
+			if(SysVar->Max.m_fi >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0);
+			source = dynamic_cast<rSource*>(new rCounter(owner));
+			source->m_ID = SysVar->Max.m_fi++;
+		}
 		if (XmlName::DI == name) { if(SysVar->Max.m_di >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      source->m_ID = SysVar->Max.m_di++; }
 		if (XmlName::DO == name) { if(SysVar->Max.m_do >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      source->m_ID = SysVar->Max.m_do++; }
 
@@ -377,7 +384,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 		cJSON_AddItemToObject(jstn, XmlName::DESC   , cJSON_CreateNumber(stn->m_descr));
 		cJSON_AddItemToObject(jstn, XmlName::STREAMS, jstr);
 		cJSON_AddItemToObject(jstn, XmlName::CALC   , jobj);
-		cJSON_AddItemToObject(jitm, stn->RTTI()    , jstn);
+		cJSON_AddItemToObject(jitm, stn->RTTI()     , jstn);
 		cJSON_AddItemToArray (jroot, jitm);
 
 		if (TRITONN_RESULT_OK != loadIO(station_xml, CfgJSON_IO, stn, stn->m_alias + ".io")) {
@@ -795,12 +802,13 @@ UDINT rDataConfig::ResolveLinks(void)
 	for (auto link : ListLink) {
 		// Проходим все загруженные объекты
 		for (auto src : *ListSource) {
+			volatile std::string src_alias  = src->m_alias;
+			volatile std::string link_alias = link->m_alias;
+
 			if (!strcasecmp(link->m_alias.c_str(), src->m_alias.c_str())) {
-//				std::string aa = src->Alias;
 //				if ("sikn1.line1.io.counter" == aa) {
 //					aa = aa + "@";
 //				}
-				// Проверка на наличие требуемого параметра
 				if (link->m_param.size()) {
 					if (src->checkOutput(link->m_param)) {
 						src->checkOutput(link->m_param);

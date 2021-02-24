@@ -432,69 +432,69 @@ enum rTritonn_Error
 	DATACFGERR_STATION,
 	DATACFGERR_STATION_UNITS,               // 114
 	DATACFGERR_STATION_WRONGSTREAM,         //
-	DATACFGERR_STREAMS,                     // 118
+	DATACFGERR_STREAMS,                     // 116
 	DATACFGERR_STREAMSNF,                   //
-	DATACFGERR_STREAM,                      // 120
+	DATACFGERR_STREAM,                      // 118
 	DATACFGERR_STREAM_NOSTN,                //
-	DATACFGERR_STREAM_TOMANYPOINTS,         // 122
+	DATACFGERR_STREAM_TOMANYPOINTS,         // 120
 	DATACFGERR_STREAM_FACTORS,              //
-	DATACFGERR_STREAM_NOFREQCHANNEL,        // 124
+	DATACFGERR_STREAM_NOFREQCHANNEL,        // 122
 	DATACFGERR_DENSSOL,                     //
-	DATACFGERR_DENSSOL_NOSTN,               // 126
+	DATACFGERR_DENSSOL_NOSTN,               // 124
 	DATACFGERR_SELECTOR,                    //
-	DATACFGERR_REDUCEDDENS,                 // 128
+	DATACFGERR_REDUCEDDENS,                 // 126
 	DATACFGERR_RESOLVELINK,                 //
-	DATACFGERR_CHECKLINK,                   // 130
+	DATACFGERR_CHECKLINK,                   // 128
 	DATACFGERR_MAX_AI,                      //
-	DATACFGERR_MAX_AO,                      // 132
+	DATACFGERR_MAX_AO,                      // 130
 	DATACFGERR_MAX_FI,                      //
-	DATACFGERR_MAX_DI,                      // 134
+	DATACFGERR_MAX_DI,                      // 132
 	DATACFGERR_MAX_DO,                      //
-	DATACFGERR_MAX_DENSSOL,                 // 136
+	DATACFGERR_MAX_DENSSOL,                 // 134
 	DATACFGERR_MAX_RDCDENS,                 //
-	DATACFGERR_MAX_SELECTOR,                // 138
+	DATACFGERR_MAX_SELECTOR,                // 136
 	DATACFGERR_MAX_STREAM,                  //
-	DATACFGERR_MAX_STATION,                 // 140
+	DATACFGERR_MAX_STATION,                 // 138
 	DATACFGERR_MAX_SAMPLER,                 //
-	DATACFGERR_MAX_PROVE,                   // 142
+	DATACFGERR_MAX_PROVE,                   // 140
 	DATACFGERR_LIMIT,                       //
-	DATACFGERR_REPORT,                      // 144
+	DATACFGERR_REPORT,                      // 142
 	DATACFGERR_NOREPORTS,                   //
-	DATACFGERR_RESOLVETOTAL,                // 146
+	DATACFGERR_RESOLVETOTAL,                // 144
 	DATACFGERR_VAR,                         //
-	DATACFGERR_USERS_NF,                    // 148     Not Found Template BLOCKS
+	DATACFGERR_USERS_NF,                    // 146     Not Found Template BLOCKS
 	DATACFGERR_INTERNAL,                    //
-	DATACFGERR_USERS_PARSE,                 // 150
+	DATACFGERR_USERS_PARSE,                 // 148
 	DATACFGERR_INTERFACES_NF_TBLOKS,        //
-	DATACFGERR_INTERFACES_NF_BLOCKS,        // 152
+	DATACFGERR_INTERFACES_NF_BLOCKS,        // 150
 	DATACFGERR_INTERFACES_BADADDR,          //
-	DATACFGERR_INTERFACES_BADBLOCK,         // 154
+	DATACFGERR_INTERFACES_BADBLOCK,         // 152
 	DATACFGERR_INTERFACES_BADVAR,           //
-	DATACFGERR_INTERFACES_NF_VAR,           // 156
+	DATACFGERR_INTERFACES_NF_VAR,           // 154
 	DATACFGERR_INTERFACES_ADDROVERFLOW,     //
-	DATACFGERR_INCORRECT_IP,                // 158
+	DATACFGERR_INCORRECT_IP,                // 156
 	DATACFGERR_SECURITY_PARSE,              //
-	DATACFGERR_SECURITY_DESCRYPT,           // 160
+	DATACFGERR_SECURITY_DESCRYPT,           // 158
 	DATACFGERR_SECURITY_NF,                 //
-	DATACFGERR_OPCUA_USER_NF,               // 162
+	DATACFGERR_OPCUA_USER_NF,               // 160
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 164
+	DATACFGERR_OPCUA_VAR_NF,                // 162
 	DATACFGERR_UNKNOWN_MODULE,              //
-	DATACFGERR_IO_CHANNEL,                  // 166
+	DATACFGERR_IO_CHANNEL,                  // 164
 	DATACFGERR_INVALID_NAME,                //
-	DATACFGERR_INVALID_MODULELINK,          // 168
+	DATACFGERR_INVALID_MODULELINK,          // 166
 	DATACFGERR_REALTIME_MODULELINK,         //
-	DATACFGERR_NOTSYSTEXTFILE,              // 170
+	DATACFGERR_NOTSYSTEXTFILE,              // 168
 	DATACFGERR_INTERFACES_BADNAME,          //
-	DATACFGERR_DI,                          // 172
+	DATACFGERR_DI,                          // 170
 	DATACFGERR_DO,                          //
-	DATACFGERR_SAMPLER_TOTALS,              // 174
+	DATACFGERR_SAMPLER_TOTALS,              // 172
 	DATACFGERR_SAMPLER_CAN,                 //
-	DATACFGERR_SAMPLER_METHOD,              // 176
+	DATACFGERR_SAMPLER_METHOD,              // 174
 	DATACFGERR_SAMPLER_SETUP,               //
-	DATACFGERR_SAMPLER_RESERVE,             // 178
+	DATACFGERR_SAMPLER_RESERVE,             // 176
 	DATACFGERR_SAMPLER_RESERVE_NF,          //
-	DATACFGERR_OBJECT_UNITS,                // 180
+	DATACFGERR_OBJECT_UNITS,                // 178
 	DATACFGERR_PORVE_MISSINGMODULE,         //
 
 

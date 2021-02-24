@@ -32,6 +32,7 @@
 #include "../io/manager.h"
 #include "../io/module_crm.h"
 #include "../xml_util.h"
+#include "../generator_md.h"
 #include "prove.h"
 
 rBitsArray rProve::m_flagsSetup;
@@ -43,23 +44,23 @@ rProve::rProve(const rStation* owner)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("NONE"         , static_cast<UINT>(Setup::NONE))
-				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY))
-				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION))
-				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE))
-				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR))
-				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE))
-				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE));
+				.add("NONE"         , static_cast<UINT>(Setup::NONE), "Не использовать флаги настройки")
+				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY), "ПУ использует четырех ходовой кран")
+				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION), "Перед измерением проверять параметры на стабильность")
+				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE), "ПУ ручным краном")
+				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR), "Используется один детектор")
+				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE), "Фильтрация дребезга детекторов")
+				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE), "Симуляция крана");
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE, "Температура в ПУ");
+	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE, "Давление в ПУ");
+	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE, "Плотность в ПУ");
+	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE, "Сигнал кран открыт");
+	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE, "Сигнал кран закрыт");
+	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE, "Команда на открытие крана");
+	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE, "Команда на закрытие крана");
 }
 
 
@@ -686,13 +687,26 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 		return err.set(DATACFGERR_PORVE_MISSINGMODULE, element->GetLineNum());
 	}
 
-	auto xml_temp = element->FirstChildElement(XmlName::TEMP);
-	auto xml_pres = element->FirstChildElement(XmlName::PRES);
-	auto xml_dens = element->FirstChildElement(XmlName::DENSITY);
+	auto xml_temp  = element->FirstChildElement(XmlName::TEMP);
+	auto xml_pres  = element->FirstChildElement(XmlName::PRES);
+	auto xml_dens  = element->FirstChildElement(XmlName::DENSITY);
+	auto xml_valve = element->FirstChildElement(XmlName::VALVE);
 
 	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
-	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
-	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
+	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_pres)) return err.getError();
+	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_dens)) return err.getError();
+
+	if (xml_valve) {
+		auto xml_open   = xml_valve->FirstChildElement(XmlName::OPEN);
+		auto xml_close  = xml_valve->FirstChildElement(XmlName::CLOSE);
+		auto xml_opened = xml_valve->FirstChildElement(XmlName::OPENED);
+		auto xml_closed = xml_valve->FirstChildElement(XmlName::CLOSED);
+
+		if (xml_open  ) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_open->FirstChildElement  (XmlName::LINK), m_open))   return err.getError();
+		if (xml_close ) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_close->FirstChildElement (XmlName::LINK), m_close))  return err.getError();
+		if (xml_opened) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_opened->FirstChildElement(XmlName::LINK), m_opened)) return err.getError();
+		if (xml_closed) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_closed->FirstChildElement(XmlName::LINK), m_closed)) return err.getError();
+	}
 
 	reinitLimitEvents();
 
@@ -700,10 +714,30 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 }
 
 
-std::string rProve::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
+UDINT rProve::generateMarkDown(rGeneratorMD& md)
 {
+	m_temp.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_pres.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_dens.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_open.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_close.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_opened.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_closed.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
-	return rSource::saveKernel(isio, objname, comment, isglobal);
+	md.add(this, false)
+			.addProperty(XmlName::SETUP, &m_flagsSetup)
+			.addXml("<io_link module=\"3\"/>")
+			.addLink(XmlName::TEMP, true)
+			.addLink(XmlName::PRES, true)
+			.addLink(XmlName::DENSITY, true)
+			.addXml(String_format("<%s>", XmlName::VALVE))
+			.addLink(XmlName::OPEN  , false, "\t")
+			.addLink(XmlName::CLOSE , false, "\t")
+			.addLink(XmlName::OPENED, false, "\t")
+			.addLink(XmlName::CLOSED, false, "\t")
+			.addXml(String_format("</%s>", XmlName::VALVE));
+
+	return TRITONN_RESULT_OK;
 }
 
 void rProve::moduleStart()

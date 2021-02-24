@@ -202,6 +202,7 @@ const char UNITS[]         = "units";
 const char USER[]          = "user";
 const char USERS[]         = "users";
 const char VALUE[]         = "value";
+const char VALVE[]         = "valve";
 const char VARIABLE[]      = "variable";
 const char VARIABLES[]     = "variables";
 const char VARS[]          = "vars";

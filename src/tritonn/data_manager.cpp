@@ -39,6 +39,7 @@
 #include "data_report.h"
 #include "data_rvar.h"
 #include "data_sampler.h"
+#include "data/prove.h"
 #include "text_manager.h"
 #include "event_manager.h"
 #include "io/manager.h"
@@ -315,13 +316,15 @@ UDINT rDataManager::SetLang(const string &lang)
 UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
-	rSampler smp;
+	rSampler     smp;
 	rReducedDens rd;
-	rDensSol ds;
+	rDensSol     ds;
+	rProve       prove;
 
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);
+	prove.generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);
 

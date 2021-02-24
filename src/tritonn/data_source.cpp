@@ -247,7 +247,7 @@ UDINT rSource::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	m_lineNum = element->GetLineNum();
 
-	const char *strAlias = element->Attribute(XmlName::NAME);
+	auto strAlias = element->Attribute(XmlName::NAME);
 
 	//TODO Можно еще алиас проверить на валидность имени
 	if (!strAlias) {
@@ -453,7 +453,7 @@ std::string rSource::getXmlInput() const
 
 	if (m_inputs.size()) {
 		for (auto link : m_inputs) {
-			result += "\t<" + link->m_ioName + "><link alias=\"object's output\"/></" + link->m_ioName + ">";
+			result += "\t<" + link->m_ioName + ">" + rGeneratorMD::rItem::XML_LINK + "</" + link->m_ioName + ">";
 
 			if (link->m_shadow.size()) {
 				result += "<!-- Optional -->";
