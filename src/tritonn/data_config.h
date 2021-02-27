@@ -66,11 +66,13 @@ public:
 	UDINT LoadFile(const std::string& filename, rSystemVariable& sysvar, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);
 
 protected:
-	cJSON                *CfgJSON;
-	cJSON                *CfgJSON_IO;
-	cJSON                *CfgJSON_OBJ;
-	cJSON                *CfgJSON_VAR;
-	cJSON                *CfgJSON_USR;
+	cJSON* m_json     = nullptr;
+	cJSON* m_json_io  = nullptr;
+	cJSON* m_json_obj = nullptr;
+	cJSON* m_json_var = nullptr;
+	cJSON* m_json_usr = nullptr;
+	cJSON* m_json_hdw = nullptr;
+
 	tinyxml2::XMLElement* XMLRootSecurity;
 	rSystemVariable*      SysVar;
 	std::vector<rSource*>    *ListSource;
@@ -80,7 +82,7 @@ protected:
 	std::vector<rLinkTotal>   m_listTotals;
 
 	UDINT LoadSecurity  (tinyxml2::XMLElement* root, tinyxml2::XMLDocument& doc_security);
-	UDINT LoadHardware  (tinyxml2::XMLElement* root);
+	UDINT loadHardware  (tinyxml2::XMLElement* root);
 	UDINT LoadConfig    (tinyxml2::XMLElement* root);
 	UDINT LoadStation   (tinyxml2::XMLElement* root, cJSON* jroot);
 	UDINT loadStream    (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
@@ -100,14 +102,13 @@ protected:
 	UDINT ResolveLinks(void);
 	UDINT ResolveReports(void);
 
-	void  SaveWeb();
+	void  saveWeb();
 
 public:
 	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
 	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
 
 	const rSource* getSource(const std::string& alias);
-
 
 	tinyxml2::XMLElement* GetRootSecurity();
 };

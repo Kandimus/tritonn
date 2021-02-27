@@ -20,6 +20,7 @@
 #include "../variable_list.h"
 #include "../units.h"
 #include "../error.h"
+//#include "../generator_md.h"
 
 
 rIOBaseModule::rIOBaseModule()
@@ -42,6 +43,16 @@ UDINT rIOBaseModule::processing(USINT issim)
 std::string rIOBaseModule::getAlias() const
 {
 	return m_alias;
+}
+
+std::string rIOBaseModule::getName() const
+{
+	return m_name;
+}
+
+STRID rIOBaseModule::getDescr() const
+{
+	return m_descr;
 }
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
@@ -68,7 +79,8 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 
 UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	m_name = XmlUtils::getAttributeString(element, XmlName::NAME, "");
+	m_name  = XmlUtils::getAttributeString(element, XmlName::NAME, "");
+	m_descr = XmlUtils::getAttributeUDINT (element, XmlName::DESC, 0);
 
 	if (m_name.empty()) {
 		return err.set(DATACFGERR_INVALID_NAME, element->GetLineNum());
@@ -77,27 +89,55 @@ UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	return TRITONN_RESULT_OK;
 }
 
-std::string rIOBaseModule::saveKernel(const std::string& description)
+UDINT rIOBaseModule::generateMarkDown(rGeneratorMD& md) const
 {
-	std::string   result = "";
-	rVariableList list;
+	UNUSED(md)
+	return TRITONN_RESULT_OK;
+}
 
-	generateVars("", list, true);
 
-	result += String_format("<!--\n%s\n-->\n"
-							"<module name=\"%s\">\n", description.c_str(), getModuleType().c_str());
+std::string rIOBaseModule::getMarkDown()
+{
+	std::string result = "";
 
-	result += "\t<values>\n";
+	result += "\n## Channels\n";
+	result += "Number | Unit | Unit ID | Limits | Shadow | Comment\n";
+	result += ":-- |:--:|:--:|:--:|:--:|:--\n";
 
-	for (auto var : list) {
-		if (var->isHide()) {
-			continue;
+		for (auto link : m_inputs) {
+			std::string strunit = "";
+
+			rTextManager::instance().Get(link->m_unit, strunit);
+
+			result += link->m_ioName + " | ";
+			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
+			result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
+			result += link->m_shadow + " | ";
+			result += link->m_comment + "\n";
 		}
-
-		result += var->saveKernel(1, "\t\t");
 	}
-	result += "\t</values>\n"
-			  "</module>\n";
+
+	result += "\n## Outputs\n";
+	result += "Output | Unit | Unit ID | Limits | Comment\n";
+	result += ":-- |:--:|:--:|:--:|:--\n";
+	for (auto link : m_outputs) {
+		std::string strunit = "";
+
+		rTextManager::instance().Get(link->m_unit, strunit);
+
+		result += link->m_ioName + " | ";
+		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
+
+		result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
+		result += link->m_comment + "\n";
+	}
+
+	rVariableList list;
+	generateVars(list);
+
+	result += "\n## Variable\n";
+	result += list.getMarkDown();
+	result += "\n";
 
 	return result;
 }

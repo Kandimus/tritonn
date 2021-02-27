@@ -115,41 +115,29 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 }
 
 
-UDINT rIOManager::LoadFromXML(tinyxml2::XMLElement* element, rError& err)
+rIOBaseModule* rIOManager::addModule(const std::string& type)
 {
-	XML_FOR(module_xml, element, XmlName::MODULE) {
-		rIOBaseModule* module = nullptr;
-		std::string    type   = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
+	rIOBaseModule* module = nullptr;
 
-		if (type == "") {
-			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
-		}
+	if (type == rModuleAI6::getRTTI()) {
+		module = dynamic_cast<rIOBaseModule*>(new rModuleAI6());
 
-		type = String_tolower(type);
-		if (type == rModuleAI6::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6());
+	} else if (type == rModuleDI8DO8::getRTTI()) {
+		module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
 
-		} else if (type == rModuleDI8DO8::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
+	} else if (type == rModuleFI4::getRTTI()) {
+		module = dynamic_cast<rIOBaseModule*>(new rModuleFI4());
 
-		} else if (type == rModuleFI4::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4());
+	} else if (type == rModuleCRM::getRTTI()) {
+		module = dynamic_cast<rIOBaseModule*>(new rModuleCRM());
 
-		} else if (type == rModuleCRM::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM());
-
-		} else {
-			return err.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
-		}
-
-		if (module->loadFromXML(module_xml, err) != TRITONN_RESULT_OK) {
-			return err.getError();
-		}
-
-		m_modules.push_back(module);
+	} else {
+		return nullptr;
 	}
 
-	return TRITONN_RESULT_OK;
+	m_modules.push_back(module);
+
+	return module;
 }
 
 std::string rIOManager::saveKernel()

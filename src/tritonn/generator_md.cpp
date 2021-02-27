@@ -17,6 +17,7 @@
 #include "data_source.h"
 #include "bits_array.h"
 #include "simplefile.h"
+#include "io/basemodule.h"
 
 const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
 const char* rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
@@ -33,6 +34,13 @@ rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput)
 {
 	m_items.push_back(rItem(source, isstdinput));
 
+
+	return m_items.back();
+}
+
+rGeneratorMD::rItem& rGeneratorMD::add(rIOBaseModule* module)
+{
+	m_items.push_back(rItem(module));
 
 	return m_items.back();
 }
@@ -62,8 +70,18 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 					   "<title>Tritonn help</title></head><body>"
 					   "<h1>Tritonn help</h1>\n";
 
+	text += "<br/><h3>Hardware</h3>\n";
 	for (auto& item : m_items) {
-		text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+		if (item.isModule()) {
+			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+		}
+	}
+
+	text += "<br/><h3>Source</h3>\n";
+	for (auto& item : m_items) {
+		if (!item.isModule()) {
+			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+		}
 	}
 
 	text += "</body></html>";
@@ -84,9 +102,10 @@ rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput)
 	m_isStdInput = isstdinput;
 }
 
-rGeneratorMD::rItem::~rItem()
+rGeneratorMD::rItem::rItem(rIOBaseModule* module)
 {
-	;
+	m_module = module;
+	m_name   = module->getName();
 }
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, const rBitsArray* bits)
@@ -150,8 +169,8 @@ std::string rGeneratorMD::rItem::save()
 {
 	std::string result = "";
 
-	result += String_format("# %s\n## XML\n````xml\n", m_source->RTTI());
-	result += String_format("<%s name=\"valid object name\" descr=\"string index\" ", m_source->RTTI());
+	result += "# " + m_name + "\n## XML\n````xml\n";
+	result += "<" + m_name + " name=\"valid object name\" descr=\"string index\" ";
 
 	for (auto& prop : m_properties) {
 		switch (prop.m_type) {
@@ -163,14 +182,16 @@ std::string rGeneratorMD::rItem::save()
 	}
 	result += ">\n";
 
-	if (m_isStdInput) {
-		result += m_source->getXmlInput();
+	if (m_source) {
+		if (m_isStdInput) {
+			result += m_source->getXmlInput();
+		}
 	}
 
 	for (auto& item : m_xml) {
 		result += "\t" + item + "\n";
 	}
-	result += String_format("</%s>\n````\n", m_source->RTTI());
+	result += "</" + m_name + ">\n````\n";
 
 	for (auto& item : m_properties) {
 		if (item.m_type == ItemType::BITSFLAG && item.m_bits) {
@@ -178,7 +199,7 @@ std::string rGeneratorMD::rItem::save()
 		}
 	}
 
-	result += m_source->getMarkDown();
+	result += isModule() ? m_module->getMarkDown() : m_source->getMarkDown();
 
 	return result;
 }

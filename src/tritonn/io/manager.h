@@ -31,6 +31,8 @@ class rError;
 //
 class rIOManager : public rThreadClass, public rVariableClass
 {
+	friend rDataConfig;
+
 	SINGLETON(rIOManager)
 
 public:
@@ -47,6 +49,8 @@ public:
 
 protected:
 	virtual rThreadStatus Proccesing();
+
+	rIOBaseModule* addModule(const std::string& type);
 
 private:
 	std::vector<rIOBaseModule*> m_modules; //
