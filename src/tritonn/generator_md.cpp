@@ -182,7 +182,7 @@ std::string rGeneratorMD::rItem::save()
 	}
 	result += ">\n";
 
-	if (m_source) {
+	if (!isModule()) {
 		if (m_isStdInput) {
 			result += m_source->getXmlInput();
 		}

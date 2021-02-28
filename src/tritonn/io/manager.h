@@ -26,6 +26,7 @@
 class rDataConfig;
 class rIOBaseChannel;
 class rError;
+class rGeneratorMD;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -41,7 +42,6 @@ public:
 public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
-	std::string saveKernel();
 
 	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);
 	std::unique_ptr<rIOBaseModule>  getModule(USINT module);

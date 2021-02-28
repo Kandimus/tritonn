@@ -40,3 +40,19 @@ UDINT rIOBaseChannel::generateVars(const std::string &name, rVariableList &list,
 	return TRITONN_RESULT_OK;
 }
 
+std::string rIOBaseChannel::getStrType() const
+{
+	switch(m_type) {
+		case Type::UNDEF: return "UNDEF";
+		case Type::AI:    return "AI";
+		case Type::DI:    return "DI";
+		case Type::DO:    return "DO";
+		case Type::FI:    return "FI";
+		default: return "ERROR";
+	}
+}
+
+rIOBaseChannel::Type rIOBaseChannel::getType() const
+{
+	return m_type;
+}

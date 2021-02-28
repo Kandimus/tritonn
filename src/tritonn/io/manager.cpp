@@ -139,29 +139,3 @@ rIOBaseModule* rIOManager::addModule(const std::string& type)
 
 	return module;
 }
-
-std::string rIOManager::saveKernel()
-{
-	std::string   result = "";
-	rVariableList list;
-	rModuleAI6    ai6;
-	rModuleDI8DO8 di8do8;
-	rModuleFI4    fi4;
-	rModuleCRM    crm;
-
-	ai6.generateVars   (IO::HARWARE_PREFIX, list, true);
-	di8do8.generateVars(IO::HARWARE_PREFIX, list, true);
-	fi4.generateVars   (IO::HARWARE_PREFIX, list, true);
-	crm.generateVars   (IO::HARWARE_PREFIX, list, true);
-
-	result += "\n<!--\n\tHardware io modules\n-->\n<hardware>\n";
-
-	result += ai6.saveKernel("Module 6 current/voltage channels");
-	result += di8do8.saveKernel("Module 8 discrete input and 8 discrete output");
-	result += fi4.saveKernel("Module 4 frequency input");
-	result += crm.saveKernel("Module prove");
-
-	result += "</hardware>\n";
-
-	return result;
-}

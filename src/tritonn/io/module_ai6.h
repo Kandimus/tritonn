@@ -35,7 +35,7 @@ public:
 	const UDINT CHANNEL_COUNT = 6;
 
 	rModuleAI6();
-	virtual ~rModuleAI6() = default;
+	virtual ~rModuleAI6();
 
 	static std::string getRTTI() { return "ai6"; }
 	
@@ -46,6 +46,7 @@ public:
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
 	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleAI6>(*this); }
 
 public:
@@ -55,7 +56,7 @@ public:
 	USINT getState(USINT id);
 
 private:
-	std::vector<rIOAIChannel> m_channel;
+	std::vector<rIOAIChannel*> m_channel;
 };
 
 

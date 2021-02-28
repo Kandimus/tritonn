@@ -37,7 +37,7 @@ public:
 	const UDINT CHANNEL_DO_COUNT = 8;
 
 	rModuleDI8DO8();
-	virtual ~rModuleDI8DO8() = default;
+	virtual ~rModuleDI8DO8();
 
 	static std::string getRTTI() { return "di8do8"; }
 	
@@ -56,8 +56,8 @@ public:
 
 private:
 	static rBitsArray m_flagsDOSetup;
-	std::vector<rIODIChannel> m_channelDI;
-	std::vector<rIODOChannel> m_channelDO;
+	std::vector<rIODIChannel*> m_channelDI;
+	std::vector<rIODOChannel*> m_channelDO;
 };
 
 

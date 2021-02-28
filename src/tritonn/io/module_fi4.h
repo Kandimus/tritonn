@@ -35,7 +35,7 @@ public:
 	const UDINT CHANNEL_COUNT = 4;
 
 	rModuleFI4();
-	virtual ~rModuleFI4() = default;
+	virtual ~rModuleFI4();
 
 	static std::string getRTTI() { return "fi4"; }
 	
@@ -53,7 +53,7 @@ public:
 	USINT getState(USINT id);
 
 private:
-	std::vector<rIOFIChannel> m_channel;
+	std::vector<rIOFIChannel*> m_channel;
 	USINT m_outtype = 0;
 };
 

@@ -28,8 +28,21 @@ class XMLElement;
 class rIOBaseChannel
 {
 public:
-	rIOBaseChannel(USINT index) : m_index(index) {}
+	enum Type
+	{
+		UNDEF = 0,
+		AI,
+		FI,
+		DI,
+		DO,
+	};
+
+
+	rIOBaseChannel(Type type, USINT index) : m_index(index), m_type(type) {}
 	virtual ~rIOBaseChannel() = default;
+
+	std::string getStrType() const;
+	Type        getType() const;
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) = 0;
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
@@ -38,11 +51,13 @@ public:
 	virtual UDINT getPullingCount();
 
 public:
-	USINT m_simType = 0;
-	USINT m_index   = 0xFF;
+	USINT       m_simType = 0;
+	USINT       m_index   = 0xFF;
+	std::string m_comment = "";
 
 protected:
 	UDINT m_pullingCount = 0;
+	Type  m_type = Type::UNDEF;
 };
 
 

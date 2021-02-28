@@ -17,6 +17,7 @@
 #include "data_manager.h"
 #include <string.h>
 #include "tritonn_version.h"
+#include "tickcount.h"
 #include "locker.h"
 #include "log_manager.h"
 #include "simplefile.h"
@@ -27,31 +28,13 @@
 #include "data_config.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
-#include "data_station.h"
-#include "data_stream.h"
-#include "data_selector.h"
-#include "data_denssol.h"
-#include "data_reduceddensity.h"
-#include "data_ai.h"
-#include "data_di.h"
-#include "data_do.h"
-#include "data_counter.h"
 #include "data_report.h"
-#include "data_rvar.h"
-#include "data_sampler.h"
-#include "data/prove.h"
+#include "data_interface.h"
 #include "text_manager.h"
 #include "event_manager.h"
 #include "io/manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
-
-//TODO Эти модули нужны только для SaveKernel, может их потом вынести в отдельный файл?
-#include "generator_md.h"
-#include "modbustcpslave_manager.h"
-#include "opcua_manager.h"
-
-#include "tickcount.h"
 
 
 extern rSafityValue<DINT> gReboot;
@@ -312,106 +295,6 @@ UDINT rDataManager::SetLang(const string &lang)
 
 	return 0;
 }
-
-UDINT rDataManager::saveMarkDown()
-{
-	rGeneratorMD md;
-	rSampler     smp;
-	rReducedDens rd;
-	rDensSol     ds;
-	rProve       prove;
-
-	rd.generateMarkDown(md);
-	smp.generateMarkDown(md);
-	ds.generateMarkDown(md);
-	prove.generateMarkDown(md);
-
-	md.save(DIR_MARKDOWN);
-
-	return TRITONN_RESULT_OK;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//TODO Переделать на SimpleFile
-UDINT rDataManager::SaveKernel()
-{
-	std::string text = "";
-	auto stn     = new rStation();
-	auto str     = new rStream(stn);
-	auto ssel    = new rSelector();
-	auto msel    = new rSelector();
-	auto denssol = new rDensSol();
-	auto rdcdens = new rReducedDens();
-	rAI ai;
-	rDI di;
-	rDO do_;
-	rCounter fi;
-	rSampler smp;
-	auto rep     = new rReport();
-	auto rvar    = new rRVar();
-	auto mbSlTCP = new rModbusTCPSlaveManager();
-//	auto opcua   = new rOPCUAManager();
-
-	ssel->generateIO();
-
-	msel->m_setup.Value |= SELECTOR_SETUP_MULTI;
-	msel->generateIO();
-
-	text += String_format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-						  "<kernel ver=\"%i.%i\" xmlns=\"http://tritonn.ru\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://tritonn.ru ./kernel.xsd\">\n",
-						  TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR);
-
-	text += m_sysVar.saveKernel();
-
-	text += rvar->saveKernel(false, "var", "Переменная", true);
-
-	text += "\n<!-- \n\tIO objects list \n-->\n<io_list>\n";
-	text += ai.saveKernel (true, "ai", "Аналоговый сигнал", true);
-	text += fi.saveKernel (true, "counter", "Частотно-импульсный сигнал", true);
-	text += di.saveKernel (true, "di", "Дискретный входной сигнал", true);
-	text += do_.saveKernel(true, "do", "Дискретный выходной сигнал", true);
-	text += "</io_list>\n";
-
-	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
-	text += smp.saveKernel(false, "sampler", "Пробоотборник", false);
-	text += denssol->saveKernel(false, "densitometer", "Плотномер (Солартрон)", false);
-	text += rdcdens->saveKernel(false, "reduceddens", "Приведение плотности", true);
-	text += ssel->saveKernel   (false, "selector", "Селектор", true);
-	text += msel->saveKernel   (false, "multiselector", "Мультиселектор", true);
-	text += stn->saveKernel    (false, "station", "Станция", true);
-	text += str->saveKernel    (false, "stream", "Линия", false);
-	rep->Type = REPORT_PERIODIC;
-	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
-	rep->Type = REPORT_BATCH;
-	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
-	text += "</objects>\n";
-
-	text += "\n<!-- \nExternal interfaces \n-->\n<interfaces>\n";
-	text += mbSlTCP->saveKernel("ModbusSlaveTCP", "Модбас слейв TCP");
-//	opcua->SaveKernel(file, "OPCUA", "OPC UA server");
-	text += "</interfaces>\n";
-
-	text += rIOManager::instance().saveKernel();
-
-	text += "\n</kernel>";
-
-	UDINT result = SimpleFileSave(DIR_FTP + "kernel.xml", text);
-
-//	delete opcua;
-	delete mbSlTCP;
-	delete rvar;
-	delete rep;
-	delete rdcdens;
-	delete denssol;
-	delete msel;
-	delete ssel;
-	delete str;
-	delete stn;
-
-	return result;
-}
-
 
 
 //-------------------------------------------------------------------------------------------------

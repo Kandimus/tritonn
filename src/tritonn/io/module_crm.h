@@ -45,7 +45,7 @@ public:
 	const UDINT CHANNEL_DI_COUNT = 4;
 
 	rModuleCRM();
-	virtual ~rModuleCRM() = default;
+	virtual ~rModuleCRM();
 
 	static std::string getRTTI() { return "crm"; }
 	
@@ -66,8 +66,8 @@ public:
 	UDINT getCounter() const;
 
 private:
-	std::vector<rIODIChannel> m_channelDI;
-	rIOFIChannel m_channelFI;
+	std::vector<rIODIChannel*> m_channelDI;
+	rIOFIChannel* m_channelFI;
 
 	static rBitsArray m_flagsSetup;
 };

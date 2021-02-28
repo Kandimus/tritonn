@@ -24,11 +24,24 @@
 
 rModuleFI4::rModuleFI4()
 {
-	while(m_channel.size() < CHANNEL_COUNT) {
-		m_channel.push_back(rIOFIChannel(m_channel.size()));
-	}
+	m_type    = Type::FI4;
+	m_comment = "Module with 4 frequency input";
 
-	m_type = Type::FI4;
+	while(m_channel.size() < CHANNEL_COUNT) {
+		auto ch_fi = new rIOFIChannel(m_channel.size());
+		m_channel.push_back(ch_fi);
+		m_listChannel.push_back(ch_fi);
+	}
+}
+
+rModuleFI4::~rModuleFI4()
+{
+	for (auto channel : m_channel) {
+		if (channel) {
+			delete channel;
+		}
+	}
+	m_channel.clear();
 }
 
 
@@ -37,15 +50,15 @@ UDINT rModuleFI4::processing(USINT issim)
 	rIOBaseModule::processing(issim);
 
 	for (auto& channel : m_channel) {
-		if (channel.m_setup & rIOFIChannel::Setup::OFF) {
+		if (channel->m_setup & rIOFIChannel::Setup::OFF) {
 			continue;
 		}
 
 		if (issim) {
-			channel.simulate();
+			channel->simulate();
 		}
 
-		channel.processing();
+		channel->processing();
 	}
 
 	return TRITONN_RESULT_OK;
@@ -60,7 +73,7 @@ std::unique_ptr<rIOBaseChannel> rModuleFI4::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	auto module_ptr = std::make_unique<rIOFIChannel>(m_channel[num]);
+	auto module_ptr = std::make_unique<rIOFIChannel>(*m_channel[num]);
 
 	return module_ptr;
 }
@@ -70,9 +83,9 @@ UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, b
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	for (UDINT ii = 0; ii < CHANNEL_COUNT; ++ii) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", ii + 1);
-		m_channel[ii].generateVars(p, list, issimulate);
+	for (auto channel : m_channel) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index + 1);
+		channel->generateVars(p, list, issimulate);
 	}
 
 	std::string p = prefix + m_name;
@@ -95,7 +108,7 @@ UDINT rModuleFI4::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalid module count");
 		}
 
-		if (m_channel[number].loadFromXML(channel_xml, err) !=  TRITONN_RESULT_OK) {
+		if (m_channel[number]->loadFromXML(channel_xml, err) !=  TRITONN_RESULT_OK) {
 			return err.getError();
 		}
 	}

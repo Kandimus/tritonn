@@ -17,6 +17,7 @@
 
 #include <memory>
 #include "def.h"
+#include <vector>
 
 class rIOBaseChannel;
 class rDataConfig;
@@ -43,13 +44,13 @@ public:
 	rIOBaseModule();
 	virtual ~rIOBaseModule();
 
-	std::string rIOBaseModule::getMarkDown();
+	std::string getMarkDown();
 
 	virtual std::string getModuleType() = 0;
 	virtual UDINT processing(USINT issim);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
-	virtual UDINT generateMarkDown(rGeneratorMD& md) const;
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
 	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel) = 0;
 	virtual std::unique_ptr<rIOBaseModule>  getModulePtr() = 0;
 	virtual std::string getAlias() const;
@@ -87,6 +88,9 @@ protected:
 	std::string     m_name  = "";
 	std::string     m_alias = "";
 	STRID           m_descr = 0;
+	std::string     m_comment = "";
+
+	std::vector<rIOBaseChannel*> m_listChannel;
 };
 
 

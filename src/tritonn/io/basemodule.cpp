@@ -14,6 +14,7 @@
 //=================================================================================================
 
 #include "basemodule.h"
+#include "basechannel.h"
 #include "../xml_util.h"
 #include "../data_config.h"
 #include "../variable_item.h"
@@ -89,7 +90,7 @@ UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rIOBaseModule::generateMarkDown(rGeneratorMD& md) const
+UDINT rIOBaseModule::generateMarkDown(rGeneratorMD& md)
 {
 	UNUSED(md)
 	return TRITONN_RESULT_OK;
@@ -101,39 +102,17 @@ std::string rIOBaseModule::getMarkDown()
 	std::string result = "";
 
 	result += "\n## Channels\n";
-	result += "Number | Unit | Unit ID | Limits | Shadow | Comment\n";
-	result += ":-- |:--:|:--:|:--:|:--:|:--\n";
+	result += "Number | Type | Comment\n";
+	result += ":-- |:--:|:--\n";
 
-		for (auto link : m_inputs) {
-			std::string strunit = "";
-
-			rTextManager::instance().Get(link->m_unit, strunit);
-
-			result += link->m_ioName + " | ";
-			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
-			result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
-			result += link->m_shadow + " | ";
-			result += link->m_comment + "\n";
-		}
-	}
-
-	result += "\n## Outputs\n";
-	result += "Output | Unit | Unit ID | Limits | Comment\n";
-	result += ":-- |:--:|:--:|:--:|:--\n";
-	for (auto link : m_outputs) {
-		std::string strunit = "";
-
-		rTextManager::instance().Get(link->m_unit, strunit);
-
-		result += link->m_ioName + " | ";
-		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
-
-		result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
-		result += link->m_comment + "\n";
+	for (auto channel : m_listChannel) {
+		result += String_format("%u", channel->m_index) + " | ";
+		result += channel->getStrType() + " | ";
+		result += channel->m_comment + "\n";
 	}
 
 	rVariableList list;
-	generateVars(list);
+	generateVars(std::string("ddd"), list, true);
 
 	result += "\n## Variable\n";
 	result += list.getMarkDown();
