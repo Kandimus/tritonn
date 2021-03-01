@@ -52,6 +52,7 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate();
+	virtual rBitsArray& getFlagsSetup() { return m_flagsSetup; }
 
 public:
 	UINT  m_setup        = 0;             // Настройка канала

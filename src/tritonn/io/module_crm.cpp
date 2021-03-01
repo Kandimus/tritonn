@@ -18,11 +18,13 @@
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../generator_md.h"
 
 rModuleCRM::rModuleCRM()
 {
 	m_type    = Type::CRM;
 	m_comment = "Module of prove";
+	m_name    = "crm";
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(m_channelDI.size());
@@ -31,6 +33,22 @@ rModuleCRM::rModuleCRM()
 	}
 
 	m_channelFI = new rIOFIChannel(m_channelDI.size());
+	m_listChannel.push_back(m_channelFI);
+}
+
+rModuleCRM::rModuleCRM(const rModuleCRM* crm)  : rIOBaseModule(crm)
+{
+	m_channelDI.clear();
+	m_listChannel.clear();
+
+	for (auto channel : crm->m_channelDI) {
+		auto ch_di = new rIODIChannel(*channel);
+
+		m_channelDI.push_back(ch_di);
+		m_listChannel.push_back(ch_di);
+	}
+
+	m_channelFI = new rIOFIChannel(*crm->m_channelFI);
 	m_listChannel.push_back(m_channelFI);
 }
 
@@ -151,6 +169,13 @@ UDINT rModuleCRM::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 			return err.getError();
 		}
 	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rModuleCRM::generateMarkDown(rGeneratorMD& md)
+{
+	md.add(this);
 
 	return TRITONN_RESULT_OK;
 }

@@ -13,6 +13,7 @@
 //===
 //=================================================================================================
 
+#include "tritonn_version.h"
 #include "generator_md.h"
 #include "data_source.h"
 #include "bits_array.h"
@@ -68,8 +69,9 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 {
 	std::string text = "<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"/>"
 					   "<title>Tritonn help</title></head><body>"
-					   "<h1>Tritonn help</h1>\n";
+					   "<h1>Tritonn help</h1><bsp/><h2>ver " + std::string(TRITONN_VERSION) + "</h2>\n";
 
+	text += "<hr align=\"left\">";
 	text += "<br/><h3>Hardware</h3>\n";
 	for (auto& item : m_items) {
 		if (item.isModule()) {
@@ -169,7 +171,9 @@ std::string rGeneratorMD::rItem::save()
 {
 	std::string result = "";
 
-	result += "# " + m_name + "\n## XML\n````xml\n";
+	result += "# " + m_name + "\n";
+	result += ">" + std::string(TRITONN_VERSION) + "\n";
+	result += "## XML\n````xml\n";
 	result += "<" + m_name + " name=\"valid object name\" descr=\"string index\" ";
 
 	for (auto& prop : m_properties) {
@@ -186,6 +190,8 @@ std::string rGeneratorMD::rItem::save()
 		if (m_isStdInput) {
 			result += m_source->getXmlInput();
 		}
+	} else {
+		result += m_module->getXmlChannels();
 	}
 
 	for (auto& item : m_xml) {

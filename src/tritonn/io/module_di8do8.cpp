@@ -18,6 +18,7 @@
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../generator_md.h"
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
@@ -25,6 +26,7 @@ rModuleDI8DO8::rModuleDI8DO8()
 {
 	m_type    = Type::DI8DO8;
 	m_comment = "Module with 8 discrete input and 8 discrete output";
+	m_name    = "di8do8";
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channelDI.size()));
@@ -39,6 +41,26 @@ rModuleDI8DO8::rModuleDI8DO8()
 	}
 }
 
+rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8)
+{
+	m_channelDI.clear();
+	m_channelDO.clear();
+	m_listChannel.clear();
+
+	for (auto channel : di8do8->m_channelDI) {
+		auto ch_di = new rIODIChannel(*channel);
+
+		m_channelDI.push_back(ch_di);
+		m_listChannel.push_back(ch_di);
+	}
+
+	for (auto channel : di8do8->m_channelDO) {
+		auto ch_do = new rIODOChannel(*channel);
+
+		m_channelDO.push_back(ch_do);
+		m_listChannel.push_back(ch_do);
+	}
+}
 
 rModuleDI8DO8::~rModuleDI8DO8()
 {
@@ -127,6 +149,13 @@ UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 			return err.getError();
 		}
 	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rModuleDI8DO8::generateMarkDown(rGeneratorMD& md)
+{
+	md.add(this);
 
 	return TRITONN_RESULT_OK;
 }

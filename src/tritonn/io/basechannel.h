@@ -20,6 +20,7 @@
 
 class rVariableList;
 class rError;
+class rBitsArray;
 
 namespace tinyxml2 {
 class XMLElement;
@@ -49,6 +50,7 @@ public:
 	virtual UDINT processing();
 	virtual UDINT simulate() = 0;
 	virtual UDINT getPullingCount();
+	virtual rBitsArray& getFlagsSetup() = 0;
 
 public:
 	USINT       m_simType = 0;

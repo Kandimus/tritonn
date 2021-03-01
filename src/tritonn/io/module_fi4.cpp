@@ -21,14 +21,29 @@
 #include "../xml_util.h"
 #include "../variable_class.h"
 #include "../units.h"
+#include "../generator_md.h"
 
 rModuleFI4::rModuleFI4()
 {
 	m_type    = Type::FI4;
 	m_comment = "Module with 4 frequency input";
+	m_name    = "fi4";
 
 	while(m_channel.size() < CHANNEL_COUNT) {
 		auto ch_fi = new rIOFIChannel(m_channel.size());
+		m_channel.push_back(ch_fi);
+		m_listChannel.push_back(ch_fi);
+	}
+}
+
+rModuleFI4::rModuleFI4(const rModuleFI4* fi4)
+{
+	m_channel.clear();
+	m_listChannel.clear();
+
+	for (auto channel : fi4->m_channel) {
+		auto ch_fi = new rIOFIChannel(*channel);
+
 		m_channel.push_back(ch_fi);
 		m_listChannel.push_back(ch_fi);
 	}
@@ -112,6 +127,13 @@ UDINT rModuleFI4::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 			return err.getError();
 		}
 	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rModuleFI4::generateMarkDown(rGeneratorMD& md)
+{
+	md.add(this);
 
 	return TRITONN_RESULT_OK;
 }

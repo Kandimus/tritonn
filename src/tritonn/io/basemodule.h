@@ -46,6 +46,7 @@ public:
 	virtual ~rIOBaseModule();
 
 	std::string getMarkDown();
+	std::string getXmlChannels();
 
 	virtual std::string getModuleType() = 0;
 	virtual UDINT processing(USINT issim);

@@ -45,6 +45,7 @@ public:
 	const UDINT CHANNEL_DI_COUNT = 4;
 
 	rModuleCRM();
+	rModuleCRM(const rModuleCRM* crm);
 	virtual ~rModuleCRM();
 
 	static std::string getRTTI() { return "crm"; }
@@ -53,10 +54,11 @@ public:
 public:
 	virtual std::string getModuleType() { return rModuleCRM::getRTTI(); }
 	virtual UDINT processing(USINT issim);
-	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
-	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleCRM>(*this); }
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
+	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
+	virtual std::unique_ptr<rIOBaseModule>  getModulePtr() { return std::make_unique<rModuleCRM>(this); }
 
 public:
 	UDINT start();

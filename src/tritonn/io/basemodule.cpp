@@ -14,7 +14,9 @@
 //=================================================================================================
 
 #include "basemodule.h"
+#include <algorithm>
 #include "basechannel.h"
+#include "bits_array.h"
 #include "../xml_util.h"
 #include "../data_config.h"
 #include "../variable_item.h"
@@ -120,6 +122,17 @@ UDINT rIOBaseModule::generateMarkDown(rGeneratorMD& md)
 	return TRITONN_RESULT_OK;
 }
 
+std::string rIOBaseModule::getXmlChannels()
+{
+	std::string result = "";
+
+	for (auto channel : m_listChannel) {
+		result += "\t<channel number=\"" + String_format("%u", channel->m_index);
+		result += " setup=\"" + channel->getStrType() + " setup flags\" />\n";
+	}
+
+	return result;
+}
 
 std::string rIOBaseModule::getMarkDown()
 {
@@ -135,8 +148,19 @@ std::string rIOBaseModule::getMarkDown()
 		result += channel->m_comment + "\n";
 	}
 
+	result += "\n";
+	std::vector<std::string> ch_names;
+	for (auto channel : m_listChannel) {
+
+		if (std::find(ch_names.begin(), ch_names.end(), channel->getStrType()) == ch_names.end()) {
+			result += channel->getFlagsSetup().getMarkDown(channel->getStrType() + " setup");
+			ch_names.push_back(channel->getStrType());
+		}
+
+	}
+
 	rVariableList list;
-	generateVars(std::string("ddd"), list, true);
+	generateVars("", list, true);
 
 	result += "\n## Variable\n";
 	result += list.getMarkDown();

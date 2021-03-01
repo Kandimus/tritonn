@@ -35,6 +35,7 @@ public:
 	const UDINT CHANNEL_COUNT = 4;
 
 	rModuleFI4();
+	rModuleFI4(const rModuleFI4* fi4);
 	virtual ~rModuleFI4();
 
 	static std::string getRTTI() { return "fi4"; }
@@ -43,10 +44,11 @@ public:
 public:
 	virtual std::string getModuleType() { return rModuleFI4::getRTTI(); }
 	virtual UDINT processing(USINT issim);
-	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
-	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleFI4>(*this); }
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
+	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
+	virtual std::unique_ptr<rIOBaseModule>  getModulePtr() { return std::make_unique<rModuleFI4>(this); }
 
 public:
 	UDINT getCounter(USINT id);
