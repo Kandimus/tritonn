@@ -26,7 +26,7 @@
 
 rBitsArray rIODOChannel::m_flagsSetup;
 
-rIODOChannel::rIODOChannel(USINT index) : rIOBaseChannel(index)
+rIODOChannel::rIODOChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::DO, index)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup

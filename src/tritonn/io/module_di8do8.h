@@ -37,7 +37,8 @@ public:
 	const UDINT CHANNEL_DO_COUNT = 8;
 
 	rModuleDI8DO8();
-	virtual ~rModuleDI8DO8() = default;
+	rModuleDI8DO8(const rModuleDI8DO8* di8do8);
+	virtual ~rModuleDI8DO8();
 
 	static std::string getRTTI() { return "di8do8"; }
 	
@@ -45,10 +46,11 @@ public:
 public:
 	virtual std::string getModuleType() { return rModuleDI8DO8::getRTTI(); }
 	virtual UDINT processing(USINT issim);
-	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
-	virtual std::unique_ptr<rIOBaseModule> getModulePtr() { return std::make_unique<rModuleDI8DO8>(*this); }
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
+	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
+	virtual std::unique_ptr<rIOBaseModule>  getModulePtr() { return std::make_unique<rModuleDI8DO8>(this); }
 
 public:
 	USINT getValue(USINT id);
@@ -56,8 +58,8 @@ public:
 
 private:
 	static rBitsArray m_flagsDOSetup;
-	std::vector<rIODIChannel> m_channelDI;
-	std::vector<rIODOChannel> m_channelDO;
+	std::vector<rIODIChannel*> m_channelDI;
+	std::vector<rIODOChannel*> m_channelDO;
 };
 
 

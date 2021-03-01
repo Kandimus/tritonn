@@ -22,6 +22,7 @@
 class rInterface;
 class rSource;
 class rBitsArray;
+class rIOBaseModule;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -48,7 +49,8 @@ public:
 
 	public:
 		rItem(rSource* source, bool isstdinput);
-		virtual ~rItem();
+		rItem(rIOBaseModule* module);
+		virtual ~rItem() = default;
 
 		rItem& addProperty(const std::string& name, const rBitsArray* bits);
 		rItem& addProperty(const std::string& name, UDINT defval);
@@ -59,6 +61,7 @@ public:
 		rItem& addXml(const std::string& xmlname, LREAL defval, bool isoptional = false, const std::string& prefix = "");
 		rItem& addLink(const std::string& xmlname, bool isoptional = false, const std::string& prefix = "");
 
+		bool        isModule() const { return m_module != nullptr; }
 		std::string getName() const { return m_name; }
 		std::string save();
 
@@ -67,8 +70,9 @@ public:
 		static const char* XML_LINK;
 
 	protected:
-		rSource*    m_source;
-		std::string m_name;
+		rSource*       m_source = nullptr;
+		rIOBaseModule* m_module = nullptr;
+		std::string    m_name;
 		bool        m_isStdInput;
 		std::vector<rProperty>   m_properties;
 		std::vector<std::string> m_xml;
@@ -79,6 +83,7 @@ public:
 	virtual ~rGeneratorMD();
 
 	rGeneratorMD::rItem& add(rSource* source, bool isstdinput);
+	rGeneratorMD::rItem& add(rIOBaseModule* module);
 
 	UDINT save(const std::string& path);
 

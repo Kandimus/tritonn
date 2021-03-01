@@ -26,11 +26,14 @@
 class rDataConfig;
 class rIOBaseChannel;
 class rError;
+class rGeneratorMD;
 
 //-------------------------------------------------------------------------------------------------
 //
 class rIOManager : public rThreadClass, public rVariableClass
 {
+	friend rDataConfig;
+
 	SINGLETON(rIOManager)
 
 public:
@@ -39,7 +42,6 @@ public:
 public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
-	std::string saveKernel();
 
 	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);
 	std::unique_ptr<rIOBaseModule>  getModule(USINT module);
@@ -47,6 +49,8 @@ public:
 
 protected:
 	virtual rThreadStatus Proccesing();
+
+	rIOBaseModule* addModule(const std::string& type);
 
 private:
 	std::vector<rIOBaseModule*> m_modules; //

@@ -27,6 +27,7 @@
 #include "hash.h"
 #include "threadmaster.h"
 #include "io/manager.h"
+#include "io/defines.h"
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_ai.h"
@@ -50,17 +51,19 @@
 
 rDataConfig::rDataConfig()
 {
-	CfgJSON         = cJSON_CreateObject();
-	CfgJSON_VAR     = cJSON_CreateArray();
-	CfgJSON_IO      = cJSON_CreateArray();
-	CfgJSON_OBJ     = cJSON_CreateArray();
-	CfgJSON_USR     = cJSON_CreateArray();
+	m_json     = cJSON_CreateObject();
+	m_json_var = cJSON_CreateArray();
+	m_json_io  = cJSON_CreateArray();
+	m_json_obj = cJSON_CreateArray();
+	m_json_usr = cJSON_CreateArray();
+	m_json_hdw = cJSON_CreateArray();
 	XMLRootSecurity = nullptr;
 
-	cJSON_AddItemToObject(CfgJSON, XmlName::VARS , CfgJSON_VAR);
-	cJSON_AddItemToObject(CfgJSON, XmlName::IO   , CfgJSON_IO);
-	cJSON_AddItemToObject(CfgJSON, XmlName::CALC , CfgJSON_OBJ);
-	cJSON_AddItemToObject(CfgJSON, XmlName::USERS, CfgJSON_USR);
+	cJSON_AddItemToObject(m_json, XmlName::HARDWARE, m_json_hdw);
+	cJSON_AddItemToObject(m_json, XmlName::VARS    , m_json_var);
+	cJSON_AddItemToObject(m_json, XmlName::IO      , m_json_io);
+	cJSON_AddItemToObject(m_json, XmlName::CALC    , m_json_obj);
+	cJSON_AddItemToObject(m_json, XmlName::USERS   , m_json_usr);
 }
 
 
@@ -71,8 +74,10 @@ rDataConfig::~rDataConfig()
 	// Линки удаляют сами объекты
 	ListLink.clear();
 
-	if(CfgJSON) cJSON_Delete(CfgJSON);
-	CfgJSON = nullptr;
+	if (m_json) {
+		cJSON_Delete(m_json);
+		m_json = nullptr;
+	}
 }
 
 
@@ -120,7 +125,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != LoadHardware(root)) {
+	if (TRITONN_RESULT_OK != loadHardware(root)) {
 		return m_error.getError();
 	}
 
@@ -128,7 +133,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != LoadUsers(XMLRootSecurity, CfgJSON_USR)) {
+	if (TRITONN_RESULT_OK != LoadUsers(XMLRootSecurity, m_json_usr)) {
 		return m_error.getError();
 	}
 
@@ -165,7 +170,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	strncpy(SysVar->Lang, LANG_RU.c_str(), MAX_LANG_SIZE);
 
 	// Сохраняем информацию для WEB
-	SaveWeb();
+	saveWeb();
 
 	return TRITONN_RESULT_OK;
 }
@@ -207,15 +212,42 @@ UDINT rDataConfig::LoadSecurity(tinyxml2::XMLElement* root, tinyxml2::XMLDocumen
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataConfig::LoadHardware(tinyxml2::XMLElement* root)
+UDINT rDataConfig::loadHardware(tinyxml2::XMLElement* root)
 {
-	tinyxml2::XMLElement* hardware = root->FirstChildElement(XmlName::HARDWARE);
+	tinyxml2::XMLElement* hardware_xml = root->FirstChildElement(XmlName::HARDWARE);
 
-	if (!hardware) {
+	if (!hardware_xml) {
 		return m_error.set(DATACFGERR_NOTFOUND_HARDWARE, root->GetLineNum());
 	}
 
-	return rIOManager::instance().LoadFromXML(hardware, m_error);
+	XML_FOR(module_xml, hardware_xml, XmlName::MODULE) {
+		std::string    type   = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
+
+		if (type == "") {
+			return m_error.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
+		}
+
+		type = String_tolower(type);
+
+		rIOBaseModule* module = rIOManager::instance().addModule(type);
+		if (!module) {
+			return m_error.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
+		}
+
+		if (module->loadFromXML(module_xml, m_error) != TRITONN_RESULT_OK) {
+			return m_error.getError();
+		}
+
+		cJSON *jsrc = cJSON_CreateObject();
+		cJSON *jitm = cJSON_CreateObject();
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS , cJSON_CreateString((IO::HARWARE_PREFIX + "." + module->getAlias()).c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::MODULE, cJSON_CreateString(module->getName().c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC  , cJSON_CreateNumber(module->getDescr()));
+		cJSON_AddItemToObject(jitm, module->getModuleType().c_str(), jsrc);
+		cJSON_AddItemToArray(m_json_hdw, jitm);
+	}
+
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -228,11 +260,11 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 		return m_error.set(DATACFGERR_CONFIG, root->GetLineNum());
 	}
 
-	if (loadIO(config, CfgJSON_IO, nullptr, "io") != TRITONN_RESULT_OK) {
+	if (loadIO(config, m_json_io, nullptr, "io") != TRITONN_RESULT_OK) {
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != LoadCalc(config, CfgJSON_OBJ, nullptr, "obj")) {
+	if (TRITONN_RESULT_OK != LoadCalc(config, m_json_obj, nullptr, "obj")) {
 		return m_error.getError();
 	}
 
@@ -240,7 +272,7 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 		return m_error.getError();
 	}
 
-	cJSON_AddItemToObject(CfgJSON, XmlName::STATIONS, jstn);
+	cJSON_AddItemToObject(m_json, XmlName::STATIONS, jstn);
 	if (TRITONN_RESULT_OK != LoadStation(config, jstn)) {
 		return m_error.getError();
 	}
@@ -387,7 +419,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 		cJSON_AddItemToObject(jitm, stn->RTTI()     , jstn);
 		cJSON_AddItemToArray (jroot, jitm);
 
-		if (TRITONN_RESULT_OK != loadIO(station_xml, CfgJSON_IO, stn, stn->m_alias + ".io")) {
+		if (TRITONN_RESULT_OK != loadIO(station_xml, m_json_io, stn, stn->m_alias + ".io")) {
 			return m_error.getError();
 		}
 
@@ -440,7 +472,7 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 		// Кросс-линк станции и линии
 		owner->addStream(str);
 
-		if (TRITONN_RESULT_OK != loadIO(stream_xml, CfgJSON_IO, owner, str->m_alias + ".io")) {
+		if (TRITONN_RESULT_OK != loadIO(stream_xml, m_json_io, owner, str->m_alias + ".io")) {
 			return m_error.getError();
 		}
 
@@ -539,11 +571,9 @@ UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 		ListSource->push_back(source);
 
 		cJSON *jsrc = cJSON_CreateObject();
-//		cJSON *jitm = cJSON_CreateObject();
 		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->m_alias.c_str()));
 		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->m_descr));
-//		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
-		cJSON_AddItemToArray(CfgJSON_VAR, /*jitm*/jsrc);
+		cJSON_AddItemToArray(m_json_var, jsrc);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -612,9 +642,9 @@ UDINT rDataConfig::LoadUsers(tinyxml2::XMLElement* root, cJSON* jroot)
 		// Наконец то добавляем пользователя
 		rUser::Add(name, pwd_hash, intaccess, extaccess, ilogin, ipwd_hash);
 
-		cJSON *jsrc = cJSON_CreateObject();
+		cJSON* jsrc = cJSON_CreateObject();
 		cJSON_AddItemToObject(jsrc, XmlName::NAME, cJSON_CreateString(name.c_str()));
-		cJSON_AddItemToArray(CfgJSON_USR, jsrc);
+		cJSON_AddItemToArray(m_json_usr, jsrc);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -860,13 +890,13 @@ UDINT rDataConfig::ResolveReports(void)
 
 
 //-------------------------------------------------------------------------------------------------
-void rDataConfig::SaveWeb()
+void rDataConfig::saveWeb()
 {
 #ifdef WIN32
 	return;
 #endif
 
-	char* str = cJSON_Print(CfgJSON);
+	char* str = cJSON_Print(m_json);
 	UDINT result = SimpleFileSave(FILE_WWW_TREE_OBJ, str);
 
 	free(str);

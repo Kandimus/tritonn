@@ -18,41 +18,77 @@
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../generator_md.h"
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
 rModuleDI8DO8::rModuleDI8DO8()
 {
+	m_type    = Type::DI8DO8;
+	m_comment = "Module with 8 discrete input and 8 discrete output";
+	m_name    = "di8do8";
+
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
-		m_channelDI.push_back(rIODIChannel(static_cast<USINT>(m_channelDI.size())));
+		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channelDI.size()));
+		m_channelDI.push_back(ch_di);
+		m_listChannel.push_back(ch_di);
 	}
 
 	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
-		m_channelDO.push_back(rIODOChannel(static_cast<USINT>(CHANNEL_DI_COUNT + m_channelDO.size())));
+		auto ch_do = new rIODOChannel(static_cast<USINT>(CHANNEL_DI_COUNT + m_channelDO.size()));
+		m_channelDO.push_back(ch_do);
+		m_listChannel.push_back(ch_do);
 	}
-
-	m_type = Type::DI8DO8;
 }
 
+rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8)
+{
+	m_channelDI.clear();
+	m_channelDO.clear();
+	m_listChannel.clear();
+
+	for (auto channel : di8do8->m_channelDI) {
+		auto ch_di = new rIODIChannel(*channel);
+
+		m_channelDI.push_back(ch_di);
+		m_listChannel.push_back(ch_di);
+	}
+
+	for (auto channel : di8do8->m_channelDO) {
+		auto ch_do = new rIODOChannel(*channel);
+
+		m_channelDO.push_back(ch_do);
+		m_listChannel.push_back(ch_do);
+	}
+}
+
+rModuleDI8DO8::~rModuleDI8DO8()
+{
+	for (auto channel : m_channelDI) {
+		if (channel) {
+			delete channel;
+		}
+	}
+	m_channelDI.clear();
+
+	for (auto channel : m_channelDO) {
+		if (channel) {
+			delete channel;
+		}
+	}
+	m_channelDO.clear();
+}
 
 UDINT rModuleDI8DO8::processing(USINT issim)
 {
 	rIOBaseModule::processing(issim);
 
-	for (auto& channel : m_channelDI) {
+	for (auto channel : m_listChannel) {
 		if (issim) {
-			channel.simulate();
+			channel->simulate();
 		}
 
-		channel.processing();
-	}
-
-	for (auto& channel : m_channelDO) {
-		if (issim) {
-			channel.simulate();
-		}
-
-		channel.processing();
+		channel->processing();
 	}
 
 	return TRITONN_RESULT_OK;
@@ -68,11 +104,11 @@ std::unique_ptr<rIOBaseChannel> rModuleDI8DO8::getChannel(USINT num)
 	rLocker lock(m_mutex); UNUSED(lock);
 
 	if (num < CHANNEL_DI_COUNT) {
-		auto module_ptr = std::make_unique<rIODIChannel>(m_channelDI[num]);
+		auto module_ptr = std::make_unique<rIODIChannel>(*m_channelDI[num]);
 		return module_ptr;
 	}
 
-	auto module_ptr = std::make_unique<rIODOChannel>(m_channelDO[num - CHANNEL_DI_COUNT]);
+	auto module_ptr = std::make_unique<rIODOChannel>(*m_channelDO[num - CHANNEL_DI_COUNT]);
 
 	return module_ptr;
 }
@@ -81,15 +117,11 @@ UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	for (auto& channel : m_channelDI) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel.m_index + 1);
-		channel.generateVars(p, list, issimulate);
+	for (auto channel : m_listChannel) {
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index + 1);
+		channel->generateVars(p, list, issimulate);
 	}
 
-	for (auto& channel : m_channelDO) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel.m_index + 1);
-		channel.generateVars(p, list, issimulate);
-	}
 	return TRITONN_RESULT_OK;
 }
 
@@ -108,15 +140,22 @@ UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 		}
 
 		if (number < CHANNEL_DI_COUNT) {
-			m_channelDI[number].loadFromXML(channel_xml, err);
+			m_channelDI[number]->loadFromXML(channel_xml, err);
 		} else {
-			m_channelDO[number - CHANNEL_DI_COUNT].loadFromXML(channel_xml, err);
+			m_channelDO[number - CHANNEL_DI_COUNT]->loadFromXML(channel_xml, err);
 		}
 
 		if (err.getError()) {
 			return err.getError();
 		}
 	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rModuleDI8DO8::generateMarkDown(rGeneratorMD& md)
+{
+	md.add(this);
 
 	return TRITONN_RESULT_OK;
 }

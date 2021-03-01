@@ -14,17 +14,45 @@
 //=================================================================================================
 
 #include "basemodule.h"
+#include <algorithm>
+#include "basechannel.h"
+#include "bits_array.h"
 #include "../xml_util.h"
 #include "../data_config.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
 #include "../units.h"
 #include "../error.h"
+//#include "../generator_md.h"
 
 
 rIOBaseModule::rIOBaseModule()
 {
 	pthread_mutex_init(&m_mutex, nullptr);
+}
+
+rIOBaseModule::rIOBaseModule(const rIOBaseModule* module)
+{
+	pthread_mutex_init(&m_mutex, nullptr);
+
+	m_type         = module->m_type;
+	m_nodeID       = module->m_nodeID;
+	m_vendorID     = module->m_vendorID;
+	m_productCode  = module->m_productCode;
+	m_revision     = module->m_revision;
+	m_serialNumber = module->m_serialNumber;
+
+	m_temperature  = module->m_temperature;
+	m_CAN          = module->m_CAN;
+	m_firmware     = module->m_firmware;
+	m_hardware     = module->m_hardware;
+
+	m_name  = module->m_name;
+	m_alias = module->m_alias;
+	m_descr = module->m_descr;
+	m_comment = module->m_comment;
+
+	m_listChannel.clear();
 }
 
 rIOBaseModule::~rIOBaseModule()
@@ -42,6 +70,16 @@ UDINT rIOBaseModule::processing(USINT issim)
 std::string rIOBaseModule::getAlias() const
 {
 	return m_alias;
+}
+
+std::string rIOBaseModule::getName() const
+{
+	return m_name;
+}
+
+STRID rIOBaseModule::getDescr() const
+{
+	return m_descr;
 }
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
@@ -68,7 +106,8 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 
 UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	m_name = XmlUtils::getAttributeString(element, XmlName::NAME, "");
+	m_name  = XmlUtils::getAttributeString(element, XmlName::NAME, "");
+	m_descr = XmlUtils::getAttributeUDINT (element, XmlName::DESC, 0);
 
 	if (m_name.empty()) {
 		return err.set(DATACFGERR_INVALID_NAME, element->GetLineNum());
@@ -77,27 +116,55 @@ UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	return TRITONN_RESULT_OK;
 }
 
-std::string rIOBaseModule::saveKernel(const std::string& description)
+UDINT rIOBaseModule::generateMarkDown(rGeneratorMD& md)
 {
-	std::string   result = "";
-	rVariableList list;
+	UNUSED(md)
+	return TRITONN_RESULT_OK;
+}
 
-	generateVars("", list, true);
+std::string rIOBaseModule::getXmlChannels()
+{
+	std::string result = "";
 
-	result += String_format("<!--\n%s\n-->\n"
-							"<module name=\"%s\">\n", description.c_str(), getModuleType().c_str());
+	for (auto channel : m_listChannel) {
+		result += "\t<channel number=\"" + String_format("%u", channel->m_index);
+		result += " setup=\"" + channel->getStrType() + " setup flags\" />\n";
+	}
 
-	result += "\t<values>\n";
+	return result;
+}
 
-	for (auto var : list) {
-		if (var->isHide()) {
-			continue;
+std::string rIOBaseModule::getMarkDown()
+{
+	std::string result = "";
+
+	result += "\n## Channels\n";
+	result += "Number | Type | Comment\n";
+	result += ":-- |:--:|:--\n";
+
+	for (auto channel : m_listChannel) {
+		result += String_format("%u", channel->m_index) + " | ";
+		result += channel->getStrType() + " | ";
+		result += channel->m_comment + "\n";
+	}
+
+	result += "\n";
+	std::vector<std::string> ch_names;
+	for (auto channel : m_listChannel) {
+
+		if (std::find(ch_names.begin(), ch_names.end(), channel->getStrType()) == ch_names.end()) {
+			result += channel->getFlagsSetup().getMarkDown(channel->getStrType() + " setup");
+			ch_names.push_back(channel->getStrType());
 		}
 
-		result += var->saveKernel(1, "\t\t");
 	}
-	result += "\t</values>\n"
-			  "</module>\n";
+
+	rVariableList list;
+	generateVars("", list, true);
+
+	result += "\n## Variable\n";
+	result += list.getMarkDown();
+	result += "\n";
 
 	return result;
 }

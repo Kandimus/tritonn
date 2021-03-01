@@ -24,7 +24,7 @@
 
 rBitsArray rIOAIChannel::m_flagsSetup;
 
-rIOAIChannel::rIOAIChannel(USINT index) : rIOBaseChannel(index)
+rIOAIChannel::rIOAIChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::AI, index)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
