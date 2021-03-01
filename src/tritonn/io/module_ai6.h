@@ -35,6 +35,7 @@ public:
 	const UDINT CHANNEL_COUNT = 6;
 
 	rModuleAI6();
+	rModuleAI6(const rModuleAI6* ai6);
 	virtual ~rModuleAI6();
 
 	static std::string getRTTI() { return "ai6"; }

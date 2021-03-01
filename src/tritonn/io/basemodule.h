@@ -42,6 +42,7 @@ public:
 	};
 
 	rIOBaseModule();
+	rIOBaseModule(const rIOBaseModule* module);
 	virtual ~rIOBaseModule();
 
 	std::string getMarkDown();

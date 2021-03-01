@@ -29,6 +29,30 @@ rIOBaseModule::rIOBaseModule()
 	pthread_mutex_init(&m_mutex, nullptr);
 }
 
+rIOBaseModule::rIOBaseModule(const rIOBaseModule* module)
+{
+	pthread_mutex_init(&m_mutex, nullptr);
+
+	m_type         = module->m_type;
+	m_nodeID       = module->m_nodeID;
+	m_vendorID     = module->m_vendorID;
+	m_productCode  = module->m_productCode;
+	m_revision     = module->m_revision;
+	m_serialNumber = module->m_serialNumber;
+
+	m_temperature  = module->m_temperature;
+	m_CAN          = module->m_CAN;
+	m_firmware     = module->m_firmware;
+	m_hardware     = module->m_hardware;
+
+	m_name  = module->m_name;
+	m_alias = module->m_alias;
+	m_descr = module->m_descr;
+	m_comment = module->m_comment;
+
+	m_listChannel.clear();
+}
+
 rIOBaseModule::~rIOBaseModule()
 {
 	pthread_mutex_destroy(&m_mutex);

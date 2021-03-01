@@ -36,6 +36,19 @@ rModuleAI6::rModuleAI6()
 	m_channel[0]->m_simType  = rIOAIChannel::SimType::Linear;
 }
 
+rModuleAI6::rModuleAI6(const rModuleAI6* ai6) : rIOBaseModule(ai6)
+{
+	m_channel.clear();
+	m_listChannel.clear();
+
+	for (auto channel : ai6->m_channel) {
+		auto ch_ai = new rIOAIChannel(*channel);
+
+		m_channel.push_back(ch_ai);
+		m_listChannel.push_back(ch_ai);
+	}
+}
+
 rModuleAI6::~rModuleAI6()
 {
 	for (auto channel : m_channel) {
@@ -71,7 +84,7 @@ std::unique_ptr<rIOBaseChannel> rModuleAI6::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	auto module_ptr = std::make_unique<rIOAIChannel>(*m_channel[num]);
+	auto module_ptr = std::make_unique<rIOAIChannel>(m_channel[num]);
 
 	return module_ptr;
 }
