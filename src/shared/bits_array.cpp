@@ -35,12 +35,14 @@ rBitsArray& rBitsArray::add(const std::string &name, UDINT value, const std::str
 
 rBitsArray& rBitsArray::add(const std::string &name, UINT value, const std::string& comment)
 {
-	return add(name, static_cast<UDINT>(value), comment);
+	m_list.push_back(rBitsArray::rBitFlag(name, value, comment));
+	return *this;
 }
 
 rBitsArray& rBitsArray::add(const std::string &name, USINT value, const std::string& comment)
 {
-	return add(name, static_cast<UDINT>(value), comment);
+	m_list.push_back(rBitsArray::rBitFlag(name, value, comment));
+	return *this;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -51,7 +53,7 @@ std::string rBitsArray::getNameByBits(UDINT value, const std::string& delim) con
 	std::string result = "";
 
 	for (auto& item : m_list) {
-		if(item.m_value & value)
+		if(item.m_value & value && item.m_name.size())
 		{
 			result += ((result.size()) ? delim : "") + item.m_name;
 		}
@@ -66,7 +68,7 @@ std::string rBitsArray::getNameByBits(UDINT value, const std::string& delim) con
 std::string rBitsArray::getNameByValue(UDINT value) const
 {
 	for(auto& item : m_list) {
-		if (item.m_value == value) {
+		if (item.m_value == value && item.m_name.size()) {
 			return item.m_name;
 		}
 	}
@@ -83,7 +85,7 @@ UDINT rBitsArray::getBit(const std::string &name, UDINT &err) const
 	if(name.empty()) return 0;
 
 	for(auto& item : m_list) {
-		if(item.m_name == name) {
+		if(item.m_name == name && item.m_name.size()) {
 			return item.m_value;
 		}
 	}
@@ -134,7 +136,28 @@ std::string rBitsArray::getMarkDown(const std::string& name) const
 	std::string result = "\n#### " + name + "\n";
 
 	for (auto& item : m_list) {
-		result += "* _" + item.m_name + "_ " + (item.m_comment.size() ? " - " : "") + item.m_comment + "\n";
+		if (item.m_name.size()) {
+			result += "* _" + item.m_name + "_ " + (item.m_comment.size() ? " - " : "") + item.m_comment + "\n";
+		}
+	}
+
+	return result;
+}
+
+std::string rBitsArray::getInfo() const
+{
+	std::string result = "";
+
+	for (auto& item : m_list) {
+		switch(item.m_type) {
+			case TYPE_UDINT: result += String_format("%08x", item.m_value); break;
+			case TYPE_UINT : result += String_format("%04x", item.m_value); break;
+			case TYPE_USINT: result += String_format("%02x", item.m_value); break;
+
+			default: result += String_format("unknow type %i", item.m_value); break;
+		}
+
+		result += ": " + item.m_comment+ "\n";
 	}
 
 	return result;

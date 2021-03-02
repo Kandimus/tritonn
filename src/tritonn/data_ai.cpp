@@ -46,17 +46,19 @@ rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
-				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD));
+				.add("PHIS"  , static_cast<UINT>(Mode::PHIS)    , "Используется физическое значение")
+				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD) , "Переключение пользователем на ручной ввод")
+				.add(""      , static_cast<UINT>(Mode::LASTGOOD), "Используется последнее действительное значение")
+				.add(""      , static_cast<UINT>(Mode::AKEYPAD) , "Автоматическое переключение на ручной ввод");
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , static_cast<UINT>(Setup::OFF))
-				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER))
-				.add("VIRTUAL"  , static_cast<UINT>(Setup::VIRTUAL))
-				.add("NOICE"    , static_cast<UINT>(Setup::NOICE))
-				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD))
-				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD));
+				.add("OFF"      , static_cast<UINT>(Setup::OFF)         , "Выключен и не обрабатывается")
+				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER)    , "Не использовать сглаживание")
+				.add("VIRTUAL"  , static_cast<UINT>(Setup::VIRTUAL)     , "Виртуальный сигнал")
+				.add("NOICE"    , static_cast<UINT>(Setup::NOICE)       , "Подавление дребезга около инженерных уставок")
+				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD)  , "Переключение в ручной ввод при недействительном значении")
+				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD), "Переключение в последнее действительное значение при недействительном значении1");
 	}
 
 	m_lockErr = 0;
@@ -333,12 +335,12 @@ UDINT rAI::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.m_unit, ACCESS_KEYPAD);
-	list.add(m_alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES);
-	list.add(m_alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES);
-	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS       , ACCESS_SA);
-	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD);
-	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS       , 0);
+	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.m_unit, ACCESS_KEYPAD, "Значение ручного ввода");
+	list.add(m_alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
+	list.add(m_alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
+	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , "Настройка:\n" + m_flagsSetup.getInfo());
+	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, "Режим");
+	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS       , 0            , "Статус");
 
 	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &m_fault          , U_DIMLESS       , 0);
 

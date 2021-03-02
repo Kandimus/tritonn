@@ -56,10 +56,11 @@ public:
 		RSHL = READONLY | SUWRITE | HIDE | LOADABLE,
 	};
 
-	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access);
+	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment = "");
 	virtual ~rVariable();
 
 	const std::string& getName() const { return m_name; }
+	const std::string& getComment() const { return m_comment; }
 	TT_TYPE getType()    const { return m_type;   }
 	UINT    getFlags()   const { return m_flags;  }
 	STRID   getUnit()    const { return m_unit;   }
@@ -94,12 +95,13 @@ private:
 	rVariable(rVariable& var);
 
 protected:
-	UDINT       m_hash   = 0;
-	std::string m_name   = "";
-	TT_TYPE     m_type   = TYPE_UNDEF;
-	UINT        m_flags  = Flags::NONE;
-	STRID       m_unit   = 0;
-	UDINT       m_access = 0;
+	UDINT       m_hash    = 0;
+	std::string m_name    = "";
+	TT_TYPE     m_type    = TYPE_UNDEF;
+	UINT        m_flags   = Flags::NONE;
+	STRID       m_unit    = 0;
+	UDINT       m_access  = 0;
+	std::string m_comment = "";
 
 	rExternal*  m_external = nullptr;
 //	rVariable*  m_extVar;
