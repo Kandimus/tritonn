@@ -38,7 +38,7 @@ const UDINT AI_LE_CODE_FAULT = 0x00000020;
 
 rBitsArray rAI::m_flagsMode;
 rBitsArray rAI::m_flagsSetup;
-
+rBitsArray rAI::m_flagsStatus;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -61,13 +61,24 @@ rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
 				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD), "Переключение в последнее действительное значение при недействительном значении1");
 	}
 
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::UNDEF) , "Статус не определен")
+				.add("", static_cast<UINT>(Status::OFF)   , "Сигнал выключен")
+				.add("", static_cast<UINT>(Status::NORMAL), "Значение в норме")
+				.add("", static_cast<UINT>(Status::MIN)   , "Значение ниже инженерного минимума")
+				.add("", static_cast<UINT>(Status::MAX)   , "Значение выше инженерного максимума")
+				.add("", static_cast<UINT>(Status::FAULT) , "Выход из строя канала или модуля");
+	}
+
 	m_lockErr = 0;
 	m_setup   = Setup::OFF;
 	m_mode    = Mode::PHIS;
 	m_status  = Status::UNDEF;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::OUTPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT,
+								   m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::OUTPUT, m_phValue, U_any, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::OUTPUT, m_current, U_mA , SID::CURRENT , XmlName::CURRENT , rLink::SHADOW_NONE);
 }
@@ -260,13 +271,8 @@ UDINT rAI::calculate()
 		}
 	}
 
-
-
-	////////////////////////////////////////////////////////////////////////////////////////////////
-	//
+	//---------------------------------------------------------------------------------------------
 	// ПРЕДЕЛЬНЫЕ ЗНАЧЕНИЯ
-	//
-	////////////////////////////////////////////////////////////////////////////////////////////////
 	if(m_status != Status::FAULT)
 	{
 		// Если значение больше чем инж. максимум
@@ -318,16 +324,6 @@ UDINT rAI::setFault()
 	return m_fault;
 }
 
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
 //-------------------------------------------------------------------------------------------------
 //
 UDINT rAI::generateVars(rVariableList& list)
@@ -335,14 +331,14 @@ UDINT rAI::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___L, &KeypadValue.Value, m_present.m_unit, ACCESS_KEYPAD, "Значение ручного ввода");
-	list.add(m_alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
-	list.add(m_alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___L, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
-	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , "Настройка:\n" + m_flagsSetup.getInfo());
-	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___L, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, "Режим");
-	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS       , 0            , "Статус");
+	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___, &KeypadValue.Value, m_present.m_unit, ACCESS_KEYPAD, "Значение ручного ввода");
+	list.add(m_alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
+	list.add(m_alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
+	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , "Настройка:\n" + m_flagsSetup.getInfo());
+	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, "Режим:\n" + m_flagMode.getInfo());
+	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status         , U_DIMLESS       , 0            , "Статус:\n" + m_flagStatus.getInfo());
 
-	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &m_fault          , U_DIMLESS       , 0);
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault          , U_DIMLESS       , 0, "Флаг ошибки");
 
 	return TRITONN_RESULT_OK;
 }
@@ -401,12 +397,26 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	return TRITONN_RESULT_OK;
 }
 
-
-std::string rAI::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
+UDINT rAI::generateMarkDown(rGeneratorMD& md)
 {
-	m_present.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_phValue.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_current.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_present.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_phValue.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_current.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+
+	md.add(this, true)
+			.addProperty(XmlName::SETUP, &m_flagsSetup)
+			.addProperty(XmlName::MODE , &m_flagsMode)
+			.addXml("<io_link module=\"module index\"/>" + std::string(rGeneratorMD::rItem::XML_OPTIONAL))
+			.addXml(XmlName::UNIT  , U_any)
+			.addXml(XmlName::KEYPAD, m_keypad.Value)
+			.addXml("<" + XmlName::SCALE + ">")
+			.addXml(XmlName::MIN, m_scale.Min, false, "\t")
+			.addXml(XmlName::MAX, m_scale.Max, false, "\t");
+}
+
+std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
+{
+
 
 	return rSource::saveKernel(isio, objname, comment, isglobal);
 }

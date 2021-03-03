@@ -77,10 +77,10 @@ public:
 public:
 	virtual const char *RTTI() const { return "ai"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
+	virtual UDINT calculate();
 
 	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
 	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
@@ -100,7 +100,7 @@ public:
 	rLink       m_current;               // Значение тока/напряжения, пересчитанное из кода АЦП
 
 	// Внутренние переменные
-	rCmpLREAL   KeypadValue;             // Значение ручного ввода
+	rCmpLREAL   m_keypad;                // Значение ручного ввода
 	rScale      m_scale;                 // Инженерные пределы токового сигала
 	Mode        m_mode;                  // Режим работы
 	rCmpUINT    m_setup;                 // Настройка сигнала
@@ -111,7 +111,7 @@ public:
 private:
 	static rBitsArray m_flagsMode;
 	static rBitsArray m_flagsSetup;
-
+	static rBitsArray m_flagsStatus;
 };
 
 

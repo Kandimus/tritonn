@@ -34,26 +34,18 @@ public:
 		READONLY  = 0x0001, // Запись запрещена
 		SUWRITE   = 0x0002, // Запись разрешена суперпользователю
 		HIDE      = 0x0004, // Переменная не будет отображатся в ОРС-сервере
-		LOADABLE  = 0x0008, // Переменная загружается из конфигурации
+		MUTABLE   = 0x0008, // Переменная может быть как RO, так и RW
 		EXTERNAL  = 0x4000, //
 //		EXTWRITED = 0x8000, //
 
-		____ = NONE,
-		R___ = READONLY,
-		_S__ = SUWRITE,
-		RS__ = READONLY | SUWRITE,
-		__H_ = HIDE,
-		R_H_ = READONLY | HIDE,
-		_SH_ = SUWRITE | HIDE,
-		RSH_ = READONLY | SUWRITE | HIDE,
-		___L = LOADABLE,
-		R__L = READONLY | LOADABLE,
-		_S_L = SUWRITE | LOADABLE,
-		RS_L = READONLY | SUWRITE | LOADABLE,
-		__HL = HIDE | LOADABLE,
-		R_HL = READONLY | HIDE | LOADABLE,
-		_SHL = SUWRITE | HIDE | LOADABLE,
-		RSHL = READONLY | SUWRITE | HIDE | LOADABLE,
+		___ = NONE,
+		R__ = READONLY,
+		_S_ = SUWRITE,
+		RS_ = READONLY | SUWRITE,
+		__H = HIDE,
+		R_H = READONLY | HIDE,
+		_SH = SUWRITE | HIDE,
+		RSH = READONLY | SUWRITE | HIDE,
 	};
 
 	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment = "");
@@ -69,7 +61,7 @@ public:
 	bool    isReadonly() const { return m_flags & Flags::READONLY; }
 	bool    isHide()     const { return m_flags & Flags::HIDE;     }
 	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
-	bool    isLodable()  const { return m_flags & Flags::LOADABLE; }
+	bool    isMutable()  const { return m_flags & Flags::MUTABLE;  }
 	bool    isExternal() const { return m_flags & Flags::EXTERNAL; }
 	std::string saveKernel(UDINT offset, const std::string prefix) const;
 

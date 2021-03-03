@@ -157,7 +157,7 @@ std::string rVariableList::getMarkDown() const
 
 		rTextManager::instance().Get(item->getUnit(), strunit);
 
-		result += name + " | ";
+		result += name + (item->isMutable() ? "*" : "") + " | ";
 		result += NAME_TYPE[item->getType()] + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
 		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";
