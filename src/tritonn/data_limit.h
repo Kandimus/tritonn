@@ -19,6 +19,8 @@
 #include "bits_array.h"
 #include "compared_values.h"
 
+#define LIMIT_SETUP_ALL (rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO)
+
 class rVariableList;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,6 +88,9 @@ public:
 	rCmpUINT  m_setup  = Setup::OFF;
 
 	static rBitsArray m_flagsSetup;
+
+private:
+	static rBitsArray m_flagsStatus;
 };
 
 

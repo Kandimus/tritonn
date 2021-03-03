@@ -83,7 +83,7 @@ public:
 	virtual USINT         getChannelNumber() const { return 0xFF; }
 
 protected:
-	virtual UDINT initLink(UINT setup, rLink& link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment = "");
+	virtual UDINT initLink(UINT setup, rLink& link, UDINT unit, STRID nameid, const std::string& name, const std::string& shadow);
 	virtual UDINT initLimitEvent(rLink& link) = 0;
 	virtual UDINT reinitLimitEvents();
 

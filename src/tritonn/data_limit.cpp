@@ -26,8 +26,10 @@
 #include "variable_list.h"
 #include "data_limit.h"
 #include "xml_util.h"
+#include "comment_defines.h"
 
 rBitsArray rLimit::m_flagsSetup;
+rBitsArray rLimit::m_flagsStatus;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -36,11 +38,22 @@ rLimit::rLimit() :
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"  , static_cast<UINT>(Setup::OFF))
-				.add("LOLO" , static_cast<UINT>(Setup::LOLO))
-				.add("LO"   , static_cast<UINT>(Setup::LO))
-				.add("HI"   , static_cast<UINT>(Setup::HI))
-				.add("HIHI" , static_cast<UINT>(Setup::HIHI));
+				.add("OFF"  , static_cast<UINT>(Setup::OFF), "Не выдавать сообщения")
+				.add("LOLO" , static_cast<UINT>(Setup::LOLO), "Выдавать сообщение аварийного минимума")
+				.add("LO"   , static_cast<UINT>(Setup::LO), "Выдавать сообщение предаварийного минимума")
+				.add("HI"   , static_cast<UINT>(Setup::HI), "Выдавать сообщение предаварийного максимума")
+				.add("HIHI" , static_cast<UINT>(Setup::HIHI), "Выдавать сообщение аварийного максимума");
+	}
+
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::UNDEF) , "Неопределен")
+				.add("", static_cast<UINT>(Status::ISNAN) , "Не действительное значение")
+				.add("", static_cast<UINT>(Status::LOLO)  , "Значение ниже аварийного минимума")
+				.add("", static_cast<UINT>(Status::LO)    , "Значение ниже предаварийного минимума")
+				.add("", static_cast<UINT>(Status::NORMAL), "Значение в рабочем диапазоне")
+				.add("", static_cast<UINT>(Status::HI)    , "Значение выше предаварийного максимума")
+				.add("", static_cast<UINT>(Status::HI)    , "Значение выше аварийного максимума");
 	}
 }
 
@@ -121,15 +134,15 @@ UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID 
 		return TRITONN_RESULT_OK;
 	}
 
-	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___L, &m_lolo.Value    , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___L, &m_lo.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___L, &m_hi.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___L, &m_hihi.Value    , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status        , U_DIMLESS , 0);
-	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS);
+	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___, &m_lolo.Value    , owner_unit, ACCESS_LIMITS, "Значение аварийного минимума");
+	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___, &m_lo.Value      , owner_unit, ACCESS_LIMITS, "Значение предаварийного минимума");
+	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___, &m_hi.Value      , owner_unit, ACCESS_LIMITS, "Значение предаварийного максимума");
+	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___, &m_hihi.Value    , owner_unit, ACCESS_LIMITS, "Значение аварийного максимума");
+	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___, &Hysteresis.Value, owner_unit, ACCESS_LIMITS, "Значение гистерезиса");
+	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status        , U_DIMLESS , 0            , COMMENT::STATUS + m_flagsStatus.getInfo(true));
+	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS, COMMENT::SETUP + m_flagsSetup.getInfo());
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 

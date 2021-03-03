@@ -54,13 +54,13 @@ rProve::rProve(const rStation* owner)
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE, "Температура в ПУ");
-	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE, "Давление в ПУ");
-	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE, "Плотность в ПУ");
-	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE, "Сигнал кран открыт");
-	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE, "Сигнал кран закрыт");
-	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE, "Команда на открытие крана");
-	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE, "Команда на закрытие крана");
+	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
 }
 
 

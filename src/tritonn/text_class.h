@@ -63,10 +63,10 @@ public:
 	UDINT         Load(tinyxml2::XMLElement* root, rError& err);
 	UDINT         SetCurLang(const std::string& lang);
 	std::string   GetCurLang();
-	UDINT         Get(UDINT id, const std::string& lang, std::string& text);
-	UDINT         Get(UDINT id, std::string& text);
-	const std::string *GetPtr(UDINT id, const std::string &lang);
-	const std::string *GetPtr(UDINT id);
+	UDINT         Get(STRID id, const std::string& lang, std::string& text);
+	UDINT         Get(STRID id, std::string& text);
+	const std::string *GetPtr(STRID id, const std::string &lang);
+	const std::string *GetPtr(STRID id);
 
 	UDINT         GetListLang(std::vector<std::string> &list);
 	UDINT         GetListSID (const std::string &lang, std::vector<rTextItem> &list);
@@ -75,7 +75,7 @@ private:
 	UDINT         LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err);
 	UDINT         DeleteUnused();
 	rTextLang    *GetLangPtr(const std::string& name);
-	const std::string* GetPtr(UDINT id, rTextLang* lang);
+	const std::string* GetPtr(STRID id, rTextLang* lang);
 };
 
 

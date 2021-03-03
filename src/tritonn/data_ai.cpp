@@ -2,7 +2,7 @@
 //===
 //=== data_ai.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -29,6 +29,8 @@
 #include "io/ai_channel.h"
 #include "xml_util.h"
 #include "data_ai.h"
+#include "generator_md.h"
+#include "comment_defines.h"
 
 const UDINT AI_LE_SIM_AUTO   = 0x00000002;
 const UDINT AI_LE_SIM_MANUAL = 0x00000004;
@@ -42,20 +44,19 @@ rBitsArray rAI::m_flagsStatus;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
+rAI::rAI(const rStation* owner) : rSource(owner), m_keypad(0.0), m_setup(0)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("PHIS"  , static_cast<UINT>(Mode::PHIS)    , "Используется физическое значение")
-				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD) , "Переключение пользователем на ручной ввод")
+				.add("PHIS"  , static_cast<UINT>(Mode::PHIS)    , COMMENT::MODE_PHYS)
+				.add("KEYPAD", static_cast<UINT>(Mode::MKEYPAD) , COMMENT::MODE_KEYPAD)
 				.add(""      , static_cast<UINT>(Mode::LASTGOOD), "Используется последнее действительное значение")
 				.add(""      , static_cast<UINT>(Mode::AKEYPAD) , "Автоматическое переключение на ручной ввод");
 	}
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"      , static_cast<UINT>(Setup::OFF)         , "Выключен и не обрабатывается")
+				.add("OFF"      , static_cast<UINT>(Setup::OFF)         , COMMENT::SETUP_OFF)
 				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER)    , "Не использовать сглаживание")
-				.add("VIRTUAL"  , static_cast<UINT>(Setup::VIRTUAL)     , "Виртуальный сигнал")
 				.add("NOICE"    , static_cast<UINT>(Setup::NOICE)       , "Подавление дребезга около инженерных уставок")
 				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD)  , "Переключение в ручной ввод при недействительном значении")
 				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD), "Переключение в последнее действительное значение при недействительном значении1");
@@ -63,12 +64,12 @@ rAI::rAI(const rStation* owner) : rSource(owner), KeypadValue(0.0), m_setup(0)
 
 	if (m_flagsStatus.empty()) {
 		m_flagsStatus
-				.add("", static_cast<UINT>(Status::UNDEF) , "Статус не определен")
-				.add("", static_cast<UINT>(Status::OFF)   , "Сигнал выключен")
-				.add("", static_cast<UINT>(Status::NORMAL), "Значение в норме")
+				.add("", static_cast<UINT>(Status::UNDEF) , COMMENT::STATUS_UNDEF)
+				.add("", static_cast<UINT>(Status::OFF)   , COMMENT::STATUS_OFF)
+				.add("", static_cast<UINT>(Status::NORMAL), COMMENT::STATUS_NORMAL)
 				.add("", static_cast<UINT>(Status::MIN)   , "Значение ниже инженерного минимума")
 				.add("", static_cast<UINT>(Status::MAX)   , "Значение выше инженерного максимума")
-				.add("", static_cast<UINT>(Status::FAULT) , "Выход из строя канала или модуля");
+				.add("", static_cast<UINT>(Status::FAULT) , COMMENT::STATUS_FAULT);
 	}
 
 	m_lockErr = 0;
@@ -143,7 +144,7 @@ UDINT rAI::calculate()
 	// Обработка ввода пользователя
 	m_scale.Min.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MIN)      << m_present.m_unit);
 	m_scale.Max.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MAX)      << m_present.m_unit);
-	KeypadValue.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_SIMULATE) << m_present.m_unit);
+	m_keypad.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_SIMULATE) << m_present.m_unit);
 	m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
 	// Сообщения об изменении Mode формируем в ручную
 	
@@ -243,7 +244,7 @@ UDINT rAI::calculate()
 	
 	// Если сигнал за засимулирован, то значение равно значению симуляции
 	if (m_mode == Mode::MKEYPAD || m_mode == Mode::AKEYPAD) {
-		m_present.m_value = KeypadValue.Value;
+		m_present.m_value = m_keypad.Value;
 	}
 	// Если используем последнее "хорошее" значение
 	else if (m_mode == Mode::LASTGOOD) {
@@ -331,14 +332,14 @@ UDINT rAI::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___, &KeypadValue.Value, m_present.m_unit, ACCESS_KEYPAD, "Значение ручного ввода");
+	list.add(m_alias + ".keypad"    , TYPE_LREAL, rVariable::Flags::___, &m_keypad.Value   , m_present.m_unit, ACCESS_KEYPAD, COMMENT::KEYPAD);
 	list.add(m_alias + ".scales.min", TYPE_LREAL, rVariable::Flags::___, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
 	list.add(m_alias + ".scales.max", TYPE_LREAL, rVariable::Flags::___, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
-	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , "Настройка:\n" + m_flagsSetup.getInfo());
-	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, "Режим:\n" + m_flagMode.getInfo());
-	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status         , U_DIMLESS       , 0            , "Статус:\n" + m_flagStatus.getInfo());
+	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
+	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status         , U_DIMLESS       , 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
 
-	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault          , U_DIMLESS       , 0, "Флаг ошибки");
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault          , U_DIMLESS       , 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }
@@ -378,7 +379,7 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 
-	KeypadValue.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD) , 0.0, fault));
+	m_keypad.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD) , 0.0, fault));
 	m_scale.Min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MIN), 0.0, fault));
 	m_scale.Max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MAX), 0.0, fault));
 
@@ -399,30 +400,20 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 
 UDINT rAI::generateMarkDown(rGeneratorMD& md)
 {
-	m_present.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_phValue.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_current.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_present.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_phValue.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_current.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 
 	md.add(this, true)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
 			.addProperty(XmlName::MODE , &m_flagsMode)
 			.addXml("<io_link module=\"module index\"/>" + std::string(rGeneratorMD::rItem::XML_OPTIONAL))
-			.addXml(XmlName::UNIT  , U_any)
+			.addXml(XmlName::UNIT  , static_cast<UDINT>(U_any))
 			.addXml(XmlName::KEYPAD, m_keypad.Value)
-			.addXml("<" + XmlName::SCALE + ">")
-			.addXml(XmlName::MIN, m_scale.Min, false, "\t")
-			.addXml(XmlName::MAX, m_scale.Max, false, "\t");
+			.addXml("<" + std::string(XmlName::SCALE) + ">")
+			.addXml(XmlName::MIN, m_scale.Min.Value, false, "\t")
+			.addXml(XmlName::MAX, m_scale.Max.Value, false, "\t");
+
+	return TRITONN_RESULT_OK;
 }
-
-std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
-{
-
-
-	return rSource::saveKernel(isio, objname, comment, isglobal);
-}
-
-
-
-
-
 

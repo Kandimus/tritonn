@@ -58,7 +58,7 @@ private:
 	virtual LREAL getValue();
 
 public:
-	void  init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment);
+	void  init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr);
 	void  calculateLimit();
 	STRID getSourceUnit();
 	const rSource* getOwner() const;

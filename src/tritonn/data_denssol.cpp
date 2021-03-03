@@ -2,7 +2,7 @@
 //===
 //=== data_denssol.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -32,6 +32,7 @@
 #include "data_denssol.h"
 #include "xml_util.h"
 #include "generator_md.h"
+#include "comment_defines.h"
 
 
 const UDINT DENSSOL_LE_PERIOD    = 0x00000001;
@@ -49,18 +50,18 @@ rDensSol::rDensSol(const rStation* owner) : rSource(owner), m_setup(0)
 //	Setup     = DNSSOL_SETUP_OFF;
 
 	// Настройка линков (входов)
-	initLink(rLink::Setup::OUTPUT  , m_dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE, "Вычисленная плотность в текущих условиях");
-	initLink(rLink::Setup::INOUTPUT, m_temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE, "Температура измрения плотности");
-	initLink(rLink::Setup::INOUTPUT, m_pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE, "Давление измерения плотности");
-	initLink(rLink::Setup::INPUT   , m_period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE, "Период плотномера");
-	initLink(rLink::Setup::OUTPUT  , m_dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE, "Вычисленная плотность при 15 °C");
-	initLink(rLink::Setup::OUTPUT  , m_dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE, "Вычисленная плотность при 20 °C");
-	initLink(rLink::Setup::OUTPUT  , m_b     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения в текущих условиях");
-	initLink(rLink::Setup::OUTPUT  , m_b15   , U_1_C    , SID::B15        , XmlName::B15      , rLink::SHADOW_NONE, "Вычисленный коффициент объемного расширения при 15 °C");
-	initLink(rLink::Setup::OUTPUT  , m_y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости в текущих условиях");
-	initLink(rLink::Setup::OUTPUT  , m_y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE, "Вычисленный коэффициент сжимаемости при 15 °C");
-	initLink(rLink::Setup::OUTPUT  , m_ctl   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния температуры");
-	initLink(rLink::Setup::OUTPUT  , m_cpl   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE, "Вычисленный коффицинт влияния давления");
+	initLink(rLink::Setup::OUTPUT  , m_dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);//, "Вычисленная плотность в текущих условиях");
+	initLink(rLink::Setup::INOUTPUT, m_temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);//, "Температура измрения плотности");
+	initLink(rLink::Setup::INOUTPUT, m_pres  , U_bar    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE);//, "Давление измерения плотности");
+	initLink(rLink::Setup::INPUT   , m_period, U_mksec  , SID::PERIOD     , XmlName::PERIOD   , rLink::SHADOW_NONE);//, "Период плотномера");
+	initLink(rLink::Setup::OUTPUT  , m_dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE);//, "Вычисленная плотность при 15 °C");
+	initLink(rLink::Setup::OUTPUT  , m_dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE);//, "Вычисленная плотность при 20 °C");
+	initLink(rLink::Setup::OUTPUT  , m_b     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE);//, "Вычисленный коффициент объемного расширения в текущих условиях");
+	initLink(rLink::Setup::OUTPUT  , m_b15   , U_1_C    , SID::B15        , XmlName::B15      , rLink::SHADOW_NONE);//, "Вычисленный коффициент объемного расширения при 15 °C");
+	initLink(rLink::Setup::OUTPUT  , m_y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE);//, "Вычисленный коэффициент сжимаемости в текущих условиях");
+	initLink(rLink::Setup::OUTPUT  , m_y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE);//, "Вычисленный коэффициент сжимаемости при 15 °C");
+	initLink(rLink::Setup::OUTPUT  , m_ctl   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE);//, "Вычисленный коффицинт влияния температуры");
+	initLink(rLink::Setup::OUTPUT  , m_cpl   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE);//, "Вычисленный коффицинт влияния давления");
 }
 
 
@@ -252,34 +253,34 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".k0"               , TYPE_LREAL, rVariable::Flags::R___, &m_k0                , U_DIMLESS, 0);
-	list.add(m_alias + ".k1"               , TYPE_LREAL, rVariable::Flags::R___, &m_k1                , U_DIMLESS, 0);
-	list.add(m_alias + ".k2"               , TYPE_LREAL, rVariable::Flags::R___, &m_k2                , U_DIMLESS, 0);
-	list.add(m_alias + ".factor.k0"        , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K0.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k1"        , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K1.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k2"        , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K2.Value  , U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k18"       , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K18.Value , U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k19"       , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K19.Value , U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k20a"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K20A.Value, U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k20b"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K20B.Value, U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k21a"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K21A.Value, U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.k21b"      , TYPE_LREAL, rVariable::Flags::RS__, &m_curCoef.K21B.Value, U_COEFSOL, ACCESS_SA);
-	list.add(m_alias + ".factor.set.k0"    , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K0.Value  , U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k1"    , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K1.Value  , U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K2.Value  , U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K18.Value , U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K19.Value , U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K20A.Value, U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K20B.Value, U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K21A.Value, U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___L, &m_setCoef.K21B.Value, U_COEFSOL, ACCESS_FACTORS);
-	list.add(m_alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___L, &m_accept            , U_DIMLESS, ACCESS_FACTORS);
-	list.add(m_alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___L, &m_calibrT.Value     , U_C      , ACCESS_FACTORS);
-	list.add(m_alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS__, &m_setup.Value       , U_DIMLESS, ACCESS_FACTORS);
+	list.add(m_alias + ".k0"               , TYPE_LREAL, rVariable::Flags::R__, &m_k0                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K0");
+	list.add(m_alias + ".k1"               , TYPE_LREAL, rVariable::Flags::R__, &m_k1                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K1");
+	list.add(m_alias + ".k2"               , TYPE_LREAL, rVariable::Flags::R__, &m_k2                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K2");
+	list.add(m_alias + ".factor.k0"        , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K0.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K0");
+	list.add(m_alias + ".factor.k1"        , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K1.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K1");
+	list.add(m_alias + ".factor.k2"        , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K2.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K2");
+	list.add(m_alias + ".factor.k18"       , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K18.Value , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K18");
+	list.add(m_alias + ".factor.k19"       , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K19.Value , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K19");
+	list.add(m_alias + ".factor.k20a"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K20A.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K20A");
+	list.add(m_alias + ".factor.k20b"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K20B.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K20B");
+	list.add(m_alias + ".factor.k21a"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K21A.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K21A");
+	list.add(m_alias + ".factor.k21b"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K21B.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K21B");
+	list.add(m_alias + ".factor.set.k0"    , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K0.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K0");
+	list.add(m_alias + ".factor.set.k1"    , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K1.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K1");
+	list.add(m_alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K2.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K2");
+	list.add(m_alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K18.Value , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K18");
+	list.add(m_alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K19.Value , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K19");
+	list.add(m_alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K20A.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K20A");
+	list.add(m_alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K20B.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K20B");
+	list.add(m_alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K21A.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K21A");
+	list.add(m_alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K21B.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K21B");
+	list.add(m_alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___, &m_accept            , U_DIMLESS, ACCESS_FACTORS, COMMENT::FACTOR_ACC);
+	list.add(m_alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___, &m_calibrT.Value     , U_C      , ACCESS_FACTORS, "Значение температуры калибровки");
+//	list.add(m_alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value       , U_DIMLESS, ACCESS_FACTORS);
 
-	list.add(m_alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R___, &m_fault             , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R__, &m_fault             , U_DIMLESS, 0             , COMMENT::FAULT);
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -340,39 +341,20 @@ UDINT rDensSol::loadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 }
 
 
-std::string rDensSol::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
-{
-	m_period.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_temp.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_pres.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens20.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_b.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_y.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_ctl.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_cpl.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_b15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_y15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-
-	return rSource::saveKernel(isio, objname, comment, isglobal);
-}
-
-
 UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
 {
-	m_dens.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_temp.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_pres.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_period.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_dens15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_dens20.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_b.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_b15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_y.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_y15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_ctl.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_cpl.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_dens.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_temp.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_pres.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_period.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_dens15.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_dens20.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_b.m_limit.m_setup.Init     (LIMIT_SETUP_ALL);
+	m_b15.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
+	m_y.m_limit.m_setup.Init     (LIMIT_SETUP_ALL);
+	m_y15.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
+	m_ctl.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
+	m_cpl.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
 
 	md.add(this, true)
 			.addXml(XmlName::CALIBR, m_calibrT.Value)

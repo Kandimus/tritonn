@@ -40,7 +40,13 @@ public:
 	// Настройка
 	enum Setup
 	{
-		OFF        = 0x0001,     // Cигнал выключен из обработки
+		OFF         = 0x0001,     // Cигнал выключен из обработки
+		SUCCESS_ON  = 0x0002,
+		WARNING_ON  = 0x0004,
+		ALARM_ON    = 0x0008,
+		SUCCESS_OFF = 0x0010,
+		WARNING_OFF = 0x0020,
+		ALARM_OFF   = 0x0040,
 	};
 
 	// Режимы
@@ -57,10 +63,10 @@ public:
 public:
 	virtual const char *RTTI() const { return "di"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
+	virtual UDINT generateVars(rVariableList& list);
+	virtual UDINT generateMarkDown(rGeneratorMD& md);
+	virtual UDINT calculate();
 
 	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
 	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
@@ -82,8 +88,11 @@ public:
 //	UDINT       Security;                //
 
 private:
+	LREAL    m_oldvalue;
+
 	static rBitsArray m_flagsMode;
 	static rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsStatus;
 };
 
 

@@ -84,7 +84,7 @@
 		<str id="1004">давление</str> <!-- SID_PRESSURE -->
 		<str id="1005">период</str> <!-- SID_PERIOD -->
 		<str id="1006">плотность</str> <!-- SID_DENSITY -->
-		<str id="1007">плотность при н.у.</str> <!-- SID_DENSITY15 -->
+		<str id="1007">плотность при 15 °C</str> <!-- SID_DENSITY15 -->
 		<str id="1008">плотность при 20 °C</str> <!-- SID_DENSITY20 -->
 		<str id="1009">коэфициент β</str> <!-- SID_B -->
 		<str id="1010">коэфициент β при н.у.</str> <!-- SID_B15 -->

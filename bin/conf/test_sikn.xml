@@ -401,11 +401,10 @@
 					</di>
 					<do name="valve_open" mode="PHIS" setup="" description="4003">
 						<io_link module="1" channel="8"/>
-						<keypad>0</keypad>
 					</do>
 					<do name="valve_close" mode="PHIS" setup="" description="4003">
 						<io_link module="1" channel="8"/>
-						<keypad>0</keypad>
+						<value>1</value>
 					</do>
 				</io>
 				<calculate>

@@ -229,12 +229,12 @@ UDINT rDI::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".keypad", TYPE_USINT, rVariable::Flags::___L, &m_keypadValue.Value, U_DIMLESS, ACCESS_KEYPAD);
-	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value      , U_DIMLESS, ACCESS_SA);
-	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___L, &m_mode             , U_DIMLESS, ACCESS_KEYPAD);
-	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R___, &m_status           , U_DIMLESS, 0);
+	list.add(m_alias + ".keypad", TYPE_USINT, rVariable::Flags::___, &m_keypadValue.Value, U_DIMLESS, ACCESS_KEYPAD, "Значение ручного ввода");
+	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value      , U_DIMLESS, ACCESS_SA);
+	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___, &m_mode             , U_DIMLESS, ACCESS_KEYPAD);
+	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R__, &m_status           , U_DIMLESS, 0);
 
-	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R___, &m_fault            , U_DIMLESS, 0);
+	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R__, &m_fault            , U_DIMLESS, 0);
 
 	return TRITONN_RESULT_OK;
 }

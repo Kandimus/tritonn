@@ -185,9 +185,9 @@ rEvent& rSource::reinitEvent(UDINT eid)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rSource::initLink(UINT setup, rLink& link, UDINT unit, UDINT nameid, const std::string& name, const std::string& shadow, const std::string& comment)
+UDINT rSource::initLink(UINT setup, rLink& link, UDINT unit, STRID nameid, const std::string& name, const std::string& shadow)
 {
-	link.init(setup, unit, this, name, nameid, comment);
+	link.init(setup, unit, this, name, nameid);
 
 	link.m_shadow = shadow;
 

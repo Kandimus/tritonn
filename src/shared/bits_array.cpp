@@ -144,17 +144,22 @@ std::string rBitsArray::getMarkDown(const std::string& name) const
 	return result;
 }
 
-std::string rBitsArray::getInfo() const
+std::string rBitsArray::getInfo(bool isnumbers) const
 {
 	std::string result = "";
 
 	for (auto& item : m_list) {
-		switch(item.m_type) {
-			case TYPE_UDINT: result += String_format("%08x", item.m_value); break;
-			case TYPE_UINT : result += String_format("%04x", item.m_value); break;
-			case TYPE_USINT: result += String_format("%02x", item.m_value); break;
+		if (isnumbers) {
+			result += String_format("%u", item.m_value);
 
-			default: result += String_format("unknow type %i", item.m_value); break;
+		} else {
+			switch(item.m_type) {
+				case TYPE_UDINT: result += String_format("%08x", item.m_value); break;
+				case TYPE_UINT : result += String_format("%04x", item.m_value); break;
+				case TYPE_USINT: result += String_format("%02x", item.m_value); break;
+
+				default: result += String_format("unknow type %i", item.m_value); break;
+			}
 		}
 
 		result += ": " + item.m_comment+ "\n";
