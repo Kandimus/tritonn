@@ -15,7 +15,6 @@
 
 #include "data_sampler.h"
 #include <vector>
-//#include <string.h>
 #include "tickcount.h"
 #include "event_manager.h"
 #include "error.h"
@@ -25,9 +24,12 @@
 #include "xml_util.h"
 #include "text_id.h"
 #include "generator_md.h"
+#include "comment_defines.h"
 
 rBitsArray rSampler::m_flagsMethod;
 rBitsArray rSampler::m_flagsSetup;
+rBitsArray rSampler::m_flagsCommand;
+rBitsArray rSampler::m_flagsState;
 
 const UDINT LE_IO_START = 0x00000001;
 const UDINT LE_IO_STOP  = 0x00000002;
@@ -50,16 +52,43 @@ rSampler::rSampler(const rStation* owner) : rSource(owner)
 				.add("ERR2RESERVE" , static_cast<UINT>(Setup::ERR_RESERV) , "При аварии перейти на резервный пробоотборник")
 				.add("FILL2RESERVE", static_cast<UINT>(Setup::FILL_RESERV), "При заполнении переходить на резервный пробоотборник")
 				.add("SINGLECAN"   , static_cast<UINT>(Setup::SINGLE_CAN) , "Используется только один бак пробоотборника")
-				.add("DUALCAN"     , static_cast<UINT>(Setup::DUAL_CAN)   , "Использовать два бака пробоотборника")
-				.add("AUTOSWITCH"  , static_cast<UINT>(Setup::AUTOSWITCH) , "При заполнении переходить на другой бак пробоотборника");
+				.add("DUALCAN"     , static_cast<UINT>(Setup::DUAL_CAN)   , "Использовать две емкости пробоотборника")
+				.add("AUTOSWITCH"  , static_cast<UINT>(Setup::AUTOSWITCH) , "При заполнении переходить на другую емкость пробоотборника");
 	}
 
-	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		std::string name = String_format("can_%c.", 'a' + ii);
-		initLink(rLink::Setup::INPUT , m_can[ii].m_overflow, U_discrete, SID::CANFILLED, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
-		initLink(rLink::Setup::INPUT , m_can[ii].m_fault   , U_discrete, SID::FAULT    , name + XmlName::FAULT    , rLink::SHADOW_NONE);
-		initLink(rLink::Setup::INPUT , m_can[ii].m_weight  , U_g       , SID::CANMASS  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+	if (m_flagsCommand.empty()) {
+		m_flagsCommand
+				.add("", static_cast<UINT>(Command::NONE)   , "Нет действий")
+				.add("", static_cast<UINT>(Command::START)  , "Запустить пробоотборник")
+				.add("", static_cast<UINT>(Command::STOP)   , "Остановить пробоотборник")
+				.add("", static_cast<UINT>(Command::TEST)   , "Запустить тест пробоотборника")
+				.add("", static_cast<UINT>(Command::CONFIRM), "Подтверждение аварий")
+				.add("", static_cast<UINT>(Command::PAUSE)  , "Пауза")
+				.add("", static_cast<UINT>(Command::RESUME) , "Продолжить");
 	}
+
+	if (m_flagsState.empty()) {
+		m_flagsState
+				.add("", static_cast<UINT>(State::IDLE)      , "Не в работе")
+				.add("", static_cast<UINT>(State::TEST)      , "Запущен тест")
+				.add("", static_cast<UINT>(State::WORKTIME)  , "Отбор по времени")
+				.add("", static_cast<UINT>(State::WORKVOLUME), "Отбор по объему")
+				.add("", static_cast<UINT>(State::WORKMASS)  , "Отбор по массе")
+				.add("", static_cast<UINT>(State::PAUSE)     , "Пауза")
+				.add("", static_cast<UINT>(State::FINISH)    , "Завершение отбора")
+				.add("", static_cast<UINT>(State::ERROR)     , "Аварийное состояние");
+	}
+
+	std::string name = "can_a.";
+	initLink(rLink::Setup::INPUT , m_can[0].m_overflow, U_discrete, SID::CANFILLED0, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[0].m_fault   , U_discrete, SID::CANFAULT0 , name + XmlName::FAULT    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[0].m_weight  , U_g       , SID::CANMASS0  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+
+	name = "can_b.";
+	initLink(rLink::Setup::INPUT , m_can[1].m_overflow, U_discrete, SID::CANFILLED1, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[1].m_fault   , U_discrete, SID::CANFAULT1 , name + XmlName::FAULT    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[1].m_weight  , U_g       , SID::CANMASS1  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+
 	initLink(rLink::Setup::INPUT , m_ioStart , U_discrete, SID::CANIOSTART, XmlName::IOSTART  , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_ioStop  , U_discrete, SID::CANIOSTOP , XmlName::IOSTOP   , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::OUTPUT, m_grab    , U_discrete, SID::GRAB      , XmlName::GRAB     , rLink::SHADOW_NONE);
@@ -345,34 +374,33 @@ void rSampler::onWorkError()
 //
 UDINT rSampler::generateVars(rVariableList& list)
 {
+	std::string prefix = m_alias + ".can_";
+
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".method"      , TYPE_UINT , rVariable::Flags::___L, &m_method     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".setup"       , TYPE_UINT , rVariable::Flags::___L, &m_setup.Value, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".select"      , TYPE_UINT , rVariable::Flags::____, &m_select     , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".command"     , TYPE_UINT , rVariable::Flags::___L, &m_command    , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(m_alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow     , U_DIMLESS, 0);
-	list.add(m_alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___L, &m_probePeriod, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___L, &m_probeVolume, U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___L, &m_probeMass  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___L, &m_probeTest  , U_DIMLESS, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	list.add(m_alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol    , U_ml     , 0);
-	list.add(m_alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount  , U_DIMLESS, 0);
-	list.add(m_alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent, U_DIMLESS, 0);
-	list.add(m_alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain , U_DIMLESS, 0);
-	list.add(m_alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::____, &m_canVolume  , U_ml     , 0);
-	list.add(m_alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R___, &m_canPresent , U_ml     , 0);
-	list.add(m_alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R___, &m_canRemain  , U_ml     , 0);
-	list.add(m_alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R___, &m_interval   , U_DIMLESS, 0);
-	list.add(m_alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain , U_msec   , 0);
-	list.add(m_alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart  , U_sec    , 0);
-
-	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		std::string prefix = m_alias + String_format(".can_%c", 'a' + ii);
-		list.add(prefix + ".volume", TYPE_LREAL, rVariable::Flags::___L, &m_can[ii].m_volume, U_ml, ACCESS_SAMPLERS | ACCESS_SETSAMPLERS);
-	}
+	list.add(m_alias + ".method"      , TYPE_UINT , rVariable::Flags::___, &m_method         , U_DIMLESS, ACCESS_SAMPLERS   , "Метод:\n" + m_flagsMethod.getInfo(true));
+	list.add(m_alias + ".setup"       , TYPE_UINT , rVariable::Flags::___, &m_setup.Value    , U_DIMLESS, ACCESS_SETSAMPLERS, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".select"      , TYPE_UINT , rVariable::Flags::___, &m_select         , U_DIMLESS, ACCESS_SAMPLERS   , "Выбор бака:\n0 - емкость А\n1 - емкость Б");
+	list.add(m_alias + ".command"     , TYPE_UINT , rVariable::Flags::___, &m_command        , U_DIMLESS, ACCESS_SAMPLERS   , COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+	list.add(m_alias + ".state"       , TYPE_UINT , rVariable::Flags::R__, &m_state          , U_DIMLESS, 0                 , COMMENT::STATUS + m_flagsState.getInfo(true));
+	list.add(m_alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R__, &m_noflow         , U_DIMLESS, 0                 , "Флаг отсутствия расхода");
+	list.add(m_alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___, &m_probePeriod    , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по времени. Период отбора");
+	list.add(m_alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___, &m_probeVolume    , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по объему. Требуемый объем для отбора");
+	list.add(m_alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___, &m_probeMass      , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по массе. Требуемая масса для отбора");
+	list.add(m_alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___, &m_probeTest      , U_DIMLESS, ACCESS_SETSAMPLERS, "Количество тестовых доз");
+	list.add(m_alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R__, &m_grabVol        , U_ml     , 0                 , "Объем единичной дозы");
+	list.add(m_alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R__, &m_grabCount      , U_DIMLESS, 0                 , "Общее количество доз");
+	list.add(m_alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R__, &m_grabPresent    , U_DIMLESS, 0                 , "Количество отобранных доз");
+	list.add(m_alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R__, &m_grabRemain     , U_DIMLESS, 0                 , "Количство оставшихся доз");
+	list.add(m_alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::___, &m_canVolume      , U_ml     , ACCESS_SETSAMPLERS, "Требуемый объем емкости");
+	list.add(m_alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R__, &m_canPresent     , U_ml     , 0                 , "Заполенный объем емкости");
+	list.add(m_alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R__, &m_canRemain      , U_ml     , 0                 , "Оставшийся для заполнения объем емкости");
+	list.add(m_alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R__, &m_interval       , U_DIMLESS, 0                 , "Интервал отбора");
+	list.add(m_alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R__, &m_timeRemain     , U_msec   , 0                 , "Оставшееся время обора");
+	list.add(m_alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R__, &m_timeStart      , U_sec    , 0                 , "Время старта пробоотбора");
+	list.add(prefix  + "a.volume"     , TYPE_LREAL, rVariable::Flags::___, &m_can[0].m_volume, U_ml     , ACCESS_SAMPLERS   , "Объем емкости А");
+	list.add(prefix  + "a.volume"     , TYPE_LREAL, rVariable::Flags::___, &m_can[1].m_volume, U_ml     , ACCESS_SAMPLERS   , "Объем емкости Б");
 
 	return TRITONN_RESULT_OK;
 }
@@ -523,27 +551,6 @@ UDINT rSampler::check(rError& err)
 
 	return TRITONN_RESULT_OK;
 }
-
-
-std::string rSampler::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
-{
-	UNUSED(isio);
-	UNUSED(isglobal);
-
-	m_ioStart.m_limit.m_setup.Init(rLimit::Setup::OFF);
-	m_ioStop.m_limit.m_setup.Init(rLimit::Setup::OFF);
-	m_grab.m_limit.m_setup.Init(rLimit::Setup::OFF);
-	m_selected.m_limit.m_setup.Init(rLimit::Setup::OFF);
-
-	for (UDINT ii = 0; ii < CAN_MAX; ++ii) {
-		m_can[ii].m_overflow.m_limit.m_setup.Init(rLimit::Setup::OFF);
-		m_can[ii].m_fault.m_limit.m_setup.Init(rLimit::Setup::OFF);
-		m_can[ii].m_weight.m_limit.m_setup.Init(rLimit::Setup::OFF);
-	}
-
-	return rSource::saveKernel(false, objname, comment, false);
-}
-
 
 UDINT rSampler::generateMarkDown(rGeneratorMD& md)
 {

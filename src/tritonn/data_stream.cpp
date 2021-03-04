@@ -210,36 +210,36 @@ UDINT rStream::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".setup"                 , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value             , U_DIMLESS       , ACCESS_SA);
-	list.add(m_alias + ".flowmeter"             , TYPE_USINT, rVariable::Flags::R__L, &m_flowmeter               , U_DIMLESS       , 0);
-	list.add(m_alias + ".maintenance"           , TYPE_UDINT, rVariable::Flags::___L, &m_maintenance             , U_DIMLESS       , ACCESS_MAINTENANCE);
-	list.add(m_alias + ".linearization"         , TYPE_UDINT, rVariable::Flags::___L, &m_linearization           , U_DIMLESS       , ACCESS_FACTORS);
-	list.add(m_alias + ".total.present.Volume"  , TYPE_LREAL, rVariable::Flags::R___, &m_total.Present.Volume    , unit.getVolume(), 0);
-	list.add(m_alias + ".total.present.Volume15", TYPE_LREAL, rVariable::Flags::R___, &m_total.Present.Volume15  , unit.getVolume(), 0);
-	list.add(m_alias + ".total.present.Volume20", TYPE_LREAL, rVariable::Flags::R___, &m_total.Present.Volume20  , unit.getVolume(), 0);
-	list.add(m_alias + ".total.present.Mass"    , TYPE_LREAL, rVariable::Flags::R___, &m_total.Present.Mass      , unit.getMass()  , 0);
-	list.add(m_alias + ".total.present.impulse" , TYPE_UDINT, rVariable::Flags::R___, &m_total.Present.Count     , U_imp           , 0);
-	list.add(m_alias + ".total.Inc.Volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Inc.Volume        , unit.getVolume(), ACCESS_SA);
-	list.add(m_alias + ".total.Inc.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Inc.Volume15      , unit.getVolume(), ACCESS_SA);
-	list.add(m_alias + ".total.Inc.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Inc.Volume20      , unit.getVolume(), ACCESS_SA);
-	list.add(m_alias + ".total.Inc.Mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Inc.Mass          , unit.getMass()  , ACCESS_SA);
-	list.add(m_alias + ".total.Inc.inpulse"     , TYPE_UDINT, rVariable::Flags::RSH_, &m_total.Inc.Count         , U_imp           , ACCESS_SA);
-	list.add(m_alias + ".total.raw.Volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Raw.Volume        , unit.getVolume(), 0);
-	list.add(m_alias + ".total.raw.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Raw.Volume15      , unit.getVolume(), 0);
-	list.add(m_alias + ".total.raw.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Raw.Volume20      , unit.getVolume(), 0);
-	list.add(m_alias + ".total.raw.Mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Raw.Mass          , unit.getMass()  , 0);
-	list.add(m_alias + ".total.raw.impulse"     , TYPE_UDINT, rVariable::Flags::RSH_, &m_total.Raw.Count         , U_imp           , 0);
-	list.add(m_alias + ".total.past.Volume"     , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Past.Volume       , unit.getVolume(), 0);
-	list.add(m_alias + ".total.past.Volume15"   , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Past.Volume15     , unit.getVolume(), 0);
-	list.add(m_alias + ".total.past.Volume20"   , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Past.Volume20     , unit.getVolume(), 0);
-	list.add(m_alias + ".total.past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.Past.Mass         , unit.getMass()  , 0);
-	list.add(m_alias + ".total.past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH_, &m_total.Past.Count        , U_imp           , 0);
-	list.add(m_alias + ".presentkf"             , TYPE_LREAL, rVariable::Flags::R___, &m_curKF                   , getUnitKF()     , 0);
-	list.add(m_alias + ".factors.kf"            , TYPE_LREAL, rVariable::Flags::R___, &m_curFactor.KeypadKF.Value, getUnitKF()     , 0);
-	list.add(m_alias + ".factors.mf"            , TYPE_LREAL, rVariable::Flags::R__L, &m_curFactor.KeypadMF.Value, U_DIMLESS       , 0);
-	list.add(m_alias + ".factors.set.kf"        , TYPE_LREAL, rVariable::Flags::___L, &m_setFactor.KeypadKF.Value, getUnitKF()     , ACCESS_FACTORS);
-	list.add(m_alias + ".factors.set.mf"        , TYPE_LREAL, rVariable::Flags::___L, &m_setFactor.KeypadMF.Value, U_DIMLESS       , ACCESS_FACTORS);
-	list.add(m_alias + ".factors.set.accept"    , TYPE_UDINT, rVariable::Flags::___L, &m_acceptKF                , U_DIMLESS       , ACCESS_FACTORS);
+	list.add(m_alias + ".setup"                 , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value             , U_DIMLESS       , ACCESS_SA);
+	list.add(m_alias + ".flowmeter"             , TYPE_USINT, rVariable::Flags::R__, &m_flowmeter               , U_DIMLESS       , 0);
+	list.add(m_alias + ".maintenance"           , TYPE_UDINT, rVariable::Flags::___, &m_maintenance             , U_DIMLESS       , ACCESS_MAINTENANCE);
+	list.add(m_alias + ".linearization"         , TYPE_UDINT, rVariable::Flags::___, &m_linearization           , U_DIMLESS       , ACCESS_FACTORS);
+	list.add(m_alias + ".total.present.Volume"  , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume    , unit.getVolume(), 0);
+	list.add(m_alias + ".total.present.Volume15", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume15  , unit.getVolume(), 0);
+	list.add(m_alias + ".total.present.Volume20", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume20  , unit.getVolume(), 0);
+	list.add(m_alias + ".total.present.Mass"    , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Mass      , unit.getMass()  , 0);
+	list.add(m_alias + ".total.present.impulse" , TYPE_UDINT, rVariable::Flags::R__, &m_total.Present.Count     , U_imp           , 0);
+	list.add(m_alias + ".total.Inc.Volume"      , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume        , unit.getVolume(), ACCESS_SA);
+	list.add(m_alias + ".total.Inc.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume15      , unit.getVolume(), ACCESS_SA);
+	list.add(m_alias + ".total.Inc.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume20      , unit.getVolume(), ACCESS_SA);
+	list.add(m_alias + ".total.Inc.Mass"        , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Mass          , unit.getMass()  , ACCESS_SA);
+	list.add(m_alias + ".total.Inc.inpulse"     , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Inc.Count         , U_imp           , ACCESS_SA);
+	list.add(m_alias + ".total.raw.Volume"      , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume        , unit.getVolume(), 0);
+	list.add(m_alias + ".total.raw.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume15      , unit.getVolume(), 0);
+	list.add(m_alias + ".total.raw.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume20      , unit.getVolume(), 0);
+	list.add(m_alias + ".total.raw.Mass"        , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Mass          , unit.getMass()  , 0);
+	list.add(m_alias + ".total.raw.impulse"     , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Raw.Count         , U_imp           , 0);
+	list.add(m_alias + ".total.past.Volume"     , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume       , unit.getVolume(), 0);
+	list.add(m_alias + ".total.past.Volume15"   , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume15     , unit.getVolume(), 0);
+	list.add(m_alias + ".total.past.Volume20"   , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume20     , unit.getVolume(), 0);
+	list.add(m_alias + ".total.past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Mass         , unit.getMass()  , 0);
+	list.add(m_alias + ".total.past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Past.Count        , U_imp           , 0);
+	list.add(m_alias + ".presentkf"             , TYPE_LREAL, rVariable::Flags::R__, &m_curKF                   , getUnitKF()     , 0);
+	list.add(m_alias + ".factors.kf"            , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.KeypadKF.Value, getUnitKF()     , 0);
+	list.add(m_alias + ".factors.mf"            , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.KeypadMF.Value, U_DIMLESS       , 0);
+	list.add(m_alias + ".factors.set.kf"        , TYPE_LREAL, rVariable::Flags::___, &m_setFactor.KeypadKF.Value, getUnitKF()     , ACCESS_FACTORS);
+	list.add(m_alias + ".factors.set.mf"        , TYPE_LREAL, rVariable::Flags::___, &m_setFactor.KeypadMF.Value, U_DIMLESS       , ACCESS_FACTORS);
+	list.add(m_alias + ".factors.set.accept"    , TYPE_UDINT, rVariable::Flags::___, &m_acceptKF                , U_DIMLESS       , ACCESS_FACTORS);
 
 
 	for (UDINT ii = 0; ii < m_curFactor.m_point.size(); ++ii) {

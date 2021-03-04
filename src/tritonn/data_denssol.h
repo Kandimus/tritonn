@@ -48,10 +48,10 @@ protected:
 public:
 	virtual const char *RTTI() const { return "denssol"; }
 
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
-	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual UDINT calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
 protected:
 	virtual UDINT       initLimitEvent(rLink& link);
 

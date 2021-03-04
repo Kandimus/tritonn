@@ -27,6 +27,8 @@
 #include "variable_list.h"
 #include "data_selector.h"
 #include "xml_util.h"
+#include "generator_md.h"
+#include "comment_defines.h"
 
 
 const UDINT SELECTOR_LE_NOCHANGE = 0x00000001;
@@ -41,16 +43,16 @@ rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , SELECTOR_SETUP_OFF)
-				.add("NOEVENT", SELECTOR_SETUP_NOEVENT);
+				.add("OFF"    , SELECTOR_SETUP_OFF    , COMMENT::SETUP_OFF)
+				.add("NOEVENT", SELECTOR_SETUP_NOEVENT, "Запретить выдачу сообщений");
 	}
 
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("NEXT"    , SELECTOR_MODE_CHANGENEXT)
-				.add("PREV"    , SELECTOR_MODE_CHANGEPREV)
-				.add("NOCHANGE", SELECTOR_MODE_NOCHANGE)
-				.add("ERROR"   , SELECTOR_MODE_TOERROR);
+				.add("NEXT"    , SELECTOR_MODE_CHANGENEXT, "При аварии переключить на следующий вход")
+				.add("PREV"    , SELECTOR_MODE_CHANGEPREV, "При аварии переключить на предыдущий вход")
+				.add("NOCHANGE", SELECTOR_MODE_NOCHANGE  , "При аварии не переходить на другой вход")
+				.add("ERROR"   , SELECTOR_MODE_TOERROR   , "При аварии переходить на аварийное значение");
 	}
 
 	//TODO Нужно ли очищать свойства класса?
@@ -466,6 +468,9 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rSelector::generateMarkDown(rGeneratorMD& md)
+{
 
+}
 
 

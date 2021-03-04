@@ -41,28 +41,28 @@ public:
 
 	rLink() = default;
 	virtual ~rLink() = default;
-	
-	// Виртуальные функции от rSource
-public:
-	virtual const char* RTTI() const { return "link"; }
 
-	virtual UDINT getFault();
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT calculate();
-	virtual UDINT generateVars(rVariableList& list);
-
-private:
-	virtual UDINT initLimitEvent(rLink &link);
-	virtual LREAL getValue(const std::string& name, UDINT unit, UDINT& err);
-
-	virtual LREAL getValue();
-
-public:
 	void  init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr);
 	void  calculateLimit();
 	STRID getSourceUnit();
 	const rSource* getOwner() const;
 	bool  isValid() const;
+	
+	// Виртуальные функции от rSource
+public:
+	virtual const char* RTTI() const override { return "link"; }
+
+	virtual UDINT getFault() override;
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT calculate() override;
+	virtual UDINT generateVars(rVariableList& list) override;
+
+private:
+	virtual UDINT initLimitEvent(rLink &link) override;
+	virtual LREAL getValue(const std::string& name, UDINT unit, UDINT& err) override;
+
+private:
+	LREAL getValue();
 
 public:
 	std::string m_fullTag = "";         // Полное имя тега-источника (пример "sikn.line.io.temp:present")

@@ -29,9 +29,13 @@
 #include "simplefile.h"
 #include "data_report.h"
 #include "xml_util.h"
+#include "comment_defines.h"
 
 rBitsArray rReport::m_flagsType;
 rBitsArray rReport::m_flagsPeriod;
+rBitsArray rReport::m_flagsStatus;
+rBitsArray rReport::m_flagsMark;
+rBitsArray rReport::m_flagsCommand;
 
 void rReportTime::SetCurTime()
 {
@@ -42,12 +46,12 @@ void rReportTime::SetCurTime()
 //
 void rReportTime::generateVars(const string &prefix, rVariable::Flags flags, UDINT access, rVariableList& list)
 {
-	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access);
-	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access);
-	list.add(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access);
-	list.add(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access);
-	list.add(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access);
-	list.add(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access);
+	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access, COMMENT::SECONDS);
+	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access, COMMENT::MINUTES);
+	list.add(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access, COMMENT::HOURS);
+	list.add(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access, COMMENT::DAY);
+	list.add(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access, COMMENT::MONTH);
+	list.add(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access, COMMENT::YEAR);
 }
 
 
@@ -106,7 +110,7 @@ rReportTotal::~rReportTotal()
 //
 rReportDataset::rReportDataset()
 {
-	Mark = REPORT_MARK_UNDEF;
+	m_mark = rReport::Mark::UNDEF;
 }
 
 
@@ -155,31 +159,56 @@ rReport::rReport() : rSource()
 {
 	if (m_flagsType.empty()) {
 		m_flagsType
-				.add("PERIODIC", REPORT_PERIODIC)
-				.add("BATCH"   , REPORT_BATCH);
+				.add("PERIODIC", REPORT_PERIODIC, "Переодический отчет")
+				.add("BATCH"   , REPORT_BATCH   , "Партионный отчет");
 	}
 
 	if (m_flagsPeriod.empty()) {
 		m_flagsPeriod
-				.add("HOUR"     , REPORT_PERIOD_HOUR)
-				.add("2HOUR"    , REPORT_PERIOD_2HOUR)
-				.add("3HOUR"    , REPORT_PERIOD_3HOUR)
-				.add("4HOUR"    , REPORT_PERIOD_4HOUR)
-				.add("6HOUR"    , REPORT_PERIOD_6HOUR)
-				.add("8HOUR"    , REPORT_PERIOD_8HOUR)
-				.add("12HOUR"   , REPORT_PERIOD_12HOUR)
-				.add("DAYLY"    , REPORT_PERIOD_DAYLY)
-				.add("WEEKLY"   , REPORT_PERIOD_WEEKLY)
-				.add("BIWEEKLY" , REPORT_PERIOD_BIWEEKLY)
-				.add("MONTHLY"  , REPORT_PERIOD_MONTHLY)
-				.add("QUARTERLY", REPORT_PERIOD_QUARTERLY)
-				.add("ANNUAL"   , REPORT_PERIOD_ANNUAL)
-				.add("5MIN"     , REPORT_PERIOD_5MIN)
-				.add("15MIN"    , REPORT_PERIOD_15MIN);
+				.add("HOUR"     , REPORT_PERIOD_HOUR     , "Часовой отчет")
+				.add("2HOUR"    , REPORT_PERIOD_2HOUR    , "Двухчасовой отчет")
+				.add("3HOUR"    , REPORT_PERIOD_3HOUR    , "Трехчасовой отчет")
+				.add("4HOUR"    , REPORT_PERIOD_4HOUR    , "Четырехчасовой отчет")
+				.add("6HOUR"    , REPORT_PERIOD_6HOUR    , "Шестичасовой отчет")
+				.add("8HOUR"    , REPORT_PERIOD_8HOUR    , "Восьмичасовой отчет")
+				.add("12HOUR"   , REPORT_PERIOD_12HOUR   , "Двенадцатичасовой отчет")
+				.add("DAYLY"    , REPORT_PERIOD_DAYLY    , "Суточный отчет")
+				.add("WEEKLY"   , REPORT_PERIOD_WEEKLY   , "Недельный отчет")
+				.add("BIWEEKLY" , REPORT_PERIOD_BIWEEKLY , "Двухнедельный отчет")
+				.add("MONTHLY"  , REPORT_PERIOD_MONTHLY  , "Месячный отчет")
+				.add("QUARTERLY", REPORT_PERIOD_QUARTERLY, "Квартальный отчет")
+				.add("ANNUAL"   , REPORT_PERIOD_ANNUAL   , "Годовой отчет")
+				.add("5MIN"     , REPORT_PERIOD_5MIN     , "Пятиминутный отчет")
+				.add("15MIN"    , REPORT_PERIOD_15MIN    , "Пятьнадцатиминутный отчет");
 
 	}
 
-	Status = REPORT_STATUS_IDLE;
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::IDLE)     , "Не запущен")
+				.add("", static_cast<UINT>(Status::RUNNING)  , "Запущен")
+				.add("", static_cast<UINT>(Status::WAITING)  , "В паузе")
+				.add("", static_cast<UINT>(Status::COMPLETED), "Заверщен");
+	}
+
+	if (m_flagsMark.empty()) {
+		m_flagsMark
+				.add("", static_cast<UINT>(Mark::UNDEF)     , COMMENT::STATUS_UNDEF)
+				.add("", static_cast<UINT>(Mark::ILLEGAL)   , "Недействительный")
+				.add("", static_cast<UINT>(Mark::INCOMPLETE), "Неполный")
+				.add("", static_cast<UINT>(Mark::VALIDATE)  , "Действительный")
+				.add("", static_cast<UINT>(Mark::INPROGRESS), "В работе");
+	}
+
+	if (m_flagsCommand.empty()) {
+		m_flagsCommand
+				.add("", static_cast<UINT>(Command::NONE)   , "Нет действий")
+				.add("", static_cast<UINT>(Command::START)  , "Запустить")
+				.add("", static_cast<UINT>(Command::STOP)   , "Остановить")
+				.add("", static_cast<UINT>(Command::RESTART), "Перезапустить");
+	}
+
+	m_status = Status::IDLE;
 }
 
 
@@ -207,7 +236,7 @@ UDINT rReport::calculate()
 
 	// Обработка периодических отчетов
 	if (Type == REPORT_PERIODIC) {
-		if (Status == REPORT_STATUS_RUNNING) {
+		if (m_status == Status::RUNNING) {
 			// Проверка на завершение отчета
 			if (CheckFinishPeriodic()) {
 				Store();
@@ -215,22 +244,22 @@ UDINT rReport::calculate()
 			}
 
 		// Проверка на незавершенный отчет при WarmStart
-		} else if (Status == REPORT_STATUS_IDLE) {
+		} else if (m_status == Status::IDLE) {
 			if (Present.StartTime._UNIX) {
 				Time64_T curtime = timegm64(NULL);
 
 				// Если время отчета уже вышло, то сохраняем его с меткой "недействительный"
 				if(curtime - Present.StartTime._UNIX >= GetUNIXPeriod())
 				{
-					Present.Mark = REPORT_MARK_ILLEGAL;
+					Present.m_mark = rReport::Mark::ILLEGAL;
 					Store();
 					Start();
-					Present.Mark = REPORT_MARK_INCOMPLETE;
+					Present.m_mark = rReport::Mark::INCOMPLETE;
 				}
 				// Если время еще не вышло, то сохраняем с меткой "неполный"
 				else
 				{
-					Present.Mark = REPORT_MARK_INCOMPLETE;
+					Present.m_mark = rReport::Mark::INCOMPLETE;
 				}
 			}
 		}
@@ -291,26 +320,23 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 {
 	string name = "";
 
-	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS__, &Mark, U_DIMLESS, ACCESS_SA);
+	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS_, &m_mark, U_DIMLESS, ACCESS_SA, COMMENT::STATUS + rReport::m_flagsMark.getInfo(true));
 
-	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS__, ACCESS_SA, list);
-	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS__, ACCESS_SA, list);
+	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS_, ACCESS_SA, list);
+	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS_, ACCESS_SA, list);
 
 	// Формируем переменые
-	for(UDINT ii = 0; ii < AverageItems.size(); ++ii)
-	{
-		rReportTotal *tot = AverageItems[ii];
-
+	for (auto tot :  AverageItems) {
 		name = prefix + tot->Name + ".total.";
 
-		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA);
-		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA);
-		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA);
-		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA);
+		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS_, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA, COMMENT::BEGIN + COMMENT::MASS);
+		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS_, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA, COMMENT::BEGIN + COMMENT::VOLUME);
+		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS_, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA, COMMENT::BEGIN + COMMENT::VOLUME15);
+		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS_, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA, COMMENT::BEGIN + COMMENT::VOLUME20);
+		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS_, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA, COMMENT::END   + COMMENT::MASS);
+		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS_, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA, COMMENT::END   + COMMENT::VOLUME);
+		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS_, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA, COMMENT::END   + COMMENT::VOLUME15);
+		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS_, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA, COMMENT::END   + COMMENT::VOLUME20);
 
 		name = prefix + tot->Name + ".";
 
@@ -318,7 +344,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 		{
 			rReportItem *itm = tot->Items[jj];
 
-			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA);
+			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS_, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA, "???");
 		}
 	}
 
@@ -328,7 +354,7 @@ void rReportDataset::generateVars(const string &prefix, rVariableList& list)
 	{
 		rReportItem *itm = SnapshotItems[ii];
 
-		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA);
+		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS_, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA, "???");
 	}
 }
 
@@ -343,19 +369,19 @@ UDINT rReport::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Общие переменные для всех типов отчетов
-	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R___, &Type         , U_DIMLESS, 0);
-	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT);
+	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R__, &Type         , U_DIMLESS, 0, "Тип отчета:\n" + m_flagsType.getInfo(true));
+	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::___, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT, "Команда загрузки архивного отчета:\n0 - нет действия\n1 - загрузить отчет");
 
-	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::____, ACCESS_REPORT, list);
+	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::___, ACCESS_REPORT, list);
 
 	if(REPORT_PERIODIC == Type)
 	{
-		list.add(name + "period", TYPE_UINT, rVariable::Flags::____, &Period, U_DIMLESS, 0);
+		list.add(name + "period", TYPE_UINT, rVariable::Flags::___, &Period, U_DIMLESS, 0, "Период отчета");
 	}
 	else
 	{
-		list.add(name + "command", TYPE_USINT, rVariable::Flags::____, &Command, U_DIMLESS, ACCESS_BATCH);
-		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R___, &Status , U_DIMLESS, 0);
+		list.add(name + "command", TYPE_USINT, rVariable::Flags::___, &m_command.Value, U_DIMLESS, ACCESS_BATCH, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R__, &m_status       , U_DIMLESS, 0           , COMMENT::STATUS  + m_flagsStatus.getInfo(true));
 	}
 
 	Present.generateVars  (name + "present."  , list);
@@ -531,12 +557,12 @@ UDINT rReport::Store()
 {
 	Present.FinalTime.SetCurTime();
 
-	Completed.Mark      = Present.Mark;
+	Completed.m_mark    = Present.m_mark;
 	Completed.StartTime = Present.StartTime;
 	Completed.FinalTime = Present.FinalTime;
 //	TimeStartUNIX       = 0;
 //	TimeFinishUNIX      = 0;
-	Status              = REPORT_STATUS_COMPLETED;
+	m_status            = Status::COMPLETED;
 
 	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii)
 	{
@@ -580,8 +606,8 @@ UDINT rReport::Store()
 UDINT rReport::Start()
 {
 	Present.StartTime.SetCurTime();
-	Present.Mark  = REPORT_MARK_INPROGRESS;
-	Status        = REPORT_STATUS_RUNNING;
+	Present.m_mark = Mark::INPROGRESS;
+	m_status       = Status::RUNNING;
 
 	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii)
 	{
@@ -689,7 +715,7 @@ void rReportTotal::Print(tinyxml2::XMLPrinter &printer)
 void rReportDataset::Print(tinyxml2::XMLPrinter &printer)
 {
 	printer.OpenElement("mark");
-	printer.PushText(Mark);
+	printer.PushText(m_mark);
 	printer.CloseElement();
 
 	printer.OpenElement("time");

@@ -64,16 +64,16 @@ public:
 public:
 	virtual const char *RTTI() const { return "di"; }
 
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list);
-	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual UDINT calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
 
-	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
-	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
-	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
+	virtual std::string getModuleAlias()   const override { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const override { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const override { return rDataModule::getChannel(); }
 protected:
-	virtual UDINT       initLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink &link) override;
 
 public:
 	UDINT setFault();

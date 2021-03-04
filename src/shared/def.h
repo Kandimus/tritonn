@@ -213,28 +213,6 @@ const UINT   REPORT_PERIOD_ANNUAL      = 12;
 const UINT   REPORT_PERIOD_5MIN        = 13;
 const UINT   REPORT_PERIOD_15MIN       = 14;
 
-//-------------------------------------------------------------------------------------------------
-// Команды управления партионным отчетом
-const UINT   REPORT_BATCH_NONE         = 0;
-const UINT   REPORT_BATCH_START        = 1;
-const UINT   REPORT_BATCH_STOP         = 2;
-const UINT   REPORT_BATCH_RESTART      = 3;
-
-//-------------------------------------------------------------------------------------------------
-// Статус отчета
-const UINT   REPORT_STATUS_IDLE        = 0;
-const UINT   REPORT_STATUS_RUNNING     = 1;
-const UINT   REPORT_STATUS_WAITING     = 2;
-const UINT   REPORT_STATUS_COMPLETED   = 3;
-
-//-------------------------------------------------------------------------------------------------
-// Валидность отчета
-const UINT   REPORT_MARK_UNDEF         = 0;
-const UINT   REPORT_MARK_ILLEGAL       = 1; // Отчет завершен после перезагрузки. Мы не можем гарантировать точность данных
-const UINT   REPORT_MARK_INCOMPLETE    = 2; // Отчет начат после перезагрузки, период отчета не полный
-const UINT   REPORT_MARK_VALIDATE      = 3;
-const UINT   REPORT_MARK_INPROGRESS    = 4; // Отчет в работе
-
 const UINT   REPORT_DEFAULT_STORAGE    = 91;
 
 

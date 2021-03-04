@@ -29,6 +29,7 @@
 #include "data_reduceddensity.h"
 #include "xml_util.h"
 #include "generator_md.h"
+#include "comment_defines.h"
 
 
 const UDINT REDUCEDDENS_LE_DENSITY = 0x00000002;
@@ -139,7 +140,7 @@ UDINT rReducedDens::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R___, &m_fault, U_DIMLESS, 0);
+	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R__, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }
@@ -180,39 +181,21 @@ UDINT rReducedDens::loadFromXML(tinyxml2::XMLElement* element, rError& err, cons
 
 UDINT rReducedDens::generateMarkDown(rGeneratorMD& md)
 {
-	m_temp.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_pres.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_dens15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_b15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_dens.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_dens20.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_ctl.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_cpl.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_b.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_y.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
-	m_y15.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
+	m_temp.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_pres.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_dens15.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_b15.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
+	m_dens.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_dens20.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_ctl.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
+	m_cpl.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
+	m_b.m_limit.m_setup.Init     (LIMIT_SETUP_ALL);
+	m_y.m_limit.m_setup.Init     (LIMIT_SETUP_ALL);
+	m_y15.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
 
 	md.add(this, true);
 
 	return TRITONN_RESULT_OK;
 }
 
-//-------------------------------------------------------------------------------------------------
-//
-std::string rReducedDens::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
-{
-	m_temp.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_pres.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_b15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens20.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_ctl.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_cpl.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_b.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_y.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_y15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-
-	return rSource::saveKernel(isio, objname, comment, isglobal);
-}
 

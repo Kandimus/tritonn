@@ -89,7 +89,7 @@ public:
 	rReportDataset();
 	virtual ~rReportDataset();
 
-	UINT       Mark;    // Статус отчета
+	UINT       m_mark;    // Статус отчета
 
 	// Время
 	rReportTime StartTime;
@@ -110,19 +110,45 @@ public:
 class rReport : public rSource
 {
 public:
+
+	enum Status : UINT
+	{
+		IDLE      = 0,
+		RUNNING   = 1,
+		WAITING   = 2,
+		COMPLETED = 3,
+	};
+
+	enum Mark : UINT
+	{
+		UNDEF      = 0,
+		ILLEGAL    = 1, // Отчет завершен после перезагрузки. Мы не можем гарантировать точность данных
+		INCOMPLETE = 2, // Отчет начат после перезагрузки, период отчета не полный
+		VALIDATE   = 3,
+		INPROGRESS = 4, // Отчет в работе
+	};
+
+	enum Command : UINT
+	{
+		NONE    = 0,
+		START   = 1,
+		STOP    = 2,
+		RESTART = 3,
+	};
+
 	rReport();
 	virtual ~rReport();
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const { return "report"; }
+	virtual const char* RTTI() const override { return "report"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       calculate();
+	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT       generateVars(rVariableList& list) override;
+	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal) override;
+	virtual UDINT       calculate() override;
 protected:
-	virtual UDINT       initLimitEvent(rLink &link);
+	virtual UDINT       initLimitEvent(rLink &link) override;
 
 protected:
 	UDINT Store();
@@ -140,8 +166,8 @@ public:
 	// Для периодических очетов
 	USINT          Period;         // Период отчета (см.REPORT_PERIOD_*)
 	// Для партионных
-	rCmpUSINT      Command;        // Команда управления партией
-	UINT           Status;         // Статус партии
+	rCmpUSINT      m_command;      // Команда управления партией
+	Status         m_status;       // Статус партии
 	UINT           ArchiveAccept;  // Флаг для загрузки отчета
 	rReportTime    ArchiveTime;    // Время для загрузки отчета в переменную Archive
 
@@ -153,8 +179,12 @@ public:
 	Time64_T   PastUNIX;
 	struct tm  PastTM;
 
+	static rBitsArray m_flagsMark;
+
 private:
 	static rBitsArray m_flagsType;
 	static rBitsArray m_flagsPeriod;
+	static rBitsArray m_flagsStatus;
+	static rBitsArray m_flagsCommand;
 };
 
