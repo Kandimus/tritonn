@@ -73,7 +73,7 @@ protected:
 
 
 private:
-	rSafityValue<USINT> Live;     // Текущий статус жизни процесса
+	rSafityValue<USINT> m_live;     // Текущий статус жизни процесса
 	rSafityValue<USINT> Halt;     // Флаг, перехода в HALT режим
 
 	rSystemVariable          m_sysVar;     // Системные переменные

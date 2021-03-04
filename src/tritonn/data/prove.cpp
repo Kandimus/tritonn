@@ -13,6 +13,7 @@
 //===
 //=================================================================================================
 
+#include "prove.h"
 #include <vector>
 #include <limits>
 #include <cmath>
@@ -33,9 +34,12 @@
 #include "../io/module_crm.h"
 #include "../xml_util.h"
 #include "../generator_md.h"
-#include "prove.h"
+#include "../comment_defines.h"
+
 
 rBitsArray rProve::m_flagsSetup;
+rBitsArray rProve::m_flagsCommand;
+rBitsArray rProve::m_flagsState;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -50,7 +54,42 @@ rProve::rProve(const rStation* owner)
 				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE), "ПУ ручным краном")
 				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR), "Используется один детектор")
 				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE), "Фильтрация дребезга детекторов")
+				.add("BOUNCE"       , static_cast<UINT>(Setup::NOSELECTSTR), "Не переключать частоту ПР")
 				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE), "Симуляция крана");
+	}
+
+	if (m_flagsCommand.empty()) {
+		m_flagsCommand
+				.add("", static_cast<UINT>(Command::NONE), "Нет действия")
+				.add("", static_cast<UINT>(Command::START), "Запуск процедуры поверки")
+				.add("", static_cast<UINT>(Command::ABORT), "Прервать процедуру поверки")
+				.add("", static_cast<UINT>(Command::RESET), "Сбросить ошибку");
+	}
+
+	if (m_flagsState.empty()) {
+		m_flagsState
+				.add("", static_cast<UINT>(State::IDLE)         , "Процедура не запущена")
+				.add("", static_cast<UINT>(State::START)        , "Запуск процедуры поверки")
+				.add("", static_cast<UINT>(State::STABILIZATION), "Стабилизация")
+				.add("", static_cast<UINT>(State::VALVETOUP)    , "Поворот крана в верхнюю позицию")
+				.add("", static_cast<UINT>(State::WAITTOUP)     , "Ожидание поворота крана в верхнюю позицию")
+				.add("", static_cast<UINT>(State::VALVETODOWN)  , "Поворот крана в нижнюю позицию")
+				.add("", static_cast<UINT>(State::WAITD1)       , "Ожидание первого детектора")
+				.add("", static_cast<UINT>(State::WAITD2)       , "Ожидание второго детектора")
+				.add("", static_cast<UINT>(State::CALCULATE)    , "Вычисления")
+				.add("", static_cast<UINT>(State::VALVETOUP)    , "Перевод крана вверхнюю позицию")
+				.add("", static_cast<UINT>(State::RETURNBALL)   , "Ожидание возврата шара")
+				.add("", static_cast<UINT>(State::FINISH)       , "Процедура завершена")
+				.add("", static_cast<UINT>(State::ABORT)        , "Прерывание процедуры")
+				.add("", static_cast<UINT>(State::ERRORFLOW)    , "Нет расхода")
+				.add("", static_cast<UINT>(State::ERRORSTAB)    , "Ошибка стабилизации")
+				.add("", static_cast<UINT>(State::ERRORTOUP)    , "Ошибка поворота крана в верхнюю позицию")
+				.add("", static_cast<UINT>(State::ERRORTODOWN)  , "Ошибка поворота крана в нижнюю позицию")
+				.add("", static_cast<UINT>(State::ERRORD1)      , "Ошибка первого детектора")
+				.add("", static_cast<UINT>(State::ERRORD2)      , "Ошибка второго детектора")
+				.add("", static_cast<UINT>(State::ERRORDETECTOR), "Ошибка детекторов")
+				.add("", static_cast<UINT>(State::ERRORRETURN)  , "Ошибка возврата шара")
+				.add("", static_cast<UINT>(State::ERRORSTREAMID), "Выбрана не корректный ПР");
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
@@ -636,35 +675,35 @@ UDINT rProve::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command    , U_DIMLESS, ACCESS_PROVE);
-	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::____, &m_setup.Value, U_DIMLESS, ACCESS_PROVE);
-	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state      , U_DIMLESS, 0);
-	list.add(m_alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::____, &m_tStart     , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::____, &m_tStab      , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::____, &m_tD1        , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::____, &m_tD2        , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::____, &m_tVolume    , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::____, &m_tValve     , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".timer.bounce"             , TYPE_UDINT, rVariable::Flags::____, &m_tBounce    , U_msec   , ACCESS_PROVE);
-	list.add(m_alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[0], U_imp    , 0);
-	list.add(m_alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[0] , U_sec    , 0);
-	list.add(m_alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvCount[1], U_imp    , 0);
-	list.add(m_alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R___, &m_prvTime[1] , U_sec    , 0);
-	list.add(m_alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R___, &m_prvFreq    , U_Hz     , 0);
-	list.add(m_alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R___, &m_prvTemp    , U_C      , 0);
-	list.add(m_alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R___, &m_prvPres    , U_MPa    , 0);
-	list.add(m_alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R___, &m_prvDens    , U_kg_m3  , 0);
-	list.add(m_alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R___, &m_strTemp    , U_C      , 0);
-	list.add(m_alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R___, &m_strPres    , U_MPa    , 0);
-	list.add(m_alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R___, &m_strDens    , U_kg_m3  , 0);
-	list.add(m_alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R___, &m_curDet     , U_DIMLESS, 0);
-	list.add(m_alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R___, &m_fixDet     , U_DIMLESS, 0);
-	list.add(m_alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::____, &m_maxStabTemp, U_C      , ACCESS_PROVE);
-	list.add(m_alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::____, &m_maxStabPres, U_MPa    , ACCESS_PROVE);
-	list.add(m_alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::____, &m_maxStabDens, U_kg_m3  , ACCESS_PROVE);
-	list.add(m_alias + ".stabilization.frequency"  , TYPE_LREAL, rVariable::Flags::____, &m_maxStabFreq, U_Hz     , ACCESS_PROVE);
+	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::___, &m_command    , U_DIMLESS, ACCESS_PROVE, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::___, &m_setup.Value, U_DIMLESS, ACCESS_PROVE, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R__, &m_state      , U_DIMLESS, 0           , COMMENT::STATUS + m_flagsState.getInfo(true));
+	list.add(m_alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::___, &m_tStart     , U_msec   , ACCESS_PROVE, "Значение таймера выбора требуемого ПР");
+	list.add(m_alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::___, &m_tStab      , U_msec   , ACCESS_PROVE, "Значение таймера стабилизации");
+	list.add(m_alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::___, &m_tD1        , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от корзины до первого детектора");
+	list.add(m_alias + ".timer.detector2"          , TYPE_UDINT, rVariable::Flags::___, &m_tD2        , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от второго детектора до корзины");
+	list.add(m_alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::___, &m_tVolume    , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от первого детектора до второго");
+	list.add(m_alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::___, &m_tValve     , U_msec   , ACCESS_PROVE, "Значение таймера поворота корзины");
+	list.add(m_alias + ".timer.bounce"             , TYPE_UDINT, rVariable::Flags::___, &m_tBounce    , U_msec   , ACCESS_PROVE, "Значение таймера анти-дребезга");
+	list.add(m_alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[0], U_imp    , 0           , "Количество импульсов для объема 1-3-1");
+	list.add(m_alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[0] , U_sec    , 0           , "Время прохода шара 1-3-1");
+	list.add(m_alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[1], U_imp    , 0           , "Количество импульсов для объема 2-4-2");
+	list.add(m_alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[1] , U_sec    , 0           , "Время прохода шара 2-4-2");
+	list.add(m_alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R__, &m_prvFreq    , U_Hz     , 0           , "Средневзвешанное значение частоты во время процедуры");
+	list.add(m_alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R__, &m_prvTemp    , U_C      , 0           , "Средневзвешанное значение температуры ПУ во время процедуры");
+	list.add(m_alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R__, &m_prvPres    , U_MPa    , 0           , "Средневзвешанное значение давления ПУ во время процедуры");
+	list.add(m_alias + ".result.prove.density"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvDens    , U_kg_m3  , 0           , "Средневзвешанное значение плотности ПУ во время процедуры");
+	list.add(m_alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R__, &m_strTemp    , U_C      , 0           , "Средневзвешанное значение температуры ПР во время процедуры");
+	list.add(m_alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__, &m_strPres    , U_MPa    , 0           , "Средневзвешанное значение давления ПР во время процедуры");
+	list.add(m_alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R__, &m_strDens    , U_kg_m3  , 0           , "Средневзвешанное значение плотности ПР во время процедуры");
+	list.add(m_alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R__, &m_curDet     , U_DIMLESS, 0           , "Мгновенное значение флагов детекторов");
+	list.add(m_alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R__, &m_fixDet     , U_DIMLESS, 0           , "Зафиксированное значение флагов детекторов");
+	list.add(m_alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::___, &m_maxStabTemp, U_C      , ACCESS_PROVE, "Предельное значение разности температур во время стабилизации");
+	list.add(m_alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::___, &m_maxStabPres, U_MPa    , ACCESS_PROVE, "Предельное значение разности давления во время стабилизации");
+	list.add(m_alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::___, &m_maxStabDens, U_kg_m3  , ACCESS_PROVE, "Предельное значение разности плотности во время стабилизации");
+	list.add(m_alias + ".stabilization.frequency"  , TYPE_LREAL, rVariable::Flags::___, &m_maxStabFreq, U_Hz     , ACCESS_PROVE, "Предельное значение разности частот ПР во время стабилизации");
 
-	list.add(m_alias + ".fault"                    , TYPE_UDINT, rVariable::Flags::R___, &m_fault      , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"                    , TYPE_UDINT, rVariable::Flags::R__, &m_fault      , U_DIMLESS, 0           , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

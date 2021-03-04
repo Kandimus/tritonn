@@ -21,16 +21,26 @@
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../comment_defines.h"
 
 rBitsArray rIOAIChannel::m_flagsSetup;
+rBitsArray rIOAIChannel::m_flagsType;
 
 rIOAIChannel::rIOAIChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::AI, index)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE))
-				.add("NOICE"  , static_cast<UINT>(rIOAIChannel::Setup::NOICE));
+				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF), COMMENT::SETUP_OFF)
+				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE), "Усреднение значения");
+//				.add("NOICE"  , static_cast<UINT>(rIOAIChannel::Setup::NOICE), "");
+	}
+
+	if (m_flagsType.empty()) {
+		m_flagsType
+				.add("", static_cast<UINT>(rIOAIChannel::Type::mA_0_20), "0..20мА")
+				.add("", static_cast<UINT>(rIOAIChannel::Type::mA_4_20), "4..40мА")
+				.add("", static_cast<UINT>(rIOAIChannel::Type::mA_4_20), "-10..+10V")
+				.add("", static_cast<UINT>(rIOAIChannel::Type::mA_4_20), "0..+10V");
 	}
 }
 
@@ -164,17 +174,17 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0);
-	list.add(p + "adc"    , TYPE_UINT , rVariable::Flags::R___, &m_ADC    , U_DIMLESS , 0);
-	list.add(p + "current", TYPE_REAL , rVariable::Flags::R___, &m_current, U_DIMLESS , 0);
-	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state  , U_DIMLESS , 0);
-	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::____, &m_type   , U_DIMLESS , 0);
+	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS_, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "adc"    , TYPE_UINT , rVariable::Flags::R__, &m_ADC    , U_DIMLESS , 0, "Текущий код АЦП");
+	list.add(p + "current", TYPE_REAL , rVariable::Flags::R__, &m_current, U_DIMLESS , 0, "Текущее значение тока/напряжения");
+	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R__, &m_state  , U_DIMLESS , 0, "Статус канала");
+	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::___, &m_type   , U_DIMLESS , 0, "Тип канала:\n" + m_flagsSetup.getInfo(true));
 
 	if (issimulate) {
-		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0);
-		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::____, &m_simMin  , U_DIMLESS , 0);
-		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::____, &m_simValue, U_DIMLESS , 0);
-		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::____, &m_simSpeed, U_DIMLESS , 0);
+		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, "Максимум симулированного значения");
+		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, "Минимум симулированного значения");
+		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, "Симулированное значение");
+		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, "Скорость изменения симулированного значения");
 	}
 
 	return TRITONN_RESULT_OK;

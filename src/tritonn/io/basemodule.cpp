@@ -24,9 +24,19 @@
 #include "../units.h"
 #include "../error.h"
 
+rBitsArray rIOBaseModule::m_flagsType;
 
 rIOBaseModule::rIOBaseModule()
 {
+	if (m_flagsType.empty()) {
+		m_flagsType
+				.add("", static_cast<UINT>(Type::UNDEF) , "Модуль не определен")
+				.add("", static_cast<UINT>(Type::AI6)   , "Модуль AI6")
+				.add("", static_cast<UINT>(Type::DI8DO8), "Модуль DI8DO8")
+				.add("", static_cast<UINT>(Type::FI4)   , "Модуль FI4")
+				.add("", static_cast<UINT>(Type::CRM)   , "Модуль CRM");
+	}
+
 	pthread_mutex_init(&m_mutex, nullptr);
 }
 
@@ -89,16 +99,16 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 
 	std::string p = m_alias + ".";
 
-	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R___, &m_type        , U_DIMLESS , 0);
-	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R___, &m_nodeID      , U_DIMLESS , 0);
-	list.add(p + "vendor"      , TYPE_UDINT, rVariable::Flags::R___, &m_vendorID    , U_DIMLESS , 0);
-	list.add(p + "productCode" , TYPE_UDINT, rVariable::Flags::R___, &m_productCode , U_DIMLESS , 0);
-	list.add(p + "revision"    , TYPE_UDINT, rVariable::Flags::R___, &m_revision    , U_DIMLESS , 0);
-	list.add(p + "serialNumber", TYPE_UDINT, rVariable::Flags::R___, &m_serialNumber, U_DIMLESS , 0);
-	list.add(p + "temperature" , TYPE_REAL , rVariable::Flags::R___, &m_temperature , U_DIMLESS , 0);
-	list.add(p + "can"         , TYPE_UINT , rVariable::Flags::R___, &m_CAN         , U_DIMLESS , 0);
-	list.add(p + "firmware"    , TYPE_UINT , rVariable::Flags::R___, &m_firmware    , U_DIMLESS , 0);
-	list.add(p + "hardware"    , TYPE_UINT , rVariable::Flags::R___, &m_hardware    , U_DIMLESS , 0);
+	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R__, &m_type        , U_DIMLESS , 0);
+	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R__, &m_nodeID      , U_DIMLESS , 0);
+	list.add(p + "vendor"      , TYPE_UDINT, rVariable::Flags::R__, &m_vendorID    , U_DIMLESS , 0);
+	list.add(p + "productCode" , TYPE_UDINT, rVariable::Flags::R__, &m_productCode , U_DIMLESS , 0);
+	list.add(p + "revision"    , TYPE_UDINT, rVariable::Flags::R__, &m_revision    , U_DIMLESS , 0);
+	list.add(p + "serialNumber", TYPE_UDINT, rVariable::Flags::R__, &m_serialNumber, U_DIMLESS , 0);
+	list.add(p + "temperature" , TYPE_REAL , rVariable::Flags::R__, &m_temperature , U_DIMLESS , 0);
+	list.add(p + "can"         , TYPE_UINT , rVariable::Flags::R__, &m_CAN         , U_DIMLESS , 0);
+	list.add(p + "firmware"    , TYPE_UINT , rVariable::Flags::R__, &m_firmware    , U_DIMLESS , 0);
+	list.add(p + "hardware"    , TYPE_UINT , rVariable::Flags::R__, &m_hardware    , U_DIMLESS , 0);
 
 	return TRITONN_RESULT_OK;
 }

@@ -22,19 +22,21 @@
 #include "variable_list.h"
 #include "data_rvar.h"
 #include "xml_util.h"
+#include "generator_md.h"
 
-
+rBitsArray rRVar::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 rRVar::rRVar() : rSource(), m_setup(0)
 {
-	if (m_flagSetup.empty()) {
-		m_flagSetup
-				.add("CONST", VAR_SETUP_CONST);
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("CONST", static_cast<UINT>(Setup::CONST), "Установить как константу");
 	}
 
-	initLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE, m_value, U_any, SID::VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE,
+			 m_value, U_any, SID::VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
 }
 
 
@@ -102,8 +104,7 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	}
 
 	UDINT fault = 0;
-	m_setup = m_flagSetup.getValue(strSetup, fault);
-
+	m_setup         = m_flagsSetup.getValue(strSetup, fault);
 	m_value.m_value = XmlUtils::getTextLREAL(xml_value, 0.0  , fault);
 	m_value.m_unit  = XmlUtils::getTextUDINT(xml_unit , U_any, fault);
 
@@ -112,7 +113,7 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	}
 
 	// Если переменная константа, то снимаем флаг записи
-	if(m_setup & VAR_SETUP_CONST) {
+	if(m_setup & Setup::CONST) {
 		m_value.m_setup &= ~rLink::Setup::WRITABLE;
 	}
 
@@ -121,16 +122,14 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	return TRITONN_RESULT_OK;
 }
 
-
-std::string rRVar::saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal)
+UDINT rRVar::generateMarkDown(rGeneratorMD& md)
 {
-	m_value.m_limit.m_setup.Init(rLimit::Setup::NONE);
+	m_value.m_limit.m_setup.Init (LIMIT_SETUP_ALL);
 
-	return rSource::saveKernel(isio, objname, comment, isglobal);
+	md.add(this, true)
+			.addProperty(XmlName::SETUP, &m_flagsSetup)
+			.addXml(XmlName::VALUE, m_value.m_value)
+			.addXml(XmlName::UNIT , static_cast<UDINT>(m_value.m_unit));
+
+	return TRITONN_RESULT_OK;
 }
-
-
-
-
-
-

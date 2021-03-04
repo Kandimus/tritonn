@@ -70,7 +70,7 @@ public:
 	{
 		UNDEF   = 0x0000,     // Статуст не определен
 		OFF     = 0x0001,     // Канал выключен
-		NOICE   = 0x0010,     //
+//		NOICE   = 0x0010,     //
 		AVERAGE = 0x0020,     //
 	};
 
@@ -111,5 +111,6 @@ private:
 	std::list<UINT> m_average;
 
 	static rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsType;
 };
 

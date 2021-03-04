@@ -18,6 +18,7 @@
 #include <memory>
 #include "def.h"
 #include <vector>
+#include "bits_array.h"
 
 class rIOBaseChannel;
 class rDataConfig;
@@ -84,6 +85,8 @@ public:
 	UINT  m_CAN;
 	UINT  m_firmware;
 	UINT  m_hardware;
+
+	static rBitsArray m_flagsType;
 
 protected:
 	pthread_mutex_t m_mutex;

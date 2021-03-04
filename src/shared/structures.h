@@ -28,6 +28,13 @@ struct rVersion
 	UDINT m_crc;    // Контрольная сумма
 };
 
+struct rMetrologyVer
+{
+	USINT m_major;
+	USINT m_minor;
+	UDINT m_crc;    // Контрольная сумма
+};
+
 
 
 

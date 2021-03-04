@@ -147,11 +147,14 @@ const USINT  PRECISION_DEFAUILT        = 5;
 
 //-------------------------------------------------------------------------------------------------
 // rDataManager
-const USINT  LIVE_UNDEF                = 0;
-const USINT  LIVE_STARTING             = 1;    // Запускается
-const USINT  LIVE_REBOOT_COLD          = 3;
-const USINT  LIVE_RUNNING              = 4;
-const USINT  LIVE_HALT                 = 0xFF;
+enum Live : USINT
+{
+	UNDEF       = 0,
+	STARTING    = 1,
+	REBOOT_COLD = 3,
+	RUNNING     = 4,
+	HALT        = 0xFF,
+};
 
 //
 const USINT  RESTART_WARM              = 1;
@@ -233,11 +236,6 @@ const UINT   REPORT_MARK_VALIDATE      = 3;
 const UINT   REPORT_MARK_INPROGRESS    = 4; // Отчет в работе
 
 const UINT   REPORT_DEFAULT_STORAGE    = 91;
-
-
-//-------------------------------------------------------------------------------------------------
-// Настройка переменной
-const UDINT  VAR_SETUP_CONST           = 1;
 
 
 //-------------------------------------------------------------------------------------------------

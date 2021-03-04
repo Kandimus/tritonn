@@ -32,15 +32,16 @@ public:
 	UDINT       initVariables(rVariableList& list);
 
 public:
-	rVersion    Ver;
-	rState      m_state;
-	Time64_T    UnixTime;
-	STM         DateTime;
-	STM         SetDateTime;
-	USINT       SetDateTimeAccept;
-	rMaxCount   Max;
-	rConfigInfo ConfigInfo;
-	char        Lang[MAX_LANG_SIZE];
+	rVersion      m_version;
+	rMetrologyVer m_metrologyVer;
+	rState        m_state;
+	Time64_T      UnixTime;
+	STM           DateTime;
+	STM           SetDateTime;
+	USINT         SetDateTimeAccept;
+	rMaxCount     Max;
+	rConfigInfo   ConfigInfo;
+	char          Lang[MAX_LANG_SIZE];
 
 	//TODO SetTime
 	//TODO IP

@@ -58,7 +58,7 @@ rAI::rAI(const rStation* owner) : rSource(owner), m_keypad(0.0), m_setup(0)
 				.add("OFF"      , static_cast<UINT>(Setup::OFF)         , COMMENT::SETUP_OFF)
 				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER)    , "Не использовать сглаживание")
 				.add("NOICE"    , static_cast<UINT>(Setup::NOICE)       , "Подавление дребезга около инженерных уставок")
-				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD)  , "Переключение в ручной ввод при недействительном значении")
+				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD)  , COMMENT::SETUP_KEYPAD)
 				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD), "Переключение в последнее действительное значение при недействительном значении1");
 	}
 

@@ -21,6 +21,7 @@ namespace COMMENT
 {
 
 const std::string CALC_COEF      = "Вычесленный коэффициент";
+const std::string COMMAND        = "Команда:\n";
 const std::string FACTOR         = "Коффициент";
 const std::string FACTOR_ACC     = "Команда:\n 0 - нет действия\n 1 - применить введенные коффициенты";
 const std::string FACTOR_SET     =  "Введенный коффициент";
@@ -30,6 +31,7 @@ const std::string MODE           = "Режим:\n";
 const std::string MODE_PHYS      = "Используется физическое значение";
 const std::string MODE_KEYPAD    = "Переключение пользователем на ручной ввод";
 const std::string SETUP          = "Настройка:\n";
+const std::string SETUP_KEYPAD   = "Переключение в ручной ввод при недействительном значении";
 const std::string SETUP_OFF      = "Выключен и не обрабатывается";
 const std::string SETUP_ALARM0   = "При снятии сигнала выдавать аварийное сообщение";
 const std::string SETUP_ALARM1   = "При установке сигнала выдавать аварийное сообщение";
