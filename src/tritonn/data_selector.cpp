@@ -2,17 +2,12 @@
 //===
 //=== data_selector.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
-//===
-//=== 
-//===
-//=================================================================================================
-
 
 #include <vector>
 #include <string.h>
@@ -43,16 +38,16 @@ rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , SELECTOR_SETUP_OFF    , COMMENT::SETUP_OFF)
-				.add("NOEVENT", SELECTOR_SETUP_NOEVENT, "Запретить выдачу сообщений");
+				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF)
+				.add("NOEVENT", static_cast<UINT>(Setup::NOEVENT), "Запретить выдачу сообщений");
 	}
 
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("NEXT"    , SELECTOR_MODE_CHANGENEXT, "При аварии переключить на следующий вход")
-				.add("PREV"    , SELECTOR_MODE_CHANGEPREV, "При аварии переключить на предыдущий вход")
-				.add("NOCHANGE", SELECTOR_MODE_NOCHANGE  , "При аварии не переходить на другой вход")
-				.add("ERROR"   , SELECTOR_MODE_TOERROR   , "При аварии переходить на аварийное значение");
+				.add("NEXT"    , static_cast<UINT>(Mode::CHANGENEXT), "При аварии переключить на следующий вход")
+				.add("PREV"    , static_cast<UINT>(Mode::CHANGEPREV), "При аварии переключить на предыдущий вход")
+				.add("NOCHANGE", static_cast<UINT>(Mode::NOCHANGE)  , "При аварии не переходить на другой вход")
+				.add("ERROR"   , static_cast<UINT>(Mode::TOERROR)   , "При аварии переходить на аварийное значение");
 	}
 
 	//TODO Нужно ли очищать свойства класса?
@@ -102,7 +97,7 @@ UDINT rSelector::calculate()
 		return TRITONN_RESULT_OK;
 	}
 
-	if (m_setup.Value & SELECTOR_SETUP_OFF) {
+	if (m_setup.Value & Setup::OFF) {
 		return TRITONN_RESULT_OK;
 	}
 
@@ -114,7 +109,7 @@ UDINT rSelector::calculate()
 
 	// Проверка на изменение данных пользователем
 	Select.Compare(reinitEvent(EID_SELECTOR_SELECTED));
-	Mode.Compare(reinitEvent(EID_SELECTOR_MODE));
+	m_mode.Compare(reinitEvent(EID_SELECTOR_MODE));
 
 	// Если переменная переключатель находится в недопустимом режиме
 	//TODO Какие значения будут в выходах?
@@ -129,15 +124,15 @@ UDINT rSelector::calculate()
 	// Автоматические переходы, по статусу ошибки
 	if (Select.Value != -1) {
 		if (faultGrp[Select.Value]) {
-			switch (Mode.Value) {
+			switch (m_mode.Value) {
 				// Переходы запрещены
-				case SELECTOR_MODE_NOCHANGE: {
+				case Mode::NOCHANGE: {
 					sendEventSetLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_NOCHANGE) << Select.Value);
 					break;
 				}
 
 				// Переход на значение ошибки
-				case SELECTOR_MODE_TOERROR: {
+				case Mode::TOERROR: {
 					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
 
 					Select.Value = -1;
@@ -151,7 +146,7 @@ UDINT rSelector::calculate()
 					m_lockErr &= ~(SELECTOR_LE_NOCHANGE);
 
 					do {
-						Select.Value += (Mode.Value == SELECTOR_MODE_CHANGENEXT) ? +1 : -1;
+						Select.Value += (m_mode.Value == Mode::CHANGENEXT) ? +1 : -1;
 					
 						if(Select.Value < 0)           Select.Value = CountInputs - 1;
 						if(Select.Value > CountInputs) Select.Value = 0;
@@ -194,7 +189,7 @@ void rSelector::generateIO()
 	m_inputs.clear();
 	m_outputs.clear();
 
-	if (m_setup.Value & SELECTOR_SETUP_MULTI) {
+	if (m_setup.Value & Setup::MULTI) {
 		// Настройка выходов
 		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			ValueOut[grp].m_varName = NameInput[grp] + ".output";
@@ -234,27 +229,27 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L, &Select.Value, U_DIMLESS, ACCESS_SELECT);
-	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R___, &CountInputs , U_DIMLESS, 0);
-	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS__, &m_setup.Value , U_DIMLESS, ACCESS_SA);
-	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
+	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___, &Select.Value , U_DIMLESS, ACCESS_SELECT, "Выбор коммуцируемого входа");
+	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R__, &CountInputs  , U_DIMLESS, 0            , "Количество подключенных входов");
+	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value, U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode.Value , U_DIMLESS, ACCESS_SELECT, COMMENT::MODE + m_flagsMode.getInfo(true));
 
-	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &m_fault     , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault      , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	// Мультиселектор
-	if (m_setup.Value & SELECTOR_SETUP_MULTI) {
-		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0);
+	if (m_setup.Value & Setup::MULTI) {
+		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R__, &CountGroups , U_DIMLESS, 0, "Количество групп");
 
 		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			alias_unit   = String_format("%s.%s.keypad.unit" , m_alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", m_alias.c_str(), NameInput[grp].c_str());
 
-			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0);
-			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___L, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD);
+			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
+			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
 		}
 	} else {
-		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
-		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
+		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
+		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;
