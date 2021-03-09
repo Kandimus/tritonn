@@ -3,7 +3,7 @@
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module ver="1.0" name="ai6_1" type="AI6">
-			<channel number="0" setup="NOICE | AVERAGE" />
+			<channel number="0" setup="AVERAGE" />
 		</module>
 		<module type="di8do8" name="di8do8_1">
 			<channel number="0" setup=""/>
@@ -16,7 +16,7 @@
 		<module type="crm" name="crm_1">
 		</module>
 		<module name="ai6_2" type="AI6">
-			<channel number="0" setup="NOICE | AVERAGE" />
+			<channel number="0" setup="AVERAGE" />
 		</module>
 	</hardware>
 	<config>
@@ -898,7 +898,6 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable>system.version.major</variable>
 				<variable>system.version.build</variable>
 				<variable>system.version.hash</variable>
-				<variable>system.version.crc</variable>
 			</datablock>
 			<datablock name="globaltemp">
 				<variable convert="float">io.globaltemp.present.value</variable>

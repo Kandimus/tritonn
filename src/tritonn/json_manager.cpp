@@ -747,7 +747,7 @@ string rJSONManager::Packet_ListConf(cJSON */*root*/)
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_ILISTCONF));
 
-	if(LIVE_REBOOT_COLD != rDataManager::instance().GetLiveStatus())
+	if(Live::REBOOT_COLD != rDataManager::instance().GetLiveStatus())
 	{
 		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
 		CreateErrorJSON(response, JSONERR_NOTCOLDSTART, "");
@@ -805,7 +805,7 @@ string rJSONManager::Packet_Restart (cJSON *root)
 		conf = (jconf->valuestring) ? jconf->valuestring : "";
 	}
 
-	if(LIVE_REBOOT_COLD != live)
+	if(Live::REBOOT_COLD != live)
 	{
 		act = GetActivity(jtoken->valueint);
 

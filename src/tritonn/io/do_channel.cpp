@@ -23,6 +23,7 @@
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../comment_defines.h"
 
 rBitsArray rIODOChannel::m_flagsSetup;
 
@@ -30,8 +31,8 @@ rIODOChannel::rIODOChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::D
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"     , static_cast<UINT>(rIODOChannel::Setup::OFF))
-				.add("INVERSED", static_cast<UINT>(rIODOChannel::Setup::INVERSED));
+				.add("OFF"     , static_cast<UINT>(rIODOChannel::Setup::OFF)     , COMMENT::SETUP_OFF)
+				.add("INVERSED", static_cast<UINT>(rIODOChannel::Setup::INVERSED), COMMENT::SETUP_INVERSE);
 	}
 }
 
@@ -77,9 +78,9 @@ UDINT rIODOChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0);
-	list.add(p + "value"  , TYPE_USINT, rVariable::Flags::R___, &m_value  , U_DIMLESS , 0);
-	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state  , U_DIMLESS , 0);
+	list.add(p + "setup", TYPE_UINT , rVariable::Flags::RS_, &m_setup, U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "value", TYPE_USINT, rVariable::Flags::R__, &m_value, U_DIMLESS , 0, COMMENT::VALUE);
+	list.add(p + "state", TYPE_USINT, rVariable::Flags::R__, &m_state, U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");
 
 	return TRITONN_RESULT_OK;
 }

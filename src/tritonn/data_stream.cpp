@@ -29,6 +29,7 @@
 #include "data_stream.h"
 #include "data_snapshot.h"
 #include "io/defines.h"
+#include "comment_defines.h"
 
 
 const UDINT STREAM_LE_ACCOUNTING = 0x00000002;
@@ -36,6 +37,7 @@ const UDINT STREAM_LE_KEYPADKF   = 0x00000004;
 
 
 rBitsArray rStream::m_flagsFlowmeter;
+rBitsArray rStream::m_flagsSetup;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -52,6 +54,11 @@ rStream::rStream(const rStation* owner) :
 				.add("TURBINE"   , static_cast<UINT>(Type::TURBINE)   , "Турбинный ПР")
 				.add("CORIOLIS"  , static_cast<UINT>(Type::CORIOLIS)  , "Кориолисовый ПР")
 				.add("ULTRASONIC", static_cast<UINT>(Type::ULTRASONIC), "Ультрозвуковой ПР");
+	}
+
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("", static_cast<UINT>(Setup::OFF), COMMENT::SETUP_OFF);
 	}
 
 	m_maintenance   = true;
@@ -206,40 +213,42 @@ UDINT rStream::disableFreqOut() const
 UDINT rStream::generateVars(rVariableList& list)
 {
 	auto unit = m_station->getUnit();
+	std::string strtot = m_alias + ".total.";
+	std::string strfac = m_alias + ".factors.";
 
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".setup"                 , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value             , U_DIMLESS       , ACCESS_SA);
-	list.add(m_alias + ".flowmeter"             , TYPE_USINT, rVariable::Flags::R__, &m_flowmeter               , U_DIMLESS       , 0);
-	list.add(m_alias + ".maintenance"           , TYPE_UDINT, rVariable::Flags::___, &m_maintenance             , U_DIMLESS       , ACCESS_MAINTENANCE);
-	list.add(m_alias + ".linearization"         , TYPE_UDINT, rVariable::Flags::___, &m_linearization           , U_DIMLESS       , ACCESS_FACTORS);
-	list.add(m_alias + ".total.present.Volume"  , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume    , unit.getVolume(), 0);
-	list.add(m_alias + ".total.present.Volume15", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume15  , unit.getVolume(), 0);
-	list.add(m_alias + ".total.present.Volume20", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume20  , unit.getVolume(), 0);
-	list.add(m_alias + ".total.present.Mass"    , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Mass      , unit.getMass()  , 0);
-	list.add(m_alias + ".total.present.impulse" , TYPE_UDINT, rVariable::Flags::R__, &m_total.Present.Count     , U_imp           , 0);
-	list.add(m_alias + ".total.Inc.Volume"      , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume        , unit.getVolume(), ACCESS_SA);
-	list.add(m_alias + ".total.Inc.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume15      , unit.getVolume(), ACCESS_SA);
-	list.add(m_alias + ".total.Inc.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume20      , unit.getVolume(), ACCESS_SA);
-	list.add(m_alias + ".total.Inc.Mass"        , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Mass          , unit.getMass()  , ACCESS_SA);
-	list.add(m_alias + ".total.Inc.inpulse"     , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Inc.Count         , U_imp           , ACCESS_SA);
-	list.add(m_alias + ".total.raw.Volume"      , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume        , unit.getVolume(), 0);
-	list.add(m_alias + ".total.raw.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume15      , unit.getVolume(), 0);
-	list.add(m_alias + ".total.raw.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume20      , unit.getVolume(), 0);
-	list.add(m_alias + ".total.raw.Mass"        , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Mass          , unit.getMass()  , 0);
-	list.add(m_alias + ".total.raw.impulse"     , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Raw.Count         , U_imp           , 0);
-	list.add(m_alias + ".total.past.Volume"     , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume       , unit.getVolume(), 0);
-	list.add(m_alias + ".total.past.Volume15"   , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume15     , unit.getVolume(), 0);
-	list.add(m_alias + ".total.past.Volume20"   , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume20     , unit.getVolume(), 0);
-	list.add(m_alias + ".total.past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Mass         , unit.getMass()  , 0);
-	list.add(m_alias + ".total.past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Past.Count        , U_imp           , 0);
-	list.add(m_alias + ".presentkf"             , TYPE_LREAL, rVariable::Flags::R__, &m_curKF                   , getUnitKF()     , 0);
-	list.add(m_alias + ".factors.kf"            , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.KeypadKF.Value, getUnitKF()     , 0);
-	list.add(m_alias + ".factors.mf"            , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.KeypadMF.Value, U_DIMLESS       , 0);
-	list.add(m_alias + ".factors.set.kf"        , TYPE_LREAL, rVariable::Flags::___, &m_setFactor.KeypadKF.Value, getUnitKF()     , ACCESS_FACTORS);
-	list.add(m_alias + ".factors.set.mf"        , TYPE_LREAL, rVariable::Flags::___, &m_setFactor.KeypadMF.Value, U_DIMLESS       , ACCESS_FACTORS);
-	list.add(m_alias + ".factors.set.accept"    , TYPE_UDINT, rVariable::Flags::___, &m_acceptKF                , U_DIMLESS       , ACCESS_FACTORS);
+	list.add(m_alias + ".setup"          , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value             , U_DIMLESS       , ACCESS_SA, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".flowmeter"      , TYPE_USINT, rVariable::Flags::R__, &m_flowmeter               , U_DIMLESS       , 0        , "Тип расходомера:\n" + m_flagsFlowmeter.getInfo(true));
+	list.add(m_alias + ".maintenance"    , TYPE_UDINT, rVariable::Flags::___, &m_maintenance             , U_DIMLESS       , ACCESS_MAINTENANCE, "Статус учета:\n0 - в учете\n1 - не в учете");
+	list.add(m_alias + ".linearization"  , TYPE_UDINT, rVariable::Flags::___, &m_linearization           , U_DIMLESS       , ACCESS_FACTORS    , "Тип коэффициентов:\n0 - единый К-фактор\n1 - кусочно-линейная интерполяция");
+	list.add(strtot  + "present.Volume"  , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume    , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
+	list.add(strtot  + "present.Volume15", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume15  , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
+	list.add(strtot  + "present.Volume20", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume20  , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
+	list.add(strtot  + "present.Mass"    , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Mass      , unit.getMass()  , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
+	list.add(strtot  + "present.impulse" , TYPE_UDINT, rVariable::Flags::R__, &m_total.Present.Count     , U_imp           , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
+	list.add(strtot  + "Inc.Volume"      , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume        , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
+	list.add(strtot  + "Inc.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume15      , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
+	list.add(strtot  + "Inc.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Volume20      , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
+	list.add(strtot  + "Inc.Mass"        , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Inc.Mass          , unit.getMass()  , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::MASS);
+	list.add(strtot  + "Inc.inpulse"     , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Inc.Count         , U_imp           , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "raw.Volume"      , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume        , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
+	list.add(strtot  + "raw.Volume15"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume15      , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
+	list.add(strtot  + "raw.Volume20"    , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Volume20      , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
+	list.add(strtot  + "raw.Mass"        , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Raw.Mass          , unit.getMass()  , 0                 , COMMENT::TOTAL_RAW     + COMMENT::MASS);
+	list.add(strtot  + "raw.impulse"     , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Raw.Count         , U_imp           , 0                 , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "past.Volume"     , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume       , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
+	list.add(strtot  + "past.Volume15"   , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume15     , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
+	list.add(strtot  + "past.Volume20"   , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Volume20     , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
+	list.add(strtot  + "past.Mass"       , TYPE_LREAL, rVariable::Flags::RSH, &m_total.Past.Mass         , unit.getMass()  , 0                 , COMMENT::TOTAL_PAST    + COMMENT::MASS);
+	list.add(strtot  + "past.impulse"    , TYPE_UDINT, rVariable::Flags::RSH, &m_total.Past.Count        , U_imp           , 0                 , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
+	list.add(m_alias + ".presentkf"      , TYPE_LREAL, rVariable::Flags::R__, &m_curKF                   , getUnitKF()     , 0                 , "Вычисленный К-фактор");
+	list.add(strfac  + "kf"              , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.KeypadKF.Value, getUnitKF()     , 0                 , COMMENT::FACTORS     + COMMENT::KFACTOR);
+	list.add(strfac  + "mf"              , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.KeypadMF.Value, U_DIMLESS       , 0                 , COMMENT::FACTORS     + COMMENT::KFACTOR);
+	list.add(strfac  + "set.kf"          , TYPE_LREAL, rVariable::Flags::___, &m_setFactor.KeypadKF.Value, getUnitKF()     , ACCESS_FACTORS    , COMMENT::FACTORS_SET + COMMENT::KFACTOR);
+	list.add(strfac  + "set.mf"          , TYPE_LREAL, rVariable::Flags::___, &m_setFactor.KeypadMF.Value, U_DIMLESS       , ACCESS_FACTORS    , COMMENT::FACTORS_SET + COMMENT::MFACTOR);
+	list.add(strfac  + "set.accept"      , TYPE_UDINT, rVariable::Flags::___, &m_acceptKF                , U_DIMLESS       , ACCESS_FACTORS    , COMMENT::FACTOR_ACC);
 
 
 	for (UDINT ii = 0; ii < m_curFactor.m_point.size(); ++ii) {
@@ -247,14 +256,16 @@ UDINT rStream::generateVars(rVariableList& list)
 		std::string name_hz     = String_format("%s.factors.point_%i.hz"    , m_alias.c_str(), ii + 1);
 		std::string name_set_kf = String_format("%s.factors.set.point_%i.kf", m_alias.c_str(), ii + 1);
 		std::string name_set_hz = String_format("%s.factors.set.point_%i.hz", m_alias.c_str(), ii + 1);
+		std::string comment     = COMMENT::FACTORS     + COMMENT::POINT + String_format(" %u. ", ii + 1);
+		std::string comment_set = COMMENT::FACTORS_SET + COMMENT::POINT + String_format(" %u. ", ii + 1);
 
-		list.add(name_kf    , TYPE_LREAL, rVariable::Flags::R__L, &m_curFactor.m_point[ii].Kf, getUnitKF(), 0);
-		list.add(name_set_kf, TYPE_LREAL, rVariable::Flags::____, &m_setFactor.m_point[ii].Kf, getUnitKF(), ACCESS_FACTORS);
-		list.add(name_hz    , TYPE_LREAL, rVariable::Flags::R__L, &m_curFactor.m_point[ii].Hz, U_Hz       , 0);
-		list.add(name_set_hz, TYPE_LREAL, rVariable::Flags::____, &m_setFactor.m_point[ii].Hz, U_Hz       , ACCESS_FACTORS);
+		list.add(name_kf    , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.m_point[ii].Kf, getUnitKF(), 0             , comment     + COMMENT::KFACTOR);
+		list.add(name_set_kf, TYPE_LREAL, rVariable::Flags::___, &m_setFactor.m_point[ii].Kf, getUnitKF(), ACCESS_FACTORS, comment_set + COMMENT::KFACTOR);
+		list.add(name_hz    , TYPE_LREAL, rVariable::Flags::R__, &m_curFactor.m_point[ii].Hz, U_Hz       , 0             , comment     + COMMENT::FREQ);
+		list.add(name_set_hz, TYPE_LREAL, rVariable::Flags::___, &m_setFactor.m_point[ii].Hz, U_Hz       , ACCESS_FACTORS, comment_set + COMMENT::FREQ);
 	}
 
-	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R___, &m_fault, U_DIMLESS, 0);
+	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R__, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

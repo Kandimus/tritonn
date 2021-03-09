@@ -44,15 +44,21 @@
 UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
+
+	rAI          ai;
+	rProve       prove;
 	rSampler     smp;
 	rReducedDens rd;
 	rDensSol     ds;
-	rProve       prove;
 
+	// io
+	ai.generateMarkDown(md);
+	prove.generateMarkDown(md);
+
+	// calc
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);
-	prove.generateMarkDown(md);
 
 	rModuleAI6 ai6;
 	rModuleCRM crm;
@@ -81,7 +87,6 @@ UDINT rDataManager::SaveKernel()
 	auto msel    = new rSelector();
 	auto denssol = new rDensSol();
 	auto rdcdens = new rReducedDens();
-	rAI ai;
 	rDI di;
 	rDO do_;
 	rCounter fi;
@@ -93,7 +98,7 @@ UDINT rDataManager::SaveKernel()
 
 	ssel->generateIO();
 
-	msel->m_setup.Value |= SELECTOR_SETUP_MULTI;
+	msel->m_setup.Value |= rSelector::Setup::MULTI;
 	msel->generateIO();
 
 	text += String_format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -105,7 +110,6 @@ UDINT rDataManager::SaveKernel()
 	text += rvar->saveKernel(false, "var", "Переменная", true);
 
 	text += "\n<!-- \n\tIO objects list \n-->\n<io_list>\n";
-	text += ai.saveKernel (true, "ai", "Аналоговый сигнал", true);
 	text += fi.saveKernel (true, "counter", "Частотно-импульсный сигнал", true);
 	text += di.saveKernel (true, "di", "Дискретный входной сигнал", true);
 	text += do_.saveKernel(true, "do", "Дискретный выходной сигнал", true);

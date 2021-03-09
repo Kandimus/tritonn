@@ -147,6 +147,7 @@ UDINT rVariableList::saveToCSV(const std::string& path)
 
 std::string rVariableList::getMarkDown() const
 {
+	bool flagMutable = false;
 	std::string result = "";
 
 	result += "Variable | Type | Unit | Unit ID | Readonly | Access | Comment\n";
@@ -161,8 +162,14 @@ std::string rVariableList::getMarkDown() const
 		result += NAME_TYPE[item->getType()] + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
 		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";
-		result += String_format("0x%08x", item->getAccess()) + " | ";
+		result += (item->getAccess() ? String_format("0x%08x", item->getAccess()) : std::string(" ")) + " | ";
 		result += item->getComment() + "\n";
+
+		flagMutable |= item->isMutable();
+	}
+
+	if (flagMutable) {
+		result += "\n    * - Если объект не привязан к модулю ввода-вывода, то данная переменная может быть записываемой.\n";
 	}
 
 	return result;

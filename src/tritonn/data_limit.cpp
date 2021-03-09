@@ -38,17 +38,17 @@ rLimit::rLimit() :
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"  , static_cast<UINT>(Setup::OFF), "Не выдавать сообщения")
+				.add("OFF"  , static_cast<UINT>(Setup::OFF) , "Не выдавать сообщения")
 				.add("LOLO" , static_cast<UINT>(Setup::LOLO), "Выдавать сообщение аварийного минимума")
-				.add("LO"   , static_cast<UINT>(Setup::LO), "Выдавать сообщение предаварийного минимума")
-				.add("HI"   , static_cast<UINT>(Setup::HI), "Выдавать сообщение предаварийного максимума")
+				.add("LO"   , static_cast<UINT>(Setup::LO)  , "Выдавать сообщение предаварийного минимума")
+				.add("HI"   , static_cast<UINT>(Setup::HI)  , "Выдавать сообщение предаварийного максимума")
 				.add("HIHI" , static_cast<UINT>(Setup::HIHI), "Выдавать сообщение аварийного максимума");
 	}
 
 	if (m_flagsStatus.empty()) {
 		m_flagsStatus
 				.add("", static_cast<UINT>(Status::UNDEF) , "Неопределен")
-				.add("", static_cast<UINT>(Status::ISNAN) , "Не действительное значение")
+				.add("", static_cast<UINT>(Status::ISNAN) , "Недействительное значение")
 				.add("", static_cast<UINT>(Status::LOLO)  , "Значение ниже аварийного минимума")
 				.add("", static_cast<UINT>(Status::LO)    , "Значение ниже предаварийного минимума")
 				.add("", static_cast<UINT>(Status::NORMAL), "Значение в рабочем диапазоне")
@@ -183,4 +183,35 @@ void rLimit::sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend)
 }
 
 
+std::string rLimit::getXML(const std::string& name, const std::string& prefix) const
+{
+	std::string result = "";
+
+	if (m_setup.Value != Setup::OFF) {
+		result += prefix + String_format("<%s name=\"%s\" setup=\"%s\">\n",
+								 XmlName::LIMIT,
+								 name.c_str(),
+								 m_flagsSetup.getNameByBits(m_setup.Value).c_str());
+
+		if (m_setup.Value & Setup::LOLO) {
+			result += prefix + String_format("\t<lolo>%g</lolo>\n", m_lolo.Value);
+		}
+
+		if (m_setup.Value & Setup::LO) {
+			result += prefix + String_format("\t<lo>%g</lo>\n", m_lo.Value);
+		}
+
+		if (m_setup.Value & Setup::HI) {
+			result += prefix + String_format("\t<hi>%g</hi>\n", m_hi.Value);
+		}
+
+		if (m_setup.Value & Setup::HIHI) {
+			result += prefix + String_format("\t<hihi>%g</hihi>\n", m_hihi.Value);
+		}
+
+		result += prefix + "</" + XmlName::LIMIT + ">\n";
+	}
+
+	return result;
+}
 

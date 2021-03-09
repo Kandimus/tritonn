@@ -55,6 +55,8 @@ public:
 	rLimit();
 	virtual ~rLimit() = default;
 
+	std::string getXML(const std::string& name, const std::string& prefix = "") const;
+
 public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
 	virtual UDINT generateVars(rVariableList& list, const std::string& owner_name, STRID owner_unit);

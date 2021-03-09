@@ -77,13 +77,6 @@ std::string rSystemVariable::saveKernel()
 			  "<sysvars>\n"
 			  "\t<values>\n";
 
-	for (auto var : list) {
-		if (var->getFlags() & rVariable::Flags::HIDE) {
-			continue;
-		}
-
-		result += var->saveKernel(0, "\t\t");
-	}
 	result += "\t</values>\n"
 			  "</sysvars>\n\n";
 

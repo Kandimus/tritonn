@@ -606,11 +606,11 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 
 UDINT rModbusTCPSlaveManager::generateVars(rVariableClass* parent)
 {
-	m_varList.add(m_alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0);
-	m_varList.add(m_alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0);
-	m_varList.add(m_alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0);
-	m_varList.add(m_alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0);
-	m_varList.add(m_alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0);
+	m_varList.add(m_alias + ".status" , TYPE_UINT , rVariable::Flags::R__, &Live       , U_DIMLESS, 0, "Статус");
+	m_varList.add(m_alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R__, &Tx         , U_DIMLESS, 0, "Байт передано");
+	m_varList.add(m_alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R__, &Rx         , U_DIMLESS, 0, "Байт считано");
+	m_varList.add(m_alias + ".errorrx", TYPE_USINT, rVariable::Flags::R__, &RxError    , U_DIMLESS, 0, "Количество ошибок");
+	m_varList.add(m_alias + ".clients", TYPE_USINT, rVariable::Flags::R__, &ClientCount, U_DIMLESS, 0, "Количество подключенных клиентов");
 
 	if (parent) {
 		rVariableClass::linkToExternal(parent);

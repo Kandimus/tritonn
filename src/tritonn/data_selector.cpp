@@ -248,8 +248,8 @@ UDINT rSelector::generateVars(rVariableList& list)
 			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
 		}
 	} else {
-		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
-		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
+		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].GetPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
+		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -260,8 +260,8 @@ UDINT rSelector::generateVars(rVariableList& list)
 //
 UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix)
 {
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(SELECTOR_SETUP_OFF));
-	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE, m_flagsMode.getNameByBits(SELECTOR_MODE_CHANGENEXT));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE, m_flagsMode.getNameByBits(Mode::CHANGENEXT));
 
 	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
@@ -269,7 +269,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 	UDINT fault = 0;
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
-	Mode.Init (m_flagsMode.getValue(strMode, fault));
+	m_mode.Init (m_flagsMode.getValue(strMode, fault));
 
 	if (fault) {
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
@@ -343,7 +343,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 	// Мульти-селектор
 	else if (string(XmlName::MSELECTOR) == element->Name()) {
-		m_setup.Init(m_setup.Value | SELECTOR_SETUP_MULTI);
+		m_setup.Init(m_setup.Value | Setup::MULTI);
 
 		tinyxml2::XMLElement *xml_names   = element->FirstChildElement(XmlName::NAMES);
 		tinyxml2::XMLElement *xml_inputs  = element->FirstChildElement(XmlName::INPUTS);
@@ -465,7 +465,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 UDINT rSelector::generateMarkDown(rGeneratorMD& md)
 {
-
+	md.add(this, true);
 }
 
 

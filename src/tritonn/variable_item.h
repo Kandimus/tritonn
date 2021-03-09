@@ -63,7 +63,6 @@ public:
 	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
 	bool    isMutable()  const { return m_flags & Flags::MUTABLE;  }
 	bool    isExternal() const { return m_flags & Flags::EXTERNAL; }
-	std::string saveKernel(UDINT offset, const std::string prefix) const;
 
 	std::string saveToCSV();
 

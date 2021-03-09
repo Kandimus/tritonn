@@ -104,7 +104,7 @@ UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, b
 	}
 
 	std::string p = prefix + m_name;
-	list.add(p + IO::VARNAME_OUTTYPE, TYPE_USINT, rVariable::Flags::RS__, &m_outtype, U_DIMLESS, ACCESS_SA);
+	list.add(p + IO::VARNAME_OUTTYPE, TYPE_USINT, rVariable::Flags::RS_, &m_outtype, U_DIMLESS, ACCESS_SA, "Выбранный канал для коммутации с выходом");
 
 	return TRITONN_RESULT_OK;
 }

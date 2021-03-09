@@ -32,7 +32,6 @@ rIOAIChannel::rIOAIChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::A
 		m_flagsSetup
 				.add("OFF"    , static_cast<UINT>(rIOAIChannel::Setup::OFF), COMMENT::SETUP_OFF)
 				.add("AVERAGE", static_cast<UINT>(rIOAIChannel::Setup::AVERAGE), "Усреднение значения");
-//				.add("NOICE"  , static_cast<UINT>(rIOAIChannel::Setup::NOICE), "");
 	}
 
 	if (m_flagsType.empty()) {
@@ -181,10 +180,10 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::___, &m_type   , U_DIMLESS , 0, "Тип канала:\n" + m_flagsSetup.getInfo(true));
 
 	if (issimulate) {
-		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, "Максимум симулированного значения");
-		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, "Минимум симулированного значения");
-		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, "Симулированное значение");
-		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, "Скорость изменения симулированного значения");
+		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, COMMENT::SIMULATE_MAX);
+		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, COMMENT::SIMULATE_MIN);
+		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, COMMENT::SIMULATE_VALUE);
+		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, COMMENT::SIMULATE_SPEED);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -198,7 +197,7 @@ UDINT rIOAIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	m_setup = m_flagsSetup.getValue(strSetup, fault);
 
 	if (fault) {
-		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalide setup");
+		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalid setup");
 	}
 
 	return TRITONN_RESULT_OK;

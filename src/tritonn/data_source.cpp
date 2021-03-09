@@ -327,13 +327,6 @@ std::string rSource::saveKernel(UDINT isio, const string &objname, const string 
 	}
 	result += ">\n\t<values>\n";
 
-	for (auto var : list) {
-		if (var->isHide()) {
-			continue;
-		}
-
-		result += var->saveKernel(m_alias.size() + 1, "\t\t");
-	}
 	result += "\t</values>\n";
 
 	// Входа
@@ -461,39 +454,24 @@ std::string rSource::getXmlInput() const
 
 			result += "\n";
 		}
+	}
 
-		std::string strlink = "";
+	std::string strlink = "";
 
-		for (auto link : m_inputs) {
-			if (link->m_limit.m_setup.Value != rLimit::Setup::OFF) {
-				strlink += String_format("\t\t<%s name=\"%s\" setup=\"%s\">\n",
-										 XmlName::LIMIT,
-										 link->m_ioName.c_str(),
-										 rLimit::m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value).c_str());
+	for (auto link : m_inputs) {
+		strlink += link->m_limit.getXML(link->m_ioName, "\t\t");
+	}
 
-				if (link->m_limit.m_setup.Value & rLimit::Setup::LOLO) {
-					strlink += String_format("\t\t\t<lolo>%g</lolo>\n", link->m_limit.m_lolo.Value);
-				}
-
-				if (link->m_limit.m_setup.Value & rLimit::Setup::LO) {
-					strlink += String_format("\t\t\t<lo>%g</lo>\n", link->m_limit.m_lo.Value);
-				}
-
-				if (link->m_limit.m_setup.Value & rLimit::Setup::HI) {
-					strlink += String_format("\t\t\t<hi>%g</hi>\n", link->m_limit.m_hi.Value);
-				}
-
-				if (link->m_limit.m_setup.Value & rLimit::Setup::HIHI) {
-					strlink += String_format("\t\t\t<hihi>%g</hihi>\n", link->m_limit.m_hihi.Value);
-				}
-
-				strlink += "\t\t</limit>\n";
-			}
+	for (auto link : m_outputs) {
+		if (link->m_setup & rLink::Setup::INPUT) {
+			continue;
 		}
 
-		if (strlink.size()) {
-			result += String_format("\t<%s> %s\n%s\t</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
-		}
+		strlink += link->m_limit.getXML(link->m_ioName, "\t\t");
+	}
+
+	if (strlink.size()) {
+		result += String_format("\t<%s> %s\n%s\t</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
 	}
 
 	return result;

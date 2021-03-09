@@ -61,13 +61,6 @@ std::string rInterface::saveKernel(const std::string& objname, const std::string
 							"<interface name=\"%s\">\n", comment.c_str(), objname.c_str());
 
 	result += "\t<values>\n";
-	for (auto var : m_varList) {
-		if (var->isHide()) {
-			continue;
-		}
-
-		result += var->saveKernel(m_alias.size() + 1, "\t\t");
-	}
 	result += "\t</values>\n</interface>\n";
 
 	return result;

@@ -116,6 +116,7 @@ public:
 
 private:
 	static rBitsArray m_flagsFlowmeter;
+	static rBitsArray m_flagsSetup;
 };
 
 
