@@ -27,7 +27,8 @@
 
 rBitsArray rIODOChannel::m_flagsSetup;
 
-rIODOChannel::rIODOChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::DO, index)
+rIODOChannel::rIODOChannel(USINT index, const std::string& comment)
+	: rIOBaseChannel(rIOBaseChannel::Type::DO, index, comment)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup

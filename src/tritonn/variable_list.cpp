@@ -158,7 +158,7 @@ std::string rVariableList::getMarkDown() const
 
 		rTextManager::instance().Get(item->getUnit(), strunit);
 
-		result += name + (item->isMutable() ? "*" : "") + " | ";
+		result += name + (item->isMutable() ? "[^mutable]" : "") + " | ";
 		result += NAME_TYPE[item->getType()] + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
 		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";
@@ -168,9 +168,9 @@ std::string rVariableList::getMarkDown() const
 		flagMutable |= item->isMutable();
 	}
 
-	if (flagMutable) {
-		result += "\n    * - Если объект не привязан к модулю ввода-вывода, то данная переменная может быть записываемой.\n";
-	}
+//	if (flagMutable) {
+//		result += "\n    * - Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.\n";
+//	}
 
 	return result;
 }

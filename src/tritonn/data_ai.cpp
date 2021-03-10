@@ -56,10 +56,9 @@ rAI::rAI(const rStation* owner) : rSource(owner), m_keypad(0.0), m_setup(0)
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"      , static_cast<UINT>(Setup::OFF)         , COMMENT::SETUP_OFF)
-				.add("NOBUFFER" , static_cast<UINT>(Setup::NOBUFFER)    , "Не использовать сглаживание")
-				.add("NOICE"    , static_cast<UINT>(Setup::NOICE)       , "Подавление дребезга около инженерных уставок")
 				.add("KEYPAD"   , static_cast<UINT>(Setup::ERR_KEYPAD)  , COMMENT::SETUP_KEYPAD)
-				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD), "Переключение в последнее действительное значение при недействительном значении");
+				.add("LASTGOOD" , static_cast<UINT>(Setup::ERR_LASTGOOD), "Переключение в последнее действительное значение при недействительном значении")
+				.add("NOICE"    , static_cast<UINT>(Setup::NOICE)       , "Подавление дребезга около инженерных уставок");
 	}
 
 	if (m_flagsStatus.empty()) {
@@ -407,12 +406,13 @@ UDINT rAI::generateMarkDown(rGeneratorMD& md)
 	md.add(this, true)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
 			.addProperty(XmlName::MODE , &m_flagsMode)
-			.addXml("<io_link module=\"module index\"/>" + std::string(rGeneratorMD::rItem::XML_OPTIONAL))
+			.addIOLink(false, true)
 			.addXml(XmlName::UNIT  , static_cast<UDINT>(U_any))
 			.addXml(XmlName::KEYPAD, m_keypad.Value)
 			.addXml("<" + std::string(XmlName::SCALE) + ">")
 			.addXml(XmlName::MIN, m_scale.Min.Value, false, "\t")
-			.addXml(XmlName::MAX, m_scale.Max.Value, false, "\t");
+			.addXml(XmlName::MAX, m_scale.Max.Value, false, "\t")
+			.addXml("</" + std::string(XmlName::SCALE) + ">");
 
 	return TRITONN_RESULT_OK;
 }

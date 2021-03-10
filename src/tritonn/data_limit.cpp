@@ -53,7 +53,7 @@ rLimit::rLimit() :
 				.add("", static_cast<UINT>(Status::LO)    , "Значение ниже предаварийного минимума")
 				.add("", static_cast<UINT>(Status::NORMAL), "Значение в рабочем диапазоне")
 				.add("", static_cast<UINT>(Status::HI)    , "Значение выше предаварийного максимума")
-				.add("", static_cast<UINT>(Status::HI)    , "Значение выше аварийного максимума");
+				.add("", static_cast<UINT>(Status::HIHI)  , "Значение выше аварийного максимума");
 	}
 }
 

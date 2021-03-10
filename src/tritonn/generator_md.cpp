@@ -22,6 +22,7 @@
 
 const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
 const char* rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
+const char* rGeneratorMD::rItem::CONTENTS     = "<p align='right'><a href='index.html'>[Оглавление]</a></p>\n\n";
 
 rGeneratorMD::rGeneratorMD()
 {
@@ -167,10 +168,27 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addLink(const std::string& xmlname, bo
 	return addXml(prefix + "<" + xmlname + ">" + XML_LINK + "<" + xmlname + "/>", isoptional);
 }
 
+rGeneratorMD::rItem& rGeneratorMD::rItem::addIOLink(bool onlymodule, bool isoptional, const std::string& prefix)
+{
+	return addXml("<io_link module=\"module index\"" + std::string(onlymodule ? "" : " channel=\"channel index\"") + "/>", isoptional);
+}
+
+rGeneratorMD::rItem& rGeneratorMD::rItem::addRemark(const std::string& remark)
+{
+	if (m_remark.size()) {
+		m_remark += "<br/>";
+	}
+
+	m_remark += remark;
+
+	return *this;
+}
+
 std::string rGeneratorMD::rItem::save()
 {
 	std::string result = "";
 
+	result += CONTENTS;
 	result += "# " + m_name + "\n";
 	result += ">" + std::string(TRITONN_VERSION) + "\n";
 	result += "## XML\n````xml\n";
@@ -206,6 +224,17 @@ std::string rGeneratorMD::rItem::save()
 	}
 
 	result += isModule() ? m_module->getMarkDown() : m_source->getMarkDown();
+
+	if (result.find("[^mutable]") >= 0) {
+		m_remark += "\n[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.\n";
+	}
+
+
+	if (m_remark.size()) {
+		result += /*"> "*/"\n" + m_remark + "\n";
+	}
+
+	result += "\n" + std::string(CONTENTS);
 
 	return result;
 }

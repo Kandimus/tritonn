@@ -50,12 +50,14 @@ UDINT rDataManager::saveMarkDown()
 	rSampler     smp;
 	rReducedDens rd;
 	rDensSol     ds;
+	rRVar        rvar;
 
 	// io
 	ai.generateMarkDown(md);
 	prove.generateMarkDown(md);
 
 	// calc
+	rvar.generateMarkDown(md);
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);

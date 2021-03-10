@@ -25,14 +25,23 @@
 #include "../comment_defines.h"
 
 rBitsArray rIODIChannel::m_flagsSetup;
+rBitsArray rIODIChannel::m_flagsSimType;
 
-rIODIChannel::rIODIChannel(USINT index) : rIOBaseChannel(rIOBaseChannel::Type::DI, index)
+rIODIChannel::rIODIChannel(USINT index, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::DI, index, comment)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"     , static_cast<UINT>(rIODIChannel::Setup::OFF)     , COMMENT::SETUP_OFF)
 				.add("BOUNCE"  , static_cast<UINT>(rIODIChannel::Setup::BOUNCE)  , "Устранение дребезга")
 				.add("INVERSED", static_cast<UINT>(rIODIChannel::Setup::INVERSED), COMMENT::SETUP_INVERSE);
+	}
+
+	if (m_flagsSimType.empty()) {
+		m_flagsSimType
+				.add("", static_cast<UINT>(SimType::NONE)  , COMMENT::SIMTYPE_NONE)
+				.add("", static_cast<UINT>(SimType::CONST) , COMMENT::SIMTYPE_CONST)
+				.add("", static_cast<UINT>(SimType::PULSE) , "Пульсация сигнала")
+				.add("", static_cast<UINT>(SimType::RANDOM), COMMENT::SIMTYPE_RANDOM);
 	}
 
 	m_oldValue = m_value;
@@ -102,15 +111,15 @@ UDINT rIODIChannel::simulate()
 	++m_pullingCount;
 
 	switch(m_simType) {
-		case SimType::None:
+		case SimType::NONE:
 			break;
 
-		case SimType::Const: {
+		case SimType::CONST: {
 			m_hardValue = m_simValue;
 			break;
 		}
 
-		case SimType::Pulse: {
+		case SimType::PULSE: {
 			if (rTickCount::SysTick() - m_simTimer >= m_simBlink) {
 				m_simValue  = !m_simValue;
 				m_hardValue = m_simValue;
@@ -119,7 +128,7 @@ UDINT rIODIChannel::simulate()
 			break;
 		}
 
-		case SimType::Random: {
+		case SimType::RANDOM: {
 			if (rTickCount::SysTick() - m_simTimer >= m_simBlink) {
 				m_simValue  = true == (rand() & 1);
 				m_hardValue = m_simValue;

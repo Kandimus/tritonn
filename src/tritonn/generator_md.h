@@ -60,6 +60,8 @@ public:
 		rItem& addXml(const std::string& xmlname, UDINT defval, bool isoptional = false, const std::string& prefix = "");
 		rItem& addXml(const std::string& xmlname, LREAL defval, bool isoptional = false, const std::string& prefix = "");
 		rItem& addLink(const std::string& xmlname, bool isoptional = false, const std::string& prefix = "");
+		rItem& addIOLink(bool onlymodule, bool isoptional = false, const std::string& prefix = "");
+		rItem& addRemark(const std::string& remark);
 
 		bool        isModule() const { return m_module != nullptr; }
 		std::string getName() const { return m_name; }
@@ -68,12 +70,14 @@ public:
 	public:
 		static const char* XML_OPTIONAL;
 		static const char* XML_LINK;
+		static const char* CONTENTS;
 
 	protected:
 		rSource*       m_source = nullptr;
 		rIOBaseModule* m_module = nullptr;
 		std::string    m_name;
-		bool        m_isStdInput;
+		bool           m_isStdInput;
+		std::string    m_remark;
 		std::vector<rProperty>   m_properties;
 		std::vector<std::string> m_xml;
 	};

@@ -34,7 +34,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		LREAL min_val = -10.0;
 
 		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
-		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
+		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
 		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.min"                 , min_val);
 		ss.add("io.ai00.scales.max"                 , 100.0);
@@ -186,7 +186,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 
 		// LOLO
 		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
-		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
+		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
 		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 2);
 		ss.add("io.ai00.scales.min"  , 4.0);
 		ss.add("io.ai00.scales.max"  , 20.0);
@@ -223,7 +223,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
 		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
-		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
+		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
 		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 100);
 		ss.add("io.ai00.scales.min"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.max"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Max));
@@ -264,7 +264,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		UINT test_val = static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 100;
 
 		ss.add("hardware.ai6_1.ch_02.type"          , static_cast<USINT>(rIOAIChannel::Type::mA_4_20));
-		ss.add("hardware.ai6_1.ch_02.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::Const));
+		ss.add("hardware.ai6_1.ch_02.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
 		ss.add("hardware.ai6_1.ch_02.simulate.value", test_val);
 		ss.add("io.ai01.scales.min"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai01.scales.max"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Max));

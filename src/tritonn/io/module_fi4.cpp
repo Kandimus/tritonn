@@ -133,7 +133,8 @@ UDINT rModuleFI4::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 UDINT rModuleFI4::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this);
+	md.add(this)
+			.addRemark("[^simtype]: **Тип симуляции:**<br/>" + rIOFIChannel::m_flagsSimType.getInfo(true) + "<br/>");
 
 	return TRITONN_RESULT_OK;
 }

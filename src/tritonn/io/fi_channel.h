@@ -27,11 +27,11 @@ class rIOFIChannel : public rIOBaseChannel
 public:
 	enum SimType
 	{
-		None = 0,
-		Const,
-		Linear,
-		Sinus,
-		Random,
+		NONE = 0,
+		CONST,
+		LINEAR,
+		SINUS,
+		RANDOM,
 	};
 
 	enum Setup : UINT
@@ -42,7 +42,7 @@ public:
 	};
 
 public:
-	rIOFIChannel(USINT index);
+	rIOFIChannel(USINT index, const std::string& comment = "");
 	virtual ~rIOFIChannel() = default;
 
 	UDINT getValue() const { return m_value; }
@@ -65,6 +65,8 @@ public:
 	UINT m_simMin       = 0;
 	UINT m_simValue     = 0;              // Значение в Герцах
 	INT  m_simSpeed     = 0;              //
+
+	static rBitsArray m_flagsSimType;
 
 private:
 	USINT m_hardState   = 0;             // Статус канала с модуля

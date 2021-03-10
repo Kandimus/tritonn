@@ -70,7 +70,7 @@
 							</points>
 						</factors>
 						<io>
-							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4003">
+							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4003">
 								<io_link module="0" channel="0"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -227,7 +227,7 @@
 							<keypad_kf>36000</keypad_kf>
 						</factors>
 						<io>
-							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4013">
+							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
 								<io_link module="0" channel="4"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>

@@ -25,13 +25,24 @@
 #include "../comment_defines.h"
 
 rBitsArray rIOFIChannel::m_flagsSetup;
+rBitsArray rIOFIChannel::m_flagsSimType;
 
-rIOFIChannel::rIOFIChannel(USINT index) :  rIOBaseChannel(rIOBaseChannel::Type::FI, index)
+rIOFIChannel::rIOFIChannel(USINT index, const std::string& comment)
+	: rIOBaseChannel(rIOBaseChannel::Type::FI, index, comment)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF)
 				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Усреднять значение частоты");
+	}
+
+	if (m_flagsSimType.empty()) {
+		m_flagsSimType
+				.add("", static_cast<UINT>(SimType::NONE)  , COMMENT::SIMTYPE_NONE)
+				.add("", static_cast<UINT>(SimType::CONST) , COMMENT::SIMTYPE_CONST)
+				.add("", static_cast<UINT>(SimType::LINEAR), COMMENT::SIMTYPE_LINEAR)
+				.add("", static_cast<UINT>(SimType::SINUS) , COMMENT::SIMTYPE_SINUS)
+				.add("", static_cast<UINT>(SimType::RANDOM), COMMENT::SIMTYPE_RANDOM);
 	}
 
 	m_simTimer = rTickCount::SysTick();
@@ -67,18 +78,18 @@ UDINT rIOFIChannel::simulate()
 	++m_pullingCount;
 
 	switch(m_simType) {
-		case SimType::None: {
+		case SimType::NONE: {
 			m_value = 0;
 			m_freq  = 0;
 			return TRITONN_RESULT_OK;
 		}
 
-		case SimType::Const: {
+		case SimType::CONST: {
 			count = m_simValue;
 			break;
 		}
 
-		case SimType::Sinus: {
+		case SimType::SINUS: {
 			m_simValue += m_simSpeed;
 			if(m_simValue >= 360) {
 				m_simValue -= 360;
@@ -89,7 +100,7 @@ UDINT rIOFIChannel::simulate()
 			break;
 		}
 
-		case SimType::Random: {
+		case SimType::RANDOM: {
 			LREAL tmp = m_simMin + static_cast<LREAL>(m_simMax - m_simMin) * (rand() / static_cast<LREAL>(RAND_MAX));
 			m_simValue = static_cast<UINT>(tmp);
 			count      = m_simValue;

@@ -33,7 +33,7 @@ rModuleAI6::rModuleAI6()
 	}
 
 	m_channel[0]->m_simSpeed = 1111;
-	m_channel[0]->m_simType  = rIOAIChannel::SimType::Linear;
+	m_channel[0]->m_simType  = rIOAIChannel::SimType::LINEAR;
 }
 
 rModuleAI6::rModuleAI6(const rModuleAI6* ai6) : rIOBaseModule(ai6)
@@ -125,7 +125,8 @@ UDINT rModuleAI6::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 UDINT rModuleAI6::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this);
+	md.add(this)
+			.addRemark("[^simtype]: **Тип симуляции:**<br/>" + rIOAIChannel::m_flagsSimType.getInfo(true) + "</br>");
 
 	return TRITONN_RESULT_OK;
 }
