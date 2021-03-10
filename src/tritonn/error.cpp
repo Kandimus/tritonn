@@ -17,7 +17,7 @@
 #include "error.h"
 
 
-UDINT rError::set(UDINT error, UDINT lineno, std::string text)
+UDINT rError::set(UDINT error, UDINT lineno, const std::string& text)
 {
 	if (m_error || !error) {
 		return m_error;

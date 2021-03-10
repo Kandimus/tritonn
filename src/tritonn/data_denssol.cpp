@@ -356,7 +356,7 @@ UDINT rDensSol::generateMarkDown(rGeneratorMD& md)
 	m_ctl.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
 	m_cpl.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
 
-	md.add(this, true)
+	md.add(this, true, rGeneratorMD::Type::CALCULATE)
 			.addXml(XmlName::CALIBR, m_calibrT.Value)
 			.addXml(String_format("<%s>", XmlName::FACTORS))
 			.addXml(XmlName::K0  , m_setCoef.K0.Value, false, "\t")

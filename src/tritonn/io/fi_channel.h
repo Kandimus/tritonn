@@ -41,6 +41,8 @@ public:
 		AVERAGE  = 0x0002,
 	};
 
+	const UDINT MAX_AVERAGE = 5;
+
 public:
 	rIOFIChannel(USINT index, const std::string& comment = "");
 	virtual ~rIOFIChannel() = default;
@@ -74,6 +76,8 @@ private:
 	UDINT m_simTimer    = 0;
 	UDINT m_simTimerRem = 0;
 	LREAL m_simCountRem = 0.0;
+
+	std::list<LREAL> m_average;
 
 	static rBitsArray m_flagsSetup;
 };

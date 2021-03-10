@@ -54,7 +54,7 @@ rProve::rProve(const rStation* owner)
 				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE), "ПУ ручным краном")
 				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR), "Используется один детектор")
 				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE), "Фильтрация дребезга детекторов")
-				.add("BOUNCE"       , static_cast<UINT>(Setup::NOSELECTSTR), "Не переключать частоту ПР")
+				.add("NOSELECTSTR"  , static_cast<UINT>(Setup::NOSELECTSTR), "Не переключать частоту ПР")
 				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE), "Симуляция крана");
 	}
 
@@ -93,13 +93,13 @@ rProve::rProve(const rStation* owner)
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE, XmlName::TEMP   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE   , XmlName::PRES   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY    , XmlName::DENSITY, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::OPENED     , XmlName::OPENED , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::CLOSED     , XmlName::CLOSED , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::OPEN       , XmlName::OPEN   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::CLOSE      , XmlName::CLOSE  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE  , XmlName::TEMP   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE     , XmlName::PRES   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY      , XmlName::DENSITY, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::PROVER_OPENED, XmlName::OPENED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::PROVER_CLOSED, XmlName::CLOSED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::PROVER_OPEN  , XmlName::OPEN   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::PROVER_CLOSE , XmlName::CLOSE  , rLink::SHADOW_NONE);
 }
 
 
@@ -766,7 +766,7 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 	m_opened.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	m_closed.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
-	md.add(this, false)
+	md.add(this, false, rGeneratorMD::Type::IOMDULE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
 			.addXml("<io_link module=\"module index\"/>" + std::string(rGeneratorMD::rItem::XML_OPTIONAL))
 			.addLink(XmlName::TEMP, true)

@@ -96,7 +96,7 @@ UDINT rIOAIChannel::processing()
 		return TRITONN_RESULT_OK;
 	}
 
-	if (m_setup & AVERAGE) {
+	if (m_setup & Setup::AVERAGE) {
 		m_average.push_back(m_ADC);
 
 		LREAL sum = 0.0;

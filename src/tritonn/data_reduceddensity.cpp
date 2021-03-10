@@ -193,7 +193,7 @@ UDINT rReducedDens::generateMarkDown(rGeneratorMD& md)
 	m_y.m_limit.m_setup.Init     (LIMIT_SETUP_ALL);
 	m_y15.m_limit.m_setup.Init   (LIMIT_SETUP_ALL);
 
-	md.add(this, true);
+	md.add(this, true, rGeneratorMD::Type::CALCULATE);
 
 	return TRITONN_RESULT_OK;
 }

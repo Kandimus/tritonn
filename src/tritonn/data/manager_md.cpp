@@ -45,18 +45,25 @@ UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
 
+	// io
 	rAI          ai;
+	rCounter     fi;
+	rDI          di;
+	rDO          do_;
 	rProve       prove;
+
+	ai.generateMarkDown(md);
+	fi.generateMarkDown(md);
+	di.generateMarkDown(md);
+	do_.generateMarkDown(md);
+	prove.generateMarkDown(md);
+
+	// calc
 	rSampler     smp;
 	rReducedDens rd;
 	rDensSol     ds;
 	rRVar        rvar;
 
-	// io
-	ai.generateMarkDown(md);
-	prove.generateMarkDown(md);
-
-	// calc
 	rvar.generateMarkDown(md);
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);

@@ -187,7 +187,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="AVERAGE" description="4010">
+							<counter name="Counter" setup="" description="4010">
 								<_io_link module="1" channel="1"/>
 							</counter>
 						</io>
@@ -679,7 +679,7 @@
 					<counter name="counter" setup="" description="4032">
 						<_io_link module="1" channel="3"/>
 					</counter>
-					<counter name="Period" setup="AVERAGE" description="4033">
+					<counter name="Period" setup="" description="4033">
 						<_io_link module="2" channel="2"/>
 					</counter>
 				</io>

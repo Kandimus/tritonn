@@ -57,8 +57,25 @@ UDINT rIOFIChannel::processing()
 	// Изменяем статус
 	if (m_hardState) {
 		m_state = true;
+		m_average.clear();
 
 		return TRITONN_RESULT_OK;
+	}
+
+	if (m_setup & AVERAGE) {
+		m_average.push_back(m_freq);
+
+		LREAL sum = 0.0;
+		for (auto freq : m_average) {
+			sum += freq;
+		}
+		sum /= m_average.size();
+
+		while (m_average.size() > MAX_AVERAGE) {
+			m_average.pop_front();
+		}
+
+		m_freq = sum;
 	}
 
 	return TRITONN_RESULT_OK;

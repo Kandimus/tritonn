@@ -294,10 +294,9 @@ UDINT rDI::generateMarkDown(rGeneratorMD& md)
 	m_present.m_limit.m_setup.Init (rLimit::Setup::OFF);
 	m_physical.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
-	md.add(this, true)
+	md.add(this, true, rGeneratorMD::Type::IOCHANNEL_OPT)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
-			.addProperty(XmlName::MODE , &m_flagsMode)
-			.addXml("<io_link module=\"module index\"/>" + std::string(rGeneratorMD::rItem::XML_OPTIONAL))
+			.addProperty(XmlName::MODE , &m_flagsMode, true)
 			.addXml(XmlName::KEYPAD, static_cast<UDINT>(m_keypadValue.Value));
 
 	return TRITONN_RESULT_OK;

@@ -24,8 +24,7 @@ struct rVersion
 	USINT m_minor;
 	UINT  m_build;
 	UDINT m_hash;
-	USINT m_status; // Стату сборки 0 - betta, 1 - nonstable, 2 - stable
-	UDINT m_crc;    // Контрольная сумма
+//	USINT m_status; // Стату сборки 0 - betta, 1 - nonstable, 2 - stable
 };
 
 struct rMetrologyVer

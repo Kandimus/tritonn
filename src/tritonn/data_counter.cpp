@@ -43,8 +43,7 @@ rCounter::rCounter(const rStation* owner) : rSource(owner), m_setup(Setup::OFF)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , "Отключить обработку сигнала")
-				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Включить устреднение частоты");
+				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , "Отключить обработку сигнала");
 	}
 
 	m_lockErr   = 0;
@@ -98,8 +97,6 @@ UDINT rCounter::calculate()
 		m_period.m_value  = 0.0;
 		m_impulse.m_value = 0.0;
 
-		m_averageFreq.clear();
-
 		postCalculate();
 
 		return TRITONN_RESULT_OK;
@@ -148,21 +145,6 @@ UDINT rCounter::calculate()
 					m_countPrev       = count;
 					m_tickPrev        = tick;
 					m_pullingCount    = channel->getPullingCount();
-
-					if (m_setup.Value & Setup::AVERAGE) {
-						m_averageFreq.push_back(m_freq.m_value);
-
-						while (m_averageFreq.size() > AVERAGE_MAX) {
-							m_averageFreq.pop_front();
-						}
-
-						LREAL average = 0.0;
-						for (auto value : m_averageFreq) {
-							average += value;
-						}
-						m_freq.m_value   = average / AVERAGE_MAX;
-						m_period.m_value = getPeriod();
-					}
 				}
 			}
 		}
@@ -231,7 +213,7 @@ UDINT rCounter::generateMarkDown(rGeneratorMD& md)
 	m_freq.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
 	m_period.m_limit.m_setup.Init(rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO);
 
-	md.add(this, true)
+	md.add(this, true, rGeneratorMD::Type::IOCHANNEL_OPT)
 			.addProperty(XmlName::SETUP, &m_flagsSetup);
 
 	return TRITONN_RESULT_OK;

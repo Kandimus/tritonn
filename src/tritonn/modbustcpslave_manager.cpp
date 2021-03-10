@@ -77,15 +77,16 @@ rModbusTCPSlaveManager::~rModbusTCPSlaveManager()
 //
 rThreadStatus rModbusTCPSlaveManager::Proccesing()
 {
-	rError err;
+//	rError err;
 
-	if (LoadStandartModbus(err)) {
-		CloseServer();
-		Finish();
+//	// Грузим тут, бо на момент загрузки обычного модбаса переменных еще нет, увы.
+//	if (LoadStandartModbus(err)) {
+//		CloseServer();
+//		Finish();
 
-		rDataManager::instance().DoHalt(HALT_REASON_CONFIGFILE | err.getError());
-		return rThreadStatus::FINISHED;
-	}
+//		rDataManager::instance().DoHalt(HALT_REASON_CONFIGFILE | err.getError());
+//		return rThreadStatus::FINISHED;
+//	}
 
 	while(1)
 	{
@@ -402,6 +403,10 @@ UDINT rModbusTCPSlaveManager::checkVars(rError& err)
 {
 	UDINT address = 0;
 
+	if (LoadStandartModbus(err)) {
+		return err.getError();
+	}
+
 	for(auto& tlink : TempLink) {
 		rModbusLink link;
 
@@ -419,7 +424,7 @@ UDINT rModbusTCPSlaveManager::checkVars(rError& err)
 
 		// check block start + count > 65535
 		if (address > 0x0000FFFF) {
-			return err.set(DATACFGERR_INTERFACES_ADDROVERFLOW, tlink.LineNum, tlink.VarName);
+			return err.set(DATACFGERR_INTERFACES_ADDR_OVERFLOW, tlink.LineNum, tlink.VarName);
 		}
 
 		ModbusLink.push_back(link);
@@ -459,14 +464,19 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 	XML_FOR(xml_item, xml_modbus, XmlName::ITEM) {
 		UDINT fault = 0;
 		rModbusLink link;
+		std::string alias = XmlUtils::getTextString(xml_item, "", fault);
 
-		m_snapshot.add(XmlUtils::getTextString(xml_item, "", fault));
+		m_snapshot.add(alias);
 
-		link.Address = XmlUtils::getAttributeUDINT(xml_item, "addr", 0xFFFF); //TODO заменить на константу
+		link.Address = XmlUtils::getAttributeUDINT(xml_item, XmlName::ADDR, 0xFFFF); //TODO заменить на константу
 		link.m_item  = m_snapshot.last();
 
-		if (link.Address == 0xFFFF || nullptr == link.m_item->getVariable()) {
-			return err.set(DATACFGERR_INTERFACES_NF_VAR, xml_item->GetLineNum(), "not found variable or incorrect address");
+		if (link.Address > 100) {
+			return err.set(DATACFGERR_INTERFACES_NF_STD_VAR, xml_item->GetLineNum(), String_format("incorrect address %u", link.Address));
+		}
+
+		if (!link.m_item->getVariable()) {
+			return err.set(DATACFGERR_INTERFACES_NF_STD_VAR, xml_item->GetLineNum(), alias);
 		}
 
 		ModbusLink.push_back(link);
@@ -557,7 +567,6 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 		}
 	}
 
-
 	// Перебираем указанные блоки
 	XML_FOR(xml_item, xml_adrmap, XmlName::ADDRESSBLOCK) {
 		// Считываем блок модбаса
@@ -566,18 +575,18 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 		auto  blockname = XmlUtils::getTextString    (xml_item, "", fault);
 
 		if (address < 400000 || address > 465535) {
-			return err.set(DATACFGERR_INTERFACES_BADADDR, xml_item->GetLineNum(), "");
+			return err.set(DATACFGERR_INTERFACES_BAD_ADDR, xml_item->GetLineNum(), "");
 		}
 		address -= 400000;
 
 		if (fault) {
-			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_item->GetLineNum(), "");
+			return err.set(DATACFGERR_INTERFACES_BAD_BLOCK, xml_item->GetLineNum(), "");
 		}
 
 		auto xml_block = FindBlock(xml_root, blockname);
 
 		if (!xml_block) {
-			return err.set(DATACFGERR_INTERFACES_BADBLOCK, xml_adrmap->GetLineNum(), blockname);
+			return err.set(DATACFGERR_INTERFACES_BAD_BLOCK, xml_adrmap->GetLineNum(), blockname);
 		}
 
 		//
@@ -591,7 +600,7 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 			address       = 0;
 
 			if (fault) {
-				return err.set(DATACFGERR_INTERFACES_BADVAR, xml_var->GetLineNum(), "");
+				return err.set(DATACFGERR_INTERFACES_BAD_VAR, xml_var->GetLineNum(), "");
 			}
 
 			TempLink.push_back(tlink);

@@ -36,7 +36,7 @@ rRVar::rRVar() : rSource(), m_setup(0)
 	}
 
 	initLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE,
-			 m_value, U_any, SID::VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
+			 m_value, U_any, SID::VAR_VALUE, XmlName::VALUE, rLink::SHADOW_NONE);
 }
 
 
@@ -126,7 +126,7 @@ UDINT rRVar::generateMarkDown(rGeneratorMD& md)
 {
 	m_value.m_limit.m_setup.Init (LIMIT_SETUP_ALL);
 
-	md.add(this, true)
+	md.add(this, true, rGeneratorMD::Type::CALCULATE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
 			.addXml(XmlName::VALUE, m_value.m_value)
 			.addXml(XmlName::UNIT , static_cast<UDINT>(m_value.m_unit));

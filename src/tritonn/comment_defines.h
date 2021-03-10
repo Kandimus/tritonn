@@ -37,6 +37,7 @@ const std::string IMP_COUNT      = "Счетчик импульсов";
 const std::string KEYPAD         = "Значение ручного ввода";
 const std::string KFACTOR        = "К-фактор";
 const std::string MASS           = "Масса";
+const std::string METHOD         = "Метод:<br/>";
 const std::string MFACTOR        = "М-фактор";
 const std::string MINUTES        = "Минуты";
 const std::string MODE           = "Режим:<br/>";

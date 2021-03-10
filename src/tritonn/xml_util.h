@@ -42,6 +42,7 @@ namespace XmlName
 
 const char ACCESS[]        = "access";
 //const char ADDRESS[]       = "address";
+const char ADDR[]           = "addr";
 const char ADDRESSBLOCK[]  = "addressblock";
 const char ADDRESSMAP[]    = "addressmap";
 const char AI[]            = "ai";

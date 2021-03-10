@@ -403,10 +403,9 @@ UDINT rAI::generateMarkDown(rGeneratorMD& md)
 	m_phValue.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_current.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 
-	md.add(this, true)
+	md.add(this, true, rGeneratorMD::Type::IOCHANNEL_OPT)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
-			.addProperty(XmlName::MODE , &m_flagsMode)
-			.addIOLink(false, true)
+			.addProperty(XmlName::MODE , &m_flagsMode, true)
 			.addXml(XmlName::UNIT  , static_cast<UDINT>(U_any))
 			.addXml(XmlName::KEYPAD, m_keypad.Value)
 			.addXml("<" + std::string(XmlName::SCALE) + ">")

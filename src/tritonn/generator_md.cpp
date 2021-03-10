@@ -23,6 +23,8 @@
 const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
 const char* rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
 const char* rGeneratorMD::rItem::CONTENTS     = "<p align='right'><a href='index.html'>[Оглавление]</a></p>\n\n";
+const char* rGeneratorMD::rItem::TEXT_BITS    = "text value | text value | ... | text value";
+const char* rGeneratorMD::rItem::TEXT_NUMBER  = "text value";
 
 rGeneratorMD::rGeneratorMD()
 {
@@ -32,10 +34,9 @@ rGeneratorMD::~rGeneratorMD()
 {
 }
 
-rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput)
+rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput, Type type)
 {
-	m_items.push_back(rItem(source, isstdinput));
-
+	m_items.push_back(rItem(source, isstdinput, type));
 
 	return m_items.back();
 }
@@ -58,6 +59,7 @@ UDINT rGeneratorMD::save(const std::string& path)
 
 	for (auto& item : m_items) {
 		result = SimpleFileSave(path + "/" + item.getName() + ".md", item.save());
+
 		if (result != TRITONN_RESULT_OK) {
 			return result;
 		}
@@ -70,19 +72,26 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 {
 	std::string text = "<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"/>"
 					   "<title>Tritonn help</title></head><body>"
-					   "<h1>Tritonn help</h1><bsp/><h2>ver " + std::string(TRITONN_VERSION) + "</h2>\n";
+					   "<h1>Tritonn help</h1><bsp/><h4><i>ver " + std::string(TRITONN_VERSION) + "</i></h4>\n";
 
 	text += "<hr align=\"left\">";
 	text += "<br/><h3>Hardware</h3>\n";
 	for (auto& item : m_items) {
-		if (item.isModule()) {
+		if (item.isHarware()) {
 			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
 		}
 	}
 
-	text += "<br/><h3>Source</h3>\n";
+	text += "<br/><h3>IO objects</h3>\n";
 	for (auto& item : m_items) {
-		if (!item.isModule()) {
+		if (item.isIO()) {
+			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+		}
+	}
+
+	text += "<br/><h3>Calculate objects</h3>\n";
+	for (auto& item : m_items) {
+		if (item.isCalculate()) {
 			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
 		}
 	}
@@ -98,25 +107,32 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput)
+rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput, Type type)
 {
 	m_source     = source;
 	m_name       = source->RTTI();
 	m_isStdInput = isstdinput;
+	m_type       = type;
+
+	if (isHarware()) {
+		m_type = Type::CALCULATE;
+	}
 }
 
 rGeneratorMD::rItem::rItem(rIOBaseModule* module)
 {
 	m_module = module;
 	m_name   = module->getName();
+	m_type   = Type::HARWARE;
 }
 
-rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, const rBitsArray* bits)
+rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, const rBitsArray* bits, bool isnumber)
 {
 	m_properties.push_back(rProperty());
-	m_properties.back().m_name = name;
-	m_properties.back().m_bits = bits;
-	m_properties.back().m_type = ItemType::BITSFLAG;
+	m_properties.back().m_name     = name;
+	m_properties.back().m_bits     = bits;
+	m_properties.back().m_type     = ItemType::BITSFLAG;
+	m_properties.back().m_isNumber = isnumber;
 
 	return *this;
 }
@@ -168,11 +184,6 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addLink(const std::string& xmlname, bo
 	return addXml(prefix + "<" + xmlname + ">" + XML_LINK + "<" + xmlname + "/>", isoptional);
 }
 
-rGeneratorMD::rItem& rGeneratorMD::rItem::addIOLink(bool onlymodule, bool isoptional, const std::string& prefix)
-{
-	return addXml("<io_link module=\"module index\"" + std::string(onlymodule ? "" : " channel=\"channel index\"") + "/>", isoptional);
-}
-
 rGeneratorMD::rItem& rGeneratorMD::rItem::addRemark(const std::string& remark)
 {
 	if (m_remark.size()) {
@@ -190,13 +201,13 @@ std::string rGeneratorMD::rItem::save()
 
 	result += CONTENTS;
 	result += "# " + m_name + "\n";
-	result += ">" + std::string(TRITONN_VERSION) + "\n";
+	result += "> " + std::string(TRITONN_VERSION) + "\n";
 	result += "## XML\n````xml\n";
 	result += "<" + m_name + " name=\"valid object name\" descr=\"string index\" ";
 
 	for (auto& prop : m_properties) {
 		switch (prop.m_type) {
-			case ItemType::BITSFLAG:  result += String_format("%s=\"text's bits\" ", prop.m_name.c_str()); break;
+			case ItemType::BITSFLAG:  result += prop.m_name + "=\"" + std::string(prop.m_isNumber ? TEXT_NUMBER : TEXT_BITS) + "\" "; break;
 			case ItemType::UDINT_VAL: result += String_format("%s=\"%u\" ", prop.m_name.c_str(), prop.m_intVal); break;
 			case ItemType::LREAL_VAL: result += String_format("%s=\"%g\" ", prop.m_name.c_str(), prop.m_realVal); break;
 			default: result += String_format("error_property "); break;
@@ -204,12 +215,22 @@ std::string rGeneratorMD::rItem::save()
 	}
 	result += ">\n";
 
-	if (!isModule()) {
+	if (isHarware()) {
+		result += m_module->getXmlChannels();
+	} else {
+		if (isIO()) {
+			result += "\t<io_link module=\"module index\"";
+			result += m_type == Type::IOMDULE ? "" : " channel=\"channel index\"";
+			result += "/>";
+
+			if (m_type == Type::IOCHANNEL_OPT) {
+				result += " " + std::string(XML_OPTIONAL) + "\n";
+			}
+		}
+
 		if (m_isStdInput) {
 			result += m_source->getXmlInput();
 		}
-	} else {
-		result += m_module->getXmlChannels();
 	}
 
 	for (auto& item : m_xml) {
@@ -223,7 +244,7 @@ std::string rGeneratorMD::rItem::save()
 		}
 	}
 
-	result += isModule() ? m_module->getMarkDown() : m_source->getMarkDown();
+	result += isHarware() ? m_module->getMarkDown() : m_source->getMarkDown();
 
 	if (result.find("[^mutable]") >= 0) {
 		m_remark += "\n[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.\n";

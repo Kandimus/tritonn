@@ -24,7 +24,7 @@ public:
 	rError() = default;
 	virtual ~rError() = default;
 
-	UDINT set(UDINT error, UDINT lineno, std::string text = "");
+	UDINT set(UDINT error, UDINT lineno, const std::string& text = "");
 	void clear();
 
 	UDINT       getError()  const { return m_error; }

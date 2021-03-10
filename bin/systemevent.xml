@@ -399,26 +399,26 @@
 		<!--EID_DI_NEW_SETUP-->
 		<str id="537853968"/>
 
-		<!--EID_DO_SUCCESS_ON-->
-		<str id="537919489"/>
-		<!--EID_DO_SUCCESS_OFF-->
-		<str id="537919490"/>
-		<!--EID_DO_WARNING_ON-->
-		<str id="-1609564157"/>
-		<!--EID_DO_WARNING_OFF-->
-		<str id="-1609564156"/>
-		<!--EID_DO_ALARM_ON-->
-		<str id="-535822331"/>
-		<!--EID_DO_ALARM_OFF-->
-		<str id="-535822330"/>
+		<!--EID_DO_SUCCESS_ON - $1 ID, $2 Descr -->
+		<str id="537919489">$2. Сигнал установлен.</str>
+		<!--EID_DO_SUCCESS_OFF - $1 ID, $2 Descr -->
+		<str id="537919490">$2. Сигнал снят.</str>
+		<!--EID_DO_WARNING_ON - $1 ID, $2 Descr -->
+		<str id="-1609564157">$2. Сигнал установлен.</str>
+		<!--EID_DO_WARNING_OFF - $1 ID, $2 Descr -->
+		<str id="-1609564156">$2. Сигнал снят.</str>
+		<!--EID_DO_ALARM_ON - $1 ID, $2 Descr -->
+		<str id="-535822331">$2. Сигнал установлен.</str>
+		<!--EID_DO_ALARM_OFF - $1 ID, $2 Descr -->
+		<str id="-535822330">$2. Сигнал снят.</str>
 		<!--EID_DO_CH_FAULT-->
 		<str id="-535822326"/>
 		<!--EID_DO_CH_OK-->
 		<str id="537919499"/>
-		<!--EID_DO_KEYPAD_ON-->
-		<str id="-1609564148"/>
-		<!--EID_DO_KEYPAD_OFF-->
-		<str id="-1609564147"/>
+		<!--EID_DO_KEYPAD_ON - $1 ID, $2 Descr -->
+		<str id="-1609564148">$2. Установлен режим ручного ввода значения.</str>
+		<!--EID_DO_KEYPAD_OFF - $1 ID, $2 Descr -->
+		<str id="-1609564147">$2. Установлен режим физического значения.</str>
 		<!--EID_DO_MODULE-->
 		<str id="-535822322"/>
 		<!--EID_DO_NEW_SETUP-->

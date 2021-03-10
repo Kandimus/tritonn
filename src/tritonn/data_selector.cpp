@@ -465,7 +465,9 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 UDINT rSelector::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this, true);
+	md.add(this, true, rGeneratorMD::Type::CALCULATE);
+
+	return TRITONN_RESULT_OK;
 }
 
 

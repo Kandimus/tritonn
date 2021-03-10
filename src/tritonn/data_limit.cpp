@@ -128,19 +128,19 @@ UINT rLimit::calculate(LREAL val, UDINT check)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit)
+UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit, const std::string& owner_comment)
 {
 	if (m_setup.Value & Setup::OFF) {
 		return TRITONN_RESULT_OK;
 	}
 
-	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___, &m_lolo.Value    , owner_unit, ACCESS_LIMITS, "Значение аварийного минимума");
-	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___, &m_lo.Value      , owner_unit, ACCESS_LIMITS, "Значение предаварийного минимума");
-	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___, &m_hi.Value      , owner_unit, ACCESS_LIMITS, "Значение предаварийного максимума");
-	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___, &m_hihi.Value    , owner_unit, ACCESS_LIMITS, "Значение аварийного максимума");
-	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___, &Hysteresis.Value, owner_unit, ACCESS_LIMITS, "Значение гистерезиса");
-	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status        , U_DIMLESS , 0            , COMMENT::STATUS + m_flagsStatus.getInfo(true));
-	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___, &m_lolo.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного минимума");
+	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___, &m_lo.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного минимума");
+	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___, &m_hi.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного максимума");
+	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___, &m_hihi.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного максимума");
+	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___, &Hysteresis.Value, owner_unit, ACCESS_LIMITS, owner_comment + ". Значение гистерезиса");
+	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status        , U_DIMLESS , 0            , owner_comment + ". " + COMMENT::STATUS + m_flagsStatus.getInfo(true));
+	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS, owner_comment + ". " + COMMENT::SETUP + m_flagsSetup.getInfo());
 
 	return TRITONN_RESULT_OK;
 }
