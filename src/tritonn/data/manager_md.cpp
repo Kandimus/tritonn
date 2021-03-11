@@ -62,13 +62,21 @@ UDINT rDataManager::saveMarkDown()
 	rReducedDens rd;
 	rDensSol     ds;
 	rRVar        rvar;
+	rSelector    sel;
+	rSelector    msel;
 	rStation     stn;
 	rStream      str(&stn);
+
+	sel.generateIO();
+
+	msel.m_setup.Value |= rSelector::Setup::MULTI;
+	msel.generateIO();
 
 	rvar.generateMarkDown(md);
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);
+	sel.generateMarkDown(md);
 	str.generateMarkDown(md);
 	stn.generateMarkDown(md);
 

@@ -44,6 +44,7 @@ public:
 		IOCHANNEL,
 		IOMDULE,
 		IOCHANNEL_OPT,
+		CUSTOM,
 	};
 
 	class rItem

@@ -34,7 +34,7 @@ rBitsArray rSelector::m_flagsMode;
 
 //-------------------------------------------------------------------------------------------------
 //
-rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
+rSelector::rSelector(const rStation* owner) : rSource(owner), m_select(-1)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
@@ -44,10 +44,10 @@ rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
 
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("NEXT"    , static_cast<UINT>(Mode::CHANGENEXT), "При аварии переключить на следующий вход")
-				.add("PREV"    , static_cast<UINT>(Mode::CHANGEPREV), "При аварии переключить на предыдущий вход")
 				.add("NOCHANGE", static_cast<UINT>(Mode::NOCHANGE)  , "При аварии не переходить на другой вход")
-				.add("ERROR"   , static_cast<UINT>(Mode::TOERROR)   , "При аварии переходить на аварийное значение");
+				.add("ERROR"   , static_cast<UINT>(Mode::TOERROR)   , "При аварии переходить на аварийное значение")
+				.add("PREV"    , static_cast<UINT>(Mode::CHANGEPREV), "При аварии переключить на предыдущий вход")
+				.add("NEXT"    , static_cast<UINT>(Mode::CHANGENEXT), "При аварии переключить на следующий вход");
 	}
 
 	//TODO Нужно ли очищать свойства класса?
@@ -108,34 +108,34 @@ UDINT rSelector::calculate()
 	}
 
 	// Проверка на изменение данных пользователем
-	Select.Compare(reinitEvent(EID_SELECTOR_SELECTED));
+	m_select.Compare(reinitEvent(EID_SELECTOR_SELECTED));
 	m_mode.Compare(reinitEvent(EID_SELECTOR_MODE));
 
 	// Если переменная переключатель находится в недопустимом режиме
 	//TODO Какие значения будут в выходах?
-	if (Select.Value >= CountInputs || Select.Value < -1) {
-		rEventManager::instance().Add(reinitEvent(EID_SELECTOR_ERROR) << Select.Value);
-		Select.Init(-1);
+	if (m_select.Value >= CountInputs || m_select.Value < -1) {
+		rEventManager::instance().Add(reinitEvent(EID_SELECTOR_ERROR) << m_select.Value);
+		m_select.Init(-1);
 		m_fault = 1;
 		//return 0;
 	}
 
 	//----------------------------------------------------------------------------------------
 	// Автоматические переходы, по статусу ошибки
-	if (Select.Value != -1) {
-		if (faultGrp[Select.Value]) {
+	if (m_select.Value != -1) {
+		if (faultGrp[m_select.Value]) {
 			switch (m_mode.Value) {
 				// Переходы запрещены
 				case Mode::NOCHANGE: {
-					sendEventSetLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_NOCHANGE) << Select.Value);
+					sendEventSetLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_NOCHANGE) << m_select.Value);
 					break;
 				}
 
 				// Переход на значение ошибки
 				case Mode::TOERROR: {
-					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
+					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << m_select.Value);
 
-					Select.Value = -1;
+					m_select.Value = -1;
 					m_fault      = 1;
 				}
 
@@ -146,35 +146,35 @@ UDINT rSelector::calculate()
 					m_lockErr &= ~(SELECTOR_LE_NOCHANGE);
 
 					do {
-						Select.Value += (m_mode.Value == Mode::CHANGENEXT) ? +1 : -1;
+						m_select.Value += (m_mode.Value == Mode::CHANGENEXT) ? +1 : -1;
 					
-						if(Select.Value < 0)           Select.Value = CountInputs - 1;
-						if(Select.Value > CountInputs) Select.Value = 0;
+						if(m_select.Value < 0)           m_select.Value = CountInputs - 1;
+						if(m_select.Value > CountInputs) m_select.Value = 0;
 						
 						++count;
-					} while (faultGrp[Select.Value] && count < CountInputs - 2);
+					} while (faultGrp[m_select.Value] && count < CountInputs - 2);
 
-					if (faultGrp[Select.Value]) {
-						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << Select.Value);
+					if (faultGrp[m_select.Value]) {
+						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << m_select.Value);
 
-						Select.Value = -1;
+						m_select.Value = -1;
 					} else {
-						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TONEXT) << Select.Value);
+						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TONEXT) << m_select.Value);
 					}
 				}
 			} //switch
 		} else {
-			sendEventClearLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_CLEARERROR) << Select.Value);
+			sendEventClearLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_CLEARERROR) << m_select.Value);
 		}
 	}
 
 	// Записываем в "выхода" требуемые значения входов, так же изменяем ед. измерения у "выходов"
 	for (UDINT grp = 0; grp < CountGroups; ++grp) {
-		ValueOut[grp].m_value = (Select.Value == -1) ? Keypad[grp] : ValueIn[Select.Value][grp].m_value;
-		ValueOut[grp].m_unit  = (Select.Value == -1) ? KpUnit[grp] : ValueIn[Select.Value][grp].m_unit;
+		ValueOut[grp].m_value = (m_select.Value == -1) ? Keypad[grp] : ValueIn[m_select.Value][grp].m_value;
+		ValueOut[grp].m_unit  = (m_select.Value == -1) ? KpUnit[grp] : ValueIn[m_select.Value][grp].m_unit;
 	}
 
-	m_fault = (Select.Value == -1) ? 1 : faultGrp[Select.Value];
+	m_fault = (m_select.Value == -1) ? 1 : faultGrp[m_select.Value];
 
 	postCalculate();
 
@@ -229,12 +229,12 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___, &Select.Value , U_DIMLESS, ACCESS_SELECT, "Выбор коммуцируемого входа");
-	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R__, &CountInputs  , U_DIMLESS, 0            , "Количество подключенных входов");
-	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value, U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode.Value , U_DIMLESS, ACCESS_SELECT, COMMENT::MODE + m_flagsMode.getInfo(true));
+	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___, &m_select.Value, U_DIMLESS, ACCESS_SELECT, "Выбор коммуцируемого входа");
+	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R__, &CountInputs   , U_DIMLESS, 0            , "Количество подключенных входов");
+	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode.Value  , U_DIMLESS, ACCESS_SELECT, COMMENT::MODE + m_flagsMode.getInfo(true));
 
-	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault      , U_DIMLESS, 0            , COMMENT::FAULT);
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault       , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	// Мультиселектор
 	if (m_setup.Value & Setup::MULTI) {
@@ -270,6 +270,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 	UDINT fault = 0;
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 	m_mode.Init (m_flagsMode.getValue(strMode, fault));
+	m_select.Init(XmlUtils::getAttributeINT(element, XmlName::SELECT, m_select.Value));
 
 	if (fault) {
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
@@ -465,7 +466,15 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 UDINT rSelector::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this, true, rGeneratorMD::Type::CALCULATE);
+	if (m_setup.Value & Setup::MULTI) {
+
+	} else {
+		md.add(this, false, rGeneratorMD::Type::CALCULATE)
+				.addProperty(XmlName::SETUP, &m_flagsSetup)
+				.addProperty(XmlName::MODE, &m_flagsMode, true)
+				.addProperty(XmlName::SELECT, static_cast<LREAL>(m_select.Value))
+				.addXml("<" + std::string(XmlName::INPUTS) + ">");
+	}
 
 	return TRITONN_RESULT_OK;
 }

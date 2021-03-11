@@ -25,6 +25,8 @@
 namespace XmlUtils
 {
 USINT       getAttributeUSINT (tinyxml2::XMLElement *element, const std::string &name, const USINT def);
+INT         getAttributeINT   (tinyxml2::XMLElement *element, const std::string &name, const INT   def);
+DINT        getAttributeDINT  (tinyxml2::XMLElement *element, const std::string &name, const DINT  def);
 UDINT       getAttributeUDINT (tinyxml2::XMLElement *element, const std::string &name, const UDINT def);
 std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const std::string &def);
 
@@ -181,6 +183,7 @@ const char RIGHTS[]        = "rights";
 const char SAMPLER[]       = "sampler";
 const char SCALE[]         = "scale";
 const char SECURITY[]      = "security";
+const char SELECT[]        = "select";
 const char SELECTED[]      = "selected";
 const char SELECTOR[]      = "selector";
 const char SETUP[]         = "setup";

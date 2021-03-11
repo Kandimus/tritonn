@@ -68,7 +68,7 @@ public:
 	string   NameInput[MAX_SELECTOR_GROUP];                     // Имена входов
 	rCmpUINT m_setup;                                           // Настройка
 	rCmpUINT m_mode;
-	rCmpINT  Select;                                            // Переменная для управлением выбора
+	rCmpINT  m_select;                                          // Переменная для управлением выбора
 	UINT     CountInputs;                                       // Количество используемых входных значений, не больше чем MAX_SELECTOR_DATA
 	UINT     CountGroups;
 

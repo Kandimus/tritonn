@@ -40,7 +40,7 @@ public:
 
 
 	rIOBaseChannel(Type type, USINT index, const std::string& comment = "")
-		: m_index(index), m_type(type), m_comment(comment) {}
+		: m_index(index), m_comment(comment), m_type(type) {}
 	virtual ~rIOBaseChannel() = default;
 
 	std::string getStrType() const;
