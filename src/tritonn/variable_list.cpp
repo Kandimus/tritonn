@@ -150,6 +150,11 @@ std::string rVariableList::getMarkDown() const
 	bool flagMutable = false;
 	std::string result = "";
 
+	if (m_list.empty()) {
+		return result;
+	}
+
+	result += "\n## Variable\n";
 	result += "Variable | Type | Unit | Unit ID | Readonly | Access | Comment\n";
 	result += ":-- |:--:|:--:|:--:|:--:|:-- |:--\n";
 	for (auto item : m_list) {
@@ -168,9 +173,7 @@ std::string rVariableList::getMarkDown() const
 		flagMutable |= item->isMutable();
 	}
 
-//	if (flagMutable) {
-//		result += "\n    * - Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.\n";
-//	}
+	result += "\n";
 
 	return result;
 }

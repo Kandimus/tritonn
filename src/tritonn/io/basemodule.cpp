@@ -171,9 +171,7 @@ std::string rIOBaseModule::getMarkDown()
 	rVariableList list;
 	generateVars("", list, true);
 
-	result += "\n## Variable\n";
 	result += list.getMarkDown();
-	result += "\n";
 
 	return result;
 }

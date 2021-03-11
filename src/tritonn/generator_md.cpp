@@ -19,6 +19,7 @@
 #include "bits_array.h"
 #include "simplefile.h"
 #include "io/basemodule.h"
+#include "interface/interface.h"
 
 const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
 const char* rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
@@ -44,6 +45,13 @@ rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput, Type ty
 rGeneratorMD::rItem& rGeneratorMD::add(rIOBaseModule* module)
 {
 	m_items.push_back(rItem(module));
+
+	return m_items.back();
+}
+
+rGeneratorMD::rItem& rGeneratorMD::add(rInterface* interface)
+{
+	m_items.push_back(rItem(interface));
 
 	return m_items.back();
 }
@@ -96,6 +104,13 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 		}
 	}
 
+	text += "<br/><h3>Interfaces</h3>\n";
+	for (auto& item : m_items) {
+		if (item.isInterface()) {
+			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+		}
+	}
+
 	text += "</body></html>";
 
 	return SimpleFileSave(path + "/index.html", text);
@@ -114,7 +129,7 @@ rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput, Type type)
 	m_isStdInput = isstdinput;
 	m_type       = type;
 
-	if (isHarware()) {
+	if (isHarware() || isInterface()) {
 		m_type = Type::CALCULATE;
 	}
 }
@@ -124,6 +139,13 @@ rGeneratorMD::rItem::rItem(rIOBaseModule* module)
 	m_module = module;
 	m_name   = module->getName();
 	m_type   = Type::HARWARE;
+}
+
+rGeneratorMD::rItem::rItem(rInterface* interface)
+{
+	m_interface = interface;
+	m_name      = interface->getRTTI();
+	m_type      = Type::INTERFACE;
 }
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, const rBitsArray* bits, bool isnumber)
@@ -217,6 +239,8 @@ std::string rGeneratorMD::rItem::save()
 
 	if (isHarware()) {
 		result += m_module->getXmlChannels();
+	} else if (isInterface()) {
+		;
 	} else {
 		if (isIO()) {
 			result += "\t<io_link module=\"module index\"";
@@ -244,7 +268,13 @@ std::string rGeneratorMD::rItem::save()
 		}
 	}
 
-	result += isHarware() ? m_module->getMarkDown() : m_source->getMarkDown();
+	if (isHarware()) {
+		result += m_module->getMarkDown();
+	} else if (isInterface()){
+		result += m_interface->getMarkDown();
+	} else {
+		result += m_source->getMarkDown();
+	}
 
 	if (result.find("[^mutable]") >= 0) {
 		m_remark += "\n[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.\n";

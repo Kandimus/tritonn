@@ -1,8 +1,8 @@
 //=================================================================================================
 //===
-//=== data_interface.cpp
+//=== interface.cpp
 //===
-//=== Copyright (c) 2020 by RangeSoft.
+//=== Copyright (c) 2020-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -13,16 +13,16 @@
 //===
 //=================================================================================================
 
+#include "interface.h"
 #include <limits>
 #include "def.h"
 #include "tinyxml2.h"
-#include "xml_util.h"
-#include "data_config.h"
-#include "event_manager.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "data_interface.h"
-#include "text_manager.h"
+#include "../xml_util.h"
+#include "../data_config.h"
+#include "../event_manager.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../text_manager.h"
 
 
 
@@ -50,18 +50,15 @@ UDINT rInterface::loadFromXML(tinyxml2::XMLElement *element, rError& err)
 
 //-------------------------------------------------------------------------------------------------
 //
-std::string rInterface::saveKernel(const std::string& objname, const std::string& comment)
+std::string rInterface::getMarkDown()
 {
-	const std::string Tag[2] = {"", "io"};
 	std::string result = "";
+
+	result += getAdditionalXml();
 
 	generateVars(nullptr);
 
-	result += String_format("<!--\n\t%s\n-->\n"
-							"<interface name=\"%s\">\n", comment.c_str(), objname.c_str());
-
-	result += "\t<values>\n";
-	result += "\t</values>\n</interface>\n";
+	result += m_varList.getMarkDown();
 
 	return result;
 }

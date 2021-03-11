@@ -43,7 +43,7 @@
 			</ai>
 		</io>
 		<stations>
-			<station name="SIKN_123" product="PETROLEUM" precision="0" setup="" description="4001">
+			<station name="SIKN_123" product="PETROLEUM" description="4001">
 				<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
 				<units>
 					<volume>112</volume>
@@ -601,7 +601,7 @@
 			<!---
 			Вторая станция
 			-->
-			<station name="SIKN_321" product="LUBRICANT" setup="" precision="3" description="4028">
+			<station name="SIKN_321" product="LUBRICANT" description="4028">
 				<units>
 					<volume>112</volume>
 					<mass>96</mass>

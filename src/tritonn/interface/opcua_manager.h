@@ -19,9 +19,9 @@
 #include <open62541.h>
 #include "thread_class.h"
 #include "structures.h"
-#include "data_interface.h"
-#include "data_snapshot.h"
-#include "variable_class.h"
+#include "interface.h"
+#include "../data_snapshot.h"
+#include "../variable_class.h"
 
 class rVariableList;
 
@@ -41,17 +41,19 @@ struct rOPCVarLink
 class rOPCUAManager : public rThreadClass, public rInterface
 {
 public:
-	rOPCUAManager();
+	rOPCUAManager(bool createopcua = true);
 	virtual ~rOPCUAManager() = default;
 
 
 // Наследование от rInterface
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
-	virtual UDINT generateVars(rVariableClass* parent);
-	virtual UDINT checkVars(rError& err);
-	virtual UDINT startServer();
-	virtual rThreadClass *getThreadClass();
+	virtual const char*   getRTTI() override { return "opcua"; }
+	virtual UDINT         loadFromXML(tinyxml2::XMLElement* xml_root, rError& err) override;
+	virtual UDINT         generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT         generateVars(rVariableClass* parent) override;
+	virtual UDINT         checkVars(rError& err) override;
+	virtual UDINT         startServer() override;
+	virtual rThreadClass* getThreadClass() override;
 
 
 // Методы
@@ -67,7 +69,7 @@ private:
 	UA_ServerConfig          OPCServerConf;
 	UA_UsernamePasswordLogin Logins[4];
 	UDINT                    LoginsCount;
-	UDINT                    LoginAnonymous;
+	UDINT                    LoginAnonymous = 1;
 	UA_ByteString            OPCCertificate;
 	UA_ByteString            OPCPrivateKey;
 

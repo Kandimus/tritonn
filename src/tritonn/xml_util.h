@@ -146,6 +146,7 @@ const char MASTERRTU[]     = "masterrtu";
 const char MASTERTCP[]     = "mastertcp";
 const char MAINTENANCE[]   = "maintenance";
 const char MAX[]           = "max";
+const char MAXCLIENT[]     = "maxclient";
 const char METHOD[]        = "method";
 const char MIN[]           = "min";
 const char MODBUS[]        = "modbus";

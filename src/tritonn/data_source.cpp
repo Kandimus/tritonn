@@ -433,9 +433,7 @@ std::string rSource::getMarkDown()
 	rVariableList list;
 	generateVars(list);
 
-	result += "\n## Variable\n";
 	result += list.getMarkDown();
-	result += "\n";
 
 	return result;
 }

@@ -43,8 +43,8 @@
 #include "data_rvar.h"
 #include "data_sampler.h"
 #include "data/prove.h"
-#include "modbustcpslave_manager.h"
-#include "opcua_manager.h"
+#include "interface/modbustcpslave_manager.h"
+#include "interface/opcua_manager.h"
 #include "structures.h"
 #include "xml_util.h"
 

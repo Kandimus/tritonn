@@ -2,7 +2,7 @@
 //===
 //=== modbustcpslave_manager.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -13,30 +13,22 @@
 //===
 //=================================================================================================
 
+#include "modbustcpslave_manager.h"
 #include <string.h>
-#include "cJSON.h"
-#include "time64.h"
 #include "locker.h"
 #include "stringex.h"
-#include "hash.h"
 #include "log_manager.h"
-#include "xml_util.h"
-#include "error.h"
-#include "data_manager.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "data_snapshot_item.h"
-#include "data_snapshot.h"
-#include "users.h"
-#include "listconf.h"
+#include "../error.h"
+#include "../data_manager.h"
+#include "../variable_list.h"
+#include "../data_snapshot_item.h"
+#include "../users.h"
+#include "../units.h"
 #include "simplefile.h"
-#include "units.h"
 #include "modbustcpslave_client.h"
-#include "modbustcpslave_manager.h"
-
-
-extern rVariable *gVariable;
-
+#include "modbus_datablocks.h"
+#include "../xml_util.h"
+#include "../generator_md.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -46,12 +38,9 @@ rModbusTCPSlaveManager::rModbusTCPSlaveManager()
 	  rInterface(Mutex),
 	  m_snapshot(rDataManager::instance().getVariableClass())
 {
-	RTTI        = "rModbusTCPSlaveManager";
-	LogMask    |= LM_TERMINAL;
-	Swap.Byte   = 1;
-	Swap.Word   = 0;
-	Swap.DWord  = 0;
-	Modbus      = new UINT[65536];
+	RTTI     = "rModbusTCPSlaveManager";
+	LogMask |= LM_TERMINAL;
+	Modbus   = new UINT[65536];
 
 	memset(Modbus, 0, sizeof(Modbus[0]) * 65536);
 }
@@ -65,29 +54,10 @@ rModbusTCPSlaveManager::~rModbusTCPSlaveManager()
 	}
 }
 
-
-//-------------------------------------------------------------------------------------------------
-//
-
-
-
-
-
 //-------------------------------------------------------------------------------------------------
 //
 rThreadStatus rModbusTCPSlaveManager::Proccesing()
 {
-//	rError err;
-
-//	// Грузим тут, бо на момент загрузки обычного модбаса переменных еще нет, увы.
-//	if (LoadStandartModbus(err)) {
-//		CloseServer();
-//		Finish();
-
-//		rDataManager::instance().DoHalt(HALT_REASON_CONFIGFILE | err.getError());
-//		return rThreadStatus::FINISHED;
-//	}
-
 	while(1)
 	{
 		// Обработка команд нити
@@ -316,7 +286,7 @@ void rModbusTCPSlaveManager::Func_Error(rModbusTCPSlaveClient *client, USINT err
 
 void rModbusTCPSlaveManager::SwapBuffer(void *value, UDINT size)
 {
-	if(Swap.DWord && !(size & 0x07) && size >= 8)
+	if(m_swap.DWord && !(size & 0x07) && size >= 8)
 	{
 		UDINT *buff = (UDINT *)value;
 		UDINT  temp = buff[0];
@@ -325,7 +295,7 @@ void rModbusTCPSlaveManager::SwapBuffer(void *value, UDINT size)
 		buff[1] = temp;
 	}
 
-	if(Swap.Word && !(size & 0x03) && size >= 4)
+	if(m_swap.Word && !(size & 0x03) && size >= 4)
 	{
 		for(UDINT ii = 0; ii < size - 2; ii += 2)
 		{
@@ -337,7 +307,7 @@ void rModbusTCPSlaveManager::SwapBuffer(void *value, UDINT size)
 		}
 	}
 
-	if(Swap.Byte && !(size & 0x01) && size >= 2)
+	if(m_swap.Byte && !(size & 0x01) && size >= 2)
 	{
 		for(UDINT ii = 0; ii < size - 2; ii += 2)
 		{
@@ -485,44 +455,6 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 	return 0;
 }
 
-
-
-
-//-------------------------------------------------------------------------------------------------
-// Поиск требуемого dataset в дереве конфигурации
-tinyxml2::XMLElement* rModbusTCPSlaveManager::FindBlock(tinyxml2::XMLElement* element, const std::string& name)
-{
-	auto xml_modbus = element->Parent();
-	if (!xml_modbus) {
-		return nullptr;
-	}
-
-	auto xml_comms = xml_modbus->Parent();
-	if (!xml_comms) {
-		return nullptr;
-	}
-
-	auto xml_blocks = xml_comms->FirstChildElement(XmlName::DATABLOCKS);
-	if (!xml_blocks) {
-		return nullptr;
-	}
-
-	XML_FOR(xml_item, xml_blocks, XmlName::DATABLOCK) {
-		const char *item_name = xml_item->Attribute(XmlName::NAME);
-
-		if (!item_name) {
-			continue;
-		}
-
-		if (String_equali(name, item_name)) {
-			return xml_item;
-		}
-	}
-
-	return nullptr;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError& err)
 {
@@ -530,14 +462,15 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 		return err.getError();
 	}
 
-	UDINT       port  = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , TCP_PORT_MODBUS);
+	UDINT       port  = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , m_port);
 	std::string ip    = "0.0.0.0";
 
-	m_alias  = "comms.modbus." + m_alias;
-	Name     = XmlUtils::getAttributeString(xml_root, XmlName::NAME    , "");
-	SlaveID  = XmlUtils::getAttributeUDINT (xml_root, XmlName::ID      , 0);
-	Security = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY, 0);
-	MaxError = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNTERR, 3);
+	m_alias   = "comms.modbus." + m_alias;
+	Name      = XmlUtils::getAttributeString(xml_root, XmlName::NAME     , "");
+	SlaveID   = XmlUtils::getAttributeUDINT (xml_root, XmlName::ID       , SlaveID);
+	Security  = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY , 0);
+	MaxError  = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNTERR , MaxError);
+	MaxClient = XmlUtils::getAttributeUDINT (xml_root, XmlName::MAXCLIENT, MaxClient);
 
 	auto xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
 	auto xml_swap   = xml_root->FirstChildElement(XmlName::SWAP);
@@ -551,9 +484,9 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 	if(xml_swap) {
 		UDINT fault = 0;
 
-		Swap.Byte  = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::BYTE ), Swap.Byte , fault);
-		Swap.Word  = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::WORD ), Swap.Word , fault);
-		Swap.DWord = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::DWORD), Swap.DWord, fault);
+		m_swap.Byte  = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::BYTE ), m_swap.Byte , fault);
+		m_swap.Word  = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::WORD ), m_swap.Word , fault);
+		m_swap.DWord = XmlUtils::getTextUSINT(xml_swap->FirstChildElement(XmlName::DWORD), m_swap.DWord, fault);
 	}
 
 	// Загружаем список "белых" адрессов
@@ -583,7 +516,7 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 			return err.set(DATACFGERR_INTERFACES_BAD_BLOCK, xml_item->GetLineNum(), "");
 		}
 
-		auto xml_block = FindBlock(xml_root, blockname);
+		auto xml_block = rDataBlock::Find(xml_root, blockname);
 
 		if (!xml_block) {
 			return err.set(DATACFGERR_INTERFACES_BAD_BLOCK, xml_adrmap->GetLineNum(), blockname);
@@ -628,9 +561,34 @@ UDINT rModbusTCPSlaveManager::generateVars(rVariableClass* parent)
 	return TRITONN_RESULT_OK;
 }
 
-/*
-UDINT rModbusTCPSlaveManager::SaveKernel(FILE *file, const string &objname, const string &comment)
+UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 {
+	md.add(this)
+			.addProperty(XmlName::ID       , static_cast<UDINT>(SlaveID))
+			.addProperty(XmlName::PORT     , m_port)
+			.addProperty(XmlName::COUNTERR , static_cast<UDINT>(MaxError))
+			.addProperty(XmlName::SECURITY , Security)
+			.addProperty(XmlName::MAXCLIENT, MaxClient)
+			.addXml("<" + std::string(XmlName::WHITELIST) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml(XmlName::IP, "ip address xx.xx.xx.xx", false, "\t")
+			.addXml("\t...")
+			.addXml(XmlName::IP, "ip address xx.xx.xx.xx", false, "\t")
+			.addXml("</" + std::string(XmlName::WHITELIST) + ">")
+			.addXml("<" + std::string(XmlName::SWAP) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml(XmlName::BYTE , static_cast<UDINT>(m_swap.Byte) , false, "\t")
+			.addXml(XmlName::WORD , static_cast<UDINT>(m_swap.Word) , false, "\t")
+			.addXml(XmlName::DWORD, static_cast<UDINT>(m_swap.DWord), false, "\t")
+			.addXml("</" + std::string(XmlName::SWAP) + ">")
+			.addXml("<" + std::string(XmlName::ADDRESSMAP) + ">")
+			.addXml("\t<" + std::string(XmlName::ADDRESSBLOCK) + " begin=\"start address\">datablock name</" + std::string(XmlName::ADDRESSBLOCK) + ">")
+			.addXml("\t...")
+			.addXml("\t<" + std::string(XmlName::ADDRESSBLOCK) + " begin=\"start address\">datablock name</" + std::string(XmlName::ADDRESSBLOCK) + ">")
+			.addXml("</" + std::string(XmlName::ADDRESSMAP) + ">");
+
 	return TRITONN_RESULT_OK;
 }
-*/
+
+std::string rModbusTCPSlaveManager::getAdditionalXml() const
+{
+	return rDataBlock::getXml();
+}

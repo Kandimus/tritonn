@@ -29,6 +29,7 @@
 #include "data_station.h"
 #include "xml_util.h"
 #include "error.h"
+#include "generator_md.h"
 #include "comment_defines.h"
 
 rBitsArray rStation::m_flagsProduct;
@@ -58,10 +59,10 @@ rStation::rStation() :
 	if (m_flagsProduct.empty()) {
 		m_flagsProduct
 				.add("PETROLEUM"   , static_cast<USINT>(rDensity::Product::PETROLEUM)   , "Нефть")
-				.add("GAZOLENE"    , static_cast<USINT>(rDensity::Product::GAZOLENE)    , "Бензины")
-				.add("TRANSITION"  , static_cast<USINT>(rDensity::Product::TRANSITION)  , "Топливо, между бензинами и керосинами")
-				.add("JETFUEL"     , static_cast<USINT>(rDensity::Product::JETFUEL)     , "Керосины")
-				.add("FUELOIL"     , static_cast<USINT>(rDensity::Product::FUELOIL)     , "Дизельное топливо")
+				.add("GAZOLENE"    , static_cast<USINT>(rDensity::Product::GAZOLENE)    , "Нефтепродукты. Бензины")
+				.add("TRANSITION"  , static_cast<USINT>(rDensity::Product::TRANSITION)  , "Нефтепродукты. Топливо, между бензинами и керосинами")
+				.add("JETFUEL"     , static_cast<USINT>(rDensity::Product::JETFUEL)     , "Нефтепродукты. Керосины")
+				.add("FUELOIL"     , static_cast<USINT>(rDensity::Product::FUELOIL)     , "Нефтепродукты. Дизельное топливо")
 				.add("SMARTBENZENE", static_cast<USINT>(rDensity::Product::SMARTBENZENE), "Автоматичский расчет группы нефтепродуктов")
 				.add("LUBRICANT"   , static_cast<USINT>(rDensity::Product::LUBRICANT)   , "Смазочные масла");
 	}
@@ -205,7 +206,7 @@ UDINT rStation::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".Product"       , TYPE_USINT, rVariable::Flags::RS_, &m_product               , U_DIMLESS         , ACCESS_SA, "Тип продукта:\n" + m_flagsProduct.getInfo(true));
+	list.add(m_alias + ".Product"       , TYPE_USINT, rVariable::Flags::RS_, &m_product               , U_DIMLESS         , ACCESS_SA, "Тип продукта:<br/>" + m_flagsProduct.getInfo(true));
 //	list.add(m_alias + ".Setup"         , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value           , U_DIMLESS         , ACCESS_SA, );
 	list.add(prefix + "present.volume"  , TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume  , m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
 	list.add(prefix + "present.volume15", TYPE_LREAL, rVariable::Flags::R__, &m_total.Present.Volume15, m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
@@ -271,22 +272,7 @@ UDINT rStation::loadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 
 	reinitLimitEvents();
 
-	return tinyxml2::XML_SUCCESS;
-}
-
-
-
-std::string rStation::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
-{
-	m_temp.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_pres.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_dens.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_flowMass.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_flowVolume.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_flowVolume15.m_limit.m_setup.Init(rLimit::Setup::NONE);
-	m_flowVolume20.m_limit.m_setup.Init(rLimit::Setup::NONE);
-
-	return rSource::saveKernel(isio, objname, comment, isglobal);
+	return TRITONN_RESULT_OK;
 }
 
 rDensity::Product rStation::getProduct() const
@@ -299,4 +285,38 @@ const rObjUnit& rStation::getUnit() const
 	return m_unit;
 }
 
+
+UDINT rStation::generateMarkDown(rGeneratorMD& md)
+{
+	m_temp.m_limit.m_setup.Init        (LIMIT_SETUP_ALL);
+	m_pres.m_limit.m_setup.Init        (LIMIT_SETUP_ALL);
+	m_dens.m_limit.m_setup.Init        (LIMIT_SETUP_ALL);
+	m_flowMass.m_limit.m_setup.Init    (LIMIT_SETUP_ALL);
+	m_flowVolume.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
+	m_flowVolume15.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_flowVolume20.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+
+	md.add(this, true, rGeneratorMD::Type::CALCULATE)
+//			.addProperty(XmlName::SETUP  , &m_flagsSetup, false)
+			.addProperty(XmlName::PRODUCT, &m_flagsProduct, true)
+			.addXml("<" + std::string(XmlName::UNITS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml(XmlName::VOLUME , m_unit.getVolume().toUDINT()     , true, "\t")
+			.addXml(XmlName::MASS   , m_unit.getMass().toUDINT()       , true, "\t")
+			.addXml(XmlName::TEMP   , m_unit.getTemperature().toUDINT(), true, "\t")
+			.addXml(XmlName::PRES   , m_unit.getPressure().toUDINT()   , true, "\t")
+			.addXml(XmlName::DENSITY, m_unit.getDensity().toUDINT()    , true, "\t")
+			.addXml("</" + std::string(XmlName::UNITS) + ">")
+			.addXml("<" + std::string(XmlName::STREAMS) + ">")
+			.addXml("\t<!-- list of streams -->")
+			.addXml("</" + std::string(XmlName::STREAMS) + ">")
+			.addXml("<" + std::string(XmlName::IO) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml("\t<!-- list of io objects -->")
+			.addXml("</" + std::string(XmlName::IO) + ">")
+			.addXml("<" + std::string(XmlName::CALC) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml("\t<!-- list of calculate objects -->")
+			.addXml("</" + std::string(XmlName::CALC) + ">")
+			.addRemark("> Если для станции не указаны источники температуры, давления или плотности, то данные параметры будут расчитываться как средневзвешанное по линиям.\n");
+
+	return TRITONN_RESULT_OK;
+}
 

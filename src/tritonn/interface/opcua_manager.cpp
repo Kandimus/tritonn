@@ -14,22 +14,21 @@
 //=================================================================================================
 
 
-
+#include "opcua_manager.h"
 #include <string.h>
 #include "tritonn_version.h"
 #include "locker.h"
 #include "tickcount.h"
 #include "stringex.h"
 #include "error.h"
-#include "opcua_manager.h"
 #include "log_manager.h"
-#include "data_snapshot_item.h"
-#include "data_manager.h"
-#include "data_config.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "xml_util.h"
-
+#include "../data_snapshot_item.h"
+#include "../data_manager.h"
+#include "../data_config.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../xml_util.h"
+#include "../generator_md.h"
 
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
@@ -141,7 +140,7 @@ const string rOPCUAManager::RootName = "tritonn";
 
 
 //TODO Вынести создания Сервера в отдельную процедуру!!!
-rOPCUAManager::rOPCUAManager()
+rOPCUAManager::rOPCUAManager(bool createopcua)
 	: rInterface(Mutex),
 	  m_snapshot(rDataManager::instance().getVariableClass())
 {
@@ -151,6 +150,10 @@ rOPCUAManager::rOPCUAManager()
 	memset(&Logins, 0, sizeof(Logins));
 	LoginsCount    = 0;
 	LoginAnonymous = 0;
+
+	if(!createopcua) {
+		return;
+	}
 
 	OPCCertificate = UA_loadFile("./cert/tritonn_cert.der");
 	OPCPrivateKey  = UA_loadFile("./cert/tritonn_key.der");
@@ -464,7 +467,7 @@ UDINT rOPCUAManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError& err)
 
 	if (xml_properties) {
 		UDINT fault = 0;
-		LoginAnonymous = XmlUtils::getTextUDINT(xml_properties->FirstChildElement(XmlName::ANONYMOUS), 1, fault);
+		LoginAnonymous = XmlUtils::getTextUDINT(xml_properties->FirstChildElement(XmlName::ANONYMOUS), LoginAnonymous, fault);
 	}
 
 	// Считываем пользователей
@@ -570,6 +573,16 @@ UDINT rOPCUAManager::generateVars(rVariableClass* parent)
 UDINT rOPCUAManager::checkVars(rError& err)
 {
 	UNUSED(err);
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rOPCUAManager::generateMarkDown(rGeneratorMD& md)
+{
+	md.add(this)
+			.addXml("<" + std::string(XmlName::PROPERTIES) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml(XmlName::ANONYMOUS, LoginAnonymous)
+			.addXml("</" + std::string(XmlName::PROPERTIES) + ">");
+
 	return TRITONN_RESULT_OK;
 }
 

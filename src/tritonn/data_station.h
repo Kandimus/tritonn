@@ -39,16 +39,16 @@ public:
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const { return "station"; }
+	virtual const char* RTTI() const override { return "station"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT       calculate();
-	virtual const rTotal *getTotal(void) const;
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
+	virtual const rTotal *getTotal(void) const override;
 
 protected:
-	virtual UDINT       initLimitEvent(rLink& link);
+	virtual UDINT initLimitEvent(rLink& link) override;
 
 public:
 	// Inputs/Outputs

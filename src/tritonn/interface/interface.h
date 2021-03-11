@@ -1,8 +1,8 @@
 ﻿//=================================================================================================
 //===
-//=== data_interface.h
+//=== interface.h
 //===
-//=== Copyright (c) 2020 by RangeSoft.
+//=== Copyright (c) 2020-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -18,15 +18,15 @@
 #include <vector>
 #include "tinyxml2.h"
 #include "def.h"
-#include "variable_class.h"
+#include "../variable_class.h"
 
 
 using std::vector;
 
-class  rThreadClass;
-class  rError;
-class  rVariableList;
-
+class rThreadClass;
+class rError;
+class rVariableList;
+class rGeneratorMD;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -37,11 +37,14 @@ public:
 	virtual ~rInterface() = default;
 
 public:
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
-	virtual std::string saveKernel(const std::string& objname, const std::string& comment);
-	virtual UDINT       generateVars(rVariableClass* parent) = 0; // Генерация собственных переменных
-	virtual UDINT       checkVars(rError& err) = 0; // Проверка переменных, поиск переменных, сгенерированных другими интерфейсами
-	virtual UDINT       startServer() = 0;
+	virtual const char*   getRTTI() = 0;
+	virtual UDINT         loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
+	virtual UDINT         generateMarkDown(rGeneratorMD& md) = 0;
+	virtual std::string   getMarkDown();
+	virtual std::string   getAdditionalXml() const { return ""; }
+	virtual UDINT         generateVars(rVariableClass* parent) = 0; // Генерация собственных переменных
+	virtual UDINT         checkVars(rError& err) = 0; // Проверка переменных, поиск переменных, сгенерированных другими интерфейсами
+	virtual UDINT         startServer() = 0;
 	virtual rThreadClass* getThreadClass() = 0;
 
 public:

@@ -63,13 +63,13 @@ protected:
 	UDINT                 Select_sec;  // Время ожидания в функции SELECT
 	UDINT                 Select_usec; // Время ожидания в функции SELECT
 	string                strIP;
-	UDINT                 Port;
+	UDINT                 m_port;
+	UDINT                 MaxClient;  // Максимальное количество подключенных клиентов, если клиентов будет больше, то первый клиент будет отсоединен от сервера
 	
 private:
 	UDINT                 Started;    // Флаг запуска сервера
 	sockaddr_in           ServAddr;   // Адрес сервера
 	SOCKET                Socket;     // Сокет на прослушку
-	UDINT                 MaxClient;  // Максимальное количество подключенных клиентов, если клиентов будет больше, то первый клиент будет отсоединен от сервера
 	
 	void  Destroy();
 	UDINT ReadFromClient(rClientTCP *client); // Чтение данных от клиента
