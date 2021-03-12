@@ -122,8 +122,6 @@ const UDINT  MAX_PROVE                 = 2;
 
 const UDINT  MAX_AI_SPLINE             = 4;
 const UDINT  MAX_FI_SPLINE             = 4;
-const UDINT  MAX_SELECTOR_INPUT        = 4;
-const UDINT  MAX_SELECTOR_GROUP        = 8;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 

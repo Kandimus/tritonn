@@ -52,13 +52,13 @@ rSelector::rSelector(const rStation* owner) : rSource(owner), m_select(-1)
 
 	//TODO Нужно ли очищать свойства класса?
 	m_lockErr   = 0;
-	CountGroups = MAX_SELECTOR_GROUP; //  По умолчанию доступен максимальный селектор
-	CountInputs = MAX_SELECTOR_INPUT;
+	CountGroups = MAX_GROUPS; //  По умолчанию доступен максимальный селектор
+	CountInputs = MAX_INPUTS;
 
-	for(UDINT grp = 0; grp < MAX_SELECTOR_GROUP; ++grp) {
+	for(UDINT grp = 0; grp < MAX_GROUPS; ++grp) {
 		Keypad[grp]    = 0.0;
 		KpUnit[grp]    = U_any;
-		NameInput[grp] = String_format("#username_%i", grp + 1);
+		NameInput[grp] = String_format("#output_%u_name", grp + 1);
 	}
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -91,7 +91,7 @@ UDINT rSelector::initLimitEvent(rLink &link)
 //
 UDINT rSelector::calculate()
 {
-	UDINT faultGrp[MAX_SELECTOR_INPUT] = {0};
+	UDINT faultGrp[MAX_INPUTS] = {0};
 
 	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
@@ -202,8 +202,8 @@ void rSelector::generateIO()
 				std::string i_name = String_format("%s.input_%i"      , NameInput[grp].c_str(), ii + 1);
 				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
-				initLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].m_unit, SID::SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
-				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete             , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
+				initLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].m_unit, SID::SEL_GRP1_IN1  + grp * MAX_INPUTS + ii, i_name, rLink::SHADOW_NONE);
+				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete             , SID::SEL_GRP1_FLT1 + grp * MAX_INPUTS + ii, f_name, i_name            );
 			}
 		}
 	} else {
@@ -296,7 +296,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 			}
 			++ii;
 
-			if(ii >= MAX_SELECTOR_INPUT) {
+			if(ii >= MAX_INPUTS) {
 				return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much inputs");
 			}
 		}
@@ -323,7 +323,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 					FaultIn[ii][0].m_param = XmlName::FAULT;
 				}
 
-				if (++ii >= MAX_SELECTOR_INPUT) {
+				if (++ii >= MAX_INPUTS) {
 					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much faults");
 				}
 			}
@@ -380,7 +380,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 				++grp;
 
-				if (grp >= MAX_SELECTOR_GROUP) {
+				if (grp >= MAX_GROUPS) {
 					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much groups");
 				}
 			}
@@ -391,7 +391,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 			++ii;
 
-			if (ii >= MAX_SELECTOR_INPUT) {
+			if (ii >= MAX_INPUTS) {
 				return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "too much inputs");
 			}
 		}
@@ -420,7 +420,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 						FaultIn[ii][grp].m_param = XmlName::FAULT;
 					}
 
-					if (++grp >= MAX_SELECTOR_GROUP) {
+					if (++grp >= MAX_GROUPS) {
 						return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much fault group");
 					}
 				}
@@ -429,7 +429,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 					return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "fault count groups");
 				}
 
-				if (++ii >= MAX_SELECTOR_INPUT) {
+				if (++ii >= MAX_INPUTS) {
 					return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "too much groups");
 				}
 			}
@@ -447,7 +447,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 			KpUnit[grp] = XmlUtils::getTextUDINT(xml_keypad->FirstChildElement(XmlName::UNIT) , U_any, fault);
 
 			++grp;
-			if (grp >= MAX_SELECTOR_GROUP || fault) {
+			if (grp >= MAX_GROUPS || fault) {
 				return err.set(DATACFGERR_SELECTOR, xml_keypad->GetLineNum(), "too much keypads or error keypad");
 			}
 		}
@@ -467,13 +467,71 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 UDINT rSelector::generateMarkDown(rGeneratorMD& md)
 {
 	if (m_setup.Value & Setup::MULTI) {
+		rGeneratorMD::rItem& mdi = md.add(this, false, rGeneratorMD::Type::CALCULATE)
+				.addProperty(XmlName::SETUP, &m_flagsSetup)
+				.addProperty(XmlName::MODE, &m_flagsMode, true)
+				.addProperty(XmlName::SELECT, static_cast<LREAL>(m_select.Value))
+				.addXml("<" + std::string(XmlName::NAMES) + ">");
+
+		for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+			mdi.addXml(XmlName::NAME, String_format("valid output %u name", grp), false, "\t");
+		}
+		mdi.addXml("</" + std::string(XmlName::NAMES) + ">");
+
+		mdi.addXml("<" + std::string(XmlName::INPUTS) + ">");
+		for (auto ii = 0; ii < MAX_INPUTS; ++ii) {
+			mdi.addXml("\t<" + std::string(XmlName::GROUP) + ">");
+
+			for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+				mdi.addXml("\t\t" + std::string(rGeneratorMD::rItem::XML_LINK));
+			}
+			mdi.addXml("\t</" + std::string(XmlName::GROUP) + ">");
+		}
+		mdi.addXml("</" + std::string(XmlName::INPUTS) + ">");
+
+		mdi.addXml("<" + std::string(XmlName::FAULTS) + ">");
+		for (auto ii = 0; ii < MAX_INPUTS; ++ii) {
+			mdi.addXml("\t<" + std::string(XmlName::GROUP) + ">");
+
+			for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+				mdi.addXml("\t\t" + std::string(rGeneratorMD::rItem::XML_LINK));
+			}
+			mdi.addXml("\t</" + std::string(XmlName::GROUP) + ">");
+		}
+		mdi.addXml("</" + std::string(XmlName::FAULTS) + ">");
+
+		mdi.addXml("<" + std::string(XmlName::KEYPADS) + ">");
+		for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+			mdi.addXml("\t<" + std::string(XmlName::KEYPAD) + ">");
+			mdi.addXml(XmlName::UNIT , static_cast<UDINT>(0), false, "\t\t");
+			mdi.addXml(XmlName::VALUE, 0.0, false, "\t\t");
+			mdi.addXml("\t</" + std::string(XmlName::KEYPAD) + ">");
+		}
+		mdi.addXml("</" + std::string(XmlName::KEYPADS) + ">")
+				.addRemark("В каждой группе количество входов должно совпадать!");
 
 	} else {
 		md.add(this, false, rGeneratorMD::Type::CALCULATE)
 				.addProperty(XmlName::SETUP, &m_flagsSetup)
 				.addProperty(XmlName::MODE, &m_flagsMode, true)
 				.addProperty(XmlName::SELECT, static_cast<LREAL>(m_select.Value))
-				.addXml("<" + std::string(XmlName::INPUTS) + ">");
+				.addXml("<" + std::string(XmlName::INPUTS) + ">")
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("</" + std::string(XmlName::INPUTS) + ">")
+				.addXml("<" + std::string(XmlName::FAULTS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("</" + std::string(XmlName::FAULTS) + ">")
+				.addXml("<" + std::string(XmlName::KEYPAD) + ">")
+				.addXml(XmlName::UNIT , KpUnit[0].toUDINT(), false, "\t")
+				.addXml(XmlName::VALUE, Keypad[0], false, "\t")
+				.addXml("</" + std::string(XmlName::KEYPAD) + ">")
+				.addRemark("Количество входных значений не должно быть меньше чем количество флагов ошибки входа!");
 	}
 
 	return TRITONN_RESULT_OK;

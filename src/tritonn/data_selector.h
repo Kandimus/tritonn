@@ -42,6 +42,16 @@ public:
 		CHANGENEXT = 4,           // В случае аварии переходить на следующее входное значение
 	};
 
+	enum
+	{
+		MAX_INPUTS = 4,
+	};
+
+	enum
+	{
+		MAX_GROUPS = 8,
+	};
+
 	rSelector(const rStation* owner = nullptr);
 	virtual ~rSelector() = default;
 
@@ -59,17 +69,17 @@ protected:
 	virtual UDINT initLimitEvent(rLink &link) override;
 	
 public:
-	rLink    ValueIn  [MAX_SELECTOR_INPUT][MAX_SELECTOR_GROUP]; // Массив входных значений
-	rLink    FaultIn  [MAX_SELECTOR_INPUT][MAX_SELECTOR_GROUP]; // Массив ошибок по каждому входу
-	rLink    ValueOut [MAX_SELECTOR_GROUP];                     // Выходное значение
+	rLink    ValueIn  [MAX_INPUTS][MAX_GROUPS]; // Массив входных значений
+	rLink    FaultIn  [MAX_INPUTS][MAX_GROUPS]; // Массив ошибок по каждому входу
+	rLink    ValueOut [MAX_GROUPS];             // Выходное значение
 
-	LREAL    Keypad   [MAX_SELECTOR_GROUP];                     // Значение подстановки
-	STRID    KpUnit   [MAX_SELECTOR_GROUP];                     //
-	string   NameInput[MAX_SELECTOR_GROUP];                     // Имена входов
-	rCmpUINT m_setup;                                           // Настройка
+	LREAL    Keypad   [MAX_GROUPS];            // Значение подстановки
+	STRID    KpUnit   [MAX_GROUPS];            //
+	string   NameInput[MAX_GROUPS];            // Имена входов
+	rCmpUINT m_setup;                          // Настройка
 	rCmpUINT m_mode;
-	rCmpINT  m_select;                                          // Переменная для управлением выбора
-	UINT     CountInputs;                                       // Количество используемых входных значений, не больше чем MAX_SELECTOR_DATA
+	rCmpINT  m_select;                         // Переменная для управлением выбора
+	UINT     CountInputs;                      // Количество используемых входных значений, не больше чем MAX_SELECTOR_DATA
 	UINT     CountGroups;
 
 private:
