@@ -1,16 +1,16 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # ai6
-> 0.19.16.7e4d2af6
+> 0.19.18.6bb32f40
 ## XML
 ````xml
 <ai6 name="valid object name" descr="string index" >
-	<channel number="0 setup="AI setup flags" />
-	<channel number="1 setup="AI setup flags" />
-	<channel number="2 setup="AI setup flags" />
-	<channel number="3 setup="AI setup flags" />
-	<channel number="4 setup="AI setup flags" />
-	<channel number="5 setup="AI setup flags" />
+	<channel number="0" setup="AI setup flags" />
+	<channel number="1" setup="AI setup flags" />
+	<channel number="2" setup="AI setup flags" />
+	<channel number="3" setup="AI setup flags" />
+	<channel number="4" setup="AI setup flags" />
+	<channel number="5" setup="AI setup flags" />
 </ai6>
 ````
 

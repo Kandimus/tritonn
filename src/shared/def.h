@@ -174,29 +174,6 @@ const UDINT  TMF_RUN                   = 0x00000001;
 const UDINT  TMF_DELETE                = 0x00000002;       // При закрытии нитей, удалить класс потока
 const UDINT  TMF_NOTRUN                = 0x00000004;       // Нить еще не запущена
 
-//-------------------------------------------------------------------------------------------------
-// Тип отчета
-const UINT   REPORT_UNDEF              = 0;
-const UINT   REPORT_PERIODIC           = 1;
-const UINT   REPORT_BATCH              = 2;
-
-//-------------------------------------------------------------------------------------------------
-// Периодичность отчета
-const UINT   REPORT_PERIOD_HOUR        = 0;
-const UINT   REPORT_PERIOD_2HOUR       = 1;
-const UINT   REPORT_PERIOD_3HOUR       = 2;
-const UINT   REPORT_PERIOD_4HOUR       = 3;
-const UINT   REPORT_PERIOD_6HOUR       = 4;
-const UINT   REPORT_PERIOD_8HOUR       = 5;
-const UINT   REPORT_PERIOD_12HOUR      = 6;
-const UINT   REPORT_PERIOD_DAYLY       = 7;
-const UINT   REPORT_PERIOD_WEEKLY      = 8;
-const UINT   REPORT_PERIOD_BIWEEKLY    = 9;
-const UINT   REPORT_PERIOD_MONTHLY     = 10;
-const UINT   REPORT_PERIOD_QUARTERLY   = 11;
-const UINT   REPORT_PERIOD_ANNUAL      = 12;
-const UINT   REPORT_PERIOD_5MIN        = 13;
-const UINT   REPORT_PERIOD_15MIN       = 14;
 
 const UINT   REPORT_DEFAULT_STORAGE    = 91;
 

@@ -415,19 +415,21 @@ std::string rSource::getMarkDown()
 		}
 	}
 
-	result += "\n## Outputs\n";
-	result += "Output | Unit | Unit ID | Limits | Comment\n";
-	result += ":-- |:--:|:--:|:--:|:--\n";
-	for (auto link : m_outputs) {
-		std::string strunit = "";
+	if (m_outputs.size()) {
+		result += "\n## Outputs\n";
+		result += "Output | Unit | Unit ID | Limits | Comment\n";
+		result += ":-- |:--:|:--:|:--:|:--\n";
+		for (auto link : m_outputs) {
+			std::string strunit = "";
 
-		rTextManager::instance().Get(link->m_unit, strunit);
+			rTextManager::instance().Get(link->m_unit, strunit);
 
-		result += link->m_ioName + " | ";
-		result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
+			result += link->m_ioName + " | ";
+			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
 
-		result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
-		result += link->m_comment + "\n";
+			result += link->m_limit.m_flagsSetup.getNameByBits(link->m_limit.m_setup.Value, ", ") + " | ";
+			result += link->m_comment + "\n";
+		}
 	}
 
 	rVariableList list;
@@ -469,7 +471,7 @@ std::string rSource::getXmlInput() const
 	}
 
 	if (strlink.size()) {
-		result += String_format("\t<%s> %s\n%s\t</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL, strlink.c_str(), XmlName::LIMITS);
+		result += String_format("\t<%s> %s\n%s\t</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL.c_str(), strlink.c_str(), XmlName::LIMITS);
 	}
 
 	return result;

@@ -1,26 +1,26 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # di8do8
-> 0.19.16.7e4d2af6
+> 0.19.18.6bb32f40
 ## XML
 ````xml
 <di8do8 name="valid object name" descr="string index" >
-	<channel number="0 setup="DI setup flags" />
-	<channel number="1 setup="DI setup flags" />
-	<channel number="2 setup="DI setup flags" />
-	<channel number="3 setup="DI setup flags" />
-	<channel number="4 setup="DI setup flags" />
-	<channel number="5 setup="DI setup flags" />
-	<channel number="6 setup="DI setup flags" />
-	<channel number="7 setup="DI setup flags" />
-	<channel number="8 setup="DO setup flags" />
-	<channel number="9 setup="DO setup flags" />
-	<channel number="10 setup="DO setup flags" />
-	<channel number="11 setup="DO setup flags" />
-	<channel number="12 setup="DO setup flags" />
-	<channel number="13 setup="DO setup flags" />
-	<channel number="14 setup="DO setup flags" />
-	<channel number="15 setup="DO setup flags" />
+	<channel number="0" setup="DI setup flags" />
+	<channel number="1" setup="DI setup flags" />
+	<channel number="2" setup="DI setup flags" />
+	<channel number="3" setup="DI setup flags" />
+	<channel number="4" setup="DI setup flags" />
+	<channel number="5" setup="DI setup flags" />
+	<channel number="6" setup="DI setup flags" />
+	<channel number="7" setup="DI setup flags" />
+	<channel number="8" setup="DO setup flags" />
+	<channel number="9" setup="DO setup flags" />
+	<channel number="10" setup="DO setup flags" />
+	<channel number="11" setup="DO setup flags" />
+	<channel number="12" setup="DO setup flags" />
+	<channel number="13" setup="DO setup flags" />
+	<channel number="14" setup="DO setup flags" />
+	<channel number="15" setup="DO setup flags" />
 </di8do8>
 ````
 

@@ -99,6 +99,18 @@ UDINT rDataManager::saveMarkDown()
 	mtcps.generateMarkDown(md);
 	opcua.generateMarkDown(md);
 
+	// Other
+	rSystemVariable sysvar;
+	rReport         prpt;
+	rReport         brpt;
+
+	prpt.m_type = rReport::Type::PERIODIC;
+	brpt.m_type = rReport::Type::BATCH;
+
+	prpt.generateMarkDown(md);
+	brpt.generateMarkDown(md);
+	sysvar.generateMarkDown(md);
+
 	md.save(DIR_MARKDOWN);
 
 	return TRITONN_RESULT_OK;
@@ -124,8 +136,6 @@ UDINT rDataManager::SaveKernel()
 	msel->m_setup.Value |= rSelector::Setup::MULTI;
 	msel->generateIO();
 
-	text += m_sysVar.saveKernel();
-
 	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
 	text += smp.saveKernel(false, "sampler", "Пробоотборник", false);
 	text += denssol->saveKernel(false, "densitometer", "Плотномер (Солартрон)", false);
@@ -134,10 +144,10 @@ UDINT rDataManager::SaveKernel()
 	text += msel->saveKernel   (false, "multiselector", "Мультиселектор", true);
 	text += stn->saveKernel    (false, "station", "Станция", true);
 	text += str->saveKernel    (false, "stream", "Линия", false);
-	rep->Type = REPORT_PERIODIC;
-	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
-	rep->Type = REPORT_BATCH;
-	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
+//	rep->Type = REPORT_PERIODIC;
+//	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
+//	rep->Type = REPORT_BATCH;
+//	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
 	text += "</objects>\n";
 	text += "\n</kernel>";
 

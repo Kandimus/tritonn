@@ -21,11 +21,11 @@
 #include "io/basemodule.h"
 #include "interface/interface.h"
 
-const char* rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
-const char* rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
-const char* rGeneratorMD::rItem::CONTENTS     = "<p align='right'><a href='index.html'>[Оглавление]</a></p>\n\n";
-const char* rGeneratorMD::rItem::TEXT_BITS    = "text value | text value | ... | text value";
-const char* rGeneratorMD::rItem::TEXT_NUMBER  = "text value";
+const std::string rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
+const std::string rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
+const std::string rGeneratorMD::rItem::CONTENTS     = "<p align='right'><a href='index.html'>[Оглавление]</a></p>\n\n";
+const std::string rGeneratorMD::rItem::TEXT_BITS    = "text value | text value | ... | text value";
+const std::string rGeneratorMD::rItem::TEXT_NUMBER  = "text value";
 
 rGeneratorMD::rGeneratorMD()
 {
@@ -33,6 +33,13 @@ rGeneratorMD::rGeneratorMD()
 
 rGeneratorMD::~rGeneratorMD()
 {
+}
+
+rGeneratorMD::rItem& rGeneratorMD::add(const std::string& name)
+{
+	m_items.push_back(rItem(name));
+
+	return m_items.back();
 }
 
 rGeneratorMD::rItem& rGeneratorMD::add(rSource* source, bool isstdinput, Type type)
@@ -66,7 +73,7 @@ UDINT rGeneratorMD::save(const std::string& path)
 	}
 
 	for (auto& item : m_items) {
-		result = SimpleFileSave(path + "/" + item.getName() + ".md", item.save());
+		result = SimpleFileSave(path + "/" + item.getFilename() + ".md", item.save());
 
 		if (result != TRITONN_RESULT_OK) {
 			return result;
@@ -83,33 +90,47 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 					   "<h1>Tritonn help</h1><bsp/><h4><i>ver " + std::string(TRITONN_VERSION) + "</i></h4>\n";
 
 	text += "<hr align=\"left\">";
-	text += "<br/><h3>Hardware</h3>\n";
+	text += "<style type='text/css'> TABLE { border-collapse : collapse;} TD { vertical-align: top; }</style>";
+	text += "<table width=75% cellspacing=3px padding=5px><tr>\n";
+	text += "<td><h3>Hardware</h3>\n";
 	for (auto& item : m_items) {
 		if (item.isHarware()) {
-			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+			text += "<a href=\"" + item.getFilename() + ".md\">" + item.getFilename() + "</a><br>\n";
 		}
 	}
+	text += "</td>\n";
 
-	text += "<br/><h3>IO objects</h3>\n";
+	text += "<td><h3>IO objects</h3>\n";
 	for (auto& item : m_items) {
 		if (item.isIO()) {
-			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+			text += "<a href=\"" + item.getFilename() + ".md\">" + item.getFilename() + "</a><br>\n";
 		}
 	}
+	text += "</td>\n";
 
-	text += "<br/><h3>Calculate objects</h3>\n";
+	text += "<td><h3>Calculate objects</h3>\n";
 	for (auto& item : m_items) {
 		if (item.isCalculate()) {
-			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+			text += "<a href=\"" + item.getFilename() + ".md\">" + item.getFilename() + "</a><br>\n";
 		}
 	}
+	text += "</td>\n";
 
-	text += "<br/><h3>Interfaces</h3>\n";
+	text += "<td><h3>Interfaces</h3>\n";
 	for (auto& item : m_items) {
 		if (item.isInterface()) {
-			text += "<a href=\"" + item.getName() + ".md\">" + item.getName() + "</a><br>\n";
+			text += "<a href=\"" + item.getFilename() + ".md\">" + item.getFilename() + "</a><br>\n";
 		}
 	}
+	text += "</td>\n";
+
+	text += "<td><h3>Other</h3>\n";
+	for (auto& item : m_items) {
+		if (item.isCustom() || item.isReport()) {
+			text += "<a href=\"" + item.getFilename() + ".md\">" + item.getFilename() + "</a><br>\n";
+		}
+	}
+	text += "</td></tr></table>\n";
 
 	text += "</body></html>";
 
@@ -122,10 +143,18 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+rGeneratorMD::rItem::rItem(const std::string& name)
+{
+	m_name     = name;
+	m_filename = m_name;
+	m_type     = Type::CUSTOM;
+}
+
 rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput, Type type)
 {
 	m_source     = source;
 	m_name       = source->RTTI();
+	m_filename   = m_name;
 	m_isStdInput = isstdinput;
 	m_type       = type;
 
@@ -136,15 +165,17 @@ rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput, Type type)
 
 rGeneratorMD::rItem::rItem(rIOBaseModule* module)
 {
-	m_module = module;
-	m_name   = module->getName();
-	m_type   = Type::HARWARE;
+	m_module   = module;
+	m_name     = module->getName();
+	m_filename = m_name;
+	m_type     = Type::HARWARE;
 }
 
 rGeneratorMD::rItem::rItem(rInterface* interface)
 {
 	m_interface = interface;
 	m_name      = interface->getRTTI();
+	m_filename  = m_name;
 	m_type      = Type::INTERFACE;
 }
 
@@ -181,7 +212,7 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addProperty(const std::string& name, L
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlstring, bool isoptional)
 {
-	m_xml.push_back(xmlstring + (isoptional ? string(" ") + XML_OPTIONAL : ""));
+	m_xml.push_back(xmlstring + (isoptional ? " " + XML_OPTIONAL : ""));
 
 	return *this;
 }
@@ -217,6 +248,13 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addRemark(const std::string& remark)
 	return *this;
 }
 
+rGeneratorMD::rItem& rGeneratorMD::rItem::setFilename(const std::string& filename)
+{
+	m_filename = filename;
+
+	return *this;
+}
+
 std::string rGeneratorMD::rItem::save()
 {
 	std::string result = "";
@@ -224,12 +262,19 @@ std::string rGeneratorMD::rItem::save()
 	result += CONTENTS;
 	result += "# " + m_name + "\n";
 	result += "> " + std::string(TRITONN_VERSION) + "\n";
+
+	if (isCustom()) {
+		result += m_remark;
+		result += "\n" + CONTENTS;
+		return result;
+	}
+
 	result += "## XML\n````xml\n";
 	result += "<" + m_name + " name=\"valid object name\" descr=\"string index\" ";
 
 	for (auto& prop : m_properties) {
 		switch (prop.m_type) {
-			case ItemType::BITSFLAG:  result += prop.m_name + "=\"" + std::string(prop.m_isNumber ? TEXT_NUMBER : TEXT_BITS) + "\" "; break;
+			case ItemType::BITSFLAG:  result += prop.m_name + "=\"" + (prop.m_isNumber ? TEXT_NUMBER : TEXT_BITS) + "\" "; break;
 			case ItemType::UDINT_VAL: result += String_format("%s=\"%u\" ", prop.m_name.c_str(), prop.m_intVal); break;
 			case ItemType::LREAL_VAL: result += String_format("%s=\"%g\" ", prop.m_name.c_str(), prop.m_realVal); break;
 			default: result += String_format("error_property "); break;
@@ -248,7 +293,7 @@ std::string rGeneratorMD::rItem::save()
 			result += "/>";
 
 			if (m_type == Type::IOCHANNEL_OPT) {
-				result += " " + std::string(XML_OPTIONAL) + "\n";
+				result += " " + XML_OPTIONAL + "\n";
 			}
 		}
 
@@ -285,7 +330,7 @@ std::string rGeneratorMD::rItem::save()
 		result += /*"> "*/"\n" + m_remark + "\n";
 	}
 
-	result += "\n" + std::string(CONTENTS);
+	result += "\n" + CONTENTS;
 
 	return result;
 }

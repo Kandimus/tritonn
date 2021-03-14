@@ -19,6 +19,7 @@
 #include "variable_list.h"
 #include "bits_array.h"
 #include "comment_defines.h"
+#include "generator_md.h"
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -66,20 +67,14 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 }
 
 
-std::string rSystemVariable::saveKernel()
+void rSystemVariable::generateMarkDown(rGeneratorMD& md)
 {
-	std::string   result = "";
 	rVariableList list;
+	std::string   result = "";
 
 	initVariables(list);
 
-	result += "<!--\n\tSystem variables\n-->\n"
-			  "<sysvars>\n"
-			  "\t<values>\n";
+	result += list.getMarkDown();
 
-	result += "\t</values>\n"
-			  "</sysvars>\n\n";
-
-	return result;
+	md.add("sysvar").addRemark(result);
 }
-

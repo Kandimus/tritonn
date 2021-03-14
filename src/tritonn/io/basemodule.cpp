@@ -137,7 +137,7 @@ std::string rIOBaseModule::getXmlChannels()
 
 	for (auto channel : m_listChannel) {
 		result += "\t<channel number=\"" + String_format("%u", channel->m_index);
-		result += " setup=\"" + channel->getStrType() + " setup flags\" />\n";
+		result += "\" setup=\"" + channel->getStrType() + " setup flags\" />\n";
 	}
 
 	return result;

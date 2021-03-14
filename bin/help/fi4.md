@@ -1,14 +1,14 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # fi4
-> 0.19.16.7e4d2af6
+> 0.19.18.6bb32f40
 ## XML
 ````xml
 <fi4 name="valid object name" descr="string index" >
-	<channel number="0 setup="FI setup flags" />
-	<channel number="1 setup="FI setup flags" />
-	<channel number="2 setup="FI setup flags" />
-	<channel number="3 setup="FI setup flags" />
+	<channel number="0" setup="FI setup flags" />
+	<channel number="1" setup="FI setup flags" />
+	<channel number="2" setup="FI setup flags" />
+	<channel number="3" setup="FI setup flags" />
 </fi4>
 ````
 

@@ -23,6 +23,9 @@ namespace COMMENT
 const std::string BEGIN          = "Начало. ";
 const std::string CALC_COEF      = "Вычисленный коэффициент";
 const std::string COMMAND        = "Команда:<br/>";
+const std::string COMMAND_NONE   = "Нет действий";
+const std::string COMMAND_START  = "Запустить";
+const std::string COMMAND_STOP   = "Остановить";
 const std::string DAY            = "День";
 const std::string END            = "Окончание. ";
 const std::string FACTOR         = "Коффициент";

@@ -1,15 +1,15 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # crm
-> 0.19.16.7e4d2af6
+> 0.19.18.6bb32f40
 ## XML
 ````xml
 <crm name="valid object name" descr="string index" >
-	<channel number="0 setup="DI setup flags" />
-	<channel number="1 setup="DI setup flags" />
-	<channel number="2 setup="DI setup flags" />
-	<channel number="3 setup="DI setup flags" />
-	<channel number="4 setup="FI setup flags" />
+	<channel number="0" setup="DI setup flags" />
+	<channel number="1" setup="DI setup flags" />
+	<channel number="2" setup="DI setup flags" />
+	<channel number="3" setup="DI setup flags" />
+	<channel number="4" setup="FI setup flags" />
 </crm>
 ````
 

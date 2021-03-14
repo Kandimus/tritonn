@@ -863,9 +863,9 @@ UDINT rDataConfig::ResolveLinks(void)
 UDINT rDataConfig::ResolveReports(void)
 {
 	for (auto reports: *ListReport) {
-		rReportDataset *rpt = &reports->Present;
+		rReport::rDataset *rpt = &reports->m_present;
 
-		for (auto tot: rpt->AverageItems) {
+		for (auto tot: rpt->m_averageItems) {
 			for(auto scr: *ListSource) {
 				const rTotal *scrtot = scr->getTotal();
 
@@ -873,14 +873,14 @@ UDINT rDataConfig::ResolveReports(void)
 					continue;
 				}
 
-				if (tot->Alias == scr->m_alias) {
-					tot->Source = scrtot;
+				if (tot->m_alias == scr->m_alias) {
+					tot->m_source = scrtot;
 					break;
 				}
 			}
 
-			if (!tot->Source) {
-				return m_error.set(DATACFGERR_RESOLVETOTAL, reports->m_lineNum, tot->Name); //TODO добавить номер линии
+			if (!tot->m_source) {
+				return m_error.set(DATACFGERR_RESOLVETOTAL, reports->m_lineNum, tot->m_name); //TODO добавить номер линии
 			}
 		}
 	}

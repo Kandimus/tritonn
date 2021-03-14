@@ -768,7 +768,7 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 
 	md.add(this, false, rGeneratorMD::Type::IOMDULE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
-			.addXml("<io_link module=\"module index\"/>" + std::string(rGeneratorMD::rItem::XML_OPTIONAL))
+			.addXml("<io_link module=\"module index\"/>" + rGeneratorMD::rItem::XML_OPTIONAL)
 			.addLink(XmlName::TEMP, true)
 			.addLink(XmlName::PRES, true)
 			.addLink(XmlName::DENSITY, true)

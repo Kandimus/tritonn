@@ -58,9 +58,9 @@ rSampler::rSampler(const rStation* owner) : rSource(owner)
 
 	if (m_flagsCommand.empty()) {
 		m_flagsCommand
-				.add("", static_cast<UINT>(Command::NONE)   , "Нет действий")
-				.add("", static_cast<UINT>(Command::START)  , "Запустить пробоотборник")
-				.add("", static_cast<UINT>(Command::STOP)   , "Остановить пробоотборник")
+				.add("", static_cast<UINT>(Command::NONE)   , COMMENT::COMMAND_NONE)
+				.add("", static_cast<UINT>(Command::START)  , COMMENT::COMMAND_START)
+				.add("", static_cast<UINT>(Command::STOP)   , COMMENT::COMMAND_STOP)
 				.add("", static_cast<UINT>(Command::TEST)   , "Запустить тест пробоотборника")
 				.add("", static_cast<UINT>(Command::CONFIRM), "Подтверждение аварий")
 				.add("", static_cast<UINT>(Command::PAUSE)  , "Пауза")

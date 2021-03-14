@@ -19,7 +19,7 @@
 #include "structures.h"
 
 class rVariableList;
-
+class rGeneratorMD;
 
 // Системные переменные
 class rSystemVariable
@@ -28,8 +28,8 @@ public:
 	rSystemVariable() = default;
 	~rSystemVariable() = default;
 
-	std::string saveKernel();
-	UDINT       initVariables(rVariableList& list);
+	void  generateMarkDown(rGeneratorMD& md);
+	UDINT initVariables(rVariableList& list);
 
 public:
 	rVersion      m_version;
