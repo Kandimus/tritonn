@@ -27,12 +27,12 @@ rModuleCRM::rModuleCRM()
 	m_name    = "crm";
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
-		auto ch_di = new rIODIChannel(m_channelDI.size());
+		auto ch_di = new rIODIChannel(m_channelDI.size(), String_format("Детектор %u", m_channelDI.size() + 1));
 		m_channelDI.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
 
-	m_channelFI = new rIOFIChannel(m_channelDI.size());
+	m_channelFI = new rIOFIChannel(m_channelDI.size(), "Частота с ПР");
 	m_listChannel.push_back(m_channelFI);
 }
 
@@ -175,7 +175,9 @@ UDINT rModuleCRM::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 UDINT rModuleCRM::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this);
+	md.add(this)
+			.addRemark("[^simtype]: **Тип симуляции DI:**<br/>" + rIODIChannel::m_flagsSimType.getInfo(true) +
+					   "<br/>**Тип симуляции FI:**</br>" + rIOFIChannel::m_flagsSimType.getInfo(true));
 
 	return TRITONN_RESULT_OK;
 }

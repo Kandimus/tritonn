@@ -122,8 +122,6 @@ const UDINT  MAX_PROVE                 = 2;
 
 const UDINT  MAX_AI_SPLINE             = 4;
 const UDINT  MAX_FI_SPLINE             = 4;
-const UDINT  MAX_SELECTOR_INPUT        = 4;
-const UDINT  MAX_SELECTOR_GROUP        = 8;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
@@ -147,11 +145,14 @@ const USINT  PRECISION_DEFAUILT        = 5;
 
 //-------------------------------------------------------------------------------------------------
 // rDataManager
-const USINT  LIVE_UNDEF                = 0;
-const USINT  LIVE_STARTING             = 1;    // Запускается
-const USINT  LIVE_REBOOT_COLD          = 3;
-const USINT  LIVE_RUNNING              = 4;
-const USINT  LIVE_HALT                 = 0xFF;
+enum Live : USINT
+{
+	UNDEF       = 0,
+	STARTING    = 1,
+	REBOOT_COLD = 3,
+	RUNNING     = 4,
+	HALT        = 0xFF,
+};
 
 //
 const USINT  RESTART_WARM              = 1;
@@ -174,70 +175,7 @@ const UDINT  TMF_DELETE                = 0x00000002;       // При закры�
 const UDINT  TMF_NOTRUN                = 0x00000004;       // Нить еще не запущена
 
 
-//-------------------------------------------------------------------------------------------------
-// Настройка селектора
-const UINT   SELECTOR_SETUP_OFF        = 0x0001;      // Селектор отключен
-const UINT   SELECTOR_SETUP_NOEVENT    = 0x0004;      // Не выдавать сообщений
-const UINT   SELECTOR_SETUP_MULTI      = 0x8000;      // Флаг мультиселектора (внутренний), не указывать в документации
-
-const UINT   SELECTOR_MODE_NOCHANGE    = 1;           // Не переходить в случае аварии на другое входное значение
-const UINT   SELECTOR_MODE_TOERROR     = 2;           // В случае аварии переходить на ручной ввод (keypad)
-const UINT   SELECTOR_MODE_CHANGEPREV  = 3;           // В случае аварии переходить на предыдущее входное значение
-const UINT   SELECTOR_MODE_CHANGENEXT  = 4;           // В случае аварии переходить на следующее входное значение
-
-
-//-------------------------------------------------------------------------------------------------
-// Тип отчета
-const UINT   REPORT_UNDEF              = 0;
-const UINT   REPORT_PERIODIC           = 1;
-const UINT   REPORT_BATCH              = 2;
-
-//-------------------------------------------------------------------------------------------------
-// Периодичность отчета
-const UINT   REPORT_PERIOD_HOUR        = 0;
-const UINT   REPORT_PERIOD_2HOUR       = 1;
-const UINT   REPORT_PERIOD_3HOUR       = 2;
-const UINT   REPORT_PERIOD_4HOUR       = 3;
-const UINT   REPORT_PERIOD_6HOUR       = 4;
-const UINT   REPORT_PERIOD_8HOUR       = 5;
-const UINT   REPORT_PERIOD_12HOUR      = 6;
-const UINT   REPORT_PERIOD_DAYLY       = 7;
-const UINT   REPORT_PERIOD_WEEKLY      = 8;
-const UINT   REPORT_PERIOD_BIWEEKLY    = 9;
-const UINT   REPORT_PERIOD_MONTHLY     = 10;
-const UINT   REPORT_PERIOD_QUARTERLY   = 11;
-const UINT   REPORT_PERIOD_ANNUAL      = 12;
-const UINT   REPORT_PERIOD_5MIN        = 13;
-const UINT   REPORT_PERIOD_15MIN       = 14;
-
-//-------------------------------------------------------------------------------------------------
-// Команды управления партионным отчетом
-const UINT   REPORT_BATCH_NONE         = 0;
-const UINT   REPORT_BATCH_START        = 1;
-const UINT   REPORT_BATCH_STOP         = 2;
-const UINT   REPORT_BATCH_RESTART      = 3;
-
-//-------------------------------------------------------------------------------------------------
-// Статус отчета
-const UINT   REPORT_STATUS_IDLE        = 0;
-const UINT   REPORT_STATUS_RUNNING     = 1;
-const UINT   REPORT_STATUS_WAITING     = 2;
-const UINT   REPORT_STATUS_COMPLETED   = 3;
-
-//-------------------------------------------------------------------------------------------------
-// Валидность отчета
-const UINT   REPORT_MARK_UNDEF         = 0;
-const UINT   REPORT_MARK_ILLEGAL       = 1; // Отчет завершен после перезагрузки. Мы не можем гарантировать точность данных
-const UINT   REPORT_MARK_INCOMPLETE    = 2; // Отчет начат после перезагрузки, период отчета не полный
-const UINT   REPORT_MARK_VALIDATE      = 3;
-const UINT   REPORT_MARK_INPROGRESS    = 4; // Отчет в работе
-
 const UINT   REPORT_DEFAULT_STORAGE    = 91;
-
-
-//-------------------------------------------------------------------------------------------------
-// Настройка переменной
-const UDINT  VAR_SETUP_CONST           = 1;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -467,34 +405,36 @@ enum rTritonn_Error
 	DATACFGERR_USERS_PARSE,                 // 148
 	DATACFGERR_INTERFACES_NF_TBLOKS,        //
 	DATACFGERR_INTERFACES_NF_BLOCKS,        // 150
-	DATACFGERR_INTERFACES_BADADDR,          //
-	DATACFGERR_INTERFACES_BADBLOCK,         // 152
-	DATACFGERR_INTERFACES_BADVAR,           //
+	DATACFGERR_INTERFACES_BAD_ADDR,         //
+	DATACFGERR_INTERFACES_BAD_BLOCK,        // 152
+	DATACFGERR_INTERFACES_BAD_VAR,          //
 	DATACFGERR_INTERFACES_NF_VAR,           // 154
-	DATACFGERR_INTERFACES_ADDROVERFLOW,     //
-	DATACFGERR_INCORRECT_IP,                // 156
+	DATACFGERR_INTERFACES_ADDR_OVERFLOW,    //
+	DATACFGERR_INTERFACES_NF_STD_VAR,       // 156
+	DATACFGERR_INTERFACES_BAD_STD_ADDR,     //
+	DATACFGERR_INCORRECT_IP,                // 158
 	DATACFGERR_SECURITY_PARSE,              //
-	DATACFGERR_SECURITY_DESCRYPT,           // 158
+	DATACFGERR_SECURITY_DESCRYPT,           // 160
 	DATACFGERR_SECURITY_NF,                 //
-	DATACFGERR_OPCUA_USER_NF,               // 160
+	DATACFGERR_OPCUA_USER_NF,               // 162
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 162
+	DATACFGERR_OPCUA_VAR_NF,                // 164
 	DATACFGERR_UNKNOWN_MODULE,              //
-	DATACFGERR_IO_CHANNEL,                  // 164
+	DATACFGERR_IO_CHANNEL,                  // 166
 	DATACFGERR_INVALID_NAME,                //
-	DATACFGERR_INVALID_MODULELINK,          // 166
+	DATACFGERR_INVALID_MODULELINK,          // 168
 	DATACFGERR_REALTIME_MODULELINK,         //
-	DATACFGERR_NOTSYSTEXTFILE,              // 168
+	DATACFGERR_NOTSYSTEXTFILE,              // 170
 	DATACFGERR_INTERFACES_BADNAME,          //
-	DATACFGERR_DI,                          // 170
+	DATACFGERR_DI,                          // 172
 	DATACFGERR_DO,                          //
-	DATACFGERR_SAMPLER_TOTALS,              // 172
+	DATACFGERR_SAMPLER_TOTALS,              // 174
 	DATACFGERR_SAMPLER_CAN,                 //
-	DATACFGERR_SAMPLER_METHOD,              // 174
+	DATACFGERR_SAMPLER_METHOD,              // 176
 	DATACFGERR_SAMPLER_SETUP,               //
-	DATACFGERR_SAMPLER_RESERVE,             // 176
+	DATACFGERR_SAMPLER_RESERVE,             // 178
 	DATACFGERR_SAMPLER_RESERVE_NF,          //
-	DATACFGERR_OBJECT_UNITS,                // 178
+	DATACFGERR_OBJECT_UNITS,                // 180
 	DATACFGERR_PORVE_MISSINGMODULE,         //
 
 

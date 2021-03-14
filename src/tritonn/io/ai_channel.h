@@ -59,25 +59,25 @@ public:
 
 	enum SimType
 	{
-		None = 0,
-		Const,
-		Linear,
-		Sinus,
-		Random,
+		NONE = 0,
+		CONST,
+		LINEAR,
+		SINUS,
+		RANDOM,
 	};
 
 	enum Setup : UINT
 	{
 		UNDEF   = 0x0000,     // Статуст не определен
 		OFF     = 0x0001,     // Канал выключен
-		NOICE   = 0x0010,     //
+//		NOICE   = 0x0010,     //
 		AVERAGE = 0x0020,     //
 	};
 
 	const UDINT MAX_AVERAGE = 3;
 
 public:
-	rIOAIChannel(USINT index);
+	rIOAIChannel(USINT index, const std::string& comment = "");
 	virtual ~rIOAIChannel() = default;
 
 	UINT getMinValue() const;
@@ -105,11 +105,14 @@ public:
 	UINT    m_simValue     = 0;
 	INT     m_simSpeed     = 1;
 
+	static rBitsArray m_flagsSimType;
+
 private:
 	USINT   m_hardState    = 0;             // Статус канала с модуля
 
 	std::list<UINT> m_average;
 
 	static rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsType;
 };
 

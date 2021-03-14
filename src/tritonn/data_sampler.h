@@ -83,19 +83,34 @@ private:
 public:
 	rSampler(const rStation* owner = nullptr);
 	virtual ~rSampler() = default;
-	
+
+private:
+	bool checkInterval(void);
+	void recalcInterval(void);
+	void onIdle(void);
+	void onStart(void);
+	void onStop(void);
+	void onStartTest(void);
+	void onPause(void);
+	void onResume(void);
+	void onWorkTimer(bool checkflow);
+	void onWorkVolume(bool isMass);
+	void onWorkError(void);
+	bool isCanOverflow(void);
+	bool isCanFault(void);
+	bool checkIO(void);
+
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const { return "sampler"; }
+	virtual const char* RTTI() const override { return "sampler"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       generateMarkDown(rGeneratorMD& md);
-	virtual UDINT       calculate();
-	virtual UDINT       check(rError& err);
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
+	virtual UDINT check(rError& err) override;
 protected:
-	virtual UDINT       initLimitEvent(rLink& link);
+	virtual UDINT initLimitEvent(rLink& link) override;
 
 public:
 	// Inputs, Inoutputs
@@ -122,7 +137,7 @@ public:
 	LREAL    m_interval;      // объем/масса между дозами или время, в мсек, между дозами, при отборе по времени
 	LREAL    m_canPresent;    // Текущий объем емкости
 	LREAL    m_canRemain;     // Оставшийся объем емкости
-	UDINT    m_timeRemain;    // Оставшиеся время
+	UDINT    m_timeRemain;    // Оставшееся время
 	UDINT    m_grabPresent;   // Кол-во отобранных проб
 	UDINT    m_grabRemain;    // Кол-во оставшихся проб
 	UDINT    m_grabCount;     // Кол-во проб
@@ -130,9 +145,6 @@ public:
 	State    m_state = State::IDLE;
 
 private:
-	static rBitsArray m_flagsMethod;
-	static rBitsArray m_flagsSetup;
-
 	const rTotal*   m_totals  = nullptr;
 	const rSampler* m_reserve = nullptr;
 
@@ -143,19 +155,8 @@ private:
 	UDINT m_timerInterval = 0;
 	State m_resumeState   = State::IDLE;
 
-private:
-	bool checkInterval(void);
-	void recalcInterval(void);
-	void onIdle(void);
-	void onStart(void);
-	void onStop(void);
-	void onStartTest(void);
-	void onPause(void);
-	void onResume(void);
-	void onWorkTimer(bool checkflow);
-	void onWorkVolume(bool isMass);
-	void onWorkError(void);
-	bool isCanOverflow(void);
-	bool isCanFault(void);
-	bool checkIO(void);
+	static rBitsArray m_flagsMethod;
+	static rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsCommand;
+	static rBitsArray m_flagsState;
 };

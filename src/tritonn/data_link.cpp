@@ -17,12 +17,13 @@
 #include <cmath>
 #include "tinyxml2.h"
 #include "error.h"
-//#include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "log_manager.h"
 #include "data_link.h"
 #include "xml_util.h"
+#include "text_manager.h"
+#include "comment_defines.h"
 
 
 const std::string rLink::SHADOW_NONE = "";
@@ -134,14 +135,16 @@ LREAL rLink::getValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 
 //-------------------------------------------------------------------------------------------------
 //
-void rLink::init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr, const std::string& comment)
+void rLink::init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr)
 {
+	auto comment = rTextManager::instance().GetPtr(descr, LANG_RU);
+
 	m_unit    = unit;
 	m_owner   = owner;
 	m_ioName  = ioname;
 	m_descr   = descr;
 	m_setup   = setup;
-	m_comment = comment;
+	m_comment = comment ? *comment : COMMENT::FAULT_STRID;
 }
 
 
@@ -170,13 +173,17 @@ UDINT rLink::generateVars(rVariableList& list)
 		flags &= ~rVariable::Flags::READONLY;
 	}
 
-	if (m_setup & Setup::SIMPLE) {
-		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value, m_unit, 0);
-	} else {
-		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value        , m_unit   , 0);
-		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___              ,  m_unit.GetPtr(), U_DIMLESS, 0);
+	if (m_setup & Setup::MUSTVIRT) {
+		flags |= rVariable::Flags::MUTABLE;
+	}
 
-		m_limit.generateVars(list, name, m_unit);
+	if (m_setup & Setup::SIMPLE) {
+		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value, m_unit, 0, m_comment);
+	} else {
+		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value        , m_unit   , 0, m_comment + ". Текущее значение");
+		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R__               ,  m_unit.GetPtr(), U_DIMLESS, 0, m_comment + ". Единицы измерения");
+
+		m_limit.generateVars(list, name, m_unit, m_comment);
 	}
 
 	return TRITONN_RESULT_OK;

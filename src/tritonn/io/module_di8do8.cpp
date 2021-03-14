@@ -155,7 +155,8 @@ UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 UDINT rModuleDI8DO8::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this);
+	md.add(this)
+			.addRemark("[^simtype]: **Тип симуляции DI:**<br/>" + rIODIChannel::m_flagsSimType.getInfo(true) + "<br/>");
 
 	return TRITONN_RESULT_OK;
 }

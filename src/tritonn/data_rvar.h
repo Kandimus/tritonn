@@ -26,19 +26,24 @@
 class rRVar : public rSource
 {
 public:
+	enum Setup : UINT
+	{
+		CONST = 0x0001,
+	};
+
 	rRVar();
 	virtual ~rRVar() = default;
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const { return "rvar"; }
+	virtual const char* RTTI() const override { return "rvar"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
 protected:
-	virtual UDINT       initLimitEvent(rLink &link);
+	virtual UDINT initLimitEvent(rLink &link) override;
 
 public:
 	// Inputs, Inoutputs
@@ -49,7 +54,7 @@ public:
 	UINT  m_setup;                   // Настройка сигнала
 
 private:
-	rBitsArray m_flagSetup;
+	static rBitsArray m_flagsSetup;
 };
 
 

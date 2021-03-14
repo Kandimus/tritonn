@@ -3,7 +3,7 @@
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module ver="1.0" name="ai6_1" type="AI6">
-			<channel number="0" setup="NOICE | AVERAGE" />
+			<channel number="0" setup="AVERAGE" />
 		</module>
 		<module type="di8do8" name="di8do8_1">
 			<channel number="0" setup=""/>
@@ -16,7 +16,7 @@
 		<module type="crm" name="crm_1">
 		</module>
 		<module name="ai6_2" type="AI6">
-			<channel number="0" setup="NOICE | AVERAGE" />
+			<channel number="0" setup="AVERAGE" />
 		</module>
 	</hardware>
 	<config>
@@ -43,7 +43,7 @@
 			</ai>
 		</io>
 		<stations>
-			<station name="SIKN_123" product="PETROLEUM" precision="0" setup="" description="4001">
+			<station name="SIKN_123" product="PETROLEUM" description="4001">
 				<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
 				<units>
 					<volume>112</volume>
@@ -70,7 +70,7 @@
 							</points>
 						</factors>
 						<io>
-							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4003">
+							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4003">
 								<io_link module="0" channel="0"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -187,7 +187,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="AVERAGE" description="4010">
+							<counter name="Counter" setup="" description="4010">
 								<_io_link module="1" channel="1"/>
 							</counter>
 						</io>
@@ -227,7 +227,7 @@
 							<keypad_kf>36000</keypad_kf>
 						</factors>
 						<io>
-							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD | NOBUFFER" description="4013">
+							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
 								<io_link module="0" channel="4"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -401,11 +401,10 @@
 					</di>
 					<do name="valve_open" mode="PHIS" setup="" description="4003">
 						<io_link module="1" channel="8"/>
-						<keypad>0</keypad>
 					</do>
 					<do name="valve_close" mode="PHIS" setup="" description="4003">
 						<io_link module="1" channel="8"/>
-						<keypad>0</keypad>
+						<value>1</value>
 					</do>
 				</io>
 				<calculate>
@@ -602,7 +601,7 @@
 			<!---
 			Вторая станция
 			-->
-			<station name="SIKN_321" product="LUBRICANT" setup="" precision="3" description="4028">
+			<station name="SIKN_321" product="LUBRICANT" description="4028">
 				<units>
 					<volume>112</volume>
 					<mass>96</mass>
@@ -680,7 +679,7 @@
 					<counter name="counter" setup="" description="4032">
 						<_io_link module="1" channel="3"/>
 					</counter>
-					<counter name="Period" setup="AVERAGE" description="4033">
+					<counter name="Period" setup="" description="4033">
 						<_io_link module="2" channel="2"/>
 					</counter>
 				</io>
@@ -899,7 +898,6 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable>system.version.major</variable>
 				<variable>system.version.build</variable>
 				<variable>system.version.hash</variable>
-				<variable>system.version.crc</variable>
 			</datablock>
 			<datablock name="globaltemp">
 				<variable convert="float">io.globaltemp.present.value</variable>

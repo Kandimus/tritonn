@@ -22,15 +22,27 @@
 #include "tinyxml2.h"
 #include "../error.h"
 #include "../xml_util.h"
+#include "../comment_defines.h"
 
 rBitsArray rIOFIChannel::m_flagsSetup;
+rBitsArray rIOFIChannel::m_flagsSimType;
 
-rIOFIChannel::rIOFIChannel(USINT index) :  rIOBaseChannel(rIOBaseChannel::Type::FI, index)
+rIOFIChannel::rIOFIChannel(USINT index, const std::string& comment)
+	: rIOBaseChannel(rIOBaseChannel::Type::FI, index, comment)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , static_cast<UINT>(Setup::OFF))
-				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE));
+				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF)
+				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Усреднять значение частоты");
+	}
+
+	if (m_flagsSimType.empty()) {
+		m_flagsSimType
+				.add("", static_cast<UINT>(SimType::NONE)  , COMMENT::SIMTYPE_NONE)
+				.add("", static_cast<UINT>(SimType::CONST) , COMMENT::SIMTYPE_CONST)
+				.add("", static_cast<UINT>(SimType::LINEAR), COMMENT::SIMTYPE_LINEAR)
+				.add("", static_cast<UINT>(SimType::SINUS) , COMMENT::SIMTYPE_SINUS)
+				.add("", static_cast<UINT>(SimType::RANDOM), COMMENT::SIMTYPE_RANDOM);
 	}
 
 	m_simTimer = rTickCount::SysTick();
@@ -45,8 +57,25 @@ UDINT rIOFIChannel::processing()
 	// Изменяем статус
 	if (m_hardState) {
 		m_state = true;
+		m_average.clear();
 
 		return TRITONN_RESULT_OK;
+	}
+
+	if (m_setup & AVERAGE) {
+		m_average.push_back(m_freq);
+
+		LREAL sum = 0.0;
+		for (auto freq : m_average) {
+			sum += freq;
+		}
+		sum /= m_average.size();
+
+		while (m_average.size() > MAX_AVERAGE) {
+			m_average.pop_front();
+		}
+
+		m_freq = sum;
 	}
 
 	return TRITONN_RESULT_OK;
@@ -66,18 +95,18 @@ UDINT rIOFIChannel::simulate()
 	++m_pullingCount;
 
 	switch(m_simType) {
-		case SimType::None: {
+		case SimType::NONE: {
 			m_value = 0;
 			m_freq  = 0;
 			return TRITONN_RESULT_OK;
 		}
 
-		case SimType::Const: {
+		case SimType::CONST: {
 			count = m_simValue;
 			break;
 		}
 
-		case SimType::Sinus: {
+		case SimType::SINUS: {
 			m_simValue += m_simSpeed;
 			if(m_simValue >= 360) {
 				m_simValue -= 360;
@@ -88,7 +117,7 @@ UDINT rIOFIChannel::simulate()
 			break;
 		}
 
-		case SimType::Random: {
+		case SimType::RANDOM: {
 			LREAL tmp = m_simMin + static_cast<LREAL>(m_simMax - m_simMin) * (rand() / static_cast<LREAL>(RAND_MAX));
 			m_simValue = static_cast<UINT>(tmp);
 			count      = m_simValue;
@@ -109,15 +138,16 @@ UDINT rIOFIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0);
-	list.add(p + "count"  , TYPE_UDINT, rVariable::Flags::R___, &m_value  , U_DIMLESS , 0);
-	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R___, &m_state  , U_DIMLESS , 0);
+	list.add(p + "setup"   , TYPE_UINT , rVariable::Flags::RS_, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "count"   , TYPE_UDINT, rVariable::Flags::R__, &m_value  , U_DIMLESS , 0, "Количество накопленных импульсов");
+	list.add(p + "frequecy", TYPE_UDINT, rVariable::Flags::R__, &m_freq   , U_Hz      , 0, "Частота");
+	list.add(p + "state"   , TYPE_USINT, rVariable::Flags::R__, &m_state  , U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");
 
 	if (issimulate) {
-		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0);
-		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::____, &m_simMin  , U_DIMLESS , 0);
-		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::____, &m_simValue, U_DIMLESS , 0);
-		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::____, &m_simSpeed, U_DIMLESS , 0);
+		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, COMMENT::SIMULATE_MAX);
+		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, COMMENT::SIMULATE_MIN);
+		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, COMMENT::SIMULATE_VALUE);
+		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, COMMENT::SIMULATE_SPEED);
 	}
 
 	return TRITONN_RESULT_OK;

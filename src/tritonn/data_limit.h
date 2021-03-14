@@ -19,6 +19,8 @@
 #include "bits_array.h"
 #include "compared_values.h"
 
+#define LIMIT_SETUP_ALL (rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO)
+
 class rVariableList;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,10 +55,12 @@ public:
 	rLimit();
 	virtual ~rLimit() = default;
 
+	std::string getXML(const std::string& name, const std::string& prefix = "") const;
+
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
-	virtual UDINT generateVars(rVariableList& list, const std::string& owner_name, STRID owner_unit);
-	virtual UINT  calculate(LREAL val, UDINT check);
+	UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix);
+	UDINT generateVars(rVariableList& list, const std::string& owner_name, STRID owner_unit, const std::string& owner_comment);
+	UINT  calculate(LREAL val, UDINT check);
 
 protected:
 	void sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend);
@@ -86,6 +90,9 @@ public:
 	rCmpUINT  m_setup  = Setup::OFF;
 
 	static rBitsArray m_flagsSetup;
+
+private:
+	static rBitsArray m_flagsStatus;
 };
 
 

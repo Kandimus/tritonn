@@ -25,6 +25,10 @@ class rVariable;
 
 struct rFactorPoint
 {
+	rFactorPoint() = default;
+	rFactorPoint(UDINT id, LREAL hz, LREAL kf) : m_id(id), Hz(hz), Kf(kf) {}
+	virtual ~rFactorPoint() = default;
+
 	UDINT     m_id;
 	rCmpLREAL Hz;
 	rCmpLREAL Kf;
@@ -35,6 +39,8 @@ struct rFlowFactor
 	enum {
 		MAXPOINTS = 12
 	};
+
+	static std::string FOOTNOTE;
 
 	rCmpLREAL KeypadKF;
 	rCmpLREAL KeypadMF;
@@ -70,14 +76,14 @@ public:
 public:
 	virtual const char* RTTI() const { return "stream"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal);
-	virtual UDINT       calculate();
-	virtual const rTotal *getTotal(void) const { return &m_total; }
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
+	virtual const rTotal *getTotal(void) const override { return &m_total; }
 
 protected:
-	virtual UDINT       initLimitEvent(rLink &link);
+	virtual UDINT initLimitEvent(rLink &link) override;
 
 protected:
 	LREAL calcualateKF();
@@ -116,6 +122,7 @@ public:
 
 private:
 	static rBitsArray m_flagsFlowmeter;
+	static rBitsArray m_flagsSetup;
 };
 
 

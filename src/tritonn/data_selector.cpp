@@ -2,17 +2,12 @@
 //===
 //=== data_selector.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
-//===
-//=== 
-//===
-//=================================================================================================
-
 
 #include <vector>
 #include <string.h>
@@ -27,6 +22,8 @@
 #include "variable_list.h"
 #include "data_selector.h"
 #include "xml_util.h"
+#include "generator_md.h"
+#include "comment_defines.h"
 
 
 const UDINT SELECTOR_LE_NOCHANGE = 0x00000001;
@@ -37,31 +34,31 @@ rBitsArray rSelector::m_flagsMode;
 
 //-------------------------------------------------------------------------------------------------
 //
-rSelector::rSelector(const rStation* owner) : rSource(owner), Select(-1)
+rSelector::rSelector(const rStation* owner) : rSource(owner), m_select(-1)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"    , SELECTOR_SETUP_OFF)
-				.add("NOEVENT", SELECTOR_SETUP_NOEVENT);
+				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF)
+				.add("NOEVENT", static_cast<UINT>(Setup::NOEVENT), "Запретить выдачу сообщений");
 	}
 
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("NEXT"    , SELECTOR_MODE_CHANGENEXT)
-				.add("PREV"    , SELECTOR_MODE_CHANGEPREV)
-				.add("NOCHANGE", SELECTOR_MODE_NOCHANGE)
-				.add("ERROR"   , SELECTOR_MODE_TOERROR);
+				.add("NOCHANGE", static_cast<UINT>(Mode::NOCHANGE)  , "При аварии не переходить на другой вход")
+				.add("ERROR"   , static_cast<UINT>(Mode::TOERROR)   , "При аварии переходить на аварийное значение")
+				.add("PREV"    , static_cast<UINT>(Mode::CHANGEPREV), "При аварии переключить на предыдущий вход")
+				.add("NEXT"    , static_cast<UINT>(Mode::CHANGENEXT), "При аварии переключить на следующий вход");
 	}
 
 	//TODO Нужно ли очищать свойства класса?
 	m_lockErr   = 0;
-	CountGroups = MAX_SELECTOR_GROUP; //  По умолчанию доступен максимальный селектор
-	CountInputs = MAX_SELECTOR_INPUT;
+	CountGroups = MAX_GROUPS; //  По умолчанию доступен максимальный селектор
+	CountInputs = MAX_INPUTS;
 
-	for(UDINT grp = 0; grp < MAX_SELECTOR_GROUP; ++grp) {
+	for(UDINT grp = 0; grp < MAX_GROUPS; ++grp) {
 		Keypad[grp]    = 0.0;
 		KpUnit[grp]    = U_any;
-		NameInput[grp] = String_format("#username_%i", grp + 1);
+		NameInput[grp] = String_format("#output_%u_name", grp + 1);
 	}
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -94,13 +91,13 @@ UDINT rSelector::initLimitEvent(rLink &link)
 //
 UDINT rSelector::calculate()
 {
-	UDINT faultGrp[MAX_SELECTOR_INPUT] = {0};
+	UDINT faultGrp[MAX_INPUTS] = {0};
 
 	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
 	}
 
-	if (m_setup.Value & SELECTOR_SETUP_OFF) {
+	if (m_setup.Value & Setup::OFF) {
 		return TRITONN_RESULT_OK;
 	}
 
@@ -111,34 +108,34 @@ UDINT rSelector::calculate()
 	}
 
 	// Проверка на изменение данных пользователем
-	Select.Compare(reinitEvent(EID_SELECTOR_SELECTED));
-	Mode.Compare(reinitEvent(EID_SELECTOR_MODE));
+	m_select.Compare(reinitEvent(EID_SELECTOR_SELECTED));
+	m_mode.Compare(reinitEvent(EID_SELECTOR_MODE));
 
 	// Если переменная переключатель находится в недопустимом режиме
 	//TODO Какие значения будут в выходах?
-	if (Select.Value >= CountInputs || Select.Value < -1) {
-		rEventManager::instance().Add(reinitEvent(EID_SELECTOR_ERROR) << Select.Value);
-		Select.Init(-1);
+	if (m_select.Value >= CountInputs || m_select.Value < -1) {
+		rEventManager::instance().Add(reinitEvent(EID_SELECTOR_ERROR) << m_select.Value);
+		m_select.Init(-1);
 		m_fault = 1;
 		//return 0;
 	}
 
 	//----------------------------------------------------------------------------------------
 	// Автоматические переходы, по статусу ошибки
-	if (Select.Value != -1) {
-		if (faultGrp[Select.Value]) {
-			switch (Mode.Value) {
+	if (m_select.Value != -1) {
+		if (faultGrp[m_select.Value]) {
+			switch (m_mode.Value) {
 				// Переходы запрещены
-				case SELECTOR_MODE_NOCHANGE: {
-					sendEventSetLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_NOCHANGE) << Select.Value);
+				case Mode::NOCHANGE: {
+					sendEventSetLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_NOCHANGE) << m_select.Value);
 					break;
 				}
 
 				// Переход на значение ошибки
-				case SELECTOR_MODE_TOERROR: {
-					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << Select.Value);
+				case Mode::TOERROR: {
+					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << m_select.Value);
 
-					Select.Value = -1;
+					m_select.Value = -1;
 					m_fault      = 1;
 				}
 
@@ -149,35 +146,35 @@ UDINT rSelector::calculate()
 					m_lockErr &= ~(SELECTOR_LE_NOCHANGE);
 
 					do {
-						Select.Value += (Mode.Value == SELECTOR_MODE_CHANGENEXT) ? +1 : -1;
+						m_select.Value += (m_mode.Value == Mode::CHANGENEXT) ? +1 : -1;
 					
-						if(Select.Value < 0)           Select.Value = CountInputs - 1;
-						if(Select.Value > CountInputs) Select.Value = 0;
+						if(m_select.Value < 0)           m_select.Value = CountInputs - 1;
+						if(m_select.Value > CountInputs) m_select.Value = 0;
 						
 						++count;
-					} while (faultGrp[Select.Value] && count < CountInputs - 2);
+					} while (faultGrp[m_select.Value] && count < CountInputs - 2);
 
-					if (faultGrp[Select.Value]) {
-						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << Select.Value);
+					if (faultGrp[m_select.Value]) {
+						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << m_select.Value);
 
-						Select.Value = -1;
+						m_select.Value = -1;
 					} else {
-						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TONEXT) << Select.Value);
+						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TONEXT) << m_select.Value);
 					}
 				}
 			} //switch
 		} else {
-			sendEventClearLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_CLEARERROR) << Select.Value);
+			sendEventClearLE(SELECTOR_LE_NOCHANGE, reinitEvent(EID_SELECTOR_CLEARERROR) << m_select.Value);
 		}
 	}
 
 	// Записываем в "выхода" требуемые значения входов, так же изменяем ед. измерения у "выходов"
 	for (UDINT grp = 0; grp < CountGroups; ++grp) {
-		ValueOut[grp].m_value = (Select.Value == -1) ? Keypad[grp] : ValueIn[Select.Value][grp].m_value;
-		ValueOut[grp].m_unit  = (Select.Value == -1) ? KpUnit[grp] : ValueIn[Select.Value][grp].m_unit;
+		ValueOut[grp].m_value = (m_select.Value == -1) ? Keypad[grp] : ValueIn[m_select.Value][grp].m_value;
+		ValueOut[grp].m_unit  = (m_select.Value == -1) ? KpUnit[grp] : ValueIn[m_select.Value][grp].m_unit;
 	}
 
-	m_fault = (Select.Value == -1) ? 1 : faultGrp[Select.Value];
+	m_fault = (m_select.Value == -1) ? 1 : faultGrp[m_select.Value];
 
 	postCalculate();
 
@@ -192,7 +189,7 @@ void rSelector::generateIO()
 	m_inputs.clear();
 	m_outputs.clear();
 
-	if (m_setup.Value & SELECTOR_SETUP_MULTI) {
+	if (m_setup.Value & Setup::MULTI) {
 		// Настройка выходов
 		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			ValueOut[grp].m_varName = NameInput[grp] + ".output";
@@ -205,8 +202,8 @@ void rSelector::generateIO()
 				std::string i_name = String_format("%s.input_%i"      , NameInput[grp].c_str(), ii + 1);
 				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
-				initLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].m_unit, SID::SEL_GRP1_IN1  + grp * MAX_SELECTOR_INPUT + ii, i_name, rLink::SHADOW_NONE);
-				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete             , SID::SEL_GRP1_FLT1 + grp * MAX_SELECTOR_INPUT + ii, f_name, i_name            );
+				initLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].m_unit, SID::SEL_GRP1_IN1  + grp * MAX_INPUTS + ii, i_name, rLink::SHADOW_NONE);
+				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete             , SID::SEL_GRP1_FLT1 + grp * MAX_INPUTS + ii, f_name, i_name            );
 			}
 		}
 	} else {
@@ -232,27 +229,27 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___L, &Select.Value, U_DIMLESS, ACCESS_SELECT);
-	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R___, &CountInputs , U_DIMLESS, 0);
-	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS__, &m_setup.Value , U_DIMLESS, ACCESS_SA);
-	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___L, &Mode.Value  , U_DIMLESS, ACCESS_SELECT);
+	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___, &m_select.Value, U_DIMLESS, ACCESS_SELECT, "Выбор коммуцируемого входа");
+	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R__, &CountInputs   , U_DIMLESS, 0            , "Количество подключенных входов");
+	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode.Value  , U_DIMLESS, ACCESS_SELECT, COMMENT::MODE + m_flagsMode.getInfo(true));
 
-	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R___, &m_fault     , U_DIMLESS, 0);
+	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault       , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	// Мультиселектор
-	if (m_setup.Value & SELECTOR_SETUP_MULTI) {
-		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0);
+	if (m_setup.Value & Setup::MULTI) {
+		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R__, &CountGroups , U_DIMLESS, 0, "Количество групп");
 
 		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			alias_unit   = String_format("%s.%s.keypad.unit" , m_alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", m_alias.c_str(), NameInput[grp].c_str());
 
-			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0);
-			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___L, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD);
+			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
+			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
 		}
 	} else {
-		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__L,  KpUnit[0].GetPtr(), U_DIMLESS, 0);
-		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___L, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD);
+		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].GetPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
+		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -263,8 +260,8 @@ UDINT rSelector::generateVars(rVariableList& list)
 //
 UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix)
 {
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(SELECTOR_SETUP_OFF));
-	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE, m_flagsMode.getNameByBits(SELECTOR_MODE_CHANGENEXT));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(Setup::OFF));
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE, m_flagsMode.getNameByBits(Mode::CHANGENEXT));
 
 	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
@@ -272,7 +269,8 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 	UDINT fault = 0;
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
-	Mode.Init (m_flagsMode.getValue(strMode, fault));
+	m_mode.Init (m_flagsMode.getValue(strMode, fault));
+	m_select.Init(XmlUtils::getAttributeINT(element, XmlName::SELECT, m_select.Value));
 
 	if (fault) {
 		return err.set(DATACFGERR_SELECTOR, element->GetLineNum(), "");
@@ -298,7 +296,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 			}
 			++ii;
 
-			if(ii >= MAX_SELECTOR_INPUT) {
+			if(ii >= MAX_INPUTS) {
 				return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much inputs");
 			}
 		}
@@ -325,7 +323,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 					FaultIn[ii][0].m_param = XmlName::FAULT;
 				}
 
-				if (++ii >= MAX_SELECTOR_INPUT) {
+				if (++ii >= MAX_INPUTS) {
 					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much faults");
 				}
 			}
@@ -346,7 +344,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 	// Мульти-селектор
 	else if (string(XmlName::MSELECTOR) == element->Name()) {
-		m_setup.Init(m_setup.Value | SELECTOR_SETUP_MULTI);
+		m_setup.Init(m_setup.Value | Setup::MULTI);
 
 		tinyxml2::XMLElement *xml_names   = element->FirstChildElement(XmlName::NAMES);
 		tinyxml2::XMLElement *xml_inputs  = element->FirstChildElement(XmlName::INPUTS);
@@ -382,7 +380,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 				++grp;
 
-				if (grp >= MAX_SELECTOR_GROUP) {
+				if (grp >= MAX_GROUPS) {
 					return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much groups");
 				}
 			}
@@ -393,7 +391,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 
 			++ii;
 
-			if (ii >= MAX_SELECTOR_INPUT) {
+			if (ii >= MAX_INPUTS) {
 				return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "too much inputs");
 			}
 		}
@@ -422,7 +420,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 						FaultIn[ii][grp].m_param = XmlName::FAULT;
 					}
 
-					if (++grp >= MAX_SELECTOR_GROUP) {
+					if (++grp >= MAX_GROUPS) {
 						return err.set(DATACFGERR_SELECTOR, xml_link->GetLineNum(), "too much fault group");
 					}
 				}
@@ -431,7 +429,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 					return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "fault count groups");
 				}
 
-				if (++ii >= MAX_SELECTOR_INPUT) {
+				if (++ii >= MAX_INPUTS) {
 					return err.set(DATACFGERR_SELECTOR, xml_group->GetLineNum(), "too much groups");
 				}
 			}
@@ -449,7 +447,7 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 			KpUnit[grp] = XmlUtils::getTextUDINT(xml_keypad->FirstChildElement(XmlName::UNIT) , U_any, fault);
 
 			++grp;
-			if (grp >= MAX_SELECTOR_GROUP || fault) {
+			if (grp >= MAX_GROUPS || fault) {
 				return err.set(DATACFGERR_SELECTOR, xml_keypad->GetLineNum(), "too much keypads or error keypad");
 			}
 		}
@@ -466,6 +464,77 @@ UDINT rSelector::loadFromXML(tinyxml2::XMLElement *element, rError& err, const s
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rSelector::generateMarkDown(rGeneratorMD& md)
+{
+	if (m_setup.Value & Setup::MULTI) {
+		rGeneratorMD::rItem& mdi = md.add(this, false, rGeneratorMD::Type::CALCULATE)
+				.addProperty(XmlName::SETUP, &m_flagsSetup)
+				.addProperty(XmlName::MODE, &m_flagsMode, true)
+				.addProperty(XmlName::SELECT, static_cast<LREAL>(m_select.Value))
+				.addXml("<" + std::string(XmlName::NAMES) + ">");
 
+		for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+			mdi.addXml(XmlName::NAME, String_format("valid output %u name", grp), false, "\t");
+		}
+		mdi.addXml("</" + std::string(XmlName::NAMES) + ">");
+
+		mdi.addXml("<" + std::string(XmlName::INPUTS) + ">");
+		for (auto ii = 0; ii < MAX_INPUTS; ++ii) {
+			mdi.addXml("\t<" + std::string(XmlName::GROUP) + ">");
+
+			for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+				mdi.addXml("\t\t" + std::string(rGeneratorMD::rItem::XML_LINK));
+			}
+			mdi.addXml("\t</" + std::string(XmlName::GROUP) + ">");
+		}
+		mdi.addXml("</" + std::string(XmlName::INPUTS) + ">");
+
+		mdi.addXml("<" + std::string(XmlName::FAULTS) + ">");
+		for (auto ii = 0; ii < MAX_INPUTS; ++ii) {
+			mdi.addXml("\t<" + std::string(XmlName::GROUP) + ">");
+
+			for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+				mdi.addXml("\t\t" + std::string(rGeneratorMD::rItem::XML_LINK));
+			}
+			mdi.addXml("\t</" + std::string(XmlName::GROUP) + ">");
+		}
+		mdi.addXml("</" + std::string(XmlName::FAULTS) + ">");
+
+		mdi.addXml("<" + std::string(XmlName::KEYPADS) + ">");
+		for (auto grp = 0; grp < MAX_GROUPS; ++grp) {
+			mdi.addXml("\t<" + std::string(XmlName::KEYPAD) + ">");
+			mdi.addXml(XmlName::UNIT , static_cast<UDINT>(0), false, "\t\t");
+			mdi.addXml(XmlName::VALUE, 0.0, false, "\t\t");
+			mdi.addXml("\t</" + std::string(XmlName::KEYPAD) + ">");
+		}
+		mdi.addXml("</" + std::string(XmlName::KEYPADS) + ">")
+				.addRemark("В каждой группе количество входов должно совпадать!");
+
+	} else {
+		md.add(this, false, rGeneratorMD::Type::CALCULATE)
+				.addProperty(XmlName::SETUP, &m_flagsSetup)
+				.addProperty(XmlName::MODE, &m_flagsMode, true)
+				.addProperty(XmlName::SELECT, static_cast<LREAL>(m_select.Value))
+				.addXml("<" + std::string(XmlName::INPUTS) + ">")
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("</" + std::string(XmlName::INPUTS) + ">")
+				.addXml("<" + std::string(XmlName::FAULTS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK))
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("\t" + std::string(rGeneratorMD::rItem::XML_LINK) + " " + rGeneratorMD::rItem::XML_OPTIONAL)
+				.addXml("</" + std::string(XmlName::FAULTS) + ">")
+				.addXml("<" + std::string(XmlName::KEYPAD) + ">")
+				.addXml(XmlName::UNIT , KpUnit[0].toUDINT(), false, "\t")
+				.addXml(XmlName::VALUE, Keypad[0], false, "\t")
+				.addXml("</" + std::string(XmlName::KEYPAD) + ">")
+				.addRemark("Количество входных значений не должно быть меньше чем количество флагов ошибки входа!");
+	}
+
+	return TRITONN_RESULT_OK;
+}
 
 

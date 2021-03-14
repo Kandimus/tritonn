@@ -40,10 +40,8 @@ public:
 	{
 		NONE    = 0x0000,
 		OFF     = 0x0001,
-		AVERAGE = 0x0002,
 	};
 
-	const UDINT AVERAGE_MAX = 5;
 	const UDINT CALCULATE_TIMER = 1000;
 
 	rCounter(const rStation* owner = nullptr);
@@ -52,19 +50,19 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "fi"; }
+	virtual const char *RTTI() const { return "counter"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
 
-	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
-	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
-	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
+	virtual std::string getModuleAlias()   const override { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const override { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const override { return rDataModule::getChannel(); }
 
 protected:
-	virtual UDINT       initLimitEvent(rLink& link);
+	virtual UDINT       initLimitEvent(rLink& link) override;
 
 private:
 	LREAL getPeriod();
@@ -88,8 +86,6 @@ protected:
 	UDINT m_countPrev = 0;
 	UDINT m_tickPrev  = 0;
 	UDINT m_pullingCount = 0;
-
-	std::list<LREAL> m_averageFreq;
 };
 
 

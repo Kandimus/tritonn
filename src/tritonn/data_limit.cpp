@@ -26,8 +26,10 @@
 #include "variable_list.h"
 #include "data_limit.h"
 #include "xml_util.h"
+#include "comment_defines.h"
 
 rBitsArray rLimit::m_flagsSetup;
+rBitsArray rLimit::m_flagsStatus;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -36,11 +38,22 @@ rLimit::rLimit() :
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"  , static_cast<UINT>(Setup::OFF))
-				.add("LOLO" , static_cast<UINT>(Setup::LOLO))
-				.add("LO"   , static_cast<UINT>(Setup::LO))
-				.add("HI"   , static_cast<UINT>(Setup::HI))
-				.add("HIHI" , static_cast<UINT>(Setup::HIHI));
+				.add("OFF"  , static_cast<UINT>(Setup::OFF) , "Не выдавать сообщения")
+				.add("LOLO" , static_cast<UINT>(Setup::LOLO), "Выдавать сообщение аварийного минимума")
+				.add("LO"   , static_cast<UINT>(Setup::LO)  , "Выдавать сообщение предаварийного минимума")
+				.add("HI"   , static_cast<UINT>(Setup::HI)  , "Выдавать сообщение предаварийного максимума")
+				.add("HIHI" , static_cast<UINT>(Setup::HIHI), "Выдавать сообщение аварийного максимума");
+	}
+
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::UNDEF) , "Неопределен")
+				.add("", static_cast<UINT>(Status::ISNAN) , "Недействительное значение")
+				.add("", static_cast<UINT>(Status::LOLO)  , "Значение ниже аварийного минимума")
+				.add("", static_cast<UINT>(Status::LO)    , "Значение ниже предаварийного минимума")
+				.add("", static_cast<UINT>(Status::NORMAL), "Значение в рабочем диапазоне")
+				.add("", static_cast<UINT>(Status::HI)    , "Значение выше предаварийного максимума")
+				.add("", static_cast<UINT>(Status::HIHI)  , "Значение выше аварийного максимума");
 	}
 }
 
@@ -115,21 +128,21 @@ UINT rLimit::calculate(LREAL val, UDINT check)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit)
+UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID owner_unit, const std::string& owner_comment)
 {
 	if (m_setup.Value & Setup::OFF) {
 		return TRITONN_RESULT_OK;
 	}
 
-	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___L, &m_lolo.Value    , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___L, &m_lo.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___L, &m_hi.Value      , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___L, &m_hihi.Value    , owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___L, &Hysteresis.Value, owner_unit, ACCESS_LIMITS);
-	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status        , U_DIMLESS , 0);
-	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS);
+	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___, &m_lolo.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного минимума");
+	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___, &m_lo.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного минимума");
+	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___, &m_hi.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного максимума");
+	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___, &m_hihi.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного максимума");
+	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___, &Hysteresis.Value, owner_unit, ACCESS_LIMITS, owner_comment + ". Значение гистерезиса");
+	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status        , U_DIMLESS , 0            , owner_comment + ". " + COMMENT::STATUS + m_flagsStatus.getInfo(true));
+	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS, owner_comment + ". " + COMMENT::SETUP + m_flagsSetup.getInfo());
 
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -170,4 +183,35 @@ void rLimit::sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend)
 }
 
 
+std::string rLimit::getXML(const std::string& name, const std::string& prefix) const
+{
+	std::string result = "";
+
+	if (m_setup.Value != Setup::OFF) {
+		result += prefix + String_format("<%s name=\"%s\" setup=\"%s\">\n",
+								 XmlName::LIMIT,
+								 name.c_str(),
+								 m_flagsSetup.getNameByBits(m_setup.Value).c_str());
+
+		if (m_setup.Value & Setup::LOLO) {
+			result += prefix + String_format("\t<lolo>%g</lolo>\n", m_lolo.Value);
+		}
+
+		if (m_setup.Value & Setup::LO) {
+			result += prefix + String_format("\t<lo>%g</lo>\n", m_lo.Value);
+		}
+
+		if (m_setup.Value & Setup::HI) {
+			result += prefix + String_format("\t<hi>%g</hi>\n", m_hi.Value);
+		}
+
+		if (m_setup.Value & Setup::HIHI) {
+			result += prefix + String_format("\t<hihi>%g</hihi>\n", m_hihi.Value);
+		}
+
+		result += prefix + "</" + XmlName::LIMIT + ">\n";
+	}
+
+	return result;
+}
 

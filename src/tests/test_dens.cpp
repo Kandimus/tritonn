@@ -70,7 +70,7 @@ TEST_CASE("testing densitometer.", "[DensSol]")
 		LREAL density_freq = 730;
 		LREAL density_val  = 855.6989307275;
 
-		ss.add("hardware.fi4_2.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::Const));
+		ss.add("hardware.fi4_2.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
 		ss.add("hardware.fi4_2.ch_01.simulate.value", density_freq);
 		ss.set();
 

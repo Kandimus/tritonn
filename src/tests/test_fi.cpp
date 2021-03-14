@@ -40,7 +40,7 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL freq = 1000.0;
 
-		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::Const));
+		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
 		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
 		ss.set();
 
@@ -61,7 +61,7 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL freq = 5432.0;
 
-		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::Const));
+		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
 		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
 		ss.set();
 

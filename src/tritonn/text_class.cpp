@@ -206,21 +206,21 @@ UDINT rTextClass::SetCurLang(const string &lang)
 
 
 // Получение ссылки на строку в текущем языке
-const string *rTextClass::GetPtr(UDINT id)
+const string *rTextClass::GetPtr(STRID id)
 {
 	return GetPtr(id, GetCurLang());
 }
 
 
 // Получение ссылки на строку, с указанием имени языка
-const string *rTextClass::GetPtr(UDINT id, const string &lang)
+const string *rTextClass::GetPtr(STRID id, const string &lang)
 {
 	return GetPtr(id, GetLangPtr(lang));
 }
 
 
 //
-const string *rTextClass::GetPtr(UDINT id, rTextLang *lang)
+const string *rTextClass::GetPtr(STRID id, rTextLang *lang)
 {
 	if(nullptr == lang) return nullptr;
 
@@ -234,7 +234,7 @@ const string *rTextClass::GetPtr(UDINT id, rTextLang *lang)
 
 
 //
-UDINT rTextClass::Get(UDINT id, string &text)
+UDINT rTextClass::Get(STRID id, string &text)
 {
 	return Get(id, GetCurLang(), text);
 }
@@ -242,7 +242,7 @@ UDINT rTextClass::Get(UDINT id, string &text)
 
 
 //
-UDINT rTextClass::Get(UDINT id, const string &lang, string &text)
+UDINT rTextClass::Get(STRID id, const string &lang, string &text)
 {
 	const std::string *result = GetPtr(id, lang);
 

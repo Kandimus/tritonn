@@ -31,7 +31,7 @@ rTCPClass::rTCPClass(const string &ip, UINT port, UDINT maxclient) : rThreadClas
 	Socket      = SOCKET_ERROR;
 	MaxClient   = maxclient;
 	strIP       = ip;
-	Port        = port;
+	m_port      = port;
 	Select_sec  = MAX_SELECT_SEC;
 	Select_usec = MAX_SELECT_USEC;
 }
@@ -45,8 +45,8 @@ rTCPClass::~rTCPClass()
 
 void  rTCPClass::SetServerIP(const string &ip, UINT port)
 {
-	strIP = ip;
-	Port  = port;
+	strIP  = ip;
+	m_port = port;
 }
 
 
@@ -55,11 +55,11 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 {
 	Lock();
 
-	if(ip.size()) strIP = ip;
-	if(port)      Port  = port;
+	if(ip.size()) strIP  = ip;
+	if(port)      m_port = port;
 
 	ServAddr.sin_family      = AF_INET;
-	ServAddr.sin_port        = htons(Port);
+	ServAddr.sin_port        = htons(m_port);
 	ServAddr.sin_addr.s_addr = inet_addr(strIP.c_str());
 
 	Started = false;
@@ -67,7 +67,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	if(Socket == SOCKET_ERROR)
 	{
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при создании сокета на '%s:%i'. Ошибка %i", strIP.c_str(), Port, errno);
+		TRACEA(LogMask, "Ошибка при создании сокета на '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
 
 		Unlock();
 		return 1;
@@ -76,7 +76,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	if(setsockopt(Socket, SOL_SOCKET, SO_SNDBUF, (const char *)&MAX_TCP_SEND_BUFF, sizeof(MAX_TCP_SEND_BUFF)) == SOCKET_ERROR)
 	{
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), Port, errno);
+		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -88,7 +88,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	if(setsockopt(Socket, SOL_SOCKET, SO_RCVBUF, (const char *)&MAX_TCP_RECV_BUFF, sizeof(MAX_TCP_RECV_BUFF)) == SOCKET_ERROR)
 	{
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), Port, errno);
+		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -101,7 +101,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	int flag = 1;
 	if(setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag)) == SOCKET_ERROR)
 	{
-		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), Port, errno);
+		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -120,7 +120,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	if(bind(Socket, (sockaddr *)&ServAddr, sizeof(ServAddr)))
 	{
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при захвате сокета '%s:%i'. Ошибка %i", strIP.c_str(), Port, errno);
+		TRACEA(LogMask, "Ошибка при захвате сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -133,7 +133,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	if(SOCKET_ERROR == listen(Socket, SOMAXCONN))
 	{
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при установке прослушки сокета '%s:%i'. Ошибка %i", strIP.c_str(), Port, errno);
+		TRACEA(LogMask, "Ошибка при установке прослушки сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -144,7 +144,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 
 	Started = true;
 
-	TRACEI(LogMask, "Сокет открыт на '%s:%i'.", strIP.c_str(), Port);
+	TRACEI(LogMask, "Сокет открыт на '%s:%i'.", strIP.c_str(), m_port);
 
 	Unlock();
 	return 0;
@@ -255,7 +255,7 @@ rThreadStatus rTCPClass::Proccesing()
 				shutdown(SockAccept, SHUT_RDWR);
 				close(SockAccept);
 
-				TRACEI(LogMask, "Попытка подсоединения клиента [%i.%i.%i.%i] не входящего в разрешенный список '%s:%i'", ip[0], ip[1], ip[2], ip[3], strIP.c_str(), Port);
+				TRACEI(LogMask, "Попытка подсоединения клиента [%i.%i.%i.%i] не входящего в разрешенный список '%s:%i'", ip[0], ip[1], ip[2], ip[3], strIP.c_str(), m_port);
 			}
 			else
 			{
@@ -264,7 +264,7 @@ rThreadStatus rTCPClass::Proccesing()
 
 				if(Client.size() > MaxClient)
 				{
-					TRACEI(LogMask, "Достигнут предел количества клиентов на '%s:%i'. Первый клиент отсоединен", strIP.c_str(), Port);
+					TRACEI(LogMask, "Достигнут предел количества клиентов на '%s:%i'. Первый клиент отсоединен", strIP.c_str(), m_port);
 
 					delete Client[0];
 					Client.erase(Client.begin());
@@ -282,7 +282,7 @@ rThreadStatus rTCPClass::Proccesing()
 					}
 					else
 					{
-						TRACEI(LogMask, "Подсоединение клиента #%i [%i.%i.%i.%i] к [%s:%i/%i]", cid, ip[0], ip[1], ip[2], ip[3], strIP.c_str(), Port, ServAddr.sin_port);
+						TRACEI(LogMask, "Подсоединение клиента #%i [%i.%i.%i.%i] к [%s:%i/%i]", cid, ip[0], ip[1], ip[2], ip[3], strIP.c_str(), m_port, ServAddr.sin_port);
 					}
 				}
 			}
@@ -290,12 +290,12 @@ rThreadStatus rTCPClass::Proccesing()
 	}
 	else
 	{
-		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", strIP.c_str(), Port, ServAddr.sin_port);
+		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", strIP.c_str(), m_port, ServAddr.sin_port);
 	}
 
 	if(FD_ISSET(Socket, &exfds))
 	{
-		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", strIP.c_str(), Port, ServAddr.sin_port);
+		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", strIP.c_str(), m_port, ServAddr.sin_port);
 		//break; // ERROR
 	}
 
@@ -307,7 +307,7 @@ rThreadStatus rTCPClass::Proccesing()
 		{
 			if(Client[ii]->Socket != SOCKET_ERROR)
 			{
-				TRACEI(LogMask, "Клиент #%i отключился от '%s:%i/%i'.", ii, strIP.c_str(), Port, ServAddr.sin_port);
+				TRACEI(LogMask, "Клиент #%i отключился от '%s:%i/%i'.", ii, strIP.c_str(), m_port, ServAddr.sin_port);
 
 				delete Client[ii];
 				Client.erase(Client.begin() + ii);
@@ -321,7 +321,7 @@ rThreadStatus rTCPClass::Proccesing()
 			{
 				if(Client[ii]->Socket != SOCKET_ERROR)
 				{
-					TRACEW(LogMask, "Клиент #%i отсоединен от '%s:%i/%i'.", ii, strIP.c_str(), Port, ServAddr.sin_port);
+					TRACEW(LogMask, "Клиент #%i отсоединен от '%s:%i/%i'.", ii, strIP.c_str(), m_port, ServAddr.sin_port);
 
 					delete Client[ii];
 					Client.erase(Client.begin() + ii);

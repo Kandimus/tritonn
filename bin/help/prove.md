@@ -1,8 +1,11 @@
+<p align='right'><a href='index.html'>[Оглавление]</a></p>
+
 # prove
+> 0.19.18.6bb32f40
 ## XML
 ````xml
-<prove name="valid object name" descr="string index" setup="text's bits" >
-	<io_link module="module index"/>
+<prove name="valid object name" descr="string index" setup="text value | text value | ... | text value" >
+	<io_link module="module index"/>	<io_link module="module index"/><!-- Optional -->
 	<temperature><link alias="object's output"/><temperature/> <!-- Optional -->
 	<pressure><link alias="object's output"/><pressure/> <!-- Optional -->
 	<density><link alias="object's output"/><density/> <!-- Optional -->
@@ -20,87 +23,95 @@
 * _NOVALVE_  - ПУ ручным краном
 * _ONEDETECTOR_  - Используется один детектор
 * _BOUNCE_  - Фильтрация дребезга детекторов
+* _NOSELECTSTR_  - Не переключать частоту ПР
 * _SIMULATE_  - Симуляция крана
 
 ## Inputs
 Input | Unit | Unit ID | Limits | Shadow | Comment
 :-- |:--:|:--:|:--:|:--:|:--
-temperature | °C | 16 | LOLO, LO, HI, HIHI |  | Температура в ПУ
-pressure | МПа | 32 | LOLO, LO, HI, HIHI |  | Давление в ПУ
-density | кг/м³ | 48 | LOLO, LO, HI, HIHI |  | Плотность в ПУ
-opened |  | 522 | OFF |  | Сигнал кран открыт
-closed |  | 522 | OFF |  | Сигнал кран закрыт
+temperature | °C | 16 | LOLO, LO, HI, HIHI |  | температура
+pressure | МПа | 32 | LOLO, LO, HI, HIHI |  | давление
+density | кг/м³ | 48 | LOLO, LO, HI, HIHI |  | плотность
+opened |  | 522 | OFF |  | Кран открыт
+closed |  | 522 | OFF |  | Кран закрыт
 
 ## Outputs
 Output | Unit | Unit ID | Limits | Comment
 :-- |:--:|:--:|:--:|:--
-open |  | 522 | OFF | Команда на открытие крана
-close |  | 522 | OFF | Команда на закрытие крана
+open |  | 522 | OFF | Кран открыть
+close |  | 522 | OFF | Кран закрыть
 
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
-temperature.value | LREAL | °C | 16 | Yes | 0x00000000 | 
-temperature.unit | STRID |  | 512 | Yes | 0x00000000 | 
-temperature.lolo | LREAL | °C | 16 |  | 0x00000200 | 
-temperature.lo | LREAL | °C | 16 |  | 0x00000200 | 
-temperature.hi | LREAL | °C | 16 |  | 0x00000200 | 
-temperature.hihi | LREAL | °C | 16 |  | 0x00000200 | 
-temperature.hysteresis | LREAL | °C | 16 |  | 0x00000200 | 
-temperature.status | UINT |  | 512 | Yes | 0x00000000 | 
-temperature.setup | UINT |  | 512 | Yes | 0x00000200 | 
-pressure.value | LREAL | МПа | 32 | Yes | 0x00000000 | 
-pressure.unit | STRID |  | 512 | Yes | 0x00000000 | 
-pressure.lolo | LREAL | МПа | 32 |  | 0x00000200 | 
-pressure.lo | LREAL | МПа | 32 |  | 0x00000200 | 
-pressure.hi | LREAL | МПа | 32 |  | 0x00000200 | 
-pressure.hihi | LREAL | МПа | 32 |  | 0x00000200 | 
-pressure.hysteresis | LREAL | МПа | 32 |  | 0x00000200 | 
-pressure.status | UINT |  | 512 | Yes | 0x00000000 | 
-pressure.setup | UINT |  | 512 | Yes | 0x00000200 | 
-density.value | LREAL | кг/м³ | 48 | Yes | 0x00000000 | 
-density.unit | STRID |  | 512 | Yes | 0x00000000 | 
-density.lolo | LREAL | кг/м³ | 48 |  | 0x00000200 | 
-density.lo | LREAL | кг/м³ | 48 |  | 0x00000200 | 
-density.hi | LREAL | кг/м³ | 48 |  | 0x00000200 | 
-density.hihi | LREAL | кг/м³ | 48 |  | 0x00000200 | 
-density.hysteresis | LREAL | кг/м³ | 48 |  | 0x00000200 | 
-density.status | UINT |  | 512 | Yes | 0x00000000 | 
-density.setup | UINT |  | 512 | Yes | 0x00000200 | 
-opened.value | LREAL |  | 522 | Yes | 0x00000000 | 
-opened.unit | STRID |  | 512 | Yes | 0x00000000 | 
-closed.value | LREAL |  | 522 | Yes | 0x00000000 | 
-closed.unit | STRID |  | 512 | Yes | 0x00000000 | 
-open.value | LREAL |  | 522 | Yes | 0x00000000 | 
-open.unit | STRID |  | 512 | Yes | 0x00000000 | 
-close.value | LREAL |  | 522 | Yes | 0x00000000 | 
-close.unit | STRID |  | 512 | Yes | 0x00000000 | 
-command | UINT |  | 512 |  | 0x00008000 | 
-setup | UINT |  | 512 |  | 0x00008000 | 
-state | UINT |  | 512 | Yes | 0x00000000 | 
-timer.start | UDINT | мс | 210 |  | 0x00008000 | 
-timer.stabilization | UDINT | мс | 210 |  | 0x00008000 | 
-timer.detector1 | UDINT | мс | 210 |  | 0x00008000 | 
-timer.detector2 | UDINT | мс | 210 |  | 0x00008000 | 
-timer.volume | UDINT | мс | 210 |  | 0x00008000 | 
-timer.valve | UDINT | мс | 210 |  | 0x00008000 | 
-timer.bounce | UDINT | мс | 210 |  | 0x00008000 | 
-result.volume1.count | LREAL | имп | 514 | Yes | 0x00000000 | 
-result.volume1.time | LREAL | с | 211 | Yes | 0x00000000 | 
-result.volume2.count | LREAL | имп | 514 | Yes | 0x00000000 | 
-result.volume2.time | LREAL | с | 211 | Yes | 0x00000000 | 
-result.prove.frequency | LREAL | Гц | 192 | Yes | 0x00000000 | 
-result.prove.temperature | LREAL | °C | 16 | Yes | 0x00000000 | 
-result.prove.pressure | LREAL | МПа | 32 | Yes | 0x00000000 | 
-result.prove.density | LREAL | кг/м³ | 48 | Yes | 0x00000000 | 
-result.stream.temperature | LREAL | °C | 16 | Yes | 0x00000000 | 
-result.stream.pressure | LREAL | МПа | 32 | Yes | 0x00000000 | 
-result.stream.density | LREAL | кг/м³ | 48 | Yes | 0x00000000 | 
-detectors.present | UINT |  | 512 | Yes | 0x00000000 | 
-detectors.fixed | UINT |  | 512 | Yes | 0x00000000 | 
-stabilization.temperature | LREAL | °C | 16 |  | 0x00008000 | 
-stabilization.pressure | LREAL | МПа | 32 |  | 0x00008000 | 
-stabilization.density | LREAL | кг/м³ | 48 |  | 0x00008000 | 
-stabilization.frequency | LREAL | Гц | 192 |  | 0x00008000 | 
-fault | UDINT |  | 512 | Yes | 0x00000000 | 
+temperature.value | LREAL | °C | 16 | Yes |   | температура. Текущее значение
+temperature.unit | STRID |  | 512 | Yes |   | температура. Единицы измерения
+temperature.lolo | LREAL | °C | 16 |  | 0x00000200 | температура. Значение аварийного минимума
+temperature.lo | LREAL | °C | 16 |  | 0x00000200 | температура. Значение предаварийного минимума
+temperature.hi | LREAL | °C | 16 |  | 0x00000200 | температура. Значение предаварийного максимума
+temperature.hihi | LREAL | °C | 16 |  | 0x00000200 | температура. Значение аварийного максимума
+temperature.hysteresis | LREAL | °C | 16 |  | 0x00000200 | температура. Значение гистерезиса
+temperature.status | UINT |  | 512 | Yes |   | температура. Статус:<br/>0: Неопределен<br/>1: Недействительное значение<br/>2: Значение ниже аварийного минимума<br/>3: Значение ниже предаварийного минимума<br/>4: Значение в рабочем диапазоне<br/>5: Значение выше предаварийного максимума<br/>6: Значение выше аварийного максимума<br/>
+temperature.setup | UINT |  | 512 | Yes | 0x00000200 | температура. Настройка:<br/>0x0001: Не выдавать сообщения<br/>0x0002: Выдавать сообщение аварийного минимума<br/>0x0004: Выдавать сообщение предаварийного минимума<br/>0x0008: Выдавать сообщение предаварийного максимума<br/>0x0010: Выдавать сообщение аварийного максимума<br/>
+pressure.value | LREAL | МПа | 32 | Yes |   | давление. Текущее значение
+pressure.unit | STRID |  | 512 | Yes |   | давление. Единицы измерения
+pressure.lolo | LREAL | МПа | 32 |  | 0x00000200 | давление. Значение аварийного минимума
+pressure.lo | LREAL | МПа | 32 |  | 0x00000200 | давление. Значение предаварийного минимума
+pressure.hi | LREAL | МПа | 32 |  | 0x00000200 | давление. Значение предаварийного максимума
+pressure.hihi | LREAL | МПа | 32 |  | 0x00000200 | давление. Значение аварийного максимума
+pressure.hysteresis | LREAL | МПа | 32 |  | 0x00000200 | давление. Значение гистерезиса
+pressure.status | UINT |  | 512 | Yes |   | давление. Статус:<br/>0: Неопределен<br/>1: Недействительное значение<br/>2: Значение ниже аварийного минимума<br/>3: Значение ниже предаварийного минимума<br/>4: Значение в рабочем диапазоне<br/>5: Значение выше предаварийного максимума<br/>6: Значение выше аварийного максимума<br/>
+pressure.setup | UINT |  | 512 | Yes | 0x00000200 | давление. Настройка:<br/>0x0001: Не выдавать сообщения<br/>0x0002: Выдавать сообщение аварийного минимума<br/>0x0004: Выдавать сообщение предаварийного минимума<br/>0x0008: Выдавать сообщение предаварийного максимума<br/>0x0010: Выдавать сообщение аварийного максимума<br/>
+density.value | LREAL | кг/м³ | 48 | Yes |   | плотность. Текущее значение
+density.unit | STRID |  | 512 | Yes |   | плотность. Единицы измерения
+density.lolo | LREAL | кг/м³ | 48 |  | 0x00000200 | плотность. Значение аварийного минимума
+density.lo | LREAL | кг/м³ | 48 |  | 0x00000200 | плотность. Значение предаварийного минимума
+density.hi | LREAL | кг/м³ | 48 |  | 0x00000200 | плотность. Значение предаварийного максимума
+density.hihi | LREAL | кг/м³ | 48 |  | 0x00000200 | плотность. Значение аварийного максимума
+density.hysteresis | LREAL | кг/м³ | 48 |  | 0x00000200 | плотность. Значение гистерезиса
+density.status | UINT |  | 512 | Yes |   | плотность. Статус:<br/>0: Неопределен<br/>1: Недействительное значение<br/>2: Значение ниже аварийного минимума<br/>3: Значение ниже предаварийного минимума<br/>4: Значение в рабочем диапазоне<br/>5: Значение выше предаварийного максимума<br/>6: Значение выше аварийного максимума<br/>
+density.setup | UINT |  | 512 | Yes | 0x00000200 | плотность. Настройка:<br/>0x0001: Не выдавать сообщения<br/>0x0002: Выдавать сообщение аварийного минимума<br/>0x0004: Выдавать сообщение предаварийного минимума<br/>0x0008: Выдавать сообщение предаварийного максимума<br/>0x0010: Выдавать сообщение аварийного максимума<br/>
+opened.value | LREAL |  | 522 | Yes |   | Кран открыт. Текущее значение
+opened.unit | STRID |  | 512 | Yes |   | Кран открыт. Единицы измерения
+closed.value | LREAL |  | 522 | Yes |   | Кран закрыт. Текущее значение
+closed.unit | STRID |  | 512 | Yes |   | Кран закрыт. Единицы измерения
+open.value | LREAL |  | 522 | Yes |   | Кран открыть. Текущее значение
+open.unit | STRID |  | 512 | Yes |   | Кран открыть. Единицы измерения
+close.value | LREAL |  | 522 | Yes |   | Кран закрыть. Текущее значение
+close.unit | STRID |  | 512 | Yes |   | Кран закрыть. Единицы измерения
+command | UINT |  | 512 |  | 0x00008000 | Команда:<br/>0: Нет действия<br/>1: Запуск процедуры поверки<br/>2: Прервать процедуру поверки<br/>3: Сбросить ошибку<br/>
+setup | UINT |  | 512 |  | 0x00008000 | Настройка:<br/>0x0000: Не использовать флаги настройки<br/>0x0001: ПУ использует четырех ходовой кран<br/>0x0002: Перед измерением проверять параметры на стабильность<br/>0x0004: ПУ ручным краном<br/>0x0008: Используется один детектор<br/>0x0010: Фильтрация дребезга детекторов<br/>0x0020: Не переключать частоту ПР<br/>0x0040: Симуляция крана<br/>
+state | UINT |  | 512 | Yes |   | Статус:<br/>0: Процедура не запущена<br/>1: Запуск процедуры поверки<br/>2: Стабилизация<br/>3: Поворот крана в верхнюю позицию<br/>4: Ожидание поворота крана в верхнюю позицию<br/>5: Поворот крана в нижнюю позицию<br/>6: Ожидание первого детектора<br/>7: Ожидание второго детектора<br/>8: Вычисления<br/>3: Перевод крана вверхнюю позицию<br/>9: Ожидание возврата шара<br/>10: Процедура завершена<br/>11: Прерывание процедуры<br/>65: Нет расхода<br/>66: Ошибка стабилизации<br/>67: Ошибка поворота крана в верхнюю позицию<br/>68: Ошибка поворота крана в нижнюю позицию<br/>69: Ошибка первого детектора<br/>70: Ошибка второго детектора<br/>71: Ошибка детекторов<br/>72: Ошибка возврата шара<br/>73: Выбрана не корректный ПР<br/>
+timer.start | UDINT | мс | 210 |  | 0x00008000 | Значение таймера выбора требуемого ПР
+timer.stabilization | UDINT | мс | 210 |  | 0x00008000 | Значение таймера стабилизации
+timer.detector1 | UDINT | мс | 210 |  | 0x00008000 | Максимальное время прохода шара от корзины до первого детектора
+timer.detector2 | UDINT | мс | 210 |  | 0x00008000 | Максимальное время прохода шара от второго детектора до корзины
+timer.volume | UDINT | мс | 210 |  | 0x00008000 | Максимальное время прохода шара от первого детектора до второго
+timer.valve | UDINT | мс | 210 |  | 0x00008000 | Значение таймера поворота корзины
+timer.bounce | UDINT | мс | 210 |  | 0x00008000 | Значение таймера анти-дребезга
+result.volume1.count | LREAL | имп | 514 | Yes |   | Количество импульсов для объема 1-3-1
+result.volume1.time | LREAL | с | 211 | Yes |   | Время прохода шара 1-3-1
+result.volume2.count | LREAL | имп | 514 | Yes |   | Количество импульсов для объема 2-4-2
+result.volume2.time | LREAL | с | 211 | Yes |   | Время прохода шара 2-4-2
+result.prove.frequency | LREAL | Гц | 192 | Yes |   | Средневзвешанное значение частоты во время процедуры
+result.prove.temperature | LREAL | °C | 16 | Yes |   | Средневзвешанное значение температуры ПУ во время процедуры
+result.prove.pressure | LREAL | МПа | 32 | Yes |   | Средневзвешанное значение давления ПУ во время процедуры
+result.prove.density | LREAL | кг/м³ | 48 | Yes |   | Средневзвешанное значение плотности ПУ во время процедуры
+result.stream.temperature | LREAL | °C | 16 | Yes |   | Средневзвешанное значение температуры ПР во время процедуры
+result.stream.pressure | LREAL | МПа | 32 | Yes |   | Средневзвешанное значение давления ПР во время процедуры
+result.stream.density | LREAL | кг/м³ | 48 | Yes |   | Средневзвешанное значение плотности ПР во время процедуры
+detectors.present | UINT |  | 512 | Yes |   | Мгновенное значение флагов детекторов
+detectors.fixed | UINT |  | 512 | Yes |   | Зафиксированное значение флагов детекторов
+stabilization.temperature | LREAL | °C | 16 |  | 0x00008000 | Предельное значение разности температур во время стабилизации
+stabilization.pressure | LREAL | МПа | 32 |  | 0x00008000 | Предельное значение разности давления во время стабилизации
+stabilization.density | LREAL | кг/м³ | 48 |  | 0x00008000 | Предельное значение разности плотности во время стабилизации
+stabilization.frequency | LREAL | Гц | 192 |  | 0x00008000 | Предельное значение разности частот ПР во время стабилизации
+fault | UDINT |  | 512 | Yes |   | Флаг ошибки
+
+
+
+[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
+
+
+<p align='right'><a href='index.html'>[Оглавление]</a></p>
 

@@ -24,12 +24,19 @@ class rBitsArray
 public:
 	struct rBitFlag
 	{
-		std::string m_name;
-		UDINT       m_value;
-		std::string m_comment;
+		std::string m_name     = "error";
+		UDINT       m_value    = 0;
+		std::string m_comment  = "";
+		USINT       m_type     = TYPE_UINT;
 
 		rBitFlag(const std::string& name, UDINT value, const std::string& comment)
-			: m_name(name), m_value(value), m_comment(comment) {}
+			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE_UDINT) {}
+
+		rBitFlag(const std::string& name, UINT value, const std::string& comment)
+			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE_UINT) {}
+
+		rBitFlag(const std::string& name, USINT value, const std::string& comment)
+			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE_USINT) {}
 
 	};
 
@@ -37,14 +44,15 @@ public:
 	virtual ~rBitsArray();
 
 public:
-	rBitsArray& add(const std::string &name, UDINT value, const std::string& comment = std::string());
-	rBitsArray& add(const std::string &name, UINT  value, const std::string& comment = std::string());
-	rBitsArray& add(const std::string &name, USINT value, const std::string& comment = std::string());
+	rBitsArray& add(const std::string &name, UDINT value, const std::string& comment);
+	rBitsArray& add(const std::string &name, UINT  value, const std::string& comment);
+	rBitsArray& add(const std::string &name, USINT value, const std::string& comment);
 	std::string getNameByBits (UDINT value, const std::string& delim = std::string("|")) const;
 	std::string getNameByValue(UDINT value) const;
 	UDINT       getBit  (const std::string &str, UDINT &err) const;
 	UDINT       getValue(const std::string &name, UDINT &err) const;
 	std::string getMarkDown(const std::string& name) const;
+	std::string getInfo(bool isnumbers = false) const;
 
 	bool   empty() const { return m_list.empty(); }
 	size_t size() const  { return m_list.size(); }

@@ -32,7 +32,16 @@ public:
 	rVariableList();
 	virtual ~rVariableList();
 
-	void  add(const std::string& name, TT_TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access);
+	void  add(const std::string& name, TT_TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags,  SINT* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags, USINT* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags,   INT* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags,  UINT* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags,  DINT* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags, UDINT* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags,  REAL* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags, LREAL* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, rVariable::Flags flags, STRID* pointer, STRID unit, UDINT access, const std::string& comment);
 	void  sort();
 	void  deleteAll(void);
 	UDINT saveToCSV(const std::string& path);

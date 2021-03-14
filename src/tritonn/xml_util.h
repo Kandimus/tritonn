@@ -25,6 +25,8 @@
 namespace XmlUtils
 {
 USINT       getAttributeUSINT (tinyxml2::XMLElement *element, const std::string &name, const USINT def);
+INT         getAttributeINT   (tinyxml2::XMLElement *element, const std::string &name, const INT   def);
+DINT        getAttributeDINT  (tinyxml2::XMLElement *element, const std::string &name, const DINT  def);
 UDINT       getAttributeUDINT (tinyxml2::XMLElement *element, const std::string &name, const UDINT def);
 std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const std::string &def);
 
@@ -42,6 +44,7 @@ namespace XmlName
 
 const char ACCESS[]        = "access";
 //const char ADDRESS[]       = "address";
+const char ADDR[]           = "addr";
 const char ADDRESSBLOCK[]  = "addressblock";
 const char ADDRESSMAP[]    = "addressmap";
 const char AI[]            = "ai";
@@ -145,6 +148,7 @@ const char MASTERRTU[]     = "masterrtu";
 const char MASTERTCP[]     = "mastertcp";
 const char MAINTENANCE[]   = "maintenance";
 const char MAX[]           = "max";
+const char MAXCLIENT[]     = "maxclient";
 const char METHOD[]        = "method";
 const char MIN[]           = "min";
 const char MODBUS[]        = "modbus";
@@ -179,6 +183,7 @@ const char RIGHTS[]        = "rights";
 const char SAMPLER[]       = "sampler";
 const char SCALE[]         = "scale";
 const char SECURITY[]      = "security";
+const char SELECT[]        = "select";
 const char SELECTED[]      = "selected";
 const char SELECTOR[]      = "selector";
 const char SETUP[]         = "setup";

@@ -20,12 +20,15 @@
 #include "text_id.h"
 #include "event_manager.h"
 #include "data_manager.h"
+#include "data_snapshot.h"
 #include "data_config.h"
 #include "variable_item.h"
 #include "variable_list.h"
 #include "io/manager.h"
 #include "io/do_channel.h"
 #include "xml_util.h"
+#include "generator_md.h"
+#include "comment_defines.h"
 
 const UDINT DO_LE_KEYPAD_ON  = 0x00000001;
 const UDINT DO_LE_KEYPAD_OFF = 0x00000002;
@@ -33,7 +36,7 @@ const UDINT DO_LE_CODE_FAULT = 0x00000004;
 
 rBitsArray rDO::m_flagsMode;
 rBitsArray rDO::m_flagsSetup;
-
+rBitsArray rDO::m_flagsStatus;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -41,13 +44,27 @@ rDO::rDO(const rStation* owner) : rSource(owner)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
-				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD));
+				.add("PHIS"  , static_cast<UINT>(Mode::PHIS)  , COMMENT::MODE_PHYS)
+				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD), COMMENT::MODE_KEYPAD);
 	}
 
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"   , static_cast<UINT>(Setup::OFF));
+				.add("OFF"     , static_cast<UINT>(Setup::OFF)        , COMMENT::SETUP_OFF)
+				.add("SUCCESS1", static_cast<UINT>(Setup::SUCCESS_ON) , COMMENT::SETUP_SUCCESS1)
+				.add("WARNING1", static_cast<UINT>(Setup::WARNING_ON) , COMMENT::SETUP_WARNING1)
+				.add("ALARM1"  , static_cast<UINT>(Setup::ALARM_ON)   , COMMENT::SETUP_ALARM1)
+				.add("SUCCESS0", static_cast<UINT>(Setup::SUCCESS_OFF), COMMENT::SETUP_SUCCESS0)
+				.add("WARNING0", static_cast<UINT>(Setup::WARNING_OFF), COMMENT::SETUP_WARNING0)
+				.add("ALARM0"  , static_cast<UINT>(Setup::ALARM_OFF)  , COMMENT::SETUP_ALARM0);
+	}
+
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::UNDEF) , COMMENT::STATUS_UNDEF)
+				.add("", static_cast<UINT>(Status::OFF)   , COMMENT::STATUS_OFF)
+				.add("", static_cast<UINT>(Status::NORMAL), COMMENT::STATUS_NORMAL)
+				.add("", static_cast<UINT>(Status::FAULT) , COMMENT::STATUS_FAULT);
 	}
 
 	m_lockErr = 0;
@@ -55,7 +72,8 @@ rDO::rDO(const rStation* owner) : rSource(owner)
 	m_mode    = Mode::PHIS;
 	m_status  = Status::UNDEF;
 
-	initLink(rLink::Setup::INOUTPUT, m_present , U_discrete, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INOUTPUT | rLink::Setup::WRITABLE,
+			 m_present , U_discrete, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 }
 
 
@@ -112,8 +130,14 @@ UDINT rDO::calculate()
 				m_fault  = true;
 				m_status = Status::FAULT; // выставляем флаг ошибки
 			} else {
-				m_physical = channel->getValue();
-				//TODO Установить значение
+				if (m_oldvalue != m_present.m_value) {
+					auto module = rIOManager::instance().getModule(m_module);
+					rSnapshot ss(rDataManager::instance().getVariableClass());
+
+					m_physical = static_cast<USINT>(m_present.m_value);
+					ss.add(module->getAlias() + String_format(".ch_%u.value", channel->m_index), m_physical);
+					ss.set();
+				}
 			}
 		}
 	}
@@ -133,6 +157,36 @@ UDINT rDO::calculate()
 		
 		rEventManager::instance().Add(reinitEvent(EID_DO_KEYPAD_OFF));
 	}
+
+	if (m_present.m_value != m_oldvalue) {
+		if (m_present.m_value != 0.0) {
+			if (m_setup.Value & Setup::SUCCESS_ON) {
+				rEventManager::instance().Add(reinitEvent(EID_DO_SUCCESS_ON));
+			}
+
+			if (m_setup.Value & Setup::WARNING_ON) {
+				rEventManager::instance().Add(reinitEvent(EID_DO_WARNING_ON));
+			}
+
+			if (m_setup.Value & Setup::ALARM_ON) {
+				rEventManager::instance().Add(reinitEvent(EID_DO_ALARM_ON));
+			}
+		} else {
+			if (m_setup.Value & Setup::SUCCESS_OFF) {
+				rEventManager::instance().Add(reinitEvent(EID_DO_SUCCESS_OFF));
+			}
+
+			if (m_setup.Value & Setup::WARNING_OFF) {
+				rEventManager::instance().Add(reinitEvent(EID_DO_WARNING_OFF));
+			}
+
+			if (m_setup.Value & Setup::ALARM_OFF) {
+				rEventManager::instance().Add(reinitEvent(EID_DO_ALARM_OFF));
+			}
+		}
+	}
+
+	m_oldvalue = m_present.m_value;
 	
 	postCalculate();
 		
@@ -146,11 +200,11 @@ UDINT rDO::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value, U_DIMLESS, ACCESS_SA);
-	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___L, &m_mode       , U_DIMLESS, ACCESS_KEYPAD);
-	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R___, &m_status     , U_DIMLESS, 0);
+	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value, U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___, &m_mode       , U_DIMLESS, ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
+	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R__, &m_status     , U_DIMLESS, 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
 
-	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R___, &m_fault      , U_DIMLESS, 0);
+	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R__, &m_fault      , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }
@@ -167,10 +221,10 @@ UDINT rDO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 		return err.getError();
 	}
 
-	tinyxml2::XMLElement* module = element->FirstChildElement(XmlName::IOLINK);
+	auto module_xml = element->FirstChildElement(XmlName::IOLINK);
 
-	if (module) {
-		if (rDataModule::loadFromXML(module, err) != TRITONN_RESULT_OK) {
+	if (module_xml) {
+		if (rDataModule::loadFromXML(module_xml, err) != TRITONN_RESULT_OK) {
 			return err.getError();
 		}
 	} else {
@@ -178,6 +232,10 @@ UDINT rDO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	UDINT fault = 0;
+
+	m_physical = XmlUtils::getTextUSINT(element->FirstChildElement(XmlName::VALUE), 0, fault);
+	fault      = 0;
+
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 
@@ -192,13 +250,15 @@ UDINT rDO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	return TRITONN_RESULT_OK;
 }
 
-
-std::string rDO::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rDO::generateMarkDown(rGeneratorMD& md)
 {
-	UNUSED(isio);
+	m_present.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
-	m_present.m_limit.m_setup.Init (rLimit::Setup::OFF);
+	md.add(this, true, rGeneratorMD::Type::IOCHANNEL_OPT)
+			.addProperty(XmlName::SETUP, &m_flagsSetup)
+			.addProperty(XmlName::MODE , &m_flagsMode, true)
+			.addXml(XmlName::VALUE, m_present.m_value);
 
-	return rSource::saveKernel(true, objname, comment, isglobal);
+	return TRITONN_RESULT_OK;
 }
 

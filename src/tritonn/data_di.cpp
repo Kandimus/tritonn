@@ -26,6 +26,8 @@
 #include "io/manager.h"
 #include "io/di_channel.h"
 #include "xml_util.h"
+#include "generator_md.h"
+#include "comment_defines.h"
 
 const UDINT DI_LE_KEYPAD_ON  = 0x00000001;
 const UDINT DI_LE_KEYPAD_OFF = 0x00000002;
@@ -33,6 +35,7 @@ const UDINT DI_LE_CODE_FAULT = 0x00000004;
 
 rBitsArray rDI::m_flagsMode;
 rBitsArray rDI::m_flagsSetup;
+rBitsArray rDI::m_flagsStatus;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,19 +44,28 @@ rDI::rDI(const rStation* owner) : rSource(owner), m_keypadValue(0), m_setup(0)
 {
 	if (m_flagsMode.empty()) {
 		m_flagsMode
-				.add("PHIS"  , static_cast<UINT>(Mode::PHIS))
-				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD));
+				.add("PHIS"  , static_cast<UINT>(Mode::PHIS)  , COMMENT::MODE_PHYS)
+				.add("KEYPAD", static_cast<UINT>(Mode::KEYPAD), COMMENT::MODE_KEYPAD);
 	}
+
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("OFF"     , static_cast<UINT>(Setup::OFF))
-				.add("KEYPAD"  , static_cast<UINT>(Setup::ERR_KEYPAD))
-				.add("SUCCESS1", static_cast<UINT>(Setup::SUCCESS_ON))
-				.add("SUCCESS0", static_cast<UINT>(Setup::SUCCESS_OFF))
-				.add("WARNING1", static_cast<UINT>(Setup::WARNING_ON))
-				.add("WARNING0", static_cast<UINT>(Setup::WARNING_OFF))
-				.add("ALARM1"  , static_cast<UINT>(Setup::ALARM_ON))
-				.add("ALARM0"  , static_cast<UINT>(Setup::ALARM_OFF));
+				.add("OFF"     , static_cast<UINT>(Setup::OFF)        , COMMENT::SETUP_OFF)
+				.add("KEYPAD"  , static_cast<UINT>(Setup::ERR_KEYPAD) , COMMENT::SETUP_KEYPAD)
+				.add("SUCCESS1", static_cast<UINT>(Setup::SUCCESS_ON) , COMMENT::SETUP_SUCCESS1)
+				.add("WARNING1", static_cast<UINT>(Setup::WARNING_ON) , COMMENT::SETUP_WARNING1)
+				.add("ALARM1"  , static_cast<UINT>(Setup::ALARM_ON)   , COMMENT::SETUP_ALARM1)
+				.add("SUCCESS0", static_cast<UINT>(Setup::SUCCESS_OFF), COMMENT::SETUP_SUCCESS0)
+				.add("WARNING0", static_cast<UINT>(Setup::WARNING_OFF), COMMENT::SETUP_WARNING0)
+				.add("ALARM0"  , static_cast<UINT>(Setup::ALARM_OFF)  , COMMENT::SETUP_ALARM0);
+	}
+
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::UNDEF) , COMMENT::STATUS_UNDEF)
+				.add("", static_cast<UINT>(Status::OFF)   , COMMENT::STATUS_OFF)
+				.add("", static_cast<UINT>(Status::NORMAL), COMMENT::STATUS_NORMAL)
+				.add("", static_cast<UINT>(Status::FAULT) , COMMENT::STATUS_FAULT);
 	}
 
 	m_lockErr = 0;
@@ -61,7 +73,8 @@ rDI::rDI(const rStation* owner) : rSource(owner), m_keypadValue(0), m_setup(0)
 	m_mode    = Mode::PHIS;
 	m_status  = Status::UNDEF;
 
-	initLink(rLink::Setup::OUTPUT, m_present , U_discrete, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT,
+								   m_present , U_discrete, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::OUTPUT, m_physical, U_discrete, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
 }
 
@@ -136,11 +149,8 @@ UDINT rDI::calculate()
 		}
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	//
+	//---------------------------------------------------------------------------------------------
 	// РЕЖИМЫ РАБОТЫ
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
 	// можно сделать через m_oldMode, но это не красиво
@@ -206,7 +216,7 @@ UDINT rDI::calculate()
 
 	postCalculate();
 		
-	return 0;
+	return TRITONN_RESULT_OK;
 }
 
 
@@ -229,12 +239,12 @@ UDINT rDI::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".keypad", TYPE_USINT, rVariable::Flags::___L, &m_keypadValue.Value, U_DIMLESS, ACCESS_KEYPAD);
-	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_L, &m_setup.Value      , U_DIMLESS, ACCESS_SA);
-	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___L, &m_mode             , U_DIMLESS, ACCESS_KEYPAD);
-	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R___, &m_status           , U_DIMLESS, 0);
+	list.add(m_alias + ".keypad", TYPE_USINT, rVariable::Flags::___, &m_keypadValue.Value, U_DIMLESS, ACCESS_KEYPAD, COMMENT::KEYPAD);
+	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value      , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___, &m_mode             , U_DIMLESS, ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
+	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R__, &m_status           , U_DIMLESS, 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
 
-	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R___, &m_fault            , U_DIMLESS, 0);
+	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R__, &m_fault            , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }
@@ -279,14 +289,16 @@ UDINT rDI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 }
 
 
-std::string rDI::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
+UDINT rDI::generateMarkDown(rGeneratorMD& md)
 {
-	UNUSED(isio);
-
-	m_physical.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	m_present.m_limit.m_setup.Init (rLimit::Setup::OFF);
+	m_physical.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
-	return rSource::saveKernel(true, objname, comment, isglobal);
+	md.add(this, true, rGeneratorMD::Type::IOCHANNEL_OPT)
+			.addProperty(XmlName::SETUP, &m_flagsSetup)
+			.addProperty(XmlName::MODE , &m_flagsMode, true)
+			.addXml(XmlName::KEYPAD, static_cast<UDINT>(m_keypadValue.Value));
+
+	return TRITONN_RESULT_OK;
 }
-
 

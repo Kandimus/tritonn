@@ -186,6 +186,8 @@ private:
 	rTickCount  m_timerBounce;
 
 	static rBitsArray m_flagsSetup;
+	static rBitsArray m_flagsCommand;
+	static rBitsArray m_flagsState;
 };
 
 

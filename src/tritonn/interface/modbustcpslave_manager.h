@@ -2,7 +2,7 @@
 //===
 //=== modbustcpslave_manager.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -17,8 +17,8 @@
 
 #include <vector>
 #include "tcp_class.h"
-#include "data_interface.h"
-#include "data_snapshot.h"
+#include "interface.h"
+#include "../data_snapshot.h"
 
 
 class rSnapshotItem;
@@ -41,9 +41,9 @@ struct rTempLink
 
 struct rModbusSwap
 {
-	USINT Byte;
-	USINT Word;
-	USINT DWord;
+	USINT Byte  = 1;
+	USINT Word  = 0;
+	USINT DWord = 0;
 	USINT Reserv;
 };
 
@@ -57,32 +57,35 @@ public:
 
 // Наследование от rTCPClass
 protected:
-	virtual rThreadStatus Proccesing(void);
-	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
-	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
+	virtual rThreadStatus Proccesing(void) override;
+	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr) override;
+	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size) override;
 
 // Наследование от rInterface
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* xml_root, rError& err);
-	virtual UDINT generateVars(rVariableClass* parent);
-	virtual UDINT checkVars(rError& err);
-	virtual UDINT startServer();
-	virtual rThreadClass *getThreadClass();
+	virtual const char*   getRTTI() override { return "modbustcpslave"; }
+	virtual UDINT         loadFromXML(tinyxml2::XMLElement* xml_root, rError& err) override;
+	virtual UDINT         generateMarkDown(rGeneratorMD& md) override;
+	virtual std::string   getAdditionalXml() const override;
+	virtual UDINT         generateVars(rVariableClass* parent) override;
+	virtual UDINT         checkVars(rError& err) override;
+	virtual UDINT         startServer() override;
+	virtual rThreadClass* getThreadClass() override;
 
 protected:
 	rSnapshot   m_snapshot;
 	UINT*       Modbus = nullptr;
 	std::string Name;            // Имя объекта, для переменных
-	USINT       SlaveID;
+	USINT       SlaveID = 0;
 	UDINT       Security;        // Флаг использования ScurityModbus
 	USINT       Live;            // Текущий статус менеджера. Выделена в отдельную переменную, что бы можно было засунуть ее в rDataManager::lock
-	USINT       MaxError;        // Максимальное кол-во ошибочных пакетов, при достижении этой цифры клиент будет отключен
+	USINT       MaxError = 3;    // Максимальное кол-во ошибочных пакетов, при достижении этой цифры клиент будет отключен
 	USINT       RxError;         // Текущее кол-во принятых ошибочных пакетов
 	UDINT       Tx;              // Кол-во отосланных пакетов
 	UDINT       Rx;              // Кол-во принятых пакетов
 	UDINT       ClientCount;     // Кол-во текущих клиентов. Выделена в отдельную переменную, что бы можно было засунуть ее в rDataManager::lock
 
-	rModbusSwap Swap;
+	rModbusSwap m_swap;
 
 	vector<rModbusLink> ModbusLink;
 	vector<rTempLink>   TempLink;
@@ -102,9 +105,7 @@ protected:
 
 	UDINT TypeCountReg(TT_TYPE type);
 
-
 	UDINT LoadStandartModbus(rError& err);
-	tinyxml2::XMLElement* FindBlock(tinyxml2::XMLElement* xml_blocks, const std::string& name);
 };
 
 

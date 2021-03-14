@@ -110,7 +110,7 @@ LREAL rTotal::Sub(LREAL sub1, LREAL sub2)
 }
 
 
-void rTotal::Clear(rBaseTotal &total)
+void rTotal::clear(rBaseTotal &total)
 {
 	total.Count    = 0;
 	total.Mass     = 0.0;

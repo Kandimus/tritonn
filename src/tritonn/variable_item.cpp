@@ -19,7 +19,7 @@
 #include <string.h>
 
 
-rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access)
+rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment)
 {
 	m_name    = String_tolower(name);
 	m_type    = type;
@@ -28,6 +28,7 @@ rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* po
 	m_hash    = std::hash<std::string>{}(m_name);
 	m_unit    = unit;
 	m_access  = access;
+	m_comment = comment;
 }
 
 rVariable::rVariable(rVariable *var)
@@ -50,34 +51,12 @@ rVariable::rVariable(rVariable *var)
 // Конструктор удаляет все дерево переменных, включая дочерние и соседние узлы
 rVariable::~rVariable()
 {
-}
-/*
-bool rVariable::getBuffer(void* buffer) const
-{
-	if(m_pointer == nullptr) {
-		return false;
+	if (m_external) {
+		delete m_external;
 	}
-
-	memcpy(buffer, m_pointer, EPT_SIZE[m_type]);
-	return true;
+	m_external = nullptr;
 }
 
-bool rVariable::setBuffer(void* buffer) const
-{
-	if(m_pointer == nullptr) {
-		return false;
-	}
-
-	void *ptr = isExternal() ? m_extWrite : m_pointer;
-	memcpy(ptr, buffer, EPT_SIZE[m_type]);
-
-	if (isExternal()) {
-		m_flags |= rVariable::Flags::EXTWRITED;
-	}
-
-	return true;
-}
-*/
 std::string rVariable::saveToCSV()
 {
 	if (isHide()) {
@@ -87,14 +66,3 @@ std::string rVariable::saveToCSV()
 	return String_format("%s;%s;%#06x;%08X;%#010x;\n", m_name.c_str(), NAME_TYPE[m_type].c_str(), m_flags, m_access, m_hash);
 }
 
-std::string rVariable::saveKernel(UDINT offset, const std::string prefix) const
-{
-	return String_format("%s<value name=\"%s\" type=\"%s\" readonly=\"%i\" loadable=\"%i\" unit=\"%i\" access=\"0x%08X\"/>\n",
-					prefix.c_str(),
-					getName().c_str() + offset,
-					NAME_TYPE[getType()].c_str(),
-					(isReadonly()) ? 1 : 0,
-					(isLodable()) ? 1 : 0,
-					static_cast<UDINT>(getUnit()),
-					getAccess());
-}

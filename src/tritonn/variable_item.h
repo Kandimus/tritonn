@@ -34,32 +34,25 @@ public:
 		READONLY  = 0x0001, // Запись запрещена
 		SUWRITE   = 0x0002, // Запись разрешена суперпользователю
 		HIDE      = 0x0004, // Переменная не будет отображатся в ОРС-сервере
-		LOADABLE  = 0x0008, // Переменная загружается из конфигурации
+		MUTABLE   = 0x0008, // Переменная может быть как RO, так и RW
 		EXTERNAL  = 0x4000, //
 //		EXTWRITED = 0x8000, //
 
-		____ = NONE,
-		R___ = READONLY,
-		_S__ = SUWRITE,
-		RS__ = READONLY | SUWRITE,
-		__H_ = HIDE,
-		R_H_ = READONLY | HIDE,
-		_SH_ = SUWRITE | HIDE,
-		RSH_ = READONLY | SUWRITE | HIDE,
-		___L = LOADABLE,
-		R__L = READONLY | LOADABLE,
-		_S_L = SUWRITE | LOADABLE,
-		RS_L = READONLY | SUWRITE | LOADABLE,
-		__HL = HIDE | LOADABLE,
-		R_HL = READONLY | HIDE | LOADABLE,
-		_SHL = SUWRITE | HIDE | LOADABLE,
-		RSHL = READONLY | SUWRITE | HIDE | LOADABLE,
+		___ = NONE,
+		R__ = READONLY,
+		_S_ = SUWRITE,
+		RS_ = READONLY | SUWRITE,
+		__H = HIDE,
+		R_H = READONLY | HIDE,
+		_SH = SUWRITE | HIDE,
+		RSH = READONLY | SUWRITE | HIDE,
 	};
 
-	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access);
+	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment = "");
 	virtual ~rVariable();
 
 	const std::string& getName() const { return m_name; }
+	const std::string& getComment() const { return m_comment; }
 	TT_TYPE getType()    const { return m_type;   }
 	UINT    getFlags()   const { return m_flags;  }
 	STRID   getUnit()    const { return m_unit;   }
@@ -68,9 +61,8 @@ public:
 	bool    isReadonly() const { return m_flags & Flags::READONLY; }
 	bool    isHide()     const { return m_flags & Flags::HIDE;     }
 	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
-	bool    isLodable()  const { return m_flags & Flags::LOADABLE; }
+	bool    isMutable()  const { return m_flags & Flags::MUTABLE;  }
 	bool    isExternal() const { return m_flags & Flags::EXTERNAL; }
-	std::string saveKernel(UDINT offset, const std::string prefix) const;
 
 	std::string saveToCSV();
 
@@ -94,12 +86,13 @@ private:
 	rVariable(rVariable& var);
 
 protected:
-	UDINT       m_hash   = 0;
-	std::string m_name   = "";
-	TT_TYPE     m_type   = TYPE_UNDEF;
-	UINT        m_flags  = Flags::NONE;
-	STRID       m_unit   = 0;
-	UDINT       m_access = 0;
+	UDINT       m_hash    = 0;
+	std::string m_name    = "";
+	TT_TYPE     m_type    = TYPE_UNDEF;
+	UINT        m_flags   = Flags::NONE;
+	STRID       m_unit    = 0;
+	UDINT       m_access  = 0;
+	std::string m_comment = "";
 
 	rExternal*  m_external = nullptr;
 //	rVariable*  m_extVar;

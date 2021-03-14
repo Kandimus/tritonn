@@ -40,7 +40,7 @@ public:
 	void Calculate(const rObjUnit& unit);
 
 	static LREAL Sub(LREAL sub1, LREAL sub2);
-	static void  Clear(rBaseTotal &total);
+	static void  clear(rBaseTotal &total);
 
 protected:
 	void checkMax();

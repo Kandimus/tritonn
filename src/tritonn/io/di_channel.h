@@ -27,10 +27,10 @@ class rIODIChannel : public rIOBaseChannel
 public:
 	enum SimType
 	{
-		None = 0,
-		Const,
-		Pulse,
-		Random,
+		NONE = 0,
+		CONST,
+		PULSE,
+		RANDOM,
 	};
 
 	enum Setup : UINT
@@ -42,7 +42,7 @@ public:
 	};
 
 public:
-	rIODIChannel(USINT index);
+	rIODIChannel(USINT index, const std::string& comment = "");
 	virtual ~rIODIChannel() = default;
 
 	USINT getValue() const { return m_value; }
@@ -65,6 +65,8 @@ public:
 	USINT m_simValue    = 0;
 	UDINT m_simBlink    = 1000;
 	UDINT m_simTimer    = 0;
+
+	static rBitsArray m_flagsSimType;
 
 private:
 	USINT m_hardState   = 0;             // Статус канала с модуля

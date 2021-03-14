@@ -268,10 +268,10 @@ UDINT rThreadMaster::saveAllTimerInfo()
 
 UDINT rThreadMaster::generateVars(rVariableClass* parent)
 {
-	m_varList.add("system.diag.processor.cpu.value"    , TYPE_REAL , rVariable::Flags::R___, &m_curSysInfo.m_usageCPU , U_perc, 0);
-	m_varList.add("system.diag.processor.cpu.modify"   , TYPE_REAL , rVariable::Flags::R___, &m_curSysInfo.m_modifyCPU, U_perc, 0);
-	m_varList.add("system.diag.processor.memory.free"  , TYPE_UDINT, rVariable::Flags::R___, &m_curSysInfo.m_freeMem  , U_DIMLESS, 0);
-	m_varList.add("system.diag.processor.memory.modify", TYPE_DINT , rVariable::Flags::R___, &m_curSysInfo.m_modifyMem, U_DIMLESS, 0);
+	m_varList.add("system.diag.processor.cpu.value"    , TYPE_REAL , rVariable::Flags::R__, &m_curSysInfo.m_usageCPU , U_perc, 0, "Текущая загрузка ЦПУ");
+	m_varList.add("system.diag.processor.cpu.modify"   , TYPE_REAL , rVariable::Flags::R__, &m_curSysInfo.m_modifyCPU, U_perc, 0, "Изменение загрузки ЦПУ");
+	m_varList.add("system.diag.processor.memory.free"  , TYPE_UDINT, rVariable::Flags::R__, &m_curSysInfo.m_freeMem  , U_DIMLESS, 0, "Свободная память");
+	m_varList.add("system.diag.processor.memory.modify", TYPE_DINT , rVariable::Flags::R__, &m_curSysInfo.m_modifyMem, U_DIMLESS, 0, "Изменение свободной памяти");
 
 	if (parent) {
 		rVariableClass::linkToExternal(parent);
@@ -286,13 +286,15 @@ UDINT rThreadMaster::generateThreadVars(rInfo* ti, const std::string& alias)
 		return TRITONN_RESULT_OK;
 	}
 
-	m_varList.add("system.diag." + alias + ".work.max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".work.min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".work.avgmax" , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".work.average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".idle.max"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".idle.min"    , TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0);
-	m_varList.add("system.diag." + alias + ".idle.average", TYPE_UDINT , rVariable::Flags::R___, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0);
+	std::string prefix = "system.diag." + alias + ".";
+
+	m_varList.add(prefix + "work.max"    , TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.WorkMax    , U_DIMLESS, 0, "Время выполения. Максимальное");
+	m_varList.add(prefix + "work.min"    , TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.WorkMin    , U_DIMLESS, 0, "Время выполения. Минимальное");
+	m_varList.add(prefix + "work.avgmax" , TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.WorkAvgMax , U_DIMLESS, 0, "Время выполения. Средне-максимальное");
+	m_varList.add(prefix + "work.average", TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.WorkAverage, U_DIMLESS, 0, "Время выполения. Среднее");
+	m_varList.add(prefix + "idle.max"    , TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.IdleMax    , U_DIMLESS, 0, "Время простоя. Максимальное");
+	m_varList.add(prefix + "idle.min"    , TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.IdleMin    , U_DIMLESS, 0, "Время простоя. Минимальное");
+	m_varList.add(prefix + "idle.average", TYPE_UDINT , rVariable::Flags::R__, &ti->m_timeAvr.IdleAverage, U_DIMLESS, 0, "Время простоя. Среднее");
 
 	return TRITONN_RESULT_OK;
 }

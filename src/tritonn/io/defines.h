@@ -1,6 +1,6 @@
 ﻿//=================================================================================================
 //===
-//=== defines.h
+//=== io/defines.h
 //===
 //=== Copyright (c) 2021 by RangeSoft.
 //=== All rights reserved.
@@ -23,5 +23,5 @@ const std::string HARWARE_PREFIX = "hardware.";
 
 const std::string VARNAME_OUTTYPE = "outtype";
 
-};
+}
 

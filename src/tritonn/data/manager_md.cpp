@@ -14,13 +14,9 @@
 //=================================================================================================
 
 
-#include "tritonn_version.h" //TODO после удаления saveKernel удалить и это
-#include "simplefile.h"  //TODO после удаления saveKernel удалить и это
 #include "../data_manager.h"
 #include <string.h>
 #include "../generator_md.h"
-#include "../modbustcpslave_manager.h"
-#include "../opcua_manager.h"
 #include "../data_station.h"
 #include "../data_stream.h"
 #include "../data_selector.h"
@@ -39,21 +35,53 @@
 #include "../io/module_crm.h"
 #include "../io/module_di8do8.h"
 #include "../io/module_fi4.h"
+#include "../interface/modbustcpslave_manager.h"
+#include "../interface/opcua_manager.h"
+
 
 
 UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
+
+	// io
+	rAI          ai;
+	rCounter     fi;
+	rDI          di;
+	rDO          do_;
+	rProve       prove;
+
+	ai.generateMarkDown(md);
+	fi.generateMarkDown(md);
+	di.generateMarkDown(md);
+	do_.generateMarkDown(md);
+	prove.generateMarkDown(md);
+
+	// calc
 	rSampler     smp;
 	rReducedDens rd;
 	rDensSol     ds;
-	rProve       prove;
+	rRVar        rvar;
+	rSelector    sel;
+	rSelector    msel;
+	rStation     stn;
+	rStream      str(&stn);
 
+	sel.generateIO();
+
+	msel.m_setup.Value |= rSelector::Setup::MULTI;
+	msel.generateIO();
+
+	rvar.generateMarkDown(md);
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);
-	prove.generateMarkDown(md);
+	sel.generateMarkDown(md);
+	msel.generateMarkDown(md);
+	str.generateMarkDown(md);
+	stn.generateMarkDown(md);
 
+	// Hardware
 	rModuleAI6 ai6;
 	rModuleCRM crm;
 	rModuleDI8DO8 di8do8;
@@ -63,6 +91,25 @@ UDINT rDataManager::saveMarkDown()
 	crm.generateMarkDown(md);
 	di8do8.generateMarkDown(md);
 	fi4.generateMarkDown(md);
+
+	// Interfaces
+	rModbusTCPSlaveManager mtcps;
+	rOPCUAManager opcua;
+
+	mtcps.generateMarkDown(md);
+	opcua.generateMarkDown(md);
+
+	// Other
+	rSystemVariable sysvar;
+	rReport         prpt;
+	rReport         brpt;
+
+	prpt.m_type = rReport::Type::PERIODIC;
+	brpt.m_type = rReport::Type::BATCH;
+
+	prpt.generateMarkDown(md);
+	brpt.generateMarkDown(md);
+	sysvar.generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);
 
@@ -81,35 +128,13 @@ UDINT rDataManager::SaveKernel()
 	auto msel    = new rSelector();
 	auto denssol = new rDensSol();
 	auto rdcdens = new rReducedDens();
-	rAI ai;
-	rDI di;
-	rDO do_;
-	rCounter fi;
 	rSampler smp;
 	auto rep     = new rReport();
-	auto rvar    = new rRVar();
-	auto mbSlTCP = new rModbusTCPSlaveManager();
-//	auto opcua   = new rOPCUAManager();
 
 	ssel->generateIO();
 
-	msel->m_setup.Value |= SELECTOR_SETUP_MULTI;
+	msel->m_setup.Value |= rSelector::Setup::MULTI;
 	msel->generateIO();
-
-	text += String_format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-						  "<kernel ver=\"%i.%i\" xmlns=\"http://tritonn.ru\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://tritonn.ru ./kernel.xsd\">\n",
-						  TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR);
-
-	text += m_sysVar.saveKernel();
-
-	text += rvar->saveKernel(false, "var", "Переменная", true);
-
-	text += "\n<!-- \n\tIO objects list \n-->\n<io_list>\n";
-	text += ai.saveKernel (true, "ai", "Аналоговый сигнал", true);
-	text += fi.saveKernel (true, "counter", "Частотно-импульсный сигнал", true);
-	text += di.saveKernel (true, "di", "Дискретный входной сигнал", true);
-	text += do_.saveKernel(true, "do", "Дискретный выходной сигнал", true);
-	text += "</io_list>\n";
 
 	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
 	text += smp.saveKernel(false, "sampler", "Пробоотборник", false);
@@ -119,24 +144,13 @@ UDINT rDataManager::SaveKernel()
 	text += msel->saveKernel   (false, "multiselector", "Мультиселектор", true);
 	text += stn->saveKernel    (false, "station", "Станция", true);
 	text += str->saveKernel    (false, "stream", "Линия", false);
-	rep->Type = REPORT_PERIODIC;
-	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
-	rep->Type = REPORT_BATCH;
-	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
+//	rep->Type = REPORT_PERIODIC;
+//	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
+//	rep->Type = REPORT_BATCH;
+//	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
 	text += "</objects>\n";
-
-	text += "\n<!-- \nExternal interfaces \n-->\n<interfaces>\n";
-	text += mbSlTCP->saveKernel("ModbusSlaveTCP", "Модбас слейв TCP");
-//	opcua->SaveKernel(file, "OPCUA", "OPC UA server");
-	text += "</interfaces>\n";
-
 	text += "\n</kernel>";
 
-	UDINT result = SimpleFileSave(DIR_FTP + "kernel.xml", text);
-
-//	delete opcua;
-	delete mbSlTCP;
-	delete rvar;
 	delete rep;
 	delete rdcdens;
 	delete denssol;
@@ -145,6 +159,6 @@ UDINT rDataManager::SaveKernel()
 	delete str;
 	delete stn;
 
-	return result;
+	return 0;
 }
 

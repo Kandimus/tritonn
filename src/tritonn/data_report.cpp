@@ -29,9 +29,14 @@
 #include "simplefile.h"
 #include "data_report.h"
 #include "xml_util.h"
+#include "comment_defines.h"
+#include "generator_md.h"
 
 rBitsArray rReport::m_flagsType;
 rBitsArray rReport::m_flagsPeriod;
+rBitsArray rReport::m_flagsStatus;
+rBitsArray rReport::m_flagsMark;
+rBitsArray rReport::m_flagsCommand;
 
 void rReportTime::SetCurTime()
 {
@@ -42,109 +47,90 @@ void rReportTime::SetCurTime()
 //
 void rReportTime::generateVars(const string &prefix, rVariable::Flags flags, UDINT access, rVariableList& list)
 {
-	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access);
-	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access);
-	list.add(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access);
-	list.add(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access);
-	list.add(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access);
-	list.add(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access);
+	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access, COMMENT::SECONDS);
+	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access, COMMENT::MINUTES);
+	list.add(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access, COMMENT::HOURS);
+	list.add(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access, COMMENT::DAY);
+	list.add(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access, COMMENT::MONTH);
+	list.add(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access, COMMENT::YEAR);
 }
 
 
-rReportItem::rReportItem()
+rReport::rItem::rItem(rReport::rItem& src)
 {
-	Value = 0.0;
-	Name  = "";
+	m_name = src.m_name;
 }
 
-rReportItem::rReportItem(rReportItem &src)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+rReport::rTotal::rTotal(rReport::rTotal& src)
 {
-	Name = src.Name;
+	m_source     = nullptr;
+	m_alias      = "";
+	m_name       = src.m_name;
+	m_unitMass   = src.m_unitMass;
+	m_unitVolume = src.m_unitVolume;
+
+	for (auto item : src.m_items) {
+		m_items.push_back(new rReport::rItem(*item));
+	}
 }
 
-rReportItem::~rReportItem()
+rReport::rTotal::~rTotal()
 {
-	Name = "";
+	m_source = nullptr;
+	for (auto item : m_items) {
+		if(item) delete item;
+	}
+	m_items.clear();
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-rReportTotal::rReportTotal()
+rReport::rDataset::rDataset()
 {
-	Source = nullptr;
-}
-
-rReportTotal::rReportTotal(rReportTotal &src)
-{
-	Source     = nullptr;
-	Alias      = "";
-	Name       = src.Name;
-	UnitMass   = src.UnitMass;
-	UnitVolume = src.UnitVolume;
-
-	for(UDINT ii = 0; ii < src.Items.size(); ++ii)
-	{
-		Items.push_back(new rReportItem(*src.Items[ii]));
-	}
-}
-
-rReportTotal::~rReportTotal()
-{
-	Source = nullptr;
-	for(UDINT ii = 0; ii < Items.size(); ++ii)
-	{
-		if(Items[ii]) delete Items[ii];
-	}
-	Items.clear();
+	m_mark = rReport::Mark::UNDEF;
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-rReportDataset::rReportDataset()
+rReport::rDataset::~rDataset()
 {
-	Mark = REPORT_MARK_UNDEF;
+	clear();
 }
 
 
-rReportDataset::~rReportDataset()
+void rReport::rDataset::clear()
 {
-	Clear();
-}
-
-
-void rReportDataset::Clear()
-{
-	for(UDINT ii = 0; ii < AverageItems.size(); ++ii)
-	{
-		if(AverageItems[ii]) delete AverageItems[ii];
+	for (auto item : m_averageItems) {
+		if(item) {
+			delete item;
+		}
 	}
 
-	for(UDINT ii = 0; ii < SnapshotItems.size(); ++ii)
-	{
-		if(SnapshotItems[ii]) delete SnapshotItems[ii];
+	for (auto item : m_snapshotItems) {
+		if(item) {
+			delete item;
+		}
 	}
 
-	AverageItems.clear();
-	SnapshotItems.clear();
+	m_averageItems.clear();
+	m_snapshotItems.clear();
 }
 
 
-void rReportDataset::CreateFrom(rReportDataset &ds)
+void rReport::rDataset::createFrom(rReport::rDataset& ds)
 {
-	Clear();
+	clear();
 
-	for(UDINT ii = 0; ii < ds.AverageItems.size(); ++ii)
-	{
-		AverageItems.push_back(new rReportTotal(*ds.AverageItems[ii]));
+	for (auto item : ds.m_averageItems) {
+		m_averageItems.push_back(new rReport::rTotal(*item));
 	}
 
-	for(UDINT ii = 0; ii < ds.SnapshotItems.size(); ++ii)
-	{
-		SnapshotItems.push_back(new rReportItem(*ds.SnapshotItems[ii]));
+	for (auto item : ds.m_snapshotItems) {
+		m_snapshotItems.push_back(new rReport::rItem(*item));
 	}
 }
 
@@ -155,37 +141,55 @@ rReport::rReport() : rSource()
 {
 	if (m_flagsType.empty()) {
 		m_flagsType
-				.add("PERIODIC", REPORT_PERIODIC)
-				.add("BATCH"   , REPORT_BATCH);
+				.add("PERIODIC", static_cast<UINT>(Type::PERIODIC), "Переодический отчет")
+				.add("BATCH"   , static_cast<UINT>(Type::BATCH)   , "Партионный отчет");
 	}
 
 	if (m_flagsPeriod.empty()) {
 		m_flagsPeriod
-				.add("HOUR"     , REPORT_PERIOD_HOUR)
-				.add("2HOUR"    , REPORT_PERIOD_2HOUR)
-				.add("3HOUR"    , REPORT_PERIOD_3HOUR)
-				.add("4HOUR"    , REPORT_PERIOD_4HOUR)
-				.add("6HOUR"    , REPORT_PERIOD_6HOUR)
-				.add("8HOUR"    , REPORT_PERIOD_8HOUR)
-				.add("12HOUR"   , REPORT_PERIOD_12HOUR)
-				.add("DAYLY"    , REPORT_PERIOD_DAYLY)
-				.add("WEEKLY"   , REPORT_PERIOD_WEEKLY)
-				.add("BIWEEKLY" , REPORT_PERIOD_BIWEEKLY)
-				.add("MONTHLY"  , REPORT_PERIOD_MONTHLY)
-				.add("QUARTERLY", REPORT_PERIOD_QUARTERLY)
-				.add("ANNUAL"   , REPORT_PERIOD_ANNUAL)
-				.add("5MIN"     , REPORT_PERIOD_5MIN)
-				.add("15MIN"    , REPORT_PERIOD_15MIN);
-
+				.add("HOUR"     , static_cast<UINT>(Period::HOUR)     , "Часовой отчет")
+				.add("2HOUR"    , static_cast<UINT>(Period::HOUR_2)   , "Двухчасовой отчет")
+				.add("3HOUR"    , static_cast<UINT>(Period::HOUR_3)   , "Трехчасовой отчет")
+				.add("4HOUR"    , static_cast<UINT>(Period::HOUR_4)   , "Четырехчасовой отчет")
+				.add("6HOUR"    , static_cast<UINT>(Period::HOUR_6)   , "Шестичасовой отчет")
+				.add("8HOUR"    , static_cast<UINT>(Period::HOUR_8)   , "Восьмичасовой отчет")
+				.add("12HOUR"   , static_cast<UINT>(Period::HOUR_12)  , "Двенадцатичасовой отчет")
+				.add("DAYLY"    , static_cast<UINT>(Period::DAYLY)    , "Суточный отчет")
+				.add("WEEKLY"   , static_cast<UINT>(Period::WEEKLY)   , "Недельный отчет")
+				.add("BIWEEKLY" , static_cast<UINT>(Period::BIWEEKLY) , "Двухнедельный отчет")
+				.add("MONTHLY"  , static_cast<UINT>(Period::MONTHLY)  , "Месячный отчет")
+				.add("QUARTERLY", static_cast<UINT>(Period::QUARTERLY), "Квартальный отчет")
+				.add("ANNUAL"   , static_cast<UINT>(Period::ANNUAL)   , "Годовой отчет")
+				.add("5MIN"     , static_cast<UINT>(Period::MIN_5)    , "Пятиминутный отчет (только для тестирования)")
+				.add("15MIN"    , static_cast<UINT>(Period::MIN_15)   , "Пятнадцатиминутный отчет (только для тестирования)");
 	}
 
-	Status = REPORT_STATUS_IDLE;
-}
+	if (m_flagsStatus.empty()) {
+		m_flagsStatus
+				.add("", static_cast<UINT>(Status::IDLE)     , "Не запущен")
+				.add("", static_cast<UINT>(Status::RUNNING)  , "Запущен")
+				.add("", static_cast<UINT>(Status::WAITING)  , "В паузе")
+				.add("", static_cast<UINT>(Status::COMPLETED), "Заверщен");
+	}
 
+	if (m_flagsMark.empty()) {
+		m_flagsMark
+				.add("", static_cast<UINT>(Mark::UNDEF)     , COMMENT::STATUS_UNDEF)
+				.add("", static_cast<UINT>(Mark::ILLEGAL)   , "Недействительный")
+				.add("", static_cast<UINT>(Mark::INCOMPLETE), "Неполный")
+				.add("", static_cast<UINT>(Mark::VALIDATE)  , "Действительный")
+				.add("", static_cast<UINT>(Mark::INPROGRESS), "В работе");
+	}
 
-rReport::~rReport()
-{
-	;
+	if (m_flagsCommand.empty()) {
+		m_flagsCommand
+				.add("", static_cast<UINT>(Command::NONE)   , COMMENT::COMMAND_NONE)
+				.add("", static_cast<UINT>(Command::START)  , COMMENT::COMMAND_START)
+				.add("", static_cast<UINT>(Command::STOP)   , COMMENT::COMMAND_STOP)
+				.add("", static_cast<UINT>(Command::RESTART), "Перезапустить");
+	}
+
+	m_status = Status::IDLE;
 }
 
 
@@ -206,8 +210,8 @@ UDINT rReport::calculate()
 	}
 
 	// Обработка периодических отчетов
-	if (Type == REPORT_PERIODIC) {
-		if (Status == REPORT_STATUS_RUNNING) {
+	if (m_type == Type::PERIODIC) {
+		if (m_status == Status::RUNNING) {
 			// Проверка на завершение отчета
 			if (CheckFinishPeriodic()) {
 				Store();
@@ -215,66 +219,61 @@ UDINT rReport::calculate()
 			}
 
 		// Проверка на незавершенный отчет при WarmStart
-		} else if (Status == REPORT_STATUS_IDLE) {
-			if (Present.StartTime._UNIX) {
+		} else if (m_status == Status::IDLE) {
+			if (m_present.StartTime._UNIX) {
 				Time64_T curtime = timegm64(NULL);
 
 				// Если время отчета уже вышло, то сохраняем его с меткой "недействительный"
-				if(curtime - Present.StartTime._UNIX >= GetUNIXPeriod())
+				if(curtime - m_present.StartTime._UNIX >= GetUNIXPeriod())
 				{
-					Present.Mark = REPORT_MARK_ILLEGAL;
+					m_present.m_mark = rReport::Mark::ILLEGAL;
 					Store();
 					Start();
-					Present.Mark = REPORT_MARK_INCOMPLETE;
+					m_present.m_mark = rReport::Mark::INCOMPLETE;
 				}
 				// Если время еще не вышло, то сохраняем с меткой "неполный"
 				else
 				{
-					Present.Mark = REPORT_MARK_INCOMPLETE;
+					m_present.m_mark = rReport::Mark::INCOMPLETE;
 				}
 			}
 		}
 	}
 	// Обработка партионных отчетов
-	else if (Type == REPORT_BATCH) {
+	else if (m_type == Type::BATCH) {
 		;
 	} else {
 		return 1;
 	}
 
-
-	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii) {
-		rReportTotal *total    = Present.AverageItems[ii];
-		LREAL         oldmass = 0.0;
-		LREAL         curmass = 0.0;
-		LREAL         inc     = 0.0;
+	for(auto avr : m_present.m_averageItems) {
+		LREAL oldmass = 0.0;
+		LREAL curmass = 0.0;
+		LREAL inc     = 0.0;
 
 		// Прирост нарастающих за этот цикл
-		inc     = rTotal::Sub(total->Source->Present.Mass, total->FinalTotal.Mass);
+		inc     = ::rTotal::Sub(avr->m_source->Present.Mass, avr->m_finalTotal.Mass);
 		// Общая масса на прошлом цикле (сколько прокачали до этого цикла)
-		oldmass = rTotal::Sub(total->FinalTotal.Mass     , total->StartTotal.Mass);
+		oldmass = ::rTotal::Sub(avr->m_finalTotal.Mass     , avr->m_startTotal.Mass);
 		// Общая масса на текущем цикле (сколько прокачали на этом цикле)
-		curmass = rTotal::Sub(total->Source->Present.Mass, total->StartTotal.Mass);
+		curmass = ::rTotal::Sub(avr->m_source->Present.Mass, avr->m_startTotal.Mass);
 
 		// Сохраняем нарастающие
-		total->FinalTotal = total->Source->Present;
+		avr->m_finalTotal = avr->m_source->Present;
 
 		// Устредняем
-		for(UDINT jj = 0; jj < total->Items.size(); ++jj)
-		{
-			rReportItem *itm = total->Items[ii];
-
-			itm->Source.calculate();
+		for(auto item : avr->m_items) {
+			item->m_source.calculate();
 
 			if(curmass <= 0.0) continue;
 
-			itm->Value = ((itm->Value * inc) + (itm->Source.m_value * oldmass)) / curmass;
+			item->m_value = ((item->m_value * inc) + (item->m_source.m_value * oldmass)) / curmass;
 		}
 	}
 
-	for(auto item : Present.SnapshotItems) {
-		item->Source.calculate();
-		item->Value = item->Source.m_value;
+	for(auto item : m_present.m_snapshotItems) {
+		item->m_source.calculate();
+		item->m_value = item->m_source.m_value;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -287,48 +286,39 @@ UDINT rReport::calculate()
 
 //-------------------------------------------------------------------------------------------------
 //
-void rReportDataset::generateVars(const string &prefix, rVariableList& list)
+void rReport::rDataset::generateVars(const string &prefix, rVariableList& list)
 {
 	string name = "";
 
-	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS__, &Mark, U_DIMLESS, ACCESS_SA);
+	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS_, &m_mark, U_DIMLESS, ACCESS_SA, COMMENT::STATUS + rReport::m_flagsMark.getInfo(true));
 
-	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS__, ACCESS_SA, list);
-	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS__, ACCESS_SA, list);
+	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS_, ACCESS_SA, list);
+	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS_, ACCESS_SA, list);
 
 	// Формируем переменые
-	for(UDINT ii = 0; ii < AverageItems.size(); ++ii)
-	{
-		rReportTotal *tot = AverageItems[ii];
+	for (auto tot :  m_averageItems) {
+		name = prefix + tot->m_name + ".total.";
 
-		name = prefix + tot->Name + ".total.";
+		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS_, &tot->m_startTotal.Mass    , tot->m_unitMass  , ACCESS_SA, COMMENT::BEGIN + COMMENT::MASS);
+		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS_, &tot->m_startTotal.Volume  , tot->m_unitVolume, ACCESS_SA, COMMENT::BEGIN + COMMENT::VOLUME);
+		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS_, &tot->m_startTotal.Volume15, tot->m_unitVolume, ACCESS_SA, COMMENT::BEGIN + COMMENT::VOLUME15);
+		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS_, &tot->m_startTotal.Volume20, tot->m_unitVolume, ACCESS_SA, COMMENT::BEGIN + COMMENT::VOLUME20);
+		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS_, &tot->m_finalTotal.Mass    , tot->m_unitMass  , ACCESS_SA, COMMENT::END   + COMMENT::MASS);
+		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS_, &tot->m_finalTotal.Volume  , tot->m_unitVolume, ACCESS_SA, COMMENT::END   + COMMENT::VOLUME);
+		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS_, &tot->m_finalTotal.Volume15, tot->m_unitVolume, ACCESS_SA, COMMENT::END   + COMMENT::VOLUME15);
+		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS_, &tot->m_finalTotal.Volume20, tot->m_unitVolume, ACCESS_SA, COMMENT::END   + COMMENT::VOLUME20);
 
-		list.add(name + "begin.mass"    , TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Mass    , tot->UnitMass  , ACCESS_SA);
-		list.add(name + "begin.volume"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume  , tot->UnitVolume, ACCESS_SA);
-		list.add(name + "begin.volume15", TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume15, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "begin.volume20", TYPE_LREAL, rVariable::Flags::RS__, &tot->StartTotal.Volume20, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.mass"      , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Mass    , tot->UnitMass  , ACCESS_SA);
-		list.add(name + "end.volume"    , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume  , tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.volume15"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume15, tot->UnitVolume, ACCESS_SA);
-		list.add(name + "end.volume20"  , TYPE_LREAL, rVariable::Flags::RS__, &tot->FinalTotal.Volume20, tot->UnitVolume, ACCESS_SA);
+		name = prefix + tot->m_name + ".";
 
-		name = prefix + tot->Name + ".";
-
-		for(UDINT jj = 0; jj < tot->Items.size(); ++jj)
-		{
-			rReportItem *itm = tot->Items[jj];
-
-			list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA);
+		for (auto item : tot->m_items) {
+			list.add(name + item->m_name, TYPE_LREAL, rVariable::Flags::RS_, &item->m_value, item->m_source.getSourceUnit(), ACCESS_SA, "Значение устредняемого параметра");
 		}
 	}
 
 	name = prefix + "snapshot.";
 
-	for(UDINT ii = 0; ii < SnapshotItems.size(); ++ii)
-	{
-		rReportItem *itm = SnapshotItems[ii];
-
-		list.add(name + itm->Name, TYPE_LREAL, rVariable::Flags::RS__, &itm->Value, itm->Source.getSourceUnit(), ACCESS_SA);
+	for(auto item : m_snapshotItems) {
+		list.add(name + item->m_name, TYPE_LREAL, rVariable::Flags::RS_, &item->m_value, item->m_source.getSourceUnit(), ACCESS_SA, "Значение не устредняемого параметра");
 	}
 }
 
@@ -343,24 +333,21 @@ UDINT rReport::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Общие переменные для всех типов отчетов
-	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R___, &Type         , U_DIMLESS, 0);
-	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT);
+	list.add(name + "type"               , TYPE_UINT , rVariable::Flags::R__, &m_type       , U_DIMLESS, 0, "Тип отчета:<br/>" + m_flagsType.getInfo(true));
+	list.add(name + "archive.load.accept", TYPE_UINT , rVariable::Flags::___, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT, "Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет");
 
-	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::____, ACCESS_REPORT, list);
+	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::___, ACCESS_REPORT, list);
 
-	if(REPORT_PERIODIC == Type)
-	{
-		list.add(name + "period", TYPE_UINT, rVariable::Flags::____, &Period, U_DIMLESS, 0);
-	}
-	else
-	{
-		list.add(name + "command", TYPE_USINT, rVariable::Flags::____, &Command, U_DIMLESS, ACCESS_BATCH);
-		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R___, &Status , U_DIMLESS, 0);
+	if (m_type == Type::PERIODIC) {
+		list.add(name + "period", TYPE_UINT, rVariable::Flags::___, &m_period, U_DIMLESS, 0, "Период отчета:<br/>" + m_flagsPeriod.getInfo(true));
+	} else {
+		list.add(name + "command", TYPE_USINT, rVariable::Flags::___, &m_command.Value, U_DIMLESS, ACCESS_BATCH, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R__, &m_status       , U_DIMLESS, 0           , COMMENT::STATUS  + m_flagsStatus.getInfo(true));
 	}
 
-	Present.generateVars  (name + "present."  , list);
-	Completed.generateVars(name + "completed.", list);
-	Archive.generateVars  (name + "archive."  , list);
+	m_present.generateVars  (name + "present."  , list);
+	m_completed.generateVars(name + "completed.", list);
+	m_archive.generateVars  (name + "archive."  , list);
 
 	return TRITONN_RESULT_OK;
 }
@@ -397,7 +384,7 @@ tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, 
 //
 UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strType = XmlUtils::getAttributeString(element, XmlName::TYPE, m_flagsType.getNameByBits(REPORT_PERIODIC));
+	std::string strType = XmlUtils::getAttributeString(element, XmlName::TYPE, m_flagsType.getNameByBits(static_cast<UINT>(Type::PERIODIC)));
 	UDINT fault = 0;
 
 	if (TRITONN_RESULT_OK != rSource::loadFromXML(element, err, prefix)) {
@@ -409,23 +396,23 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	tinyxml2::XMLElement* dsname  = element->FirstChildElement(XmlName::DATASET);
 
 	// Тип отчета
-	Type = m_flagsType.getValue(strType, fault);
+	m_type = static_cast<Type>(m_flagsType.getValue(strType, fault));
 
-	if ((Type == REPORT_PERIODIC && !period) || !dsname || fault) {
+	if ((m_type == Type::PERIODIC && !period) || !dsname || fault) {
 		return err.set(DATACFGERR_REPORT, element->GetLineNum());
 	}
 
 	// Время хранения отчета
-	Storage = XmlUtils::getTextUINT(storage, REPORT_DEFAULT_STORAGE, fault);
-	if (Storage == 0 || fault) {
+	m_storage = XmlUtils::getTextUINT(storage, REPORT_DEFAULT_STORAGE, fault);
+	if (m_storage == 0 || fault) {
 		return err.set(DATACFGERR_REPORT, element->GetLineNum(), "invalid storage");
 	}
 
 	// Загрузка периодических отчетов
-	if (REPORT_PERIODIC == Type) {
+	if (m_type == Type::PERIODIC) {
 		string strPeriod = XmlUtils::getTextString(element->FirstChildElement(XmlName::PERIOD), "", fault);
 
-		Period = m_flagsPeriod.getBit(strPeriod, fault);
+		m_period = static_cast<Period>(m_flagsPeriod.getBit(strPeriod, fault));
 
 		if (fault) {
 			return err.set(DATACFGERR_REPORT, element->GetLineNum(), "undefined report period");
@@ -443,30 +430,30 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	// Перебираем станции и линии в dataset
 	// Заполняем только объект Present
 	XML_FOR(total_xml, dataset, XmlName::TOTALS) {
-		auto tot = new rReportTotal();
+		auto tot = new rReport::rTotal();
 
-		Present.AverageItems.push_back(tot);
+		m_present.m_averageItems.push_back(tot);
 
-		tot->Source = nullptr;
-		tot->Name   = XmlUtils::getAttributeString(total_xml, XmlName::NAME , "");
-		tot->Alias  = XmlUtils::getAttributeString(total_xml, XmlName::ALIAS, "");
+		tot->m_source = nullptr;
+		tot->m_name   = XmlUtils::getAttributeString(total_xml, XmlName::NAME , "");
+		tot->m_alias  = XmlUtils::getAttributeString(total_xml, XmlName::ALIAS, "");
 
-		if (tot->Name.empty() || tot->Alias.empty()) {
+		if (tot->m_name.empty() || tot->m_alias.empty()) {
 			return err.set(DATACFGERR_REPORT, total_xml->GetLineNum(), "undefined name");
 		}
 
 		XML_FOR(item_xml, total_xml, XmlName::ITEM) {
-			rReportItem* item = new rReportItem();
+			auto item = new rReport::rItem();
 
-			tot->Items.push_back(item);
+			tot->m_items.push_back(item);
 
-			item->Name = XmlUtils::getAttributeString(item_xml, XmlName::NAME, "");
+			item->m_name = XmlUtils::getAttributeString(item_xml, XmlName::NAME, "");
 
-			if (item->Name.empty()) {
+			if (item->m_name.empty()) {
 				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
 			}
 
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->Source)) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_source)) {
 				return err.getError();
 			}
 		}
@@ -478,24 +465,24 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 	if(snapshots_xml != nullptr)
 	{
 		XML_FOR(item_xml, snapshots_xml, XmlName::ITEM) {
-			rReportItem* item = new rReportItem();
+			auto item = new rReport::rItem();
 
-			Present.SnapshotItems.push_back(item);
+			m_present.m_snapshotItems.push_back(item);
 
-			item->Name = XmlUtils::getAttributeString(item_xml, XmlName::NAME, "");
+			item->m_name = XmlUtils::getAttributeString(item_xml, XmlName::NAME, "");
 
-			if (item->Name.empty()) {
+			if (item->m_name.empty()) {
 				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
 			}
 
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->Source)) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_source)) {
 				return err.getError();
 			}
 		}
 	}
 
-	Completed.CreateFrom(Present);
-	Archive.CreateFrom(Present);
+	m_completed.createFrom(m_present);
+	m_archive.createFrom(m_present);
 
 	reinitLimitEvents();
 
@@ -504,68 +491,45 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-std::string rReport::saveKernel(UDINT isio, const string &objname, const string &comment, UDINT isglobal)
-{
-	Present.AverageItems.push_back(new rReportTotal());
-	Present.AverageItems.back()->Name = "#totalsource_1";
-	Present.AverageItems.back()->Items.push_back(new rReportItem());
-	Present.AverageItems.back()->Items.back()->Name = "#item_1";
-	Present.AverageItems.back()->Items.push_back(new rReportItem());
-	Present.AverageItems.back()->Items.back()->Name = "#item_2";
-
-	Present.SnapshotItems.push_back(new rReportItem());
-	Present.SnapshotItems.back()->Name = "#item_1";
-	Present.SnapshotItems.push_back(new rReportItem());
-	Present.SnapshotItems.back()->Name = "#item_2";
-
-	Completed.CreateFrom(Present);
-	Archive.CreateFrom(Present);
-
-	return rSource::saveKernel(isio, objname, comment, isglobal);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 UDINT rReport::Store()
 {
-	Present.FinalTime.SetCurTime();
+	m_present.FinalTime.SetCurTime();
 
-	Completed.Mark      = Present.Mark;
-	Completed.StartTime = Present.StartTime;
-	Completed.FinalTime = Present.FinalTime;
+	m_completed.m_mark    = m_present.m_mark;
+	m_completed.StartTime = m_present.StartTime;
+	m_completed.FinalTime = m_present.FinalTime;
 //	TimeStartUNIX       = 0;
 //	TimeFinishUNIX      = 0;
-	Status              = REPORT_STATUS_COMPLETED;
+	m_status            = Status::COMPLETED;
 
-	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii)
-	{
-		rReportTotal *p_total = Present.AverageItems[ii];
-		rReportTotal *c_total = Completed.AverageItems[ii];
+	for (UDINT ii = 0; ii < m_present.m_averageItems.size(); ++ii) {
+		auto p_total = m_present.m_averageItems[ii];
+		auto c_total = m_completed.m_averageItems[ii];
 
-		c_total->StartTotal = p_total->StartTotal;
-		c_total->FinalTotal = p_total->FinalTotal;
+		c_total->m_startTotal = p_total->m_startTotal;
+		c_total->m_finalTotal = p_total->m_finalTotal;
 
-		rTotal::Clear(p_total->StartTotal);
-		rTotal::Clear(p_total->FinalTotal);
+		::rTotal::clear(p_total->m_startTotal);
+		::rTotal::clear(p_total->m_finalTotal);
 
-		for(UDINT jj = 0; jj < p_total->Items.size(); ++jj)
+		for(UDINT jj = 0; jj < p_total->m_items.size(); ++jj)
 		{
-			rReportItem *p_itm = p_total->Items[ii];
-			rReportItem *c_itm = c_total->Items[ii];
+			auto p_itm = p_total->m_items[ii];
+			auto c_itm = c_total->m_items[ii];
 
-			c_itm->Value = p_itm->Value;
-			p_itm->Value = 0.0;
+			c_itm->m_value = p_itm->m_value;
+			p_itm->m_value = 0.0;
 		}
 	}
 
-	for(UDINT ii = 0; ii < Present.SnapshotItems.size(); ++ii)
+	for(UDINT ii = 0; ii < m_present.m_snapshotItems.size(); ++ii)
 	{
-		rReportItem *p_itm = Present.SnapshotItems[ii];
-		rReportItem *c_itm = Completed.SnapshotItems[ii];
+		auto p_itm = m_present.m_snapshotItems[ii];
+		auto c_itm = m_completed.m_snapshotItems[ii];
 
-		c_itm->Value = p_itm->Value;
-		p_itm->Value = 0.0;
+		c_itm->m_value = p_itm->m_value;
+		p_itm->m_value = 0.0;
 	}
 
 	rEventManager::instance().Add(reinitEvent(EID_REPORT_GENERATED));
@@ -579,16 +543,13 @@ UDINT rReport::Store()
 
 UDINT rReport::Start()
 {
-	Present.StartTime.SetCurTime();
-	Present.Mark  = REPORT_MARK_INPROGRESS;
-	Status        = REPORT_STATUS_RUNNING;
+	m_present.StartTime.SetCurTime();
+	m_present.m_mark = Mark::INPROGRESS;
+	m_status         = Status::RUNNING;
 
-	for(UDINT ii = 0; ii < Present.AverageItems.size(); ++ii)
-	{
-		rReportTotal *total = Present.AverageItems[ii];
-
-		total->StartTotal = total->Source->Present;
-		total->FinalTotal = total->Source->Present;
+	for (auto item : m_present.m_averageItems) {
+		item->m_startTotal = item->m_source->Present;
+		item->m_finalTotal = item->m_source->Present;
 	}
 
 	return 0;
@@ -619,7 +580,7 @@ void PrintElement(tinyxml2::XMLPrinter &printer, const string &name, LREAL value
 
 
 //-------------------------------------------------------------------------------------------------
-void rReportTime::Print(tinyxml2::XMLPrinter &printer, const char *name)
+void rReportTime::Print(tinyxml2::XMLPrinter& printer, const char* name)
 {
 	printer.OpenElement(name);
 
@@ -634,17 +595,17 @@ void rReportTime::Print(tinyxml2::XMLPrinter &printer, const char *name)
 }
 
 
-void rReportItem::Print(tinyxml2::XMLPrinter &printer)
+void rReport::rItem::print(tinyxml2::XMLPrinter& printer)
 {
-	printer.OpenElement("variable");
-	printer.PushAttribute("name", Name.c_str());
+	printer.OpenElement(XmlName::VARIABLE);
+	printer.PushAttribute(XmlName::NAME, m_name.c_str());
 
-	printer.OpenElement("value");
-	printer.PushText(Value);
+	printer.OpenElement(XmlName::VALUE);
+	printer.PushText(m_value);
 	printer.CloseElement();
 
-	printer.OpenElement("unit");
-	printer.PushText(Source.getSourceUnit());
+	printer.OpenElement(XmlName::UNIT);
+	printer.PushText(m_source.getSourceUnit());
 	printer.CloseElement();
 
 	printer.CloseElement();
@@ -653,32 +614,31 @@ void rReportItem::Print(tinyxml2::XMLPrinter &printer)
 
 
 
-void rReportTotal::PrintTotals(tinyxml2::XMLPrinter &printer, const char *name, rBaseTotal &total)
+void rReport::rTotal::printTotals(tinyxml2::XMLPrinter& printer, const char* name, const rBaseTotal& total)
 {
 	printer.OpenElement(name);
 
-	PrintElement(printer, "mass"    , total.Mass    , UnitMass);
-	PrintElement(printer, "volume"  , total.Volume  , UnitVolume);
-	PrintElement(printer, "volume15", total.Volume15, UnitVolume);
-	PrintElement(printer, "volume20", total.Volume20, UnitVolume);
+	PrintElement(printer, "mass"    , total.Mass    , m_unitMass);
+	PrintElement(printer, "volume"  , total.Volume  , m_unitVolume);
+	PrintElement(printer, "volume15", total.Volume15, m_unitVolume);
+	PrintElement(printer, "volume20", total.Volume20, m_unitVolume);
 
 	printer.CloseElement();
 }
 
 
-void rReportTotal::Print(tinyxml2::XMLPrinter &printer)
+void rReport::rTotal::print(tinyxml2::XMLPrinter& printer)
 {
-	printer.OpenElement("group"); printer.PushAttribute("name", Name.c_str());
+	printer.OpenElement("group"); printer.PushAttribute(XmlName::NAME, m_name.c_str());
 
 	printer.OpenElement("totals");
-	PrintTotals(printer, "start", StartTotal);
-	PrintTotals(printer, "final", FinalTotal);
+	printTotals(printer, "start", m_startTotal);
+	printTotals(printer, "final", m_finalTotal);
 	printer.CloseElement(); // totals
 
-	printer.OpenElement("variables");
-	for(UDINT jj = 0; jj < Items.size(); ++jj)
-	{
-		Items[jj]->Print(printer);
+	printer.OpenElement(XmlName::VARIABLES);
+	for (auto item : m_items) {
+		item->print(printer);
 	}
 	printer.CloseElement(); // vars
 
@@ -686,10 +646,10 @@ void rReportTotal::Print(tinyxml2::XMLPrinter &printer)
 }
 
 
-void rReportDataset::Print(tinyxml2::XMLPrinter &printer)
+void rReport::rDataset::print(tinyxml2::XMLPrinter& printer)
 {
 	printer.OpenElement("mark");
-	printer.PushText(Mark);
+	printer.PushText(static_cast<UINT>(m_mark));
 	printer.CloseElement();
 
 	printer.OpenElement("time");
@@ -700,15 +660,13 @@ void rReportDataset::Print(tinyxml2::XMLPrinter &printer)
 	printer.OpenElement("data");
 
 	// Формируем переменые для Dataset
-	for(UDINT ii = 0; ii < AverageItems.size(); ++ii)
-	{
-		AverageItems[ii]->Print(printer);
+	for (auto item : m_averageItems) {
+		item->print(printer);
 	}
 
 	printer.OpenElement("snapshot");
-	for(UDINT ii = 0; ii < SnapshotItems.size(); ++ii)
-	{
-		SnapshotItems[ii]->Print(printer);
+	for (auto item : m_snapshotItems) {
+		item->print(printer);
 	}
 	printer.CloseElement(); // snapshot
 	printer.CloseElement(); // data
@@ -726,25 +684,23 @@ UDINT rReport::SaveToXML(UDINT present)
 	printer.OpenElement("report");
 
 	printer.OpenElement("type");
-	printer.PushText(Type);
+	printer.PushText(static_cast<UINT>(m_type));
 	printer.CloseElement();
 
-	if(REPORT_PERIODIC == Type)
-	{
+	if (m_type == Type::PERIODIC) {
 		printer.OpenElement("period");
-		printer.PushText(Period);
+		printer.PushText(static_cast<UINT>(m_period));
 		printer.CloseElement(); //TODO Нужно сюда писать описание а не число
 	}
 
-	if(present)
-	{
-		Present.Print(printer);
-		reptime = Present.StartTime;
+	if(present) {
+		m_present.print(printer);
+		reptime = m_present.StartTime;
 	}
 	else
 	{
-		Completed.Print(printer);
-		reptime = Completed.StartTime;
+		m_completed.print(printer);
+		reptime = m_completed.StartTime;
 	}
 
 	printer.CloseElement(); // report
@@ -754,8 +710,7 @@ UDINT rReport::SaveToXML(UDINT present)
 	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), m_alias.c_str(), reptime._UNIX);
 	UDINT   result  = SimpleFileSave(filename, printer.CStr());
 
-	if(result != TRITONN_RESULT_OK)
-	{
+	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().Add(reinitEvent(EID_REPORT_GENERATED) << result);
 		return 0;
 	}
@@ -766,23 +721,25 @@ UDINT rReport::SaveToXML(UDINT present)
 
 UDINT rReport::GetUNIXPeriod()
 {
-	switch(Period)
+	switch(m_period)
 	{
-		case REPORT_PERIOD_HOUR     : return 3600;
-		case REPORT_PERIOD_2HOUR    : return 3600  * 2;
-		case REPORT_PERIOD_3HOUR    : return 3600  * 3;
-		case REPORT_PERIOD_4HOUR    : return 3600  * 4;
-		case REPORT_PERIOD_6HOUR    : return 3600  * 6;
-		case REPORT_PERIOD_8HOUR    : return 3600  * 8;
-		case REPORT_PERIOD_12HOUR   : return 3600  * 12;
-		case REPORT_PERIOD_DAYLY    : return 3600  * 24;
-		case REPORT_PERIOD_WEEKLY   : return 86400 * 7;
-		case REPORT_PERIOD_BIWEEKLY : return 86400 * 14;
-		case REPORT_PERIOD_MONTHLY  : return 86400 * DayInMonthShift(Present.StartTime._TM.tm_year, Present.StartTime._TM.tm_mon);
-		case REPORT_PERIOD_QUARTERLY: return 86400 * DayInMonthShift(Present.StartTime._TM.tm_year, Present.StartTime._TM.tm_mon) + 86400 * DayInMonthShift(Present.StartTime._TM.tm_year, Present.StartTime._TM.tm_mon + 1) + 86400 * DayInMonthShift(Present.StartTime._TM.tm_year, Present.StartTime._TM.tm_mon + 2);
-		case REPORT_PERIOD_ANNUAL   : return 86400 * (365 + IsLeapYear(Present.StartTime._TM.tm_year));
-		case REPORT_PERIOD_5MIN     : return 60 * 5;
-		case REPORT_PERIOD_15MIN    : return 60 * 15;
+		case Period::HOUR     : return 3600;
+		case Period::HOUR_2   : return 3600  * 2;
+		case Period::HOUR_3   : return 3600  * 3;
+		case Period::HOUR_4   : return 3600  * 4;
+		case Period::HOUR_6   : return 3600  * 6;
+		case Period::HOUR_8   : return 3600  * 8;
+		case Period::HOUR_12  : return 3600  * 12;
+		case Period::DAYLY    : return 3600  * 24;
+		case Period::WEEKLY   : return 86400 * 7;
+		case Period::BIWEEKLY : return 86400 * 14;
+		case Period::MONTHLY  : return 86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon);
+		case Period::QUARTERLY: return 86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon) +
+									   86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon + 1) +
+									   86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon + 2);
+		case Period::ANNUAL   : return 86400 * (365 + IsLeapYear(m_present.StartTime._TM.tm_year));
+		case Period::MIN_5    : return 60 * 5;
+		case Period::MIN_15   : return 60 * 15;
 		default: return 0xFFFFFFFF;
 	}
 }
@@ -800,22 +757,23 @@ UDINT rReport::CheckFinishPeriodic()
 
 	gmtime64_r(&curtime, &curtm);
 
-	switch(Period)
+	switch (m_period)
 	{
-		case REPORT_PERIOD_HOUR     : result = (PastTM.tm_hour != curtm.tm_hour); break;
-		case REPORT_PERIOD_2HOUR    : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  2 == 0); break;
-		case REPORT_PERIOD_3HOUR    : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  3 == 0); break;
-		case REPORT_PERIOD_4HOUR    : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  4 == 0); break;
-		case REPORT_PERIOD_8HOUR    : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  8 == 0); break;
-		case REPORT_PERIOD_12HOUR   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour % 12 == 0); break;
-		case REPORT_PERIOD_DAYLY    : result = (PastTM.tm_mday != curtm.tm_mday); break;
-		case REPORT_PERIOD_WEEKLY   : result = (PastTM.tm_wday != curtm.tm_wday) && (curtm.tm_wday      == 1); break;
-		case REPORT_PERIOD_BIWEEKLY : result = (PastTM.tm_wday != curtm.tm_wday) && (curtm.tm_wday      == 1) && ((WeekNumber(curtm) - 1) % 2 == 0); break;
-		case REPORT_PERIOD_MONTHLY  : result = (PastTM.tm_mon  != curtm.tm_mon ); break;
-		case REPORT_PERIOD_QUARTERLY: result = (PastTM.tm_mon  != curtm.tm_mon ) && ((curtm.tm_mon - 1) % 3 == 0); break;
-		case REPORT_PERIOD_ANNUAL   : result = (PastTM.tm_year != curtm.tm_year); break;
-		case REPORT_PERIOD_5MIN     : result = (PastTM.tm_min  != curtm.tm_min ) && (curtm.tm_min  %  5 == 0); break;
-		case REPORT_PERIOD_15MIN    : result = (PastTM.tm_min  != curtm.tm_min ) && (curtm.tm_min  % 15 == 0); break;
+		case Period::HOUR     : result = (PastTM.tm_hour != curtm.tm_hour); break;
+		case Period::HOUR_2   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  2 == 0); break;
+		case Period::HOUR_3   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  3 == 0); break;
+		case Period::HOUR_4   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  4 == 0); break;
+		case Period::HOUR_6   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  6 == 0); break;
+		case Period::HOUR_8   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  8 == 0); break;
+		case Period::HOUR_12  : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour % 12 == 0); break;
+		case Period::DAYLY    : result = (PastTM.tm_mday != curtm.tm_mday); break;
+		case Period::WEEKLY   : result = (PastTM.tm_wday != curtm.tm_wday) && (curtm.tm_wday      == 1); break;
+		case Period::BIWEEKLY : result = (PastTM.tm_wday != curtm.tm_wday) && (curtm.tm_wday      == 1) && ((WeekNumber(curtm) - 1) % 2 == 0); break;
+		case Period::MONTHLY  : result = (PastTM.tm_mon  != curtm.tm_mon ); break;
+		case Period::QUARTERLY: result = (PastTM.tm_mon  != curtm.tm_mon ) && ((curtm.tm_mon - 1) % 3 == 0); break;
+		case Period::ANNUAL   : result = (PastTM.tm_year != curtm.tm_year); break;
+		case Period::MIN_5    : result = (PastTM.tm_min  != curtm.tm_min ) && (curtm.tm_min  %  5 == 0); break;
+		case Period::MIN_15   : result = (PastTM.tm_min  != curtm.tm_min ) && (curtm.tm_min  % 15 == 0); break;
 	}
 
 	PastTM = curtm;
@@ -823,5 +781,76 @@ UDINT rReport::CheckFinishPeriodic()
 	return result;
 }
 
+UDINT rReport::generateMarkDown(rGeneratorMD& md)
+{
+	std::string name   = isPeriodic() ? "periodic report" : "batch report";
+	std::string remark = "";
 
+	m_present.m_averageItems.push_back(new rReport::rTotal());
+	m_present.m_averageItems.back()->m_name = "#report_total_1";
+	m_present.m_averageItems.back()->m_items.push_back(new rReport::rItem());
+	m_present.m_averageItems.back()->m_items.back()->m_name = "#report_avr_item_1";
+	m_present.m_averageItems.back()->m_items.push_back(new rReport::rItem());
+	m_present.m_averageItems.back()->m_items.back()->m_name = "#report_avr_item_2";
+
+	m_present.m_snapshotItems.push_back(new rReport::rItem());
+	m_present.m_snapshotItems.back()->m_name = "#report_item_1";
+	m_present.m_snapshotItems.push_back(new rReport::rItem());
+	m_present.m_snapshotItems.back()->m_name = "#report_item_2";
+
+	m_archive.createFrom(m_present);
+	m_completed.createFrom(m_present);
+
+	if (isPeriodic()) {
+		remark += m_flagsPeriod.getMarkDown("Period");
+	}
+
+	remark += "## XML Dataset\n````xml\n";
+	remark += "<" + std::string(XmlName::DATASETS) + ">\n";
+	remark += "\t<" + std::string(XmlName::DATASET) + " name=\"valid name of dataset\">\n";
+	remark += "\t\t<" + std::string(XmlName::TOTALS) + " name=\"valid name\" alias=\"alias of calculate object contain totals\">\n";
+	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";
+	remark += "\t\t\t\t" + rGeneratorMD::rItem::XML_LINK + "\n";
+	remark += "\t\t\t</" + std::string(XmlName::ITEM) + ">\n";
+	remark += "\t\t\t...\n";
+	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";
+	remark += "\t\t\t\t" + rGeneratorMD::rItem::XML_LINK + "\n";
+	remark += "\t\t\t</" + std::string(XmlName::ITEM) + ">\n";
+	remark += "\t\t</" + std::string(XmlName::TOTALS) + ">\n";
+	remark += "\t\t...\n";
+	remark += "\t\t<" + std::string(XmlName::TOTALS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
+	remark += "\t\t\t...\n";
+	remark += "\t\t</" + std::string(XmlName::TOTALS) + ">\n";
+
+	remark += "\t\t<" + std::string(XmlName::SNAPSHOTS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
+	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";
+	remark += "\t\t\t\t" + rGeneratorMD::rItem::XML_LINK + "\n";
+	remark += "\t\t\t</" + std::string(XmlName::ITEM) + ">\n";
+	remark += "\t\t\t...\n";
+	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";
+	remark += "\t\t\t\t" + rGeneratorMD::rItem::XML_LINK + "\n";
+	remark += "\t\t\t</" + std::string(XmlName::ITEM) + ">\n";
+	remark += "\t\t</" + std::string(XmlName::SNAPSHOTS) + ">\n";
+	remark += "\t</" + std::string(XmlName::DATASET) + ">\n";
+
+	remark += "\t...\n";
+	remark += "\t<" + std::string(XmlName::DATASET) + " name=\"valid report name\"> " + rGeneratorMD::rItem::XML_OPTIONAL + "\n";;
+	remark += "\t\t...\n";
+	remark += "\t</" + std::string(XmlName::DATASET) + ">\n";
+	remark += "</" + std::string(XmlName::DATASETS) + ">\n";
+	remark += "````\n";
+
+	rGeneratorMD::rItem& item = md.add(this, false,	rGeneratorMD::Type::REPORT)
+			.setFilename(isPeriodic() ? "periodic report" : "batch report")
+			.addProperty(XmlName::TYPE, &m_flagsType, true)
+			.addXml(XmlName::STORAGE, static_cast<UDINT>(m_storage))
+			.addXml(XmlName::DATASET, std::string("dataset name"))
+			.addRemark(remark);
+
+	if (isPeriodic()) {
+		item.addXml("<" + std::string(XmlName::PERIOD) + ">period value</" + std::string(XmlName::PERIOD) + ">");
+	}
+
+	return TRITONN_RESULT_OK;
+}
 

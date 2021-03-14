@@ -45,8 +45,6 @@ public:
 		OFF          = 0x0001,     // Cигнал выключен из обработки
 		ERR_KEYPAD   = 0x0002,     // Разрешение при обрыве переводить сигнал в KEYPAD
 		ERR_LASTGOOD = 0x0004,     // Разрешение при обрыве переводить сигнал в LASTGOOD
-		NOBUFFER     = 0x8000,     // Отключение буфферизации значений (сглаживание)
-		VIRTUAL      = 0x4000,     // "Виртуальный" аналоговый сигнал. Без обработки кода АЦП. При установке SimValue события не проиходит
 		NOICE        = 0x2000,     // Подавление шума около 4 и 20мА
 	};
 
@@ -75,18 +73,18 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const { return "ai"; }
+	virtual const char *RTTI() const override { return "ai"; }
 
-	virtual UDINT       loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix);
-	virtual UDINT       generateVars(rVariableList& list);
-	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
-	virtual UDINT       calculate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
+	virtual UDINT generateVars(rVariableList& list) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual UDINT calculate() override;
 
-	virtual std::string getModuleAlias()   const { return rDataModule::getAlias();   }
-	virtual USINT       getModuleNumber()  const { return rDataModule::getModule();  }
-	virtual USINT       getChannelNumber() const { return rDataModule::getChannel(); }
+	virtual std::string getModuleAlias()   const override { return rDataModule::getAlias();   }
+	virtual USINT       getModuleNumber()  const override { return rDataModule::getModule();  }
+	virtual USINT       getChannelNumber() const override { return rDataModule::getChannel(); }
 protected:
-	virtual UDINT       initLimitEvent(rLink& link);
+	virtual UDINT       initLimitEvent(rLink& link) override;
 
 public:
 	UDINT setFault();
@@ -100,7 +98,7 @@ public:
 	rLink       m_current;               // Значение тока/напряжения, пересчитанное из кода АЦП
 
 	// Внутренние переменные
-	rCmpLREAL   KeypadValue;             // Значение ручного ввода
+	rCmpLREAL   m_keypad;                // Значение ручного ввода
 	rScale      m_scale;                 // Инженерные пределы токового сигала
 	Mode        m_mode;                  // Режим работы
 	rCmpUINT    m_setup;                 // Настройка сигнала
@@ -111,7 +109,7 @@ public:
 private:
 	static rBitsArray m_flagsMode;
 	static rBitsArray m_flagsSetup;
-
+	static rBitsArray m_flagsStatus;
 };
 
 

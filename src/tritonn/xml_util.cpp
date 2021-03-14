@@ -26,6 +26,16 @@ UDINT getAttributeUDINT(tinyxml2::XMLElement *element, const std::string &name, 
 	return (element->Attribute(name.c_str()) ) ? strtoul(element->Attribute(name.c_str()), NULL, 0)  : def;
 }
 
+DINT getAttributeDINT(tinyxml2::XMLElement *element, const std::string &name, const DINT def)
+{
+	return (element->Attribute(name.c_str()) ) ? strtol(element->Attribute(name.c_str()), NULL, 0) : def;
+}
+
+INT getAttributeINT(tinyxml2::XMLElement *element, const std::string &name, const INT def)
+{
+	return static_cast<INT>(getAttributeDINT(element, name, def));
+}
+
 USINT getAttributeUSINT (tinyxml2::XMLElement *element, const std::string &name, const USINT def)
 {
 	return static_cast<USINT>(getAttributeUDINT(element, name, def));
