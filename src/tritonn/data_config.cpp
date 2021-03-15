@@ -240,8 +240,8 @@ UDINT rDataConfig::loadHardware(tinyxml2::XMLElement* root)
 
 		cJSON *jsrc = cJSON_CreateObject();
 		cJSON *jitm = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, XmlName::ALIAS , cJSON_CreateString((IO::HARWARE_PREFIX + "." + module->getAlias()).c_str()));
-		cJSON_AddItemToObject(jsrc, XmlName::MODULE, cJSON_CreateString(module->getName().c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS , cJSON_CreateString((IO::HARWARE_PREFIX + module->getName()).c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::MODULE, cJSON_CreateString(module->getModuleType().c_str()));
 		cJSON_AddItemToObject(jsrc, XmlName::DESC  , cJSON_CreateNumber(module->getDescr()));
 		cJSON_AddItemToObject(jitm, module->getModuleType().c_str(), jsrc);
 		cJSON_AddItemToArray(m_json_hdw, jitm);
