@@ -483,7 +483,8 @@ enum rTritonn_Error
 //
 extern void        mSleep(UDINT msec);
 
-extern void        GetCurrentTime(Time64_T &t64, struct tm *stm);
+extern void        getCurrentTime(Time64_T &t64, struct tm *stm);
+extern void        setCurrentTime(struct tm& stm);
 
 extern LREAL       Round(LREAL val,  USINT prec);
 extern UDINT       isvalidhex(const char *str, UDINT &val);

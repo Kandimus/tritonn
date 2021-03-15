@@ -40,7 +40,7 @@ rBitsArray rReport::m_flagsCommand;
 
 void rReportTime::SetCurTime()
 {
-	GetCurrentTime(_UNIX, &_TM);
+	getCurrentTime(_UNIX, &_TM);
 }
 
 

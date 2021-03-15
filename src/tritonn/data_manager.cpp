@@ -316,11 +316,13 @@ rThreadStatus rDataManager::Proccesing()
 		m_sysVar.m_state.EventAlarm = rEventManager::instance().GetAlarm();
 		m_sysVar.m_state.Live       = m_live.Get();
 
-		GetCurrentTime(m_sysVar.UnixTime, &m_sysVar.DateTime);
+		getCurrentTime(m_sysVar.UnixTime, &m_sysVar.DateTime);
 
+		// set current time and date
 		if (m_sysVar.SetDateTimeAccept) {
-			m_sysVar.SetDateTimeAccept = 0;
-			//TODO Нужно менять время )))
+			setCurrentTime(m_sysVar.SetDateTime);
+
+			m_sysVar.SetDateTimeAccept   = 0;
 			m_sysVar.SetDateTime.tm_sec  = 0;
 			m_sysVar.SetDateTime.tm_min  = 0;
 			m_sysVar.SetDateTime.tm_hour = 0;

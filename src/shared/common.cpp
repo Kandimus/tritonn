@@ -39,7 +39,7 @@ void mSleep(UDINT msec)
 
 
 
-void GetCurrentTime(Time64_T &t64, struct tm *stm)
+void getCurrentTime(Time64_T &t64, struct tm *stm)
 {
 	UDT udt;
 
@@ -50,7 +50,17 @@ void GetCurrentTime(Time64_T &t64, struct tm *stm)
 	if(nullptr != stm)
 	{
 		localtime64_r(&t64, stm);
+		stm->tm_year += 1900;
 	}
+}
+
+void setCurrentTime(struct tm& stm)
+{
+	timeval tmv;
+
+	tmv.tv_sec  = mktime(&stm);
+	tmv.tv_usec = 0;
+	settimeofday(&tmv, NULL);
 }
 
 

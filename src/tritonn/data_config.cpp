@@ -836,9 +836,6 @@ UDINT rDataConfig::ResolveLinks(void)
 			volatile std::string link_alias = link->m_alias;
 
 			if (!strcasecmp(link->m_alias.c_str(), src->m_alias.c_str())) {
-//				if ("sikn1.line1.io.counter" == aa) {
-//					aa = aa + "@";
-//				}
 				if (link->m_param.size()) {
 					if (src->checkOutput(link->m_param)) {
 						src->checkOutput(link->m_param);
