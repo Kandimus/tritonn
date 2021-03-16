@@ -424,16 +424,16 @@
 		<!--EID_DO_NEW_SETUP-->
 		<str id="537919503"/>
 
-		<!--EID_SAMPLER_START_PERIOD-->
-		<str id="538050561"/>
-		<!--EID_SAMPLER_START_VOLUME-->
-		<str id="538050562"/>
-		<!--EID_SAMPLER_START_MASS-->
-		<str id="538050563"/>
-		<!--EID_SAMPLER_START_TEST-->
-		<str id="538050564"/>
-		<!--EID_SAMPLER_STOP-->
-		<str id="538050565"/>
+		<!--EID_SAMPLER_START_PERIOD - $1 ID, $2 Descr -->
+		<str id="538050561">$2. Команда на запуск в режиме по времени.</str>
+		<!--EID_SAMPLER_START_VOLUME - $1 ID, $2 Descr -->
+		<str id="538050562">$2. Команда на запуск в режиме отбора по объему.</str>
+		<!--EID_SAMPLER_START_MASS - $1 ID, $2 Descr -->
+		<str id="538050563">$2. Команда на запуск в режиме отбора по массе.</str>
+		<!--EID_SAMPLER_START_TEST - $1 ID, $2 Descr -->
+		<str id="538050564">$2. Команда на запуск в режиме теста.</str>
+		<!--EID_SAMPLER_STOP - $1 ID, $2 Descr -->
+		<str id="538050565">$2. Команда за Запуск в режиме теста.</str>
 		<!--EID_SAMPLER_DONT_STOP-->
 		<str id="-535691258"/>
 		<!--EID_SAMPLER_FINISH-->
@@ -448,5 +448,108 @@
 		<str id="-535691252"/>
 		<!--EID_SAMPLER_START_FAULT-->
 		<str id="-535691251"/>
+
+		<!--EID_PROVE_BADCOMMAND-->
+		<str id="-535625727"/>
+		<!--EID_PROVE_MODULE-->
+		<str id="-535625726"/>
+		<!--EID_PROVE_ERRORSTABTEMP-->
+		<str id="-535625724"/>
+		<!--EID_PROVE_ERRORSTABPRES-->
+		<str id="-535625723"/>
+		<!--EID_PROVE_ERRORSTABDENS-->
+		<str id="-535625722"/>
+		<!--EID_PROVE_ERRORSTABFREQ-->
+		<str id="-535625721"/>
+		<!--EID_PROVE_BADSTREAMNUMBER-->
+		<str id="-535625720"/>
+		<!--EID_PROVE_COMMANDSTART-->
+		<str id="538116107"/>
+		<!--EID_PROVE_COMMANDABORT-->
+		<str id="-1609367540"/>
+		<!--EID_PROVE_COMMANDRESET-->
+		<str id="538116109"/>
+		<!--EID_PROVE_NOTSTARTED-->
+		<str id="-1609367538"/>
+		<!--EID_PROVE_ALREADYSTARTED-->
+		<str id="-1609367537"/>
+		<!--EID_PROVE_NOTERROR-->
+		<str id="-1609367536"/>
+		<!--EID_PROVE_ISERROR-->
+		<str id="-1609367535"/>
+		<!--EID_PROVE_DETECTOR1-->
+		<str id="538116117"/>
+		<!--EID_PROVE_DETECTOR2-->
+		<str id="538116118"/>
+		<!--EID_PROVE_DETECTOR3-->
+		<str id="538116119"/>
+		<!--EID_PROVE_DETECTOR4-->
+		<str id="538116120"/>
+		<!--EID_PROVE_STATE_IDLE-->
+		<str id="538116127"/>
+		<!--EID_PROVE_STATE_START-->
+		<str id="538116128"/>
+		<!--EID_PROVE_STATE_STAB-->
+		<str id="538116129"/>
+		<!--EID_PROVE_STATE_VALVETOUP-->
+		<str id="538116130"/>
+		<!--EID_PROVE_STATE_WAITTOUP-->
+		<str id="538116131"/>
+		<!--EID_PROVE_STATE_VALVETODOWN-->
+		<str id="538116132"/>
+		<!--EID_PROVE_STATE_WAITD1-->
+		<str id="538116133"/>
+		<!--EID_PROVE_STATE_WAITD2-->
+		<str id="538116134"/>
+		<!--EID_PROVE_STATE_CALCULATE-->
+		<str id="538116135"/>
+		<!--EID_PROVE_STATE_RETURNBALL-->
+		<str id="538116136"/>
+		<!--EID_PROVE_STATE_FINISH-->
+		<str id="538116137"/>
+		<!--EID_PROVE_STATE_ABORT-->
+		<str id="-1609367510"/>
+		<!--EID_PROVE_STATE_ERRORFLOW-->
+		<str id="-535625685"/>
+		<!--EID_PROVE_STATE_ERRORSTAB-->
+		<str id="-535625684"/>
+		<!--EID_PROVE_STATE_ERRORTOUP-->
+		<str id="-535625683"/>
+		<!--EID_PROVE_STATE_ERRORTDOWN-->
+		<str id="-535625682"/>
+		<!--EID_PROVE_STATE_ERRORD1-->
+		<str id="-535625681"/>
+		<!--EID_PROVE_STATE_ERRORD2-->
+		<str id="-535625680"/>
+		<!--EID_PROVE_STATE_ERRORDETS-->
+		<str id="-535625679"/>
+		<!--EID_PROVE_STATE_ERRORRETURN-->
+		<str id="-535625678"/>
+		<!--EID_PROVE_STATE_ERRORRSTRID-->
+		<str id="-535625677"/>
+		<!--EID_PROVE_NEW_AMIN-->
+		<str id="538116196"/>
+		<!--EID_PROVE_NEW_WMIN-->
+		<str id="538116197"/>
+		<!--EID_PROVE_NEW_WMAX-->
+		<str id="538116198"/>
+		<!--EID_PROVE_NEW_AMAX-->
+		<str id="538116199"/>
+		<!--EID_PROVE_NEW_HYST-->
+		<str id="538116200"/>
+		<!--EID_PROVE_NEW_SETUP-->
+		<str id="538116201"/>
+		<!--EID_PROVE_AMIN-->
+		<str id="-535625618"/>
+		<!--EID_PROVE_WMIN-->
+		<str id="-1609367441"/>
+		<!--EID_PROVE_AMAX-->
+		<str id="-535625616"/>
+		<!--EID_PROVE_WMAX-->
+		<str id="-1609367439"/>
+		<!--EID_PROVE_NORMAL-->
+		<str id="538116210"/>
+		<!--EID_PROVE_NAN-->
+		<str id="-535625613"/>
 	</lang>
 </strings>

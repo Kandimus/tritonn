@@ -923,7 +923,7 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 			</datablock>
 		</datablocks>
 		<modbus>
-			<slavetcp name="slave1" id="1" port="1502" counterror="3" security="0" maxclient="0">
+			<slavetcp name="slave1" id="1" port="1502" count_error="3" security="0" maxclient="0">
 				<whitelist>
 					<ip>127.0.0.1</ip>
 					<ip>192.168.15.1</ip>

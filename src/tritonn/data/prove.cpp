@@ -48,21 +48,21 @@ rProve::rProve(const rStation* owner)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("NONE"         , static_cast<UINT>(Setup::NONE), "Не использовать флаги настройки")
-				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY), "ПУ использует четырех ходовой кран")
+				.add("NONE"         , static_cast<UINT>(Setup::NONE)         , "Не использовать флаги настройки")
+				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY)   , "ПУ использует четырех ходовой кран (двухпроходная ПУ). Если флаг не указан, то используется однопроходная ПУ")
 				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION), "Перед измерением проверять параметры на стабильность")
-				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE), "ПУ ручным краном")
-				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR), "Используется один детектор")
-				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE), "Фильтрация дребезга детекторов")
-				.add("NOSELECTSTR"  , static_cast<UINT>(Setup::NOSELECTSTR), "Не переключать частоту ПР")
-				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE), "Симуляция крана");
+				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE)      , "ПУ с ручным краном")
+				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR)  , "Используется один детектор")
+				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE)       , "Фильтрация дребезга детекторов")
+				.add("NOSELECTSTR"  , static_cast<UINT>(Setup::NOSELECTSTR)  , "Не переключать частоту ПР")
+				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE)     , "Симуляция крана");
 	}
 
 	if (m_flagsCommand.empty()) {
 		m_flagsCommand
-				.add("", static_cast<UINT>(Command::NONE), "Нет действия")
-				.add("", static_cast<UINT>(Command::START), "Запуск процедуры поверки")
-				.add("", static_cast<UINT>(Command::ABORT), "Прервать процедуру поверки")
+				.add("", static_cast<UINT>(Command::NONE) , COMMENT::COMMAND_NONE)
+				.add("", static_cast<UINT>(Command::START), COMMENT::COMMAND_START + COMMENT::PROVE)
+				.add("", static_cast<UINT>(Command::ABORT), "Прервать" + COMMENT::PROVE)
 				.add("", static_cast<UINT>(Command::RESET), "Сбросить ошибку");
 	}
 
@@ -107,18 +107,18 @@ rProve::rProve(const rStation* owner)
 //
 UDINT rProve::initLimitEvent(rLink &link)
 {
-	link.m_limit.EventChangeAMin  = reinitEvent(EID_AI_NEW_AMIN)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeWMin  = reinitEvent(EID_AI_NEW_WMIN)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeWMax  = reinitEvent(EID_AI_NEW_WMAX)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeAMax  = reinitEvent(EID_AI_NEW_AMAX)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeHyst  = reinitEvent(EID_AI_NEW_HYST)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeSetup = reinitEvent(EID_AI_NEW_SETUP) << link.m_descr << link.m_unit;
-	link.m_limit.EventAMin        = reinitEvent(EID_AI_AMIN)      << link.m_descr << link.m_unit;
-	link.m_limit.EventWMin        = reinitEvent(EID_AI_WMIN)      << link.m_descr << link.m_unit;
-	link.m_limit.EventWMax        = reinitEvent(EID_AI_WMAX)      << link.m_descr << link.m_unit;
-	link.m_limit.EventAMax        = reinitEvent(EID_AI_AMAX)      << link.m_descr << link.m_unit;
-	link.m_limit.EventNan         = reinitEvent(EID_AI_NAN)       << link.m_descr << link.m_unit;
-	link.m_limit.EventNormal      = reinitEvent(EID_AI_NORMAL)    << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_PROVE_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_PROVE_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_PROVE_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_PROVE_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_PROVE_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_PROVE_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_PROVE_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_PROVE_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_PROVE_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_PROVE_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_PROVE_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_PROVE_NORMAL)    << link.m_descr << link.m_unit;
 
 	return TRITONN_RESULT_OK;
 }
@@ -678,6 +678,7 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::___, &m_command    , U_DIMLESS, ACCESS_PROVE, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
 	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::___, &m_setup.Value, U_DIMLESS, ACCESS_PROVE, COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R__, &m_state      , U_DIMLESS, 0           , COMMENT::STATUS + m_flagsState.getInfo(true));
+	list.add(m_alias + ".stream"                   , TYPE_UINT , rVariable::Flags::R__, &m_lineNum    , U_DIMLESS, 0           , "Номер ПР для поверки");
 	list.add(m_alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::___, &m_tStart     , U_msec   , ACCESS_PROVE, "Значение таймера выбора требуемого ПР");
 	list.add(m_alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::___, &m_tStab      , U_msec   , ACCESS_PROVE, "Значение таймера стабилизации");
 	list.add(m_alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::___, &m_tD1        , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от корзины до первого детектора");
@@ -728,14 +729,15 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 		return err.set(DATACFGERR_PORVE_MISSINGMODULE, element->GetLineNum());
 	}
 
-	auto xml_temp  = element->FirstChildElement(XmlName::TEMP);
-	auto xml_pres  = element->FirstChildElement(XmlName::PRES);
-	auto xml_dens  = element->FirstChildElement(XmlName::DENSITY);
-	auto xml_valve = element->FirstChildElement(XmlName::VALVE);
+	auto xml_temp = element->FirstChildElement(XmlName::TEMP);
+	auto xml_pres = element->FirstChildElement(XmlName::PRES);
+	auto xml_dens = element->FirstChildElement(XmlName::DENSITY);
 
 	if (xml_temp) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_temp)) return err.getError();
 	if (xml_pres) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_pres)) return err.getError();
 	if (xml_dens) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temp->FirstChildElement(XmlName::LINK), m_dens)) return err.getError();
+
+	auto xml_valve = element->FirstChildElement(XmlName::VALVE);
 
 	if (xml_valve) {
 		auto xml_opened = xml_valve->FirstChildElement(XmlName::OPENED);
@@ -743,6 +745,32 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 
 		if (xml_opened) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_opened->FirstChildElement(XmlName::LINK), m_opened)) return err.getError();
 		if (xml_closed) if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_closed->FirstChildElement(XmlName::LINK), m_closed)) return err.getError();
+	}
+
+	auto xml_timers = element->FirstChildElement(XmlName::TIMERS);
+
+	if (xml_timers) {
+		UDINT fault;
+
+		m_tStart  = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::START)     , m_tStart , fault);
+		m_tStab   = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::STABILISE) , m_tStab  , fault);
+		m_tD1     = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::DETECTOR_1), m_tD1    , fault);
+		m_tD2     = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::DETECTOR_2), m_tD2    , fault);
+		m_tVolume = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::VOLUME)    , m_tVolume, fault);
+		m_tValve  = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::VALVE)     , m_tValve , fault);
+		m_tAbort  = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::ABORT)     , m_tAbort , fault);
+		m_tBounce = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::BOUNCE)    , m_tBounce, fault);
+	}
+
+	auto xml_stab = element->FirstChildElement(XmlName::STABILISE);
+
+	if (xml_stab) {
+		UDINT fault;
+
+		m_maxStabTemp = XmlUtils::getTextLREAL(xml_timers->FirstChildElement(XmlName::TEMP)   , m_maxStabTemp, fault);
+		m_maxStabPres = XmlUtils::getTextLREAL(xml_timers->FirstChildElement(XmlName::PRES)   , m_maxStabPres, fault);
+		m_maxStabDens = XmlUtils::getTextLREAL(xml_timers->FirstChildElement(XmlName::DENSITY), m_maxStabDens, fault);
+		m_maxStabFreq = XmlUtils::getTextLREAL(xml_timers->FirstChildElement(XmlName::FREQ)   , m_maxStabFreq, fault);
 	}
 
 	m_open.m_limit.m_setup.Init(rLimit::Setup::OFF);
@@ -768,14 +796,30 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 
 	md.add(this, false, rGeneratorMD::Type::IOMDULE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
-			.addXml("<io_link module=\"module index\"/>" + rGeneratorMD::rItem::XML_OPTIONAL)
 			.addLink(XmlName::TEMP, true)
 			.addLink(XmlName::PRES, true)
 			.addLink(XmlName::DENSITY, true)
 			.addXml(String_format("<%s>", XmlName::VALVE))
 			.addLink(XmlName::OPENED, false, "\t")
 			.addLink(XmlName::CLOSED, false, "\t")
-			.addXml(String_format("</%s>", XmlName::VALVE));
+			.addXml(String_format("</%s>", XmlName::VALVE))
+			.addXml(String_format("<%s>", XmlName::TIMERS), true)
+			.addXml(XmlName::START     , m_tStart , false, "\t")
+			.addXml(XmlName::STABILISE , m_tStab  , false, "\t")
+			.addXml(XmlName::DETECTOR_1, m_tD1    , false, "\t")
+			.addXml(XmlName::DETECTOR_1, m_tD2    , false, "\t")
+			.addXml(XmlName::VOLUME    , m_tVolume, false, "\t")
+			.addXml(XmlName::VALVE     , m_tValve , false, "\t")
+			.addXml(XmlName::ABORT     , m_tAbort , false, "\t")
+			.addXml(XmlName::BOUNCE    , m_tBounce, false, "\t")
+			.addXml(String_format("</%s>", XmlName::TIMERS), false)
+			.addXml(String_format("<%s>", XmlName::STABILISE), true)
+			.addXml(XmlName::TEMP   , m_maxStabTemp, false, "\t")
+			.addXml(XmlName::PRES   , m_maxStabPres, false, "\t")
+			.addXml(XmlName::DENSITY, m_maxStabDens, false, "\t")
+			.addXml(XmlName::FREQ   , m_maxStabFreq, false, "\t")
+			.addXml(String_format("</%s>", XmlName::STABILISE), false)
+			;
 
 	return TRITONN_RESULT_OK;
 }

@@ -48,6 +48,7 @@ const std::string MODE_PHYS      = "Используется физическо�
 const std::string MODE_KEYPAD    = "Переключение пользователем на ручной ввод";
 const std::string MONTH          = "Месяц";
 const std::string POINT          = "Точка";
+const std::string PROVE          = " процедуру поверки";
 const std::string SECONDS        = "Секунды";
 const std::string SETUP          = "Настройка:<br/>";
 const std::string SETUP_ALARM0   = "При снятии сигнала выдавать аварийное сообщение";
