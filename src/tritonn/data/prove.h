@@ -50,6 +50,12 @@ public:
 		SIMULATE      = 0x0040,
 	};
 
+	enum Way : UINT
+	{
+		FORWARD = 0,
+		REVERSE = 1,
+	};
+
 	enum class State : USINT
 	{
 		IDLE = 0,
@@ -62,10 +68,10 @@ public:
 		WAITD2,
 		CALCULATE,
 		RETURNBALL,
-		REVERSE_WAITD2,
-		REVERSE_WAITD1,
 		FINISH,
 		ABORT,
+		WAITD2_REVERSE,
+		WAITD1_REVERSE,
 		ERRORFLOW = 65,
 		ERRORSTAB,
 		ERRORTOUP,
@@ -75,6 +81,8 @@ public:
 		ERRORDETECTOR,
 		ERRORRETURN,
 		ERRORSTREAMID,
+		ERRORD2_REVERSE,
+		ERRORD1_REVERSE,
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -138,6 +146,7 @@ public:
 	Command   m_command = Command::NONE;
 	rCmpUINT  m_setup   = static_cast<UINT>(Setup::NONE);
 	rCmpUINT  m_strIdx;
+	USINT     m_way = Way::FORWARD;
 	LREAL     m_prvFreq = 0;
 	LREAL     m_prvTemp = 0;
 	LREAL     m_prvPres = 0;
@@ -190,6 +199,7 @@ private:
 	static rBitsArray m_flagsSetup;
 	static rBitsArray m_flagsCommand;
 	static rBitsArray m_flagsState;
+	static rBitsArray m_flagsWay;
 };
 
 

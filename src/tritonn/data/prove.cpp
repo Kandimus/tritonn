@@ -40,6 +40,7 @@
 rBitsArray rProve::m_flagsSetup;
 rBitsArray rProve::m_flagsCommand;
 rBitsArray rProve::m_flagsState;
+rBitsArray rProve::m_flagsWay;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -64,6 +65,13 @@ rProve::rProve(const rStation* owner)
 				.add("", static_cast<UINT>(Command::START), COMMENT::COMMAND_START + COMMENT::PROVE)
 				.add("", static_cast<UINT>(Command::ABORT), "Прервать" + COMMENT::PROVE)
 				.add("", static_cast<UINT>(Command::RESET), "Сбросить ошибку");
+	}
+
+	if (m_flagsWay.empty())
+	{
+		m_flagsWay
+				.add("", static_cast<UINT>(Way::FORWARD), "Прямой проход шара")
+				.add("", static_cast<UINT>(Way::REVERSE), "Обратных проход шара");
 	}
 
 	if (m_flagsState.empty()) {
@@ -134,7 +142,11 @@ UDINT rProve::calculate()
 		return TRITONN_RESULT_OK;
 	}
 
-	m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
+	if (m_state == State::IDLE) {
+		m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
+	} else if (m_setup.isDiff()) {
+		rEventManager::instance().Add(reinitEvent(EID_PROVE_CANNOTMODIFYSETUP) << m_strIdx.Value);
+	}
 
 	if (isSetModule()) {
 		auto module_ptr = rIOManager::instance().getModule(m_module);
@@ -168,19 +180,20 @@ UDINT rProve::calculate()
 
 	switch(m_state) {
 		case State::IDLE:
-		case State::FINISH:        onIdle();          break;
+		case State::FINISH:         onIdle();          break;
 
-		case State::START:         onStart();         break;
-		case State::STABILIZATION: onStabilization(); break;
-		case State::VALVETOUP:     onValveToUp();     break;
-		case State::WAITTOUP:      onWaitToUp();      break;
-		case State::VALVETODOWN:   onValveToDown();   break;
-		case State::WAITD1:        onWaitD1();        break;
-		case State::WAITD2:        onWaitD2();        break;
-		case State::CALCULATE:     onCalculate();     break;
-		case State::RETURNBALL:    onReturnBall();    break;
-
-		case State::ABORT:         onAbort();         break;
+		case State::START:          onStart();         break;
+		case State::STABILIZATION:  onStabilization(); break;
+		case State::VALVETOUP:      onValveToUp();     break;
+		case State::WAITTOUP:       onWaitToUp();      break;
+		case State::VALVETODOWN:    onValveToDown();   break;
+		case State::WAITD1:         onWaitD1();        break;
+		case State::WAITD2:         onWaitD2();        break;
+		case State::CALCULATE:      onCalculate();     break;
+		case State::RETURNBALL:     onReturnBall();    break;
+		case State::ABORT:          onAbort();         break;
+		case State::WAITD2_REVERSE: onWaitD2();        break;
+		case State::WAITD1_REVERSE: onWaitD1();        break;
 
 		case State::ERRORFLOW:
 		case State::ERRORSTAB:
@@ -229,11 +242,15 @@ void rProve::onStart()
 
 	if (!m_timer.isStarted()) {
 		clearAverage();
+
 		if (!connectToLine())
 		{
+			rEventManager::instance().Add(reinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
+			setState(State::ERRORSTREAMID);
 			return;
 		}
 		m_timer.start(m_tStart);
+		m_way = Way::FORWARD;
 		return;
 	}
 
@@ -457,22 +474,29 @@ void rProve::onReturnBall()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_close.m_value = 0;
-		m_open.m_value  = 1;
+
+		if (!(m_setup.Value & Setup::NOVALVE)) {
+			m_close.m_value = 0;
+			m_open.m_value  = 1;
+		}
 		m_timer.start(m_tValve);
 		return;
 	}
 
 	if (m_timer.isFinished()) {
+		if (!(m_setup.Value & Setup::NOVALVE)) {
+			setState(State::ERRORRETURN);
+		}
 		m_timer.stop();
-		setState(State::ERRORRETURN);
 		return;
 	}
 
-	if (m_opened.m_value > 0 && m_closed.m_value == 0) {
-		m_timer.stop();
-		setState(State::FINISH);
-		return;
+	if (!(m_setup.Value & Setup::NOVALVE)) {
+		if (m_opened.m_value > 0 && m_closed.m_value == 0) {
+			m_timer.stop();
+			setState(State::FINISH);
+			return;
+		}
 	}
 }
 
@@ -536,23 +560,31 @@ bool rProve::checkCommand()
 
 DINT rProve::checkDetectors(bool first)
 {
+	bool det1 = m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2);
+	bool det2 = m_fixDet & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+
 	if (m_setup.Value & Setup::ONEDETECTOR) {
-		return m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2 | rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+		return det1 || det2;
+	}
+
+	if (m_way == Way::REVERSE) {
+		bool temp = det1;
+		det1 = det2;
+		det2 = temp;
 	}
 
 	if (first) {
-		if (m_fixDet & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4)) {
+		if (det2) {
 			return -1;
 		}
-
-		return m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2);
+		return det1;
 	}
 
-	if (m_fixDet & (rModuleCRM::Detector::Det1 | rModuleCRM::Detector::Det2)) {
+	if (det1) {
 		return -1;
 	}
 
-	return m_fixDet & (rModuleCRM::Detector::Det3 | rModuleCRM::Detector::Det4);
+	return det2;
 }
 
 
@@ -608,14 +640,16 @@ void rProve::detectorsProcessing()
 
 bool rProve::connectToLine()
 {
+	if (m_setup.Value & Setup::NOSELECTSTR) {
+		return true;
+	}
+
 	if (m_strIdx.Value >= m_station->getStreamCount()) {
-		rEventManager::instance().Add(reinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
-		setState(State::ERRORSTREAMID);
 		return false;
 	}
 
 	m_station->setStreamFreqOut(m_strIdx.Value);
-	return false;
+	return true;
 }
 
 void rProve::setState(State state)
