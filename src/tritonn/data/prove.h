@@ -61,6 +61,7 @@ public:
 		IDLE = 0,
 		START,
 		STABILIZATION,
+		RUNBALL,
 		VALVETOUP,
 		WAITTOUP,
 		VALVETODOWN,
@@ -68,10 +69,11 @@ public:
 		WAITD2,
 		CALCULATE,
 		RETURNBALL,
+		WAITD1_REVERSE,
+		WAITD2_REVERSE,
+		WAYCOMPLITED,
 		FINISH,
 		ABORT,
-		WAITD2_REVERSE,
-		WAITD1_REVERSE,
 		ERRORFLOW = 65,
 		ERRORSTAB,
 		ERRORTOUP,
@@ -103,6 +105,7 @@ private:
 	void onIdle();
 	void onStart();
 	void onNoFlow();
+	void onRunBall();
 	void onStabilization();
 	void onValveToUp();
 	void onWaitToUp();
@@ -111,6 +114,7 @@ private:
 	void onWaitD2();
 	void onCalculate();
 	void onReturnBall();
+	void onWayComplited();
 	void onAbort();
 	void onErrorState();
 
@@ -146,13 +150,12 @@ public:
 	Command   m_command = Command::NONE;
 	rCmpUINT  m_setup   = static_cast<UINT>(Setup::NONE);
 	rCmpUINT  m_strIdx;
-	USINT     m_way = Way::FORWARD;
 	LREAL     m_prvFreq = 0;
 	LREAL     m_prvTemp = 0;
 	LREAL     m_prvPres = 0;
 	LREAL     m_prvDens = 0;
-	LREAL     m_prvCount[2];
-	LREAL     m_prvTime[2];
+	LREAL     m_prvCount[2][3];
+	LREAL     m_prvTime[2][3];
 	LREAL     m_strTemp = 0;
 	LREAL     m_strPres = 0;
 	LREAL     m_strDens = 0;
@@ -174,7 +177,8 @@ public:
 	UDINT    m_tBounce = 1000;
 
 private:
-	State m_state    = State::IDLE;
+	State m_state = State::IDLE;
+	USINT m_way   = Way::FORWARD;
 
 	LREAL m_stabDens = 0;
 	LREAL m_stabPres = 0;
