@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # modbustcpslave
-> 0.19.18.6bb32f40
+> 0.19.24.063224f6
 ## XML
 ````xml
-<modbustcpslave name="valid object name" descr="string index" id="0" port="502" counterror="3" security="0" maxclient="8" >
+<modbustcpslave name="valid object name" descr="string index" id="0" port="502" count_error="3" security="0" maxclient="8" >
 	<whitelist> <!-- Optional -->
 		<ip>ip address xx.xx.xx.xx<ip/>
 		...
@@ -16,9 +16,9 @@
 		<dword>0<dword/>
 	</swap>
 	<addressmap>
-		<addressblock begin="start address">datablock name</addressblock>
+		<addressblock begin="start address">datablock name</��>
 		...
-		<addressblock begin="start address">datablock name</addressblock>
+		<addressblock begin="start address">datablock name</��>
 	</addressmap>
 </modbustcpslave>
 ````

@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # opcua
-> 0.19.18.6bb32f40
+> 0.19.24.063224f6
 ## XML
 ````xml
 <opcua name="valid object name" descr="string index" >

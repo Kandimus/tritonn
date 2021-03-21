@@ -293,8 +293,10 @@ std::string rGeneratorMD::rItem::save()
 			result += "/>";
 
 			if (m_type == Type::IOCHANNEL_OPT) {
-				result += " " + XML_OPTIONAL + "\n";
+				result += " " + XML_OPTIONAL;
 			}
+
+			result += "\n";
 		}
 
 		if (m_isStdInput) {

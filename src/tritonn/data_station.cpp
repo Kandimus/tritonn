@@ -193,6 +193,11 @@ UDINT rStation::setStreamFreqOut(UDINT strid) const
 	return m_stream[strid]->enableFreqOut();
 }
 
+rStream* rStation::getStream(UDINT strid) const
+{
+	return strid < m_stream.size() ? m_stream[strid] : nullptr;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 

@@ -25,6 +25,7 @@
 #include "../data_config.h"
 #include "../data_manager.h"
 #include "../data_station.h"
+#include "../data_stream.h"
 #include "../data_ai.h"
 #include "../error.h"
 #include "../variable_item.h"
@@ -49,14 +50,14 @@ rProve::rProve(const rStation* owner)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("NONE"         , static_cast<UINT>(Setup::NONE)         , "Не использовать флаги настройки")
-				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY)   , "ПУ использует четырех ходовой кран (двухпроходная ПУ). Если флаг не указан, то используется однопроходная ПУ")
-				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION), "Перед измерением проверять параметры на стабильность")
-				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE)      , "ПУ с ручным краном")
-				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR)  , "Используется один детектор")
-				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE)       , "Фильтрация дребезга детекторов")
-				.add("NOSELECTSTR"  , static_cast<UINT>(Setup::NOSELECTSTR)  , "Не переключать частоту ПР")
-				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE)     , "Симуляция крана");
+				.add("NONE"         , static_cast<UINT>(Setup::NONE)         , "Не использовать флаги настройки.")
+				.add("4WAY"         , static_cast<UINT>(Setup::VALVE_4WAY)   , "ПУ использует четырех ходовой кран (двухпроходная ПУ). Если флаг не указан, то используется однопроходная ПУ.")
+				.add("STABILIZATION", static_cast<UINT>(Setup::STABILIZATION), "Перед измерением проверять параметры на стабильность.")
+				.add("NOVALVE"      , static_cast<UINT>(Setup::NOVALVE)      , "ПУ с ручным краном.")
+				.add("ONEDETECTOR"  , static_cast<UINT>(Setup::ONEDETECTOR)  , "Используется один детектор.")
+				.add("BOUNCE"       , static_cast<UINT>(Setup::BOUNCE)       , "Фильтрация дребезга детекторов.")
+				.add("NOSELECTSTR"  , static_cast<UINT>(Setup::NOSELECTSTR)  , "Не переключать частоту ПР.")
+				.add("SIMULATE"     , static_cast<UINT>(Setup::SIMULATE)     , "Симуляция крана без выдачи управляющих воздействий.");
 	}
 
 	if (m_flagsCommand.empty()) {
@@ -76,38 +77,44 @@ rProve::rProve(const rStation* owner)
 
 	if (m_flagsState.empty()) {
 		m_flagsState
-				.add("", static_cast<UINT>(State::IDLE)         , "Процедура не запущена")
-				.add("", static_cast<UINT>(State::START)        , "Запуск процедуры поверки")
-				.add("", static_cast<UINT>(State::STABILIZATION), "Стабилизация")
-				.add("", static_cast<UINT>(State::VALVETOUP)    , "Поворот крана в верхнюю позицию")
-				.add("", static_cast<UINT>(State::WAITTOUP)     , "Ожидание поворота крана в верхнюю позицию")
-				.add("", static_cast<UINT>(State::VALVETODOWN)  , "Поворот крана в нижнюю позицию")
-				.add("", static_cast<UINT>(State::WAITD1)       , "Ожидание первого детектора")
-				.add("", static_cast<UINT>(State::WAITD2)       , "Ожидание второго детектора")
-				.add("", static_cast<UINT>(State::CALCULATE)    , "Вычисления")
-				.add("", static_cast<UINT>(State::VALVETOUP)    , "Перевод крана вверхнюю позицию")
-				.add("", static_cast<UINT>(State::RETURNBALL)   , "Ожидание возврата шара")
-				.add("", static_cast<UINT>(State::FINISH)       , "Процедура завершена")
-				.add("", static_cast<UINT>(State::ABORT)        , "Прерывание процедуры")
-				.add("", static_cast<UINT>(State::ERRORFLOW)    , "Нет расхода")
-				.add("", static_cast<UINT>(State::ERRORSTAB)    , "Ошибка стабилизации")
-				.add("", static_cast<UINT>(State::ERRORTOUP)    , "Ошибка поворота крана в верхнюю позицию")
-				.add("", static_cast<UINT>(State::ERRORTODOWN)  , "Ошибка поворота крана в нижнюю позицию")
-				.add("", static_cast<UINT>(State::ERRORD1)      , "Ошибка первого детектора")
-				.add("", static_cast<UINT>(State::ERRORD2)      , "Ошибка второго детектора")
-				.add("", static_cast<UINT>(State::ERRORDETECTOR), "Ошибка детекторов")
-				.add("", static_cast<UINT>(State::ERRORRETURN)  , "Ошибка возврата шара")
-				.add("", static_cast<UINT>(State::ERRORSTREAMID), "Выбрана не корректный ПР");
+				.add("", static_cast<UINT>(State::IDLE)           , "Процедура не запущена")
+				.add("", static_cast<UINT>(State::START)          , "Запуск процедуры поверки")
+				.add("", static_cast<UINT>(State::STABILIZATION)  , "Стабилизация")
+				.add("", static_cast<UINT>(State::RUNBALL)        , "Запуск шара")
+				.add("", static_cast<UINT>(State::VALVETOUP)      , "Поворот крана в верхнюю позицию")
+				.add("", static_cast<UINT>(State::WAITTOUP)       , "Ожидание поворота крана в верхнюю позицию")
+				.add("", static_cast<UINT>(State::VALVETODOWN)    , "Поворот крана в нижнюю позицию")
+				.add("", static_cast<UINT>(State::WAITD1)         , "Ожидание первого детектора")
+				.add("", static_cast<UINT>(State::WAITD2)         , "Ожидание второго детектора")
+				.add("", static_cast<UINT>(State::CALCULATE)      , "Вычисления")
+				.add("", static_cast<UINT>(State::RETURNBALL)     , "Ожидание возврата шара")
+				.add("", static_cast<UINT>(State::WAITD1_REVERSE) , "Обратный ход шара. Ожидание первого детектора")
+				.add("", static_cast<UINT>(State::WAITD2_REVERSE) , "Обратный ход шара. Ожидание второго детектора")
+				.add("", static_cast<UINT>(State::WAYCOMPLITED)   , "Проход шара завершен")
+				.add("", static_cast<UINT>(State::FINISH)         , "Процедура завершена")
+				.add("", static_cast<UINT>(State::ABORT)          , "Прерывание процедуры")
+				.add("", static_cast<UINT>(State::ERRORFLOW)      , "Нет расхода")
+				.add("", static_cast<UINT>(State::ERRORSTAB)      , "Ошибка стабилизации")
+				.add("", static_cast<UINT>(State::ERRORTOUP)      , "Ошибка поворота крана в верхнюю позицию")
+				.add("", static_cast<UINT>(State::ERRORTODOWN)    , "Ошибка поворота крана в нижнюю позицию")
+				.add("", static_cast<UINT>(State::ERRORD1)        , "Ошибка первого детектора")
+				.add("", static_cast<UINT>(State::ERRORD2)        , "Ошибка второго детектора")
+				.add("", static_cast<UINT>(State::ERRORDETECTOR)  , "Ошибка детекторов")
+				.add("", static_cast<UINT>(State::ERRORRETURN)    , "Ошибка возврата шара")
+				.add("", static_cast<UINT>(State::ERRORSTREAMID)  , "Выбрана не корректный ПР")
+				.add("", static_cast<UINT>(State::ERRORD1_REVERSE), "Обратных ход шара. Ошибка первого детектора")
+				.add("", static_cast<UINT>(State::ERRORD2_REVERSE), "Обратных ход шара. Ошибка второго детектора");
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::INPUT , m_temp  , U_C       , SID::TEMPERATURE  , XmlName::TEMP   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_pres  , U_MPa     , SID::PRESSURE     , XmlName::PRES   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_dens  , U_kg_m3   , SID::DENSITY      , XmlName::DENSITY, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_opened, U_discrete, SID::PROVER_OPENED, XmlName::OPENED , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_closed, U_discrete, SID::PROVER_CLOSED, XmlName::CLOSED , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_open  , U_discrete, SID::PROVER_OPEN  , XmlName::OPEN   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_close , U_discrete, SID::PROVER_CLOSE , XmlName::CLOSE  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_temp      , U_C       , SID::TEMPERATURE    , XmlName::TEMP      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_pres      , U_MPa     , SID::PRESSURE       , XmlName::PRES      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_dens      , U_kg_m3   , SID::DENSITY        , XmlName::DENSITY   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_opened    , U_discrete, SID::PROVER_OPENED  , XmlName::OPENED    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_closed    , U_discrete, SID::PROVER_CLOSED  , XmlName::CLOSED    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_open      , U_discrete, SID::PROVER_OPEN    , XmlName::OPEN      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_close     , U_discrete, SID::PROVER_CLOSE   , XmlName::CLOSE     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_inProgress, U_discrete, SID::PROVER_PROGRESS, XmlName::INPROGRESS, rLink::SHADOW_NONE);
 }
 
 
@@ -206,6 +213,8 @@ UDINT rProve::calculate()
 		case State::ERRORDETECTOR:
 		case State::ERRORRETURN:
 		case State::ERRORSTREAMID:
+		case State::ERRORD1_REVERSE:
+		case State::ERRORD2_REVERSE:
 			onErrorState();    break;
 	};
 
@@ -342,13 +351,15 @@ void rProve::onValveToUp()
 		return;
 	}
 
-	if (m_opened.m_value > 0 && m_closed.m_value == 0) {
+	if (isValveOpened() || isSimulate()) {
 		setState(State::VALVETODOWN);
 		return;
 	}
 
-	m_close.m_value = 0;
-	m_open.m_value  = 1;
+	if (!isSimulate()) {
+		m_close.m_value = 0;
+		m_open.m_value  = 1;
+	}
 	setState(State::WAITTOUP);
 }
 
@@ -367,7 +378,7 @@ void rProve::onWaitToUp()
 	if (m_timer.isFinished()) {
 		m_timer.stop();
 
-		if (m_opened.m_value > 0 && m_closed.m_value == 0) {
+		if (isValveOpened() || isSimulate()) {
 			setState(State::VALVETODOWN);
 			return;
 		}
@@ -385,8 +396,10 @@ void rProve::onValveToDown()
 	}
 
 	if (!m_timer.isStarted()) {
-		m_close.m_value = 1;
-		m_open.m_value  = 0;
+		if (!isSimulate()) {
+			m_close.m_value = 1;
+			m_open.m_value  = 0;
+		}
 		m_timer.start(m_tValve);
 		return;
 	}
@@ -398,13 +411,12 @@ void rProve::onValveToDown()
 		return;
 	}
 
-	if (m_closed.m_value > 0 && m_opened.m_value == 0) {
+	if (isValveClosed() || isSimulate()) {
 		m_timer.stop();
 		setState(m_way == Way::FORWARD ? State::WAITD1 : State::WAITD1_REVERSE);
 		return;
 	}
 }
-
 
 void rProve::onWaitD1()
 {
@@ -421,7 +433,7 @@ void rProve::onWaitD1()
 	if (m_timer.isFinished()) {
 		moduleStop();
 		m_timer.stop();
-		setState(State::ERRORD1);
+		setState(m_way == Way::FORWARD ? State::ERRORD1 : State::ERRORD2_REVERSE);
 		return;
 	}
 
@@ -434,7 +446,7 @@ void rProve::onWaitD1()
 
 	if (result) {
 		m_timer.stop();
-		setState(State::WAITD2);
+		setState(m_way == Way::FORWARD ? State::WAITD2 : State::WAITD2_REVERSE);
 		return;
 	}
 }
@@ -453,7 +465,7 @@ void rProve::onWaitD2()
 	if (m_timer.isFinished()) {
 		moduleStop();
 		m_timer.stop();
-		setState(State::ERRORD2);
+		setState(m_way == Way::FORWARD ? State::ERRORD2 : State::ERRORD1_REVERSE);
 		return;
 	}
 
@@ -492,14 +504,32 @@ void rProve::onCalculate()
 }
 
 
+void rProve::onReturnBall_NoValve()
+{
+	if (!m_timer.isStarted()) {
+		m_timer.start(m_tValve);
+		return;
+	}
+
+	if (m_timer.isFinished()) {
+		m_timer.stop();
+		setState(State::WAYCOMPLITED);
+	}
+}
+
 void rProve::onReturnBall()
 {
 	if (checkCommand()) {
 		return;
 	}
 
+	if (m_setup.Value & Setup::NOVALVE) {
+		onReturnBall_NoValve();
+		return;
+	}
+
 	if (!m_timer.isStarted()) {
-		if (!(m_setup.Value & Setup::NOVALVE)) {
+		if (!isSimulate()) {
 			m_close.m_value = 0;
 			m_open.m_value  = 1;
 		}
@@ -508,20 +538,15 @@ void rProve::onReturnBall()
 	}
 
 	if (m_timer.isFinished()) {
-		if (!(m_setup.Value & Setup::NOVALVE)) {
-			setState(State::ERRORRETURN);
-		}
 		m_timer.stop();
-		setState(State::WAYCOMPLITED);
+		setState(State::ERRORRETURN);
 		return;
 	}
 
-	if (!(m_setup.Value & Setup::NOVALVE)) {
-		if (m_opened.m_value > 0 && m_closed.m_value == 0) {
-			m_timer.stop();
-			setState(State::WAYCOMPLITED);
-			return;
-		}
+	if (isValveOpened() || isSimulate()) {
+		m_timer.stop();
+		setState(State::WAYCOMPLITED);
+		return;
 	}
 }
 
@@ -644,17 +669,17 @@ void rProve::clearAverage()
 {
 	m_fixDet  = 0;
 
-	m_prvFreq     = 0;
-	m_prvTemp     = 0;
-	m_prvPres     = 0;
-	m_prvDens     = 0;
-	m_prvCount[0] = 0;
-	m_prvCount[1] = 0;
-	m_prvTime[0]  = 0;
-	m_prvTime[1]  = 0;
+	m_prvFreq = 0;
+	m_prvTemp = 0;
+	m_prvPres = 0;
+	m_prvDens = 0;
 	m_strTemp = 0;
 	m_strPres = 0;
 	m_strDens = 0;
+	m_strKf   = 0;
+
+	m_volume[D131].clear();
+	m_volume[D242].clear();
 }
 
 void rProve::detectorsProcessing()
@@ -678,12 +703,12 @@ void rProve::detectorsProcessing()
 
 bool rProve::connectToLine()
 {
-	if (m_setup.Value & Setup::NOSELECTSTR) {
-		return true;
-	}
-
 	if (m_strIdx.Value >= m_station->getStreamCount()) {
 		return false;
+	}
+
+	if (m_setup.Value & Setup::NOSELECTSTR) {
+		return true;
 	}
 
 	m_station->setStreamFreqOut(m_strIdx.Value);
@@ -698,33 +723,33 @@ void rProve::setState(State state)
 
 	switch(m_state)
 	{
-		case State::IDLE:            event.Reinit(EID_PROVE_STATE_IDLE);        break;
-		case State::START:           event.Reinit(EID_PROVE_STATE_START);       break;
-		case State::STABILIZATION:   event.Reinit(EID_PROVE_STATE_STAB);        break;
-		case State::RUNBALL:         event.Reinit(EID_PROVE_STATE_RUNBALL);     break;
-		case State::VALVETOUP:       event.Reinit(EID_PROVE_STATE_VALVETOUP);   break;
-		case State::WAITTOUP:        event.Reinit(EID_PROVE_STATE_WAITTOUP);    break;
-		case State::VALVETODOWN:     event.Reinit(EID_PROVE_STATE_VALVETODOWN); break;
-		case State::WAITD1:          event.Reinit(EID_PROVE_STATE_WAITD1);      break;
-		case State::WAITD2:          event.Reinit(EID_PROVE_STATE_WAITD2);      break;
-		case State::CALCULATE:       event.Reinit(EID_PROVE_STATE_CALCULATE);   break;
-		case State::RETURNBALL:      event.Reinit(EID_PROVE_STATE_RETURNBALL);  break;
-		case State::WAITD1_REVERSE:  event.Reinit(EID_PROVE_STATE_WAITED1_RVS); break;
-		case State::WAITD2_REVERSE:  event.Reinit(EID_PROVE_STATE_WAITED2_RVS); break;
-		case State::WAYCOMPLITED:    event.Reinit(EID_PROVE_STATE_WAYCOMPLTED); break;
-		case State::FINISH:          event.Reinit(EID_PROVE_STATE_FINISH);      break;
-		case State::ABORT:           event.Reinit(EID_PROVE_STATE_ABORT);       break;
-		case State::ERRORFLOW:       event.Reinit(EID_PROVE_STATE_ERRORFLOW);   break;
-		case State::ERRORSTAB:       event.Reinit(EID_PROVE_STATE_ERRORSTAB);   break;
-		case State::ERRORTOUP:       event.Reinit(EID_PROVE_STATE_ERRORTOUP);   break;
-		case State::ERRORTODOWN:     event.Reinit(EID_PROVE_STATE_ERRORTDOWN);  break;
-		case State::ERRORD1:         event.Reinit(EID_PROVE_STATE_ERRORD1);     break;
-		case State::ERRORD2:         event.Reinit(EID_PROVE_STATE_ERRORD2);     break;
-		case State::ERRORDETECTOR:   event.Reinit(EID_PROVE_STATE_ERRORDETS);   break;
-		case State::ERRORRETURN:     event.Reinit(EID_PROVE_STATE_ERRORRETURN); break;
-		case State::ERRORSTREAMID:   event.Reinit(EID_PROVE_STATE_ERRORRSTRID); break;
-		case State::ERRORD1_REVERSE: event.Reinit(EID_PROVE_STATE_ERRORD1_RVS); break;
-		case State::ERRORD2_REVERSE: event.Reinit(EID_PROVE_STATE_ERRORD2_RVS); break;
+		case State::IDLE:            m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_IDLE);        break;
+		case State::START:           m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_START);       break;
+		case State::STABILIZATION:   m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_STAB);        break;
+		case State::RUNBALL:         m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_RUNBALL);     break;
+		case State::VALVETOUP:       m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_VALVETOUP);   break;
+		case State::WAITTOUP:        m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITTOUP);    break;
+		case State::VALVETODOWN:     m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_VALVETODOWN); break;
+		case State::WAITD1:          m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITD1);      break;
+		case State::WAITD2:          m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITD2);      break;
+		case State::CALCULATE:       m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_CALCULATE);   break;
+		case State::RETURNBALL:      m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_RETURNBALL);  break;
+		case State::WAITD1_REVERSE:  m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITED1_RVS); break;
+		case State::WAITD2_REVERSE:  m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITED2_RVS); break;
+		case State::WAYCOMPLITED:    m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAYCOMPLTED); break;
+		case State::FINISH:          m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_FINISH);      break;
+		case State::ABORT:           m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ABORT);       break;
+		case State::ERRORFLOW:       m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORFLOW);   break;
+		case State::ERRORSTAB:       m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORSTAB);   break;
+		case State::ERRORTOUP:       m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORTOUP);   break;
+		case State::ERRORTODOWN:     m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORTDOWN);  break;
+		case State::ERRORD1:         m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD1);     break;
+		case State::ERRORD2:         m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD2);     break;
+		case State::ERRORDETECTOR:   m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORDETS);   break;
+		case State::ERRORRETURN:     m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORRETURN); break;
+		case State::ERRORSTREAMID:   m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORRSTRID); break;
+		case State::ERRORD1_REVERSE: m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD1_RVS); break;
+		case State::ERRORD2_REVERSE: m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD2_RVS); break;
 	}
 
 	rEventManager::instance().Add(event);
@@ -732,19 +757,32 @@ void rProve::setState(State state)
 
 void rProve::calcAverage()
 {
-	if (!m_enableAverage) {
+	if (!m_inProgress.m_value) {
 		return;
 	}
 
 	UDINT dCount = m_moduleCount - m_averageCount;
+	auto str = m_station->getStream(m_strIdx.Value);
+
+	if (!str) {
+		setState(State::ERRORSTREAMID);
+		return;
+	}
+
+	LREAL str_temp = str->m_temp.m_value;
+	LREAL str_pres = str->m_pres.m_value;
+	LREAL str_dens = str->m_dens.m_value;
+	LREAL str_kf   = str->m_curKF;
+
 	if (dCount) {
 		m_prvFreq = (m_moduleFreq   * dCount) + (m_prvFreq * m_averageCount) / static_cast<LREAL>(m_moduleCount);
 		m_prvDens = (m_dens.m_value * dCount) + (m_prvDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
 		m_prvTemp = (m_temp.m_value * dCount) + (m_prvTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
 		m_prvPres = (m_pres.m_value * dCount) + (m_prvPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_strDens = (m_curStrDens   * dCount) + (m_strDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_strTemp = (m_curStrTemp   * dCount) + (m_strTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
-		m_strPres = (m_curStrPres   * dCount) + (m_strPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strDens = (str_dens       * dCount) + (m_strDens * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strTemp = (str_temp       * dCount) + (m_strTemp * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strPres = (str_pres       * dCount) + (m_strPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
+		m_strKf   = (str_kf         * dCount) + (m_strPres * m_averageCount) / static_cast<LREAL>(m_moduleCount);
 	}
 }
 
@@ -764,18 +802,6 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(m_alias + ".timer.volume"             , TYPE_UDINT, rVariable::Flags::___, &m_tVolume       , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от первого детектора до второго");
 	list.add(m_alias + ".timer.valve"              , TYPE_UDINT, rVariable::Flags::___, &m_tValve        , U_msec   , ACCESS_PROVE, "Значение таймера поворота корзины");
 	list.add(m_alias + ".timer.bounce"             , TYPE_UDINT, rVariable::Flags::___, &m_tBounce       , U_msec   , ACCESS_PROVE, "Значение таймера анти-дребезга");
-	list.add(m_alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[0][0], U_imp    , 0           , "Количество импульсов для объема 1-3-1");
-	list.add(m_alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[0][0] , U_sec    , 0           , "Время прохода шара 1-3-1");
-	list.add(m_alias + ".result.volume1.fcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[0][1], U_imp    , 0           , "Количество импульсов для объема 1-3");
-	list.add(m_alias + ".result.volume1.ftime"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[0][1] , U_sec    , 0           , "Время прохода шара 1-3");
-	list.add(m_alias + ".result.volume1.rcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[0][2], U_imp    , 0           , "Количество импульсов для объема 3-1");
-	list.add(m_alias + ".result.volume1.rtime"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[0][2] , U_sec    , 0           , "Время прохода шара 3-1");
-	list.add(m_alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[1][0], U_imp    , 0           , "Количество импульсов для объема 2-4-2");
-	list.add(m_alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[1][0] , U_sec    , 0           , "Время прохода шара 2-4-2");
-	list.add(m_alias + ".result.volume2.fcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[1][1], U_imp    , 0           , "Количество импульсов для объема 2-4");
-	list.add(m_alias + ".result.volume2.ftime"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[1][1] , U_sec    , 0           , "Время прохода шара 2-4");
-	list.add(m_alias + ".result.volume2.rcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_prvCount[1][2], U_imp    , 0           , "Количество импульсов для объема 4-2");
-	list.add(m_alias + ".result.volume2.rtime"     , TYPE_LREAL, rVariable::Flags::R__, &m_prvTime[1][2] , U_sec    , 0           , "Время прохода шара 4-2");
 	list.add(m_alias + ".result.prove.frequency"   , TYPE_LREAL, rVariable::Flags::R__, &m_prvFreq       , U_Hz     , 0           , "Средневзвешанное значение частоты во время процедуры");
 	list.add(m_alias + ".result.prove.temperature" , TYPE_LREAL, rVariable::Flags::R__, &m_prvTemp       , U_C      , 0           , "Средневзвешанное значение температуры ПУ во время процедуры");
 	list.add(m_alias + ".result.prove.pressure"    , TYPE_LREAL, rVariable::Flags::R__, &m_prvPres       , U_MPa    , 0           , "Средневзвешанное значение давления ПУ во время процедуры");
@@ -783,12 +809,26 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(m_alias + ".result.stream.temperature", TYPE_LREAL, rVariable::Flags::R__, &m_strTemp       , U_C      , 0           , "Средневзвешанное значение температуры ПР во время процедуры");
 	list.add(m_alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__, &m_strPres       , U_MPa    , 0           , "Средневзвешанное значение давления ПР во время процедуры");
 	list.add(m_alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R__, &m_strDens       , U_kg_m3  , 0           , "Средневзвешанное значение плотности ПР во время процедуры");
+	list.add(m_alias + ".result.stream.kf"         , TYPE_LREAL, rVariable::Flags::R__, &m_strKf         , U_DIMLESS, 0           , "Средневзвешанное значение К-фактора ПР во время процедуры");
 	list.add(m_alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R__, &m_curDet        , U_DIMLESS, 0           , "Мгновенное значение флагов детекторов");
 	list.add(m_alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R__, &m_fixDet        , U_DIMLESS, 0           , "Зафиксированное значение флагов детекторов");
 	list.add(m_alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::___, &m_maxStabTemp   , U_C      , ACCESS_PROVE, "Предельное значение разности температур во время стабилизации");
 	list.add(m_alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::___, &m_maxStabPres   , U_MPa    , ACCESS_PROVE, "Предельное значение разности давления во время стабилизации");
 	list.add(m_alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::___, &m_maxStabDens   , U_kg_m3  , ACCESS_PROVE, "Предельное значение разности плотности во время стабилизации");
 	list.add(m_alias + ".stabilization.frequency"  , TYPE_LREAL, rVariable::Flags::___, &m_maxStabFreq   , U_Hz     , ACCESS_PROVE, "Предельное значение разности частот ПР во время стабилизации");
+
+	list.add(m_alias + ".result.volume1.count"     , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D131].m_summ.m_count   , U_imp, 0, "Количество импульсов для объема 1-3-1");
+	list.add(m_alias + ".result.volume1.time"      , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D131].m_summ.m_time    , U_sec, 0, "Время прохода шара 1-3-1");
+	list.add(m_alias + ".result.volume1.fcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D131].m_forward.m_count, U_imp, 0, "Количество импульсов для объема 1-3");
+	list.add(m_alias + ".result.volume1.ftime"     , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D131].m_forward.m_time , U_sec, 0, "Время прохода шара 1-3");
+	list.add(m_alias + ".result.volume1.rcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D131].m_reverse.m_count, U_imp, 0, "Количество импульсов для объема 3-1");
+	list.add(m_alias + ".result.volume1.rtime"     , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D131].m_reverse.m_time , U_sec, 0, "Время прохода шара 3-1");
+	list.add(m_alias + ".result.volume2.count"     , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D242].m_summ.m_count   , U_imp, 0, "Количество импульсов для объема 2-4-2");
+	list.add(m_alias + ".result.volume2.time"      , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D242].m_summ.m_time    , U_sec, 0, "Время прохода шара 2-4-2");
+	list.add(m_alias + ".result.volume2.fcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D242].m_forward.m_count, U_imp, 0, "Количество импульсов для объема 2-4");
+	list.add(m_alias + ".result.volume2.ftime"     , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D242].m_forward.m_time , U_sec, 0, "Время прохода шара 2-4");
+	list.add(m_alias + ".result.volume2.rcount"    , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D242].m_reverse.m_count, U_imp, 0, "Количество импульсов для объема 4-2");
+	list.add(m_alias + ".result.volume2.rtime"     , TYPE_LREAL, rVariable::Flags::R__, &m_volume[D242].m_reverse.m_time , U_sec, 0, "Время прохода шара 4-2");
 
 	list.add(m_alias + ".fault"                    , TYPE_UDINT, rVariable::Flags::R__, &m_fault         , U_DIMLESS, 0           , COMMENT::FAULT);
 
@@ -863,6 +903,7 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 	m_close.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	m_opened.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	m_closed.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_inProgress.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 	reinitLimitEvents();
 
@@ -879,6 +920,7 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 	m_close.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	m_opened.m_limit.m_setup.Init(rLimit::Setup::OFF);
 	m_closed.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_inProgress.m_limit.m_setup.Init(rLimit::Setup::OFF);
 
 	md.add(this, false, rGeneratorMD::Type::IOMDULE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
@@ -893,7 +935,7 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 			.addXml(XmlName::START     , m_tStart , false, "\t")
 			.addXml(XmlName::STABILISE , m_tStab  , false, "\t")
 			.addXml(XmlName::DETECTOR_1, m_tD1    , false, "\t")
-			.addXml(XmlName::DETECTOR_1, m_tD2    , false, "\t")
+			.addXml(XmlName::DETECTOR_2, m_tD2    , false, "\t")
 			.addXml(XmlName::VOLUME    , m_tVolume, false, "\t")
 			.addXml(XmlName::VALVE     , m_tValve , false, "\t")
 			.addXml(XmlName::ABORT     , m_tAbort , false, "\t")
@@ -917,7 +959,6 @@ void rProve::moduleStart()
 	ss.add(m_moduleName + ".start", 1);
 	ss.set();
 
-	m_enableAverage = true;
 	m_averageCount  = m_moduleCount;
 }
 
@@ -927,8 +968,6 @@ void rProve::moduleStop()
 
 	ss.add(m_moduleName + ".stop", 1);
 	ss.set();
-
-	m_enableAverage = false;
 }
 
 

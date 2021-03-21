@@ -112,6 +112,7 @@ const char GRABTEST[]      = "grab_test";
 const char GROUP[]         = "group";
 const char ID[]            = "id";
 const char IMPULSE[]       = "impulse";
+const char INPROGRESS[]    = "inprogress";
 const char INPUTS[]        = "inputs";
 const char INTERNAL[]      = "internal";
 const char IO[]            = "io";
