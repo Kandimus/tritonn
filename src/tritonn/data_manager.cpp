@@ -259,7 +259,6 @@ UDINT rDataManager::LoadConfig()
 	//NOTE только в процессе разработки
 	if (Live::STARTING == GetLiveStatus()) {
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
-		SaveKernel();                         // Сохраняем описание ядра
 		saveMarkDown();
 	}
 

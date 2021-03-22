@@ -115,17 +115,17 @@
 		<str id="1035">Кран открыт</str> <!-- SID_PROVER_OPENED -->
 		<str id="1036">Кран закрыт</str> <!-- SID_PROVER_CLOSED -->
 		<str id="1037">Измерение в процессе</str> <!-- SID_PROVER_PROGRESS -->
+		<str id="1038">выходное значение</str> <!-- SID_OUTPUT -->
+		<str id="1039">входное значение 1</str> <!-- SID_INPUT_1 -->
+		<str id="1040">входное значение 2</str> <!-- SID_INPUT_2 -->
+		<str id="1041">входное значение 3</str> <!-- SID_INPUT_3 -->
+		<str id="1042">входное значение 4</str> <!-- SID_INPUT_4 -->
+		<str id="1043">флаг ошибки входа 1</str> <!-- SID_FAULT_1 -->
+		<str id="1044">флаг ошибки входа 2</str> <!-- SID_FAULT_2 -->
+		<str id="1045">флаг ошибки входа 3</str> <!-- SID_FAULT_3 -->
+		<str id="1046">флаг ошибки входа 4</str> <!-- SID_FAULT_4 -->
 
-		<str id="1500">выходное значение</str> <!-- SID_SEL_OUT -->
-		<str id="1501">входное значение 1</str> <!-- SID_SEL_IN1 -->
-		<str id="1502">входное значение 2</str> <!-- SID_SEL_IN2 -->
-		<str id="1503">входное значение 3</str> <!-- SID_SEL_IN3 -->
-		<str id="1504">входное значение 4</str> <!-- SID_SEL_IN4 -->
-		<str id="1505">флаг ошибки входа 1</str> <!-- SID_SEL_FLT1 -->
-		<str id="1506">флаг ошибки входа 2</str> <!-- SID_SEL_FLT2 -->
-		<str id="1507">флаг ошибки входа 3</str> <!-- SID_SEL_FLT3 -->
-		<str id="1508">флаг ошибки входа 4</str> <!-- SID_SEL_FLT4 -->
-		<str id="1509">группа 1, входное значение 1</str> <!-- SID_SEL_GRP1_IN1 -->
+		<str id="1500">группа 1, входное значение 1</str> <!-- SID_SEL_GRP1_IN1 -->
 		<str id="1510">группа 1, входное значение 2</str> <!-- SID_SEL_GRP1_IN2 -->
 		<str id="1511">группа 1, входное значение 3</str> <!-- SID_SEL_GRP1_IN3 -->
 		<str id="1512">группа 1, входное значение 4</str> <!-- SID_SEL_GRP1_IN4 -->
