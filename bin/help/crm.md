@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # crm
-> 0.19.24.063224f6
+> 0.19.26.74dfba31
 ## XML
 ````xml
 <crm name="valid object name" descr="string index" >
