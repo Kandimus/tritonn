@@ -77,7 +77,7 @@ UDINT rIODOChannel::generateVars(const std::string& name, rVariableList& list, b
 {
 	std::string p = name + ".";
 
-	rIOBaseChannel::generateVars(name, list, issimulate);
+	rIOBaseChannel::generateVars(name, list, false);
 
 	list.add(p + "setup", TYPE_UINT , rVariable::Flags::RS_, &m_setup, U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(p + "value", TYPE_USINT, rVariable::Flags::R__, &m_value, U_DIMLESS , 0, COMMENT::VALUE);

@@ -42,6 +42,7 @@ rBitsArray rProve::m_flagsSetup;
 rBitsArray rProve::m_flagsCommand;
 rBitsArray rProve::m_flagsState;
 rBitsArray rProve::m_flagsWay;
+rBitsArray rProve::m_flagsDetectors;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -104,6 +105,14 @@ rProve::rProve(const rStation* owner)
 				.add("", static_cast<UINT>(State::ERRORSTREAMID)  , "Выбрана не корректный ПР")
 				.add("", static_cast<UINT>(State::ERRORD1_REVERSE), "Обратных ход шара. Ошибка первого детектора")
 				.add("", static_cast<UINT>(State::ERRORD2_REVERSE), "Обратных ход шара. Ошибка второго детектора");
+	}
+
+	if (m_flagsDetectors.empty()) {
+		m_flagsDetectors
+				.add("", static_cast<UINT>(Detector::DET_1), "Детектор 1")
+				.add("", static_cast<UINT>(Detector::DET_2), "Детектор 2")
+				.add("", static_cast<UINT>(Detector::DET_3), "Детектор 3")
+				.add("", static_cast<UINT>(Detector::DET_4), "Детектор 4");
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
@@ -793,8 +802,8 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::___, &m_command       , U_DIMLESS, ACCESS_PROVE, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
 	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::___, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE, COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R__, &m_state         , U_DIMLESS, 0           , COMMENT::STATUS + m_flagsState.getInfo(true));
-	list.add(m_alias + ".stream"                   , TYPE_UINT , rVariable::Flags::R__, &m_lineNum       , U_DIMLESS, 0           , "Номер ПР для поверки");
-	list.add(m_alias + ".way"                      , TYPE_UINT , rVariable::Flags::R__, &m_way           , U_DIMLESS, 0           , "Проход шара:<br/>" + m_flagsWay.getInfo(true));
+	list.add(m_alias + ".stream_no"                , TYPE_UINT , rVariable::Flags::R__, &m_lineNum       , U_DIMLESS, 0           , "Номер ПР для поверки");
+	list.add(m_alias + ".direction"                , TYPE_UINT , rVariable::Flags::R__, &m_way           , U_DIMLESS, 0           , "Проход шара:<br/>" + m_flagsWay.getInfo(true));
 	list.add(m_alias + ".timer.start"              , TYPE_UDINT, rVariable::Flags::___, &m_tStart        , U_msec   , ACCESS_PROVE, "Значение таймера выбора требуемого ПР");
 	list.add(m_alias + ".timer.stabilization"      , TYPE_UDINT, rVariable::Flags::___, &m_tStab         , U_msec   , ACCESS_PROVE, "Значение таймера стабилизации");
 	list.add(m_alias + ".timer.detector1"          , TYPE_UDINT, rVariable::Flags::___, &m_tD1           , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от корзины до первого детектора");
@@ -810,8 +819,8 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(m_alias + ".result.stream.pressure"   , TYPE_LREAL, rVariable::Flags::R__, &m_strPres       , U_MPa    , 0           , "Средневзвешанное значение давления ПР во время процедуры");
 	list.add(m_alias + ".result.stream.density"    , TYPE_LREAL, rVariable::Flags::R__, &m_strDens       , U_kg_m3  , 0           , "Средневзвешанное значение плотности ПР во время процедуры");
 	list.add(m_alias + ".result.stream.kf"         , TYPE_LREAL, rVariable::Flags::R__, &m_strKf         , U_DIMLESS, 0           , "Средневзвешанное значение К-фактора ПР во время процедуры");
-	list.add(m_alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R__, &m_curDet        , U_DIMLESS, 0           , "Мгновенное значение флагов детекторов");
-	list.add(m_alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R__, &m_fixDet        , U_DIMLESS, 0           , "Зафиксированное значение флагов детекторов");
+	list.add(m_alias + ".detectors.present"        , TYPE_UINT , rVariable::Flags::R__, &m_curDet        , U_DIMLESS, 0           , "Мгновенное значение флагов детекторов:<br/>" + m_flagsDetectors.getInfo());
+	list.add(m_alias + ".detectors.fixed"          , TYPE_UINT , rVariable::Flags::R__, &m_fixDet        , U_DIMLESS, 0           , "Зафиксированное значение флагов детекторов:<br/>" + m_flagsDetectors.getInfo());
 	list.add(m_alias + ".stabilization.temperature", TYPE_LREAL, rVariable::Flags::___, &m_maxStabTemp   , U_C      , ACCESS_PROVE, "Предельное значение разности температур во время стабилизации");
 	list.add(m_alias + ".stabilization.pressure"   , TYPE_LREAL, rVariable::Flags::___, &m_maxStabPres   , U_MPa    , ACCESS_PROVE, "Предельное значение разности давления во время стабилизации");
 	list.add(m_alias + ".stabilization.density"    , TYPE_LREAL, rVariable::Flags::___, &m_maxStabDens   , U_kg_m3  , ACCESS_PROVE, "Предельное значение разности плотности во время стабилизации");

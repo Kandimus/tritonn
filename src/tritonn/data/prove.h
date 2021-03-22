@@ -87,6 +87,14 @@ public:
 		ERRORD1_REVERSE,
 	};
 
+	enum Detector : UINT
+	{
+		DET_1 = 1,
+		DET_2 = 2,
+		DET_3 = 4,
+		DET_4 = 8,
+	};
+
 	rProve(const rStation* owner = nullptr);
 	virtual ~rProve() = default;
 	
@@ -228,6 +236,7 @@ private:
 	static rBitsArray m_flagsCommand;
 	static rBitsArray m_flagsState;
 	static rBitsArray m_flagsWay;
+	static rBitsArray m_flagsDetectors;
 };
 
 
