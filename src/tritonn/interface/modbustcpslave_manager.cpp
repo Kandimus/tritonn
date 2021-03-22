@@ -469,7 +469,7 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 	Name      = XmlUtils::getAttributeString(xml_root, XmlName::NAME     , "");
 	SlaveID   = XmlUtils::getAttributeUDINT (xml_root, XmlName::ID       , SlaveID);
 	Security  = XmlUtils::getAttributeUDINT (xml_root, XmlName::SECURITY , 0);
-	MaxError  = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNTERR , MaxError);
+	MaxError  = XmlUtils::getAttributeUDINT (xml_root, XmlName::COUNT_ERR, MaxError);
 	MaxClient = XmlUtils::getAttributeUDINT (xml_root, XmlName::MAXCLIENT, MaxClient);
 
 	auto xml_adrmap = xml_root->FirstChildElement(XmlName::ADDRESSMAP);
@@ -566,7 +566,7 @@ UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 	md.add(this)
 			.addProperty(XmlName::ID       , static_cast<UDINT>(SlaveID))
 			.addProperty(XmlName::PORT     , m_port)
-			.addProperty(XmlName::COUNTERR , static_cast<UDINT>(MaxError))
+			.addProperty(XmlName::COUNT_ERR, static_cast<UDINT>(MaxError))
 			.addProperty(XmlName::SECURITY , Security)
 			.addProperty(XmlName::MAXCLIENT, MaxClient)
 			.addXml("<" + std::string(XmlName::WHITELIST) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
@@ -580,9 +580,9 @@ UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 			.addXml(XmlName::DWORD, static_cast<UDINT>(m_swap.DWord), false, "\t")
 			.addXml("</" + std::string(XmlName::SWAP) + ">")
 			.addXml("<" + std::string(XmlName::ADDRESSMAP) + ">")
-			.addXml("\t<" + std::string(XmlName::ADDRESSBLOCK) + " begin=\"start address\">datablock name</" + std::string(XmlName::ADDRESSBLOCK) + ">")
+			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK))
 			.addXml("\t...")
-			.addXml("\t<" + std::string(XmlName::ADDRESSBLOCK) + " begin=\"start address\">datablock name</" + std::string(XmlName::ADDRESSBLOCK) + ">")
+			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK))
 			.addXml("</" + std::string(XmlName::ADDRESSMAP) + ">");
 
 	return TRITONN_RESULT_OK;

@@ -29,7 +29,8 @@ public:
 	virtual ~rCompared();
 
 	virtual void  Init(const T &val);
-	virtual UDINT Compare(rEvent &event);// = 0;
+	virtual UDINT Compare(rEvent &event);
+	virtual bool  isDiff() const;
 
 public:
 	T Value;
@@ -107,7 +108,7 @@ public:
 	rCmpREAL(REAL v);
 	virtual ~rCmpREAL();
 
-	virtual UDINT Compare(rEvent &event);
+	virtual UDINT Compare(rEvent &event) override;
 	virtual UDINT Compare(REAL prec, rEvent &event);
 };
 
@@ -120,7 +121,7 @@ public:
 	rCmpLREAL(LREAL v);
 	virtual ~rCmpLREAL();
 
-	virtual UDINT Compare(rEvent &event);
+	virtual UDINT Compare(rEvent &event) override;
 	virtual UDINT Compare(LREAL prec, rEvent &event);
 };
 

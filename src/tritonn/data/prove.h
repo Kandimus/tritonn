@@ -50,11 +50,18 @@ public:
 		SIMULATE      = 0x0040,
 	};
 
+	enum Way : UINT
+	{
+		FORWARD = 1,
+		REVERSE = 2,
+	};
+
 	enum class State : USINT
 	{
 		IDLE = 0,
 		START,
 		STABILIZATION,
+		RUNBALL,
 		VALVETOUP,
 		WAITTOUP,
 		VALVETODOWN,
@@ -62,6 +69,9 @@ public:
 		WAITD2,
 		CALCULATE,
 		RETURNBALL,
+		WAITD2_REVERSE,
+		WAITD1_REVERSE,
+		WAYCOMPLITED,
 		FINISH,
 		ABORT,
 		ERRORFLOW = 65,
@@ -73,6 +83,16 @@ public:
 		ERRORDETECTOR,
 		ERRORRETURN,
 		ERRORSTREAMID,
+		ERRORD2_REVERSE,
+		ERRORD1_REVERSE,
+	};
+
+	enum Detector : UINT
+	{
+		DET_1 = 1,
+		DET_2 = 2,
+		DET_3 = 4,
+		DET_4 = 8,
 	};
 
 	rProve(const rStation* owner = nullptr);
@@ -93,6 +113,8 @@ private:
 	void onIdle();
 	void onStart();
 	void onNoFlow();
+	void onRunBall();
+	void onReturnBall_NoValve();
 	void onStabilization();
 	void onValveToUp();
 	void onWaitToUp();
@@ -101,6 +123,7 @@ private:
 	void onWaitD2();
 	void onCalculate();
 	void onReturnBall();
+	void onWayComplited();
 	void onAbort();
 	void onErrorState();
 
@@ -118,6 +141,10 @@ private:
 
 	void setState(State state);
 
+	bool isValveOpened() const { return m_opened.m_value != 0 && m_closed.m_value == 0; }
+	bool isValveClosed() const { return m_opened.m_value == 0 && m_closed.m_value != 0; }
+	bool isSimulate()    const { return m_setup.Value == Setup::SIMULATE; }
+
 public:
 	// Inputs
 	rLink m_temp;
@@ -127,6 +154,7 @@ public:
 	rLink m_close;
 	rLink m_opened;
 	rLink m_closed;
+	rLink m_inProgress;
 
 	// Inoutputs
 
@@ -140,11 +168,10 @@ public:
 	LREAL     m_prvTemp = 0;
 	LREAL     m_prvPres = 0;
 	LREAL     m_prvDens = 0;
-	LREAL     m_prvCount[2];
-	LREAL     m_prvTime[2];
 	LREAL     m_strTemp = 0;
 	LREAL     m_strPres = 0;
 	LREAL     m_strDens = 0;
+	LREAL     m_strKf   = 0;
 	UINT      m_curDet  = 0;
 	UINT      m_fixDet  = 0;
 
@@ -163,18 +190,38 @@ public:
 	UDINT    m_tBounce = 1000;
 
 private:
-	State m_state    = State::IDLE;
+	enum
+	{
+		D131 = 0,
+		D242 = 1,
+	};
+
+	struct WayData
+	{
+		LREAL m_count;
+		LREAL m_time;
+
+		void clear() { m_count = 0; m_time = 0; }
+	};
+
+	struct Data
+	{
+		WayData m_summ;
+		WayData m_forward;
+		WayData m_reverse;
+
+		void clear() { m_summ.clear(); m_forward.clear(); m_reverse.clear(); }
+	};
+
+	State m_state = State::IDLE;
+	USINT m_way   = Way::FORWARD;
+	Data  m_volume[2];
 
 	LREAL m_stabDens = 0;
 	LREAL m_stabPres = 0;
 	LREAL m_stabTemp = 0;
 	LREAL m_stabFreq = 0;
 
-	LREAL m_curStrTemp = 0;
-	LREAL m_curStrPres = 0;
-	LREAL m_curStrDens = 0;
-
-	bool  m_enableAverage = false;
 	UDINT m_averageCount  = 0;
 
 	std::string m_moduleName  = "";
@@ -188,6 +235,8 @@ private:
 	static rBitsArray m_flagsSetup;
 	static rBitsArray m_flagsCommand;
 	static rBitsArray m_flagsState;
+	static rBitsArray m_flagsWay;
+	static rBitsArray m_flagsDetectors;
 };
 
 

@@ -36,6 +36,7 @@ public:
 	UDINT addStream(rStream* str);
 	UDINT getStreamCount() const;
 	UDINT setStreamFreqOut(UDINT strid) const;
+	rStream* getStream(UDINT strid) const;
 
 	// Виртуальные функции от rSource
 public:

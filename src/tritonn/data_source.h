@@ -92,7 +92,7 @@ public:
 	std::string m_alias   = ""; // Полное имя объекта, формируется из префикса и xml-атрибута "name"
 	STRID       m_descr   = 0;
 	UDINT       m_ID      = 0;
-	UDINT       m_lineNum = 0;
+	UDINT       m_lineNum = 0;  // Строка в конфигурации
 
 protected:
 	const rStation* m_station  = nullptr;

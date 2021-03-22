@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # mselector
-> 0.19.21.aea83ba8
+> 0.19.26.74dfba31
 ## XML
 ````xml
 <mselector name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >

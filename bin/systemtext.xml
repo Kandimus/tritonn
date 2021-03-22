@@ -114,6 +114,7 @@
 		<str id="1034">Кран закрыть</str> <!-- SID_PROVER_CLOSE -->
 		<str id="1035">Кран открыт</str> <!-- SID_PROVER_OPENED -->
 		<str id="1036">Кран закрыт</str> <!-- SID_PROVER_CLOSED -->
+		<str id="1037">Измерение в процессе</str> <!-- SID_PROVER_PROGRESS -->
 
 		<str id="1500">выходное значение</str> <!-- SID_SEL_OUT -->
 		<str id="1501">входное значение 1</str> <!-- SID_SEL_IN1 -->

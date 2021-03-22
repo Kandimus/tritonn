@@ -35,8 +35,7 @@ void rCompared<T>::Init(const T &val) { Value = Saved = val; }
 template <typename T>
 UDINT rCompared<T>::Compare(rEvent &event)
 {
-	if(Value != Saved)
-	{
+	if (isDiff()) {
 		event << Value << Saved;
 		rEventManager::instance().Add(event);
 
@@ -46,6 +45,12 @@ UDINT rCompared<T>::Compare(rEvent &event)
 	}
 
 	return 0;
+}
+
+template <typename T>
+bool rCompared<T>::isDiff() const
+{
+	return Value != Saved;
 }
 
 
