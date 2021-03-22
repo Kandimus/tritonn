@@ -580,9 +580,9 @@ UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 			.addXml(XmlName::DWORD, static_cast<UDINT>(m_swap.DWord), false, "\t")
 			.addXml("</" + std::string(XmlName::SWAP) + ">")
 			.addXml("<" + std::string(XmlName::ADDRESSMAP) + ">")
-			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK))
+			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK, XmlName::ADDRESSBLOCK))
 			.addXml("\t...")
-			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK))
+			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK, XmlName::ADDRESSBLOCK))
 			.addXml("</" + std::string(XmlName::ADDRESSMAP) + ">");
 
 	return TRITONN_RESULT_OK;

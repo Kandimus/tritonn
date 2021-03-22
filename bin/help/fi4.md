@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # fi4
-> 0.19.26.74dfba31
+> 0.19.30.eef5c241
 ## XML
 ````xml
 <fi4 name="valid object name" descr="string index" >
