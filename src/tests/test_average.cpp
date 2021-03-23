@@ -15,10 +15,10 @@ TEST_CASE("testing Average", "[Average]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL val1 = 20.00;
 		LREAL val2 = 4.69;
-		UDINT test = 12.345;
+		LREAL test = 12.345;
 
 		ss.add("sikn1.bik.io.temp1.present.value", val1);
-		ss.add("sikn1.bik.io.temp2.present.value", val1);
+		ss.add("sikn1.bik.io.temp2.present.value", val2);
 		REQUIRE(ss("sikn1.bik.io.temp1.present.value"));
 		REQUIRE(ss("sikn1.bik.io.temp2.present.value"));
 		ss.set();

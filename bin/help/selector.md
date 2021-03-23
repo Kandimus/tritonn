@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # selector
-> 0.19.30.eef5c241
+> 0.19.33.a2f312a3
 ## XML
 ````xml
 <selector name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >

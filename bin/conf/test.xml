@@ -89,7 +89,7 @@
 				<keypad>0</keypad>
 			</di>
 			<di name="di01" mode="PHIS" setup="KEYPAD | SUCCESS1 | ALARM0" description="4004">
-				<io_link module="1" channel="0"/>
+				<io_link module="1" channel="1"/>
 				<keypad>0</keypad>
 			</di>
 			<di name="di_virt" mode="PHIS" setup="" description="4005">
@@ -323,7 +323,7 @@
 							<keypad_kf>36000</keypad_kf>
 						</factors>
 						<io>
-							<ai name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
+							<ai name="temp1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -340,7 +340,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Temp2"   mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
+							<ai name="temp2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -374,7 +374,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
+							<ai name="Water2" mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -391,7 +391,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Visc"    mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
+							<ai name="Visc"   mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
 								<unit>64</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -408,9 +408,9 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
+							<ai name="pres"   mode="PHIS" setup="NOICE | KEYPAD"   description="4018">
 								<unit>32</unit>
-								<keypad>0.5</keypad>
+								<keypad>0.1</keypad>
 								<scale>
 									<min>0</min>
 									<max>6.3</max>
@@ -428,7 +428,7 @@
 							<counter name="Counter" setup="" description="4019">
 								<io_link module="2" channel="3" />
 							</counter>
-							<counter name="Period1" setup="" description="4020">
+							<counter name="period1" setup="" description="4020">
 								<io_link module="3" channel="0" />
 							</counter>
 							<counter name="Period2" setup="" description="4021">
@@ -452,8 +452,8 @@
 					</average>
 					<densitometer  name="dens1" description="4022">
 						<period>     <link alias="sikn1.bik.io.period1:period"/></period>
-						<temperature><link alias="sikn1.BIK.IO.Temp1"/></temperature>
-						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
+						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
+						<pressure>   <link alias="sikn1.bik.io.pres"/></pressure>
 						<calibration>20</calibration>
 						<factors>
 							<k0>-1.27753000E+03</k0>

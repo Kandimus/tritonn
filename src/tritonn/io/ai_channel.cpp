@@ -59,8 +59,8 @@ UINT rIOAIChannel::getMinValue() const
 	switch(m_type) {
 		case Type::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Min);
 		case Type::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Min);
-		case Type::V_0_10:   return static_cast<UINT>(Scale_V_m10_10::Min);
-		case Type::V_m10_10: return static_cast<UINT>(Scale_V_0_10::Min);
+		case Type::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Min);
+		case Type::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Min);
 	}
 	return 0;
 }
@@ -70,8 +70,8 @@ UINT rIOAIChannel::getMaxValue() const
 	switch(m_type) {
 		case Type::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Max);
 		case Type::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Max);
-		case Type::V_0_10:   return static_cast<UINT>(Scale_V_m10_10::Max);
-		case Type::V_m10_10: return static_cast<UINT>(Scale_V_0_10::Max);
+		case Type::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Max);
+		case Type::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Max);
 	}
 	return 0;
 }

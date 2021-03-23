@@ -99,7 +99,7 @@ UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, b
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
 	for (auto channel : m_channel) {
-		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index + 1);
+		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index);
 		channel->generateVars(p, list, issimulate);
 	}
 

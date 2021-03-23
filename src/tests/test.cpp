@@ -17,6 +17,6 @@
 namespace rTest
 {
 
-const UDINT sleepValue = 200;
+const UDINT sleepValue = 250;
 
 }

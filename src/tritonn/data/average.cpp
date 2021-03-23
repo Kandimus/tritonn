@@ -30,11 +30,11 @@
 //
 rAverage::rAverage(const rStation* owner) : rSource(owner)
 {
+	initLink(rLink::Setup::OUTPUT, m_outValue  , U_any, SID::OUTPUT , XmlName::OUTPUT , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_inValue[0], U_any, SID::INPUT_1, XmlName::INPUT_1, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_inValue[1], U_any, SID::INPUT_2, XmlName::INPUT_2, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_inValue[2], U_any, SID::INPUT_3, XmlName::INPUT_3, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_inValue[3], U_any, SID::INPUT_4, XmlName::INPUT_4, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_outValue  , U_any, SID::OUTPUT , XmlName::OUTPUT , rLink::SHADOW_NONE);
 }
 
 

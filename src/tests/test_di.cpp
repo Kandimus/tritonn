@@ -33,8 +33,8 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		USINT sim_val = 1;
 
-		ss.add("hardware.di8do8_1.ch_01.simulate.type" , static_cast<USINT>(rIODIChannel::SimType::CONST));
-		ss.add("hardware.di8do8_1.ch_01.simulate.value", sim_val);
+		ss.add("hardware.di8do8_1.ch_00.simulate.type" , static_cast<USINT>(rIODIChannel::SimType::CONST));
+		ss.add("hardware.di8do8_1.ch_00.simulate.value", sim_val);
 		ss.add("io.di00.mode"                          , static_cast<UINT>(rDI::Mode::PHIS));
 		ss.set();
 
@@ -48,8 +48,9 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 		CHECK  (ss("io.di00.present.value")->getValueUSINT() == sim_val);
 
 		sim_val = !sim_val;
+
 		ss.clear();
-		ss.add("hardware.di8do8_1.ch_01.simulate.value", sim_val);
+		ss.add("hardware.di8do8_1.ch_00.simulate.value", sim_val);
 		ss.set();
 
 		mSleep(rTest::sleepValue);

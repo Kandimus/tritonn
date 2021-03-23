@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # modbustcpslave
-> 0.19.30.eef5c241
+> 0.19.33.a2f312a3
 ## XML
 ````xml
 <modbustcpslave name="valid object name" descr="string index" id="0" port="502" count_error="3" security="0" maxclient="8" >

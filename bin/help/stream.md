@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # stream
-> 0.19.30.eef5c241
+> 0.19.33.a2f312a3
 ## XML
 ````xml
 <stream name="valid object name" descr="string index" setup="text value | text value | ... | text value" flowmeter="text value" linearization="0" maintenance="1" >
@@ -14,7 +14,7 @@
 	<density20><link alias="object's output"/></density20><!-- Optional -->
 	<b15><link alias="object's output"/></b15><!-- Optional -->
 	<y15><link alias="object's output"/></y15><!-- Optional -->
-	<limits> <!-- Optional -->
+	<limits><!-- Optional -->
 		<limit name="impulse" setup="LOLO|LO|HI|HIHI">
 			<lolo>0</lolo>
 			<lo>0</lo>

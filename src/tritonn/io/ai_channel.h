@@ -83,6 +83,7 @@ public:
 	UINT getMinValue() const;
 	UINT getMaxValue() const;
 	UINT getRange() const;
+	REAL getCurrent() const { return m_current; }
 
 public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
