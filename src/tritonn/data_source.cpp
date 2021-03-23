@@ -440,6 +440,31 @@ std::string rSource::getMarkDown()
 	return result;
 }
 
+std::string rSource::getXmlLimits(const std::string& prefix) const
+{
+	std::string result = "";
+
+	for (auto link : m_inputs) {
+		result += link->m_limit.getXML(link->m_ioName, "\t" + prefix);
+	}
+
+	for (auto link : m_outputs) {
+		if (link->m_setup & rLink::Setup::INPUT) {
+			continue;
+		}
+
+		result += link->m_limit.getXML(link->m_ioName, "\t" + prefix);
+	}
+
+	if (result.size()) {
+		result = std::string("<") + XmlName::LIMITS + ">" + rGeneratorMD::rItem::XML_OPTIONAL + "\n" +
+				result +
+				prefix + "</" + XmlName::LIMITS + ">\n";
+	}
+
+	return result;
+}
+
 std::string rSource::getXmlInput() const
 {
 	std::string result = "";
@@ -456,23 +481,7 @@ std::string rSource::getXmlInput() const
 		}
 	}
 
-	std::string strlink = "";
-
-	for (auto link : m_inputs) {
-		strlink += link->m_limit.getXML(link->m_ioName, "\t\t");
-	}
-
-	for (auto link : m_outputs) {
-		if (link->m_setup & rLink::Setup::INPUT) {
-			continue;
-		}
-
-		strlink += link->m_limit.getXML(link->m_ioName, "\t\t");
-	}
-
-	if (strlink.size()) {
-		result += String_format("\t<%s> %s\n%s\t</%s>\n", XmlName::LIMITS, rGeneratorMD::rItem::XML_OPTIONAL.c_str(), strlink.c_str(), XmlName::LIMITS);
-	}
+	result += "\t" + getXmlLimits("\t");
 
 	return result;
 }

@@ -355,8 +355,24 @@
 					</stream>
 				</streams>
 				<io>
-					<ai name="temp_tpu" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
-						<io_link module="4" channel="0"/>
+					<ai name="temp_tpu_in" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+						<unit>16</unit>
+						<keypad>12.5</keypad>
+						<scale>
+							<min>-10</min>
+							<max>100</max>
+						</scale>
+						<limits>
+							<limit name="present" setup="HIHI | HI | LO | LOLO">
+								<hihi>5</hihi>
+								<hi>10</hi>
+								<lo>25</lo>
+								<lolo>35</lolo>
+								<hysteresis>0.1</hysteresis>
+							</limit>
+						</limits>
+					</ai>
+					<ai name="temp_tpu_out" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
@@ -410,7 +426,7 @@
 				<calculate>
 					<prove name="prove" setup="STABILIZATION | BOUNCE" description="">
 						<io_link module="3" />
-						<temperature><link alias="sikn_123.io.temp_tpu" /></temperature>
+						<temperature><link alias="sikn_123.obj.avr_temp_tpu" /></temperature>
 						<pressure><link alias="sikn_123.io.pres_tpu" /></pressure>
 						<density><link alias="sikn_123.obj.stndenstemp:dens" /></density>
 						<valve>
@@ -420,6 +436,12 @@
 							<closed><link alias="sikn_123.io.valve_closed" /></closed>
 						</valve>
 					</prove>
+					<average name="avr_temp_tpu" description="4000">
+						<inputs>
+							<input><link alias="sikn_123.io.temp_tpu_in" /></input>
+							<input><link alias="sikn_123.io.temp_tpu_out" /></input>
+						</inputs>
+					</average>
 					<densitometer  name="Dens1" description="4022">
 						<period>     <link alias="sikn_123.bik.io.period1:period"/></period>
 						<temperature><link alias="SIKN_123.BIK.IO.Temp1"/></temperature>

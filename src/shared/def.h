@@ -115,13 +115,12 @@ const UDINT  MAX_IO_PR                 = 4;
 const UDINT  MAX_STATION               = 4;
 const UDINT  MAX_STREAM                = 16;
 const UDINT  MAX_SELECTOR              = 16;
+const UDINT  MAX_MSELECTOR             = 16;
 const UDINT  MAX_DENSSOL               = 16;
 const UDINT  MAX_REDUCEDDENS           = 32;
 const UDINT  MAX_SAMPLER               = 32;
-const UDINT  MAX_PROVE                 = 2;
-
-const UDINT  MAX_AI_SPLINE             = 4;
-const UDINT  MAX_FI_SPLINE             = 4;
+const UDINT  MAX_PROVE                 = 8;
+const UDINT  MAX_AVERAGE               = 32;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
@@ -395,50 +394,56 @@ enum rTritonn_Error
 	DATACFGERR_MAX_STATION,                 // 138
 	DATACFGERR_MAX_SAMPLER,                 //
 	DATACFGERR_MAX_PROVE,                   // 140
+	DATACFGERR_MAX_AVERAGE,                 //
+	DATACFGERR_MAX_RESERV1,                 // 142
+	DATACFGERR_MAX_RESERV2,                 //
+	DATACFGERR_MAX_RESERV3,                 // 144
+	DATACFGERR_MAX_RESERV4,                 //
+	DATACFGERR_MAX_RESERV5,                 // 146
 	DATACFGERR_LIMIT,                       //
-	DATACFGERR_REPORT,                      // 142
+	DATACFGERR_REPORT,                      // 148
 	DATACFGERR_NOREPORTS,                   //
-	DATACFGERR_RESOLVETOTAL,                // 144
+	DATACFGERR_RESOLVETOTAL,                // 150
 	DATACFGERR_VAR,                         //
-	DATACFGERR_USERS_NF,                    // 146     Not Found Template BLOCKS
+	DATACFGERR_USERS_NF,                    // 152     Not Found Template BLOCKS
 	DATACFGERR_INTERNAL,                    //
-	DATACFGERR_USERS_PARSE,                 // 148
+	DATACFGERR_USERS_PARSE,                 // 154
 	DATACFGERR_INTERFACES_NF_TBLOKS,        //
-	DATACFGERR_INTERFACES_NF_BLOCKS,        // 150
+	DATACFGERR_INTERFACES_NF_BLOCKS,        // 156
 	DATACFGERR_INTERFACES_BAD_ADDR,         //
-	DATACFGERR_INTERFACES_BAD_BLOCK,        // 152
+	DATACFGERR_INTERFACES_BAD_BLOCK,        // 158
 	DATACFGERR_INTERFACES_BAD_VAR,          //
-	DATACFGERR_INTERFACES_NF_VAR,           // 154
+	DATACFGERR_INTERFACES_NF_VAR,           // 160
 	DATACFGERR_INTERFACES_ADDR_OVERFLOW,    //
-	DATACFGERR_INTERFACES_NF_STD_VAR,       // 156
+	DATACFGERR_INTERFACES_NF_STD_VAR,       // 162
 	DATACFGERR_INTERFACES_BAD_STD_ADDR,     //
-	DATACFGERR_INCORRECT_IP,                // 158
+	DATACFGERR_INCORRECT_IP,                // 164
 	DATACFGERR_SECURITY_PARSE,              //
-	DATACFGERR_SECURITY_DESCRYPT,           // 160
+	DATACFGERR_SECURITY_DESCRYPT,           // 166
 	DATACFGERR_SECURITY_NF,                 //
-	DATACFGERR_OPCUA_USER_NF,               // 162
+	DATACFGERR_OPCUA_USER_NF,               // 168
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 164
+	DATACFGERR_OPCUA_VAR_NF,                // 170
 	DATACFGERR_UNKNOWN_MODULE,              //
-	DATACFGERR_IO_CHANNEL,                  // 166
+	DATACFGERR_IO_CHANNEL,                  // 172
 	DATACFGERR_INVALID_NAME,                //
-	DATACFGERR_INVALID_MODULELINK,          // 168
+	DATACFGERR_INVALID_MODULELINK,          // 174
 	DATACFGERR_REALTIME_MODULELINK,         //
-	DATACFGERR_NOTSYSTEXTFILE,              // 170
+	DATACFGERR_NOTSYSTEXTFILE,              // 176
 	DATACFGERR_INTERFACES_BADNAME,          //
-	DATACFGERR_DI,                          // 172
+	DATACFGERR_DI,                          // 178
 	DATACFGERR_DO,                          //
-	DATACFGERR_SAMPLER_TOTALS,              // 174
+	DATACFGERR_SAMPLER_TOTALS,              // 180
 	DATACFGERR_SAMPLER_CAN,                 //
-	DATACFGERR_SAMPLER_METHOD,              // 176
+	DATACFGERR_SAMPLER_METHOD,              // 182
 	DATACFGERR_SAMPLER_SETUP,               //
-	DATACFGERR_SAMPLER_RESERVE,             // 178
+	DATACFGERR_SAMPLER_RESERVE,             // 184
 	DATACFGERR_SAMPLER_RESERVE_NF,          //
-	DATACFGERR_OBJECT_UNITS,                // 180
+	DATACFGERR_OBJECT_UNITS,                // 186
 	DATACFGERR_PORVE_MISSINGMODULE,         //
-	DATACFGERR_AVERAGE_NOINPUT,             // 182
+	DATACFGERR_AVERAGE_NOINPUT,             // 188
 	DATACFGERR_AVERAGE_TOOMANYINPUT,        //
-	DATACFGERR_AVERAGE_TOOFEWINPUT,         // 184
+	DATACFGERR_AVERAGE_TOOFEWINPUT,         // 190
 	DATACFGERR_AVERAGE_DIFFUNITS,           //
 
 	DATACFGERR_LANG_STRUCT = 500,

@@ -29,7 +29,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		CHECK  (ss("io.ai_virt.present.value")->getValueLREAL() == test_val);
 	}
 
-	SECTION("Set simulate IO") {
+	SECTION("Set simulate IO. set ai channel = 4mA") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL min_val = -10.0;
 
@@ -38,12 +38,17 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.min"                 , min_val);
 		ss.add("io.ai00.scales.max"                 , 100.0);
+		REQUIRE(ss("hardware.ai6_1.ch_01.type"));
+		REQUIRE(ss("hardware.ai6_1.ch_01.simulate.type"));
+		REQUIRE(ss("hardware.ai6_1.ch_01.simulate.value"));
+		REQUIRE(ss("io.ai00.scales.min"));
+		REQUIRE(ss("io.ai00.scales.max"));
 		ss.set();
 
 		mSleep(rTest::sleepValue);
 
 		ss.clear();
-		ss.add("io.ai00.mode"                       , static_cast<UINT>(rAI::Mode::PHIS));
+		ss.add("io.ai00.mode" , static_cast<UINT>(rAI::Mode::PHIS));
 		ss.set();
 
 		mSleep(rTest::sleepValue);
@@ -58,6 +63,7 @@ TEST_CASE("testing analog input. IO simulate", "[AnalogInput]")
 		REQUIRE(ss("io.ai00.present.value"));
 		CHECK  (ss("io.ai00.mode")->getValueUINT() == static_cast<UINT>(rAI::Mode::PHIS));
 		CHECK  (ss("io.ai00.present.value")->getValueLREAL() == min_val);
+		CHECK  (ss("hardware.ai6_1.ch_01.simulate.value")->getValueUINT() == static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Min));
 	}
 
 	SECTION("Set keypad value") {

@@ -71,6 +71,7 @@ public:
 	virtual std::string saveKernel(UDINT isio, const std::string& objname, const std::string& comment, UDINT isglobal);
 	virtual UDINT       generateMarkDown(rGeneratorMD& md);
 	virtual std::string getXmlInput() const;
+	virtual std::string getXmlLimits(const std::string& prefix) const;
 	virtual UDINT       generateVars(rVariableList& list);
 	virtual UDINT       preCalculate();
 	virtual UDINT       calculate();

@@ -17,6 +17,7 @@
 
 #include "def.h"
 #include "structures.h"
+#include <map>
 
 class rVariableList;
 class rGeneratorMD;
@@ -39,11 +40,11 @@ public:
 	STM           DateTime;
 	STM           SetDateTime;
 	USINT         SetDateTimeAccept;
-	rMaxCount     Max;
 	rConfigInfo   ConfigInfo;
 	char          Lang[MAX_LANG_SIZE];
 
-	//TODO SetTime
+	std::map<std::string, UDINT> m_max;
+
 	//TODO IP
 };
 

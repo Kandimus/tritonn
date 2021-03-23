@@ -60,9 +60,6 @@ UDINT rAverage::initLimitEvent(rLink& link)
 
 UDINT rAverage::calculate()
 {
-	rEvent event_s;
-	rEvent event_f;
-	
 	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
 	}
@@ -95,10 +92,10 @@ UDINT rAverage::generateVars(rVariableList& list)
 
 UDINT rAverage::check(rError& err)
 {
-	STRID unit = m_inValue[0].m_unit;
+	STRID unit = m_inValue[0].getSourceUnit();
 
 	for (UDINT ii = 1; ii < m_count; ++ii) {
-		if (unit != m_inValue[ii].m_unit) {
+		if (unit != m_inValue[ii].getSourceUnit()) {
 			return err.set(DATACFGERR_AVERAGE_DIFFUNITS, m_lineNum, "");
 		}
 	}
@@ -128,7 +125,7 @@ UDINT rAverage::loadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 			return err.set(DATACFGERR_AVERAGE_TOOMANYINPUT, xml_input->GetLineNum(), "");
 		}
 
-		if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_input, m_inValue[m_count])) {
+		if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_input->FirstChildElement(XmlName::LINK), m_inValue[m_count])) {
 			return err.getError();
 		}
 		++m_count;
@@ -151,7 +148,14 @@ UDINT rAverage::generateMarkDown(rGeneratorMD& md)
 	m_inValue[3].m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_outValue.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 
-	md.add(this, true, rGeneratorMD::Type::CALCULATE)
+	md.add(this, false, rGeneratorMD::Type::CALCULATE)
+			.addXml("<" + std::string(XmlName::INPUTS) + ">")
+			.addLink(XmlName::INPUT, false, "\t")
+			.addLink(XmlName::INPUT, false, "\t")
+			.addLink(XmlName::INPUT, true, "\t")
+			.addLink(XmlName::INPUT, true, "\t")
+			.addXml("</" + std::string(XmlName::INPUTS) + ">")
+			.addXml(getXmlLimits("\t"))
 			.addRemark("> Единицы измерений для всех входных значений должны быть одинаковы! В противном случае конфигурация не будет загружена.");
 
 	return TRITONN_RESULT_OK;
