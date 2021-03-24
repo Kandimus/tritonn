@@ -436,10 +436,10 @@
 							<closed><link alias="sikn_123.io.valve_closed" /></closed>
 						</valve>
 					</prove>
-					<average name="avr_temp_tpu" description="4000">
+					<average name="avr_temp_tpu" setup="NOAVRFAULT" description="4000">
 						<inputs>
-							<input><link alias="sikn_123.io.temp_tpu_in" /></input>
-							<input><link alias="sikn_123.io.temp_tpu_out" /></input>
+							<input><link alias="sikn_123.io.temp_tpu_in:present" /></input>
+							<input><link alias="sikn_123.io.temp_tpu_out:present" /></input>
 						</inputs>
 					</average>
 					<densitometer  name="Dens1" description="4022">

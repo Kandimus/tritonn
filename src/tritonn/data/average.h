@@ -20,12 +20,19 @@
 class rAverage : public rSource
 {
 public:
-	rAverage(const rStation* owner = nullptr);
-	virtual ~rAverage() = default;
+	enum class Setup : UINT
+	{
+		NOAVRFAULT = 0,
+		CHECKFAULT,
+		NOCHECKFAULT,
+	};
 
 	enum {
 		COUNT = 4,
 	};
+
+	rAverage(const rStation* owner = nullptr);
+	virtual ~rAverage() = default;
 	
 	// Виртуальные функции от rSource
 public:
@@ -42,12 +49,16 @@ protected:
 public:
 	// Inputs, Inoutputs
 	rLink m_inValue[COUNT];          // Текущее физическое значение
+	rLink m_inFault[COUNT];          //
 
 	// Outputs
 	rLink m_outValue;                // Текущее физическое значение
 
 private:
-	UINT m_count = 0;
+	UINT  m_count = 0;
+	Setup m_setup = Setup::NOAVRFAULT;
+
+	static rBitsArray m_flagsSetup;
 };
 
 
