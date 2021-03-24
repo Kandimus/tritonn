@@ -20,6 +20,8 @@
 #include <syslog.h>
 #include "log_client.h"
 #include "log_manager.h"
+#include "simplefile.h"
+#include "time64.h"
 
 std::string rLogManager::m_logAppName = "logapp";
 
@@ -39,7 +41,7 @@ rLogManager::rLogManager()
 	Terminal.Set(false);
 	Enable.Set(false);     //TODO В штатном режиме можно после полной инициализации выключать
 
-    openlog(m_logAppName.c_str(), LOG_NDELAY/* | LOG_PERROR*/, LOG_LOCAL0);
+//    openlog(m_logAppName.c_str(), LOG_NDELAY/* | LOG_PERROR*/, LOG_LOCAL0);
 }
 
 
@@ -59,11 +61,10 @@ rLogManager::~rLogManager()
 //
 //! В данной функции нельзя вызывать обычный Lock(), т.к. сообщение может добавлять класс TCPClass
 //! от которого и унаследованн данный класс логов, и произойдет блокирование мьютексов
-UDINT rLogManager::Add(UDINT mask, const char *filename, UDINT lineno, const char *format, ...)
+UDINT rLogManager::Add(UDINT mask, const char* filesource, UDINT lineno, const char *format, ...)
 {
 	UDINT terminal = false;
 	UDINT level    = 0;
-	int   priority = LOG_INFO;
 	
 	if(!Enable.Get()) return 1;
 
@@ -79,26 +80,19 @@ UDINT rLogManager::Add(UDINT mask, const char *filename, UDINT lineno, const cha
 	terminal = Terminal.Get() || (mask & (LM_LOG | LM_P));
 	
 	// Создаем сообщение
-	rPacketLog  packet(mask, lineno, filename);
+	rPacketLog  packet(mask, lineno, filesource);
 
 	// Формируем строку сообщения	сразу в поле packet.Text, без промежуточных буфферов
 	va_list(args);
 	va_start(args, format);
 	vsnprintf(packet.Text, MAX_LOG_TEXT, format, args);
 	va_end(args);
-	
-	//
-	if(mask & LM_I) priority = LOG_INFO;
-	if(mask & LM_W) priority = LOG_WARNING;
-	if(mask & LM_A) priority = LOG_CRIT;
-	if(mask & LM_P) priority = LOG_ALERT;
-	
-	// Отправляем сообщение в системный rsyslog
-	syslog(priority, "%s", packet.Text);
+
+	auto fulltext = saveLogText(mask, packet.Date, filesource, lineno, (const char*)packet.Text);
 
 	if(terminal)
 	{
-		PrintToTerminal(&packet);
+		fprintf(stderr, "%s", fulltext.c_str());
 	}
 
 	// Запускаем callback функцию, если она есть
@@ -133,12 +127,9 @@ void rLogManager::OutErr(const char *filename, UDINT lineno, const char *format,
 	vsnprintf(packet.Text, MAX_LOG_TEXT, format, args);
 	va_end(args);
 
-	syslog(LOG_ALERT, "%s", packet.Text);
+	auto fulltext = saveLogText(LM_P, packet.Date, filename, lineno, (const char*)packet.Text);
 
-//	if(rLogManager::Instance().Terminal.Get())
-	{
-		PrintToTerminal(&packet);
-	}
+	fprintf(stderr, "%s", fulltext.c_str());
 }
 
 
@@ -147,25 +138,6 @@ rLogManager &rLogManager::Instance()
 	static rLogManager Singleton;
 
 	return Singleton;
-}
-
-//-------------------------------------------------------------------------------------------------
-// Вывод сообщения на терминал
-void rLogManager::PrintToTerminal(rPacketLog *packet)
-{
-	char logt[5] = "----";
-	tm   dt;
-
-	// Тип сообщения
-	if(packet->Mask & LM_P) logt[0] = 'P';
-	if(packet->Mask & LM_A) logt[1] = 'A';
-	if(packet->Mask & LM_W) logt[2] = 'W';
-	if(packet->Mask & LM_I) logt[3] = 'I';
-
-	// Получаем дату и время в структуре
-	localtime_r(&packet->Date.tv_sec, &dt);
-
-	fprintf(stderr, "%02i.%02i.%04i %02i:%02i:%02i.%03li [%s %s:%i] %s\n", dt.tm_mday, dt.tm_mon + 1, dt.tm_year + 1900, dt.tm_hour, dt.tm_min, dt.tm_sec, packet->Date.tv_usec / 1000, logt, packet->FileName, packet->LineNo, packet->Text);
 }
 
 
@@ -194,8 +166,8 @@ rThreadStatus rLogManager::Proccesing()
 		}
 		Unlock();
 
-      // Если нет подключенных клиентов, то созданные сообщения удаляем
-		if(clientCount)
+		// Если нет подключенных клиентов, то созданные сообщения удаляем
+		if(!clientCount)
 		{
 			LockList();
 			{
@@ -221,6 +193,8 @@ rThreadStatus rLogManager::Proccesing()
 		{
 			Send(NULL, &(*ipaket), packetsize);
 		}
+
+		//TODO Удаление старых файлов. или архивация.
 		
 		rThreadClass::EndProccesing();
 	}
@@ -316,6 +290,30 @@ UDINT rLogManager::SetAddCalback(Fn_LogAddCallback fn)
 	return 0;
 }
 
+std::string rLogManager::saveLogText(UDINT mask, const UDT& time, const std::string& source, UDINT lineno, const std::string& text)
+{
+	std::string filename = DIR_LOG + String_format("%u.txt", time.tv_sec / 86400);
+	char logt[5] = "----";
+	tm   dt;
+
+	// Тип сообщения
+	if(mask & LM_P) logt[0] = 'P';
+	if(mask & LM_A) logt[1] = 'A';
+	if(mask & LM_W) logt[2] = 'W';
+	if(mask & LM_I) logt[3] = 'I';
+
+	localtime_r(&time.tv_sec, &dt);
+
+	std::string fulltext = String_format("%02i.%02i.%04i %02i:%02i:%02i.%03li [%s %s:%i] %08x %s\n",
+										 dt.tm_mday, dt.tm_mon + 1, dt.tm_year + 1900,
+										 dt.tm_hour, dt.tm_min, dt.tm_sec, time.tv_usec / 1000,
+										 logt, source.c_str(), lineno,
+										 mask, text.c_str());
+
+	SimpleFileAppend(filename, fulltext);
+
+	return fulltext;
+}
 
 
 

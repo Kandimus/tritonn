@@ -29,7 +29,7 @@ class rLogManager: public rTCPClass
 public:
 	virtual ~rLogManager();
 
-	UDINT Add(UDINT mask, const char *filename, UDINT lineno, const char *format, ...);
+	UDINT Add(UDINT mask, const char* filesource, UDINT lineno, const char *format, ...);
 
 	// Управление логированием
 	UDINT AddLogMask(UDINT lm);     // Добавление маски к уже существующей
@@ -51,8 +51,6 @@ protected:
 	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
 	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 	
-	static  void        PrintToTerminal(rPacketLog *packet);
-
 public:
 	rSafityValue<UDINT>  Terminal;  // Включение/выключение дублирования сообщений на консоль
 	rSafityValue<UDINT>  Enable;    // Включение/выключение логирования
@@ -78,6 +76,7 @@ private:
 	DINT UnlockList();
 	DINT LockCallback();
 	DINT UnlockCallback();
+	static std::string saveLogText(UDINT mask, const UDT& time, const std::string& source, UDINT lineno, const std::string& text);
 };
 
 

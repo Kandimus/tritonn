@@ -18,8 +18,8 @@
 
 #include "def.h"
 
-extern UDINT SimpleFileCreateDir(const string &filename);
-extern UDINT SimpleFileDelete(const string &filename);
-extern UDINT SimpleFileLoad(const string &filename,       string &text);
-extern UDINT SimpleFileSave(const string &filename, const string &text);
-
+extern UDINT SimpleFileCreateDir(const std::string& filename);
+extern UDINT SimpleFileDelete(const std::string& filename);
+extern UDINT SimpleFileLoad(const std::string& filename, std::string& text);
+extern UDINT SimpleFileSave(const std::string& filename, const std::string& text);
+extern UDINT SimpleFileAppend(const std::string& filename, const std::string& text);

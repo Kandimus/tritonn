@@ -239,10 +239,10 @@ const UDINT  ACCESS_MASK_VIEWHIDE      = (ACCESS_SA | ACCESS_ADMIN);
 // Директории
 #ifdef WIN32
 const std::string DIR_HOME             = ".\\";
-const std::string DIR_LOG              = DIR_HOME + "log\\";
 const std::string DIR_CONF             = DIR_HOME + "conf\\";
 const std::string DIR_FTP              = DIR_HOME + "ftp\\";
 const std::string DIR_WWW              = DIR_HOME + "www\\";
+const std::string DIR_EVENT            = DIR_HOME + "log\\";
 const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports\\";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag\\";
 const std::string DIR_MARKDOWN         = DIR_HOME + "help\\";
@@ -253,11 +253,12 @@ const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";
 const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 #else
 const std::string DIR_HOME             = "./";
-const std::string DIR_LOG              = DIR_HOME + "log/";
 const std::string DIR_CONF             = DIR_HOME + "conf/";
+const std::string DIR_LOG              = DIR_HOME + "log/";
 const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
-const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports/";
+const std::string DIR_EVENT            = DIR_WWW  + "application/event/";
+const std::string DIR_REPORT           = DIR_FTP  + "reports/";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
 const std::string DIR_MARKDOWN         = DIR_HOME + "help/";
 const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
