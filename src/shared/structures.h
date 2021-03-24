@@ -81,23 +81,3 @@ public:
 	void Start();
 	void Stop();
 };
-
-struct rMaxCount
-{
-	USINT m_ai          = 0;
-	USINT m_fi          = 0;
-	USINT m_di          = 0;
-	USINT m_do          = 0;
-	USINT m_station     = 0;
-	USINT m_stream      = 0;
-	USINT m_densSol     = 0;
-	USINT m_reducedDens = 0;
-	USINT m_selector    = 0;
-	USINT m_sampler     = 0;
-	USINT m_prove       = 0;
-};
-
-
-
-
-

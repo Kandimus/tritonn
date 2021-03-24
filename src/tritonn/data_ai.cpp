@@ -169,7 +169,7 @@ UDINT rAI::calculate()
 				  event_s.Reinit(EID_AI_CH_OK)    << m_ID << m_descr);
 
 		m_phValue.m_value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
-		m_current.m_value = channel->m_current; //(24.0 / 65535.0) * static_cast<LREAL>(UsedCode);
+		m_current.m_value = channel->getCurrent();
 
 		if (channel->m_state) {
 			m_fault = true;

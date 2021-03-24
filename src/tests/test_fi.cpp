@@ -38,10 +38,10 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 
 	SECTION("Set simulate IO (const)") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
-		LREAL freq = 1000.0;
+		UDINT freq = 1000;
 
-		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
-		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
+		ss.add("hardware.fi4_1.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
+		ss.add("hardware.fi4_1.ch_00.simulate.value", freq);
 		ss.set();
 
 		mSleep(rTest::sleepValue + 1030);
@@ -61,8 +61,8 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL freq = 5432.0;
 
-		ss.add("hardware.fi4_1.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
-		ss.add("hardware.fi4_1.ch_01.simulate.value", freq);
+		ss.add("hardware.fi4_1.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
+		ss.add("hardware.fi4_1.ch_00.simulate.value", freq);
 		ss.set();
 
 		mSleep(rTest::sleepValue + 1030);

@@ -60,10 +60,12 @@ class rDataConfig
 	};
 
 public:
-	std::string FileName;
-	rError      m_error;
-
 	UDINT LoadFile(const std::string& filename, rSystemVariable& sysvar, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);
+	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
+	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
+
+	const rSource* getSource(const std::string& alias);
+	tinyxml2::XMLElement* GetRootSecurity();
 
 protected:
 	cJSON* m_json     = nullptr;
@@ -87,7 +89,7 @@ protected:
 	UDINT LoadStation   (tinyxml2::XMLElement* root, cJSON* jroot);
 	UDINT loadStream    (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
 	UDINT loadIO        (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
-	UDINT LoadCalc      (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
+	UDINT loadCalc      (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
 	UDINT LoadReport    (tinyxml2::XMLElement* root);
 	UDINT LoadCustom    (tinyxml2::XMLElement* root);
 	UDINT LoadVariable  (tinyxml2::XMLElement* root);
@@ -105,11 +107,7 @@ protected:
 	void  saveWeb();
 
 public:
-	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
-	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
-
-	const rSource* getSource(const std::string& alias);
-
-	tinyxml2::XMLElement* GetRootSecurity();
+	std::string FileName;
+	rError      m_error;
 };
 

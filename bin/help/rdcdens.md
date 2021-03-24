@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # rdcdens
-> 0.19.30.eef5c241
+> 0.19.33.a2f312a3
 ## XML
 ````xml
 <rdcdens name="valid object name" descr="string index" >
@@ -9,7 +9,7 @@
 	<pressure><link alias="object's output"/></pressure>
 	<density15><link alias="object's output"/></density15>
 	<b15><link alias="object's output"/></b15><!-- Optional -->
-	<limits> <!-- Optional -->
+	<limits><!-- Optional -->
 		<limit name="temperature" setup="LOLO|LO|HI|HIHI">
 			<lolo>0</lolo>
 			<lo>0</lo>

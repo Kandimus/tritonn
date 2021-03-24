@@ -68,13 +68,13 @@ TEST_CASE("testing densitometer.", "[DensSol]")
 	SECTION("Set fi value. Calculating density") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL density_freq = 730;
-		LREAL density_val  = 855.6989307275;
+		LREAL density_val  = 855.68901907;
 
-		ss.add("hardware.fi4_2.ch_01.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
-		ss.add("hardware.fi4_2.ch_01.simulate.value", density_freq);
+		ss.add("hardware.fi4_2.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
+		ss.add("hardware.fi4_2.ch_00.simulate.value", density_freq);
 		ss.set();
 
-		mSleep(1100);
+		mSleep(rTest::sleepValue + 1000);
 
 		ss.clear();
 		ss.add("sikn1.obj.dens1.factor.set.k0"  , -1.27753000E+03);
@@ -87,8 +87,9 @@ TEST_CASE("testing densitometer.", "[DensSol]")
 		ss.add("sikn1.obj.dens1.factor.set.k21a",  1.98986000E-01);
 		ss.add("sikn1.obj.dens1.factor.set.k21b", -3.19623000E-03);
 		ss.add("sikn1.obj.dens1.factor.set.accept", 1);
-		ss.add("sikn1.io.temp1.present.value", 10);
-		ss.add("sikn1.io.pres1.present.value", 0.1);
+		ss.add("sikn1.bik.io.temp1.present.value", 10);
+		ss.add("sikn1.bik.io.pres.present.value", 0.1);
+		REQUIRE(ss("sikn1.bik.io.pres.present.value"));
 		ss.set();
 
 		mSleep(rTest::sleepValue);
@@ -97,7 +98,11 @@ TEST_CASE("testing densitometer.", "[DensSol]")
 		ss.add("sikn1.obj.dens1.density.value");
 		ss.get();
 
+		LREAL epsilon = Catch::Epsilon::instance().setDouble(0.0001);
+
 		REQUIRE(ss("sikn1.obj.dens1.density.value"));
 		CHECK  (ss("sikn1.obj.dens1.density.value")->getValueLREAL() == density_val);
+
+		Catch::Epsilon::instance().setDouble(epsilon);
 	}
 }

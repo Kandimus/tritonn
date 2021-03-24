@@ -3,8 +3,8 @@
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module type="AI6" name="ai6_1" ver="1.0">
-			<channel number="0" setup="NOICE"/>
-			<channel number="1" setup="NOICE | AVERAGE"/>
+			<channel number="0" setup=""/>
+			<channel number="1" setup="AVERAGE"/>
 		</module>
 		<module type="di8do8" name="di8do8_1">
 			<channel number="0" setup=""/>
@@ -89,7 +89,7 @@
 				<keypad>0</keypad>
 			</di>
 			<di name="di01" mode="PHIS" setup="KEYPAD | SUCCESS1 | ALARM0" description="4004">
-				<io_link module="1" channel="0"/>
+				<io_link module="1" channel="1"/>
 				<keypad>0</keypad>
 			</di>
 			<di name="di_virt" mode="PHIS" setup="" description="4005">
@@ -168,8 +168,8 @@
 						</io>
 						<calculate>
 							<reduceddens name="StnDens" description="4006">
-								<temperature><link alias="sikn1.Line1.IO.Temp"/></temperature>
-								<pressure>   <link alias="sikn1.Line1.IO.Pres"/></pressure>
+								<temperature><link alias="sikn1.Line1.io.Temp"/></temperature>
+								<pressure>   <link alias="sikn1.Line1.io.Pres"/></pressure>
 								<density15>  <link alias="sikn1.Obj.StnDensTemp:dens15"/></density15>
 								<limits>
 									<limit name="density" setup="hihi | hi | lo | lolo">
@@ -323,7 +323,7 @@
 							<keypad_kf>36000</keypad_kf>
 						</factors>
 						<io>
-							<ai name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
+							<ai name="temp1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -340,7 +340,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Temp2"   mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
+							<ai name="temp2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
@@ -374,7 +374,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
+							<ai name="Water2" mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -391,7 +391,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Visc"    mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
+							<ai name="Visc"   mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
 								<unit>64</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -408,9 +408,9 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
+							<ai name="pres"   mode="PHIS" setup="NOICE | KEYPAD"   description="4018">
 								<unit>32</unit>
-								<keypad>0.5</keypad>
+								<keypad>0.1</keypad>
 								<scale>
 									<min>0</min>
 									<max>6.3</max>
@@ -428,10 +428,10 @@
 							<counter name="Counter" setup="" description="4019">
 								<io_link module="2" channel="3" />
 							</counter>
-							<counter name="Period1" setup="" description="4020">
+							<counter name="period1" setup="" description="4020">
 								<io_link module="3" channel="0" />
 							</counter>
-							<counter name="Period2" setup="AVERAGE" description="4021">
+							<counter name="Period2" setup="" description="4021">
 							</counter>
 						</io>
 						<limits>
@@ -444,10 +444,16 @@
 					</stream>
 				</streams>
 				<calculate>
+					<average name="avr_temp" description="0">
+						<inputs>
+							<input><link alias="sikn1.bik.io.temp1"/></input>
+							<input><link alias="sikn1.bik.io.temp2"/></input>
+						</inputs>
+					</average>
 					<densitometer  name="dens1" description="4022">
 						<period>     <link alias="sikn1.bik.io.period1:period"/></period>
-						<temperature><link alias="sikn1.BIK.IO.Temp1"/></temperature>
-						<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
+						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
+						<pressure>   <link alias="sikn1.bik.io.pres"/></pressure>
 						<calibration>20</calibration>
 						<factors>
 							<k0>-1.27753000E+03</k0>
@@ -736,27 +742,8 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable>system.version.major</variable>
 				<variable>system.version.build</variable>
 				<variable>system.version.hash</variable>
-				<variable>system.version.crc</variable>
 			</datablock>
 			<datablock name="globaltemp">
-				<variable convert="float">io.globaltemp.present.value</variable>
-				<whitespace size="2"/>
-				<variable                >io.globaltemp.present.unit</variable>
-				<variable convert="float">io.globaltemp.present.hihi</variable>
-				<variable convert="float">io.globaltemp.present.hi</variable>
-				<variable convert="float">io.globaltemp.present.lo</variable>
-				<variable convert="float">io.globaltemp.present.lolo</variable>
-				<variable convert="float">io.globaltemp.present.hysteresis</variable>
-				<variable                >io.globaltemp.present.status</variable>
-				<variable convert="float">io.globaltemp.physical.value</variable>
-				<variable convert="float">io.globaltemp.current.value</variable>
-				<variable convert="float">io.globaltemp.keypad</variable>
-				<variable                >io.globaltemp.scales.min</variable>
-				<variable                >io.globaltemp.scales.max</variable>
-				<variable                >io.globaltemp.status</variable>
-				<variable                >io.globaltemp.mode</variable>
-			</datablock>
-			<datablock name="block_ai01">
 				<variable convert="float">io.ai00.present.value</variable>
 				<whitespace size="2"/>
 				<variable                >io.ai00.present.unit</variable>
@@ -780,7 +767,7 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 			</datablock>
 		</datablocks>
 		<modbus>
-			<slavetcp name="slave1" id="1" port="1502" counterror="3" security="0" maxclient="0">
+			<slavetcp name="slave1" id="1" port="1502" count_error="3" security="0" maxclient="0">
 				<whitelist>
 					<ip>127.0.0.1</ip>
 					<ip>192.168.15.1</ip>
@@ -793,7 +780,7 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<addressmap>
 					<addressblock begin="400100">systime</addressblock>
 					<addressblock begin="400150">sysver</addressblock>
-					<addressblock begin="400200">block_ai01</addressblock>
+					<addressblock begin="400200">globaltemp</addressblock>
 					<addressblock begin="400300">slave1_info</addressblock>
 				</addressmap>
 			</slavetcp>
@@ -805,7 +792,7 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				</swap>
 				<addressmap>
 					<addressblock begin="400200">systime</addressblock>
-					<addressblock begin="400250">block_ai01</addressblock>
+					<addressblock begin="400250">globaltemp</addressblock>
 				</addressmap>
 			</slavertu>
 		</modbus>

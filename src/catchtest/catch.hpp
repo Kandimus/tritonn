@@ -220,7 +220,7 @@ namespace Catch {
 
 		double getDouble() const { return m_double; }
 		float  getFloat () const { return m_float;  }
-		void   setDouble(double epsilon) { m_double = epsilon; }
+		double setDouble(double epsilon) { double result = m_double; m_double = epsilon; return result; }
 		void   setFloat (float  epsilon) { m_float  = epsilon; }
 	private:
 		Epsilon() {}

@@ -57,7 +57,7 @@ rUnits::Error rUnits::ConvertValue(LREAL srcVal, UDINT srcUnit, LREAL &dstVal, U
 	// Если нужно приводим исходное значение от базового типа к требуемому
 	if(dstUnit & 0x0F)
 	{
-		baseVal = UnitsTable[dstUnit].A + baseVal * UnitsTable[dstUnit].B;
+		baseVal = UnitsTable[dstUnit].A + srcVal * UnitsTable[dstUnit].B;
 	}
 
 	dstVal = baseVal;

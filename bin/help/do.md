@@ -1,13 +1,13 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # do
-> 0.19.30.eef5c241
+> 0.19.33.a2f312a3
 ## XML
 ````xml
 <do name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" >
 	<io_link module="module index" channel="channel index"/> <!-- Optional -->
 	<present><link alias="object's output"/></present>
-	<value>0<value/>
+		<value>0<value/>
 </do>
 ````
 

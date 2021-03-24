@@ -30,6 +30,7 @@
 #include "../data_rvar.h"
 #include "../data_sampler.h"
 #include "prove.h"
+#include "average.h"
 #include "../io/manager.h"
 #include "../io/module_ai6.h"
 #include "../io/module_crm.h"
@@ -58,6 +59,7 @@ UDINT rDataManager::saveMarkDown()
 	prove.generateMarkDown(md);
 
 	// calc
+	rAverage     avr;
 	rSampler     smp;
 	rReducedDens rd;
 	rDensSol     ds;
@@ -72,6 +74,7 @@ UDINT rDataManager::saveMarkDown()
 	msel.m_setup.Value |= rSelector::Setup::MULTI;
 	msel.generateIO();
 
+	avr.generateMarkDown(md);
 	rvar.generateMarkDown(md);
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
@@ -115,50 +118,3 @@ UDINT rDataManager::saveMarkDown()
 
 	return TRITONN_RESULT_OK;
 }
-
-
-//-------------------------------------------------------------------------------------------------
-//TODO Переделать на SimpleFile
-UDINT rDataManager::SaveKernel()
-{
-	std::string text = "";
-	auto stn     = new rStation();
-	auto str     = new rStream(stn);
-	auto ssel    = new rSelector();
-	auto msel    = new rSelector();
-	auto denssol = new rDensSol();
-	auto rdcdens = new rReducedDens();
-	rSampler smp;
-	auto rep     = new rReport();
-
-	ssel->generateIO();
-
-	msel->m_setup.Value |= rSelector::Setup::MULTI;
-	msel->generateIO();
-
-	text += "\n<!-- \n\tStation/stream objects list \n-->\n<objects>\n";
-	text += smp.saveKernel(false, "sampler", "Пробоотборник", false);
-	text += denssol->saveKernel(false, "densitometer", "Плотномер (Солартрон)", false);
-	text += rdcdens->saveKernel(false, "reduceddens", "Приведение плотности", true);
-	text += ssel->saveKernel   (false, "selector", "Селектор", true);
-	text += msel->saveKernel   (false, "multiselector", "Мультиселектор", true);
-	text += stn->saveKernel    (false, "station", "Станция", true);
-	text += str->saveKernel    (false, "stream", "Линия", false);
-//	rep->Type = REPORT_PERIODIC;
-//	text += rep->saveKernel    (false, "report", "Отчет (периодический)", true);
-//	rep->Type = REPORT_BATCH;
-//	text += rep->saveKernel    (false, "report", "Отчет (по партии)", true);
-	text += "</objects>\n";
-	text += "\n</kernel>";
-
-	delete rep;
-	delete rdcdens;
-	delete denssol;
-	delete msel;
-	delete ssel;
-	delete str;
-	delete stn;
-
-	return 0;
-}
-

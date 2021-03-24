@@ -207,14 +207,14 @@ void rSelector::generateIO()
 			}
 		}
 	} else {
-		initLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].m_unit, SID::SEL_OUT, "output", rLink::SHADOW_NONE);
+		initLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].m_unit, SID::OUTPUT, XmlName::OUTPUT, rLink::SHADOW_NONE);
 
 		for (UDINT ii = 0; ii < CountInputs; ++ii) {
 			string i_name = String_format("input_%i"      , ii + 1);
 			string f_name = String_format("input_%i.fault", ii + 1);
 
-			initLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].m_unit, SID::SEL_IN1  + ii, i_name, rLink::SHADOW_NONE);
-			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_discrete           , SID::SEL_FLT1 + ii, f_name, i_name            );
+			initLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].m_unit, SID::INPUT_1 + ii, i_name, rLink::SHADOW_NONE);
+			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_discrete           , SID::FAULT_1 + ii, f_name, i_name            );
 		}
 	}
 }

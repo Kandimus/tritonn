@@ -24,7 +24,13 @@ public:
 	rStringID(UDINT id) { ID = id; }
 	virtual ~rStringID() { ; }
 
-	rStringID & operator = (const UDINT &val) { ID = val; return *this; }
+	rStringID& operator =  (const UDINT&     val) { ID = val; return *this; }
+
+	bool       operator != (const UDINT&     val) { return ID != val;    }
+	bool       operator != (const rStringID& val) { return ID != val.ID; }
+	bool       operator == (const UDINT&     val) { return ID == val;    }
+	bool       operator == (const rStringID& val) { return ID == val.ID; }
+
 	operator UDINT() { return ID; }
 	operator UDINT() const { return ID; }
 	operator UDINT*() { return &ID; }

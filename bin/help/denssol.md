@@ -1,14 +1,14 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # denssol
-> 0.19.30.eef5c241
+> 0.19.33.a2f312a3
 ## XML
 ````xml
 <denssol name="valid object name" descr="string index" >
 	<temperature><link alias="object's output"/></temperature>
 	<pressure><link alias="object's output"/></pressure>
 	<period><link alias="object's output"/></period>
-	<limits> <!-- Optional -->
+	<limits><!-- Optional -->
 		<limit name="temperature" setup="LOLO|LO|HI|HIHI">
 			<lolo>0</lolo>
 			<lo>0</lo>
