@@ -182,7 +182,7 @@ UDINT rThreadMaster::calcThreadTimeInfo(rInfo *ti)
 {
 	UDINT worktime = 0;
 	UDINT idletime = 0;
-	vector<rThreadTimeInfo> vti;
+	std::vector<rThreadTimeInfo> vti;
 
 	ti->m_class->GetTimeInfo(vti);
 

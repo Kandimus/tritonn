@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 		SimpleFileSave("./users.uncrypt.xml", uncrypt);
 	}
 
-	rLogManager::m_logAppName = "tritonn";
+	rLogManager::instance().setDir(DIR_LOG);
 
 	// Разбираем командную строку
 #ifdef TRITONN_TEST
@@ -88,16 +88,16 @@ int main(int argc, char* argv[])
 	UDINT logmask = 0;
 	String_IsValidHex(rSimpleArgs::instance().getOption(rArg::Log).c_str(), logmask);
 
-	rLogManager::Instance().Enable.Set(true);
-	rLogManager::Instance().SetLogMask(logmask);
-	rLogManager::Instance().Terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
+	rLogManager::instance().m_enable.Set(true);
+	rLogManager::instance().setLogMask(logmask);
+	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 
 	TRACEERROR("------------------------------------------");
 	TRACEERROR("Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
-	rLogManager::Instance().StartServer();
-	rLogManager::Instance().Run(16);
+//	rLogManager::instance().StartServer();
+	rLogManager::instance().Run(16);
 
-	rThreadMaster::instance().add(&rLogManager::Instance(), TMF_NONE, "logs");
+	rThreadMaster::instance().add(&rLogManager::instance(), TMF_NONE, "logs");
 
 
 	//----------------------------------------------------------------------------------------------
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 #endif
 
 		if (rThreadMaster::instance().GetStatus() == rThreadStatus::CLOSED) {
-			TRACEW(LM_SYSTEM, "Closing...");
+			TRACEW(LOG::SYSTEM, "Closing...");
 			break;
 		}
 

@@ -1,8 +1,8 @@
 //=================================================================================================
 //===
-//=== event_manager.cpp
+//=== event/manager.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -15,12 +15,12 @@
 //===
 //=================================================================================================
 
+#include "manager.h"
 #include <string.h>
 #include "log_manager.h"
 #include "text_manager.h"
 #include "precision.h"
 #include "error.h"
-#include "event_manager.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,64 +47,55 @@ rEventManager::~rEventManager()
 
 //-------------------------------------------------------------------------------------------------
 // Основная функция добавления события
-UDINT rEventManager::Add(rEvent &event)
+void rEventManager::add(const rEvent& event)
 {
 	UDINT curpos  = 0;
-	UDINT type    = event.GetType();
-	UDINT mask    = LM_EVENT;
+	UDINT type    = event.getType();
+	UDINT mask    = LOG::EVENT;
 	UDINT log_obj = 0;
 
-	if(event.GetEID() == 0)
+	if(event.getEID() == 0)
 	{
 		TRACEERROR("Fault add event. EID is null.");
-		return -1;
+		return;
 	}
 
 	// Добавляем событие в кольцевой массив
 	Lock();
-	Event[Pos++] = event;
-	if(Pos >= MAX_EVENT)
-	{
-		Pos = 0;
+	while (m_list.size() > MAX_EVENT) {
+		m_list.pop_front();
 	}
-	curpos = Pos;
+	m_list.push_back(event);
 	Unlock();
 
 	// Проверка на аварийное сообщение
-	if(type == EMT_ERROR)
-	{
-		UDINT curalarm = Alarm.Get();
+	if (type == EMT_ERROR) {
+		UDINT curalarm = m_alarm.Get();
 		
-		if(curalarm < MAX_EVENT_ALARM)
-		{
-			Alarm.Set(++curalarm);
+		if(curalarm < MAX_ALARM) {
+			m_alarm.Set(++curalarm);
 		}
 	}
 	
-
-	//----------------------------------------------
-	// Пишем логи в rsyslog
-	
 	switch(type)
 	{
-		case EMT_INFO:    mask |= LM_I; break;
-		case EMT_SUCCESS: mask |= LM_I; break;
-		case EMT_WARNING: mask |= LM_W; break;
-		case EMT_ERROR:   mask |= LM_A; break;
+		case EMT_INFO:    mask |= LOG::I; break;
+		case EMT_SUCCESS: mask |= LOG::I; break;
+		case EMT_WARNING: mask |= LOG::W; break;
+		case EMT_ERROR:   mask |= LOG::A; break;
 	}
 	
-	log_obj = event.GetObject();
-	if(log_obj > EVENT_OBJ_MAX) log_obj = EVENT_OBJ__END;
+	log_obj = event.getObject();
+	if (log_obj > EVENT_OBJ_MAX) {
+		log_obj = EVENT_OBJ__END;
+	}
 	
-
 	//Выдаем расшифровку сообщения
-	string descr = GetDescr(event);
+	std::string descr = getDescr(event);
 
-	rLogManager::Instance().Add(mask, __FILENAME__, __LINE__, descr.c_str());
-
+	rLogManager::instance().add(mask, "", -1, descr.c_str());
 	
-	//----------------------------------------------
-	SaveEEPROM(curpos * sizeof(rEvent), event);
+//	SaveEEPROM(curpos * sizeof(rEvent), event);
 
 	return curpos;
 }

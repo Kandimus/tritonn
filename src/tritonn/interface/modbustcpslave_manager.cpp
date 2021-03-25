@@ -39,7 +39,7 @@ rModbusTCPSlaveManager::rModbusTCPSlaveManager()
 	  m_snapshot(rDataManager::instance().getVariableClass())
 {
 	RTTI     = "rModbusTCPSlaveManager";
-	LogMask |= LM_TERMINAL;
+	LogMask |= LOG::TERMINAL;
 	Modbus   = new UINT[65536];
 
 	memset(Modbus, 0, sizeof(Modbus[0]) * 65536);

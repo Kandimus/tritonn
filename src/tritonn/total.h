@@ -17,7 +17,7 @@
 
 
 #include "def.h"
-#include "event_class.h"
+#include "event/event.h"
 
 class rObjUnit;
 

@@ -17,7 +17,7 @@
 
 #include "cJSON.h"
 #include "data_config.h"
-#include "event_manager.h"
+#include "event/manager.h"
 #include "text_manager.h"
 #include "log_manager.h"
 #include "precision.h"

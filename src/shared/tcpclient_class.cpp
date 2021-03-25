@@ -26,7 +26,7 @@
 rTCPClientClass::rTCPClientClass(rClientTCP &client) : ReconnetTime(1000), Setup(0), Connected(0)
 {
 	Client    = &client;
-	LogMask   = LM_TCPCLNT;
+	LogMask   = LOG::TCPCLNT;
 }
 
 
@@ -203,13 +203,13 @@ rThreadStatus rTCPClientClass::Proccesing()
 
 	if(select(Maxfd + 1, &readfds, NULL, &exfds, &tv) == -1)
 	{
-		TRACEW(LM_TCPCLNT, "Function select fault. Error: %i", errno);
+		TRACEW(LOG::TCPCLNT, "Function select fault. Error: %i", errno);
 	}
 
 	// Проверка на закрытие сервера
 	if(FD_ISSET(Client->Socket, &exfds))
 	{
-		TRACEW(LM_TCPCLNT, "Server is shutdown.");
+		TRACEW(LOG::TCPCLNT, "Server is shutdown.");
 
 		flagerr = true;
 	}
@@ -218,7 +218,7 @@ rThreadStatus rTCPClientClass::Proccesing()
 	{
 		if(!ReadFromServer())
 		{
-			TRACEW(LM_TCPCLNT, "Can't recv data from server. Error: %i", errno);
+			TRACEW(LOG::TCPCLNT, "Can't recv data from server. Error: %i", errno);
 
 			flagerr = true;
 		}

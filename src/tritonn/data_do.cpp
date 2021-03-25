@@ -16,9 +16,9 @@
 #include "data_do.h"
 #include <string.h>
 #include "tinyxml2.h"
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_snapshot.h"
 #include "data_config.h"

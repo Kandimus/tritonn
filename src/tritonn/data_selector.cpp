@@ -9,18 +9,16 @@
 //===
 //=================================================================================================
 
-#include <vector>
+#include "data_selector.h"
 #include <string.h>
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
 #include "error.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
 #include "data_link.h"
-#include "variable_item.h"
 #include "variable_list.h"
-#include "data_selector.h"
 #include "xml_util.h"
 #include "generator_md.h"
 #include "comment_defines.h"
@@ -114,7 +112,7 @@ UDINT rSelector::calculate()
 	// Если переменная переключатель находится в недопустимом режиме
 	//TODO Какие значения будут в выходах?
 	if (m_select.Value >= CountInputs || m_select.Value < -1) {
-		rEventManager::instance().Add(reinitEvent(EID_SELECTOR_ERROR) << m_select.Value);
+		rEventManager::instance().add(reinitEvent(EID_SELECTOR_ERROR) << m_select.Value);
 		m_select.Init(-1);
 		m_fault = 1;
 		//return 0;
@@ -133,7 +131,7 @@ UDINT rSelector::calculate()
 
 				// Переход на значение ошибки
 				case Mode::TOERROR: {
-					rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TOFAULT) << m_select.Value);
+					rEventManager::instance().add(reinitEvent(EID_SELECTOR_TOFAULT) << m_select.Value);
 
 					m_select.Value = -1;
 					m_fault      = 1;
@@ -155,11 +153,11 @@ UDINT rSelector::calculate()
 					} while (faultGrp[m_select.Value] && count < CountInputs - 2);
 
 					if (faultGrp[m_select.Value]) {
-						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << m_select.Value);
+						rEventManager::instance().add(reinitEvent(EID_SELECTOR_NOTHINGNEXT) << m_select.Value);
 
 						m_select.Value = -1;
 					} else {
-						rEventManager::instance().Add(reinitEvent(EID_SELECTOR_TONEXT) << m_select.Value);
+						rEventManager::instance().add(reinitEvent(EID_SELECTOR_TONEXT) << m_select.Value);
 					}
 				}
 			} //switch

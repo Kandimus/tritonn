@@ -40,7 +40,7 @@ rTermManager::rTermManager()
 	: rTCPClass("0.0.0.0", TCP_PORT_TERM, 1)
 {
 	RTTI     = "rTermManager";
-	LogMask |= LM_TERMINAL;
+	LogMask |= LOG::TERMINAL;
 }
 
 

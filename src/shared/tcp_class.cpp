@@ -23,11 +23,10 @@
 #include "log_manager.h"
 
 
-
 rTCPClass::rTCPClass(const string &ip, UINT port, UDINT maxclient) : rThreadClass()
 {
 	RTTI        = "rTCPClass";
-	LogMask    |= LM_TCPSERV;
+	LogMask    |= LOG::TCPSERV;
 	Socket      = SOCKET_ERROR;
 	MaxClient   = maxclient;
 	strIP       = ip;

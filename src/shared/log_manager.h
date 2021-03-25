@@ -15,68 +15,53 @@
 
 #pragma once
 
-#include <list>
-#include "tcp_class.h"
-#include "packet_log.h"
+//#include <list>
+#include "thread_class.h"
+#include "singlenton.h"
+#include "log_defines.h"
 
-using std::list;
-
-
-typedef void ( *Fn_LogAddCallback)(const string &);
-
-class rLogManager: public rTCPClass
+class rLogManager: public rThreadClass
 {
-public:
-	virtual ~rLogManager();
+	enum
+	{
+		MAX_TEXT_BUFF = 4096,
+	};
 
-	UDINT Add(UDINT mask, const char* filesource, UDINT lineno, const char *format, ...);
+	SINGLETON(rLogManager)
+
+public:
+	UDINT add(UDINT mask, const char* filesource, UDINT lineno, const char* format, ...);
 
 	// Управление логированием
-	UDINT AddLogMask(UDINT lm);     // Добавление маски к уже существующей
-	UDINT RemoveLogMask(UDINT lm);  // Удаление маски из существующей
-	UDINT SetLogMask(UDINT lm);     // Установка новой маски
+	UINT addLogMask(UINT lm);     // Добавление маски к уже существующей
+	UINT removeLogMask(UINT lm);  // Удаление маски из существующей
+	UINT setLogMask(UINT lm);     // Установка новой маски
 	
-	// Функция для выдачи сообщений в поток stderr
-	static void OutErr(const char *filename, UDINT lineno, const char *format, ...);
+	static void setDir(const std::string& dir) { m_dir = dir; }
+	static void outErr(const char *filename, UDINT lineno, const char *format, ...);
 
-	// Singleton
-	static rLogManager &Instance();
-
-//	UDINT Init(const string &syslog_name);
-	UDINT StartServer();
-	UDINT SetAddCalback(Fn_LogAddCallback fn);
+	void setAddCalback(Fn_LogAddCallback fn);
 
 protected:
 	virtual rThreadStatus Proccesing(void);
-	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
-	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
-	
-public:
-	rSafityValue<UDINT>  Terminal;  // Включение/выключение дублирования сообщений на консоль
-	rSafityValue<UDINT>  Enable;    // Включение/выключение логирования
-
-    static std::string   m_logAppName;
-//	rSafityValue<UDINT>  MaxLogs;   // Длина буффера сообщений //TODO Нужно ли?
 
 private:
-	rSafityValue<UDINT>  Level;     // Текущий уровень логирования
-	UDINT                IncCount;  // Инкрементный инкремент сообщения
-	list<rPacketLog>     List;      // Список сообщений
-	pthread_mutex_t      MutexList; // Защитный мьютекс списка лог-сообщений
-	pthread_mutex_t      MutexCallback; //
+	DINT lockCallback()   { return pthread_mutex_lock  (&m_mutexCallback); }
+	DINT unlockCallback() { return pthread_mutex_unlock(&m_mutexCallback); }
+
+	static std::string saveLogText(UDINT mask, const UDT* time, const std::string& source, UDINT lineno, const std::string& text);
+
+public:
+	rSafityValue<UDINT>  m_terminal;  // Включение/выключение дублирования сообщений на консоль
+	rSafityValue<UDINT>  m_enable;    // Включение/выключение логирования
+
+private:
+	rSafityValue<UINT>   m_level;         // Текущий уровень логирования
+	pthread_mutex_t      m_mutexCallback; //
 
 	Fn_LogAddCallback    fnAddCalback;
 
-private:
-	rLogManager();
-	rLogManager( const rLogManager &);
-	rLogManager& operator=( rLogManager &);
-
-	DINT LockList();
-	DINT UnlockList();
-	DINT LockCallback();
-	DINT UnlockCallback();
-	static std::string saveLogText(UDINT mask, const UDT& time, const std::string& source, UDINT lineno, const std::string& text);
+	static std::string   m_dir;
 };
 
 

@@ -80,28 +80,6 @@ const UDINT  MAX_JSON_IDLE             = 30;          // Максимально�
 const UDINT  MAX_JSON_SESSION          = 10 * 60;     // Максимальное время сессии JSON, сек
 const UDINT  MAX_MBTCP_CLIENT          = 8;
 
-const UDINT  LM_SYSTEM                 = 0x00000001;  //
-const UDINT  LM_TCPSERV                = 0x00000002;
-const UDINT  LM_TCPCLNT                = 0x00000004;
-const UDINT  LM_EVENT                  = 0x00000008;
-const UDINT  LM_TERMINAL               = 0x00000010;
-const UDINT  LM_TEXT                   = 0x00000020;
-const UDINT  LM_OPCUA                  = 0x00000040;
-const UDINT  LM_LOG                    = 0x08000000;
-const UDINT  LM_I                      = 0x10000000;
-const UDINT  LM_W                      = 0x20000000;
-const UDINT  LM_A                      = 0x40000000;
-const UDINT  LM_P                      = 0x80000000;
-const UDINT  LM_ALL                    = 0xFFFFFFFF;
-
-
-//-------------------------------------------------------------------------------------------------
-// События
-const UDINT  MAX_EVENT                 = 500;         // Константа определяется из размера энергонезависимой памяти и максимальное количество сохраняемых событий
-const UDINT  MAX_EVENT_DATA            = 64;          // Размер области данных одного сообщения //TODO Может сделать расчетной?
-const UDINT  MAX_EVENT_ALARM           = 3;           // Максимальное количество аварийных событий для индикации
-
-
 //-------------------------------------------------------------------------------------------------
 // Количество объектов
 const UDINT  MAX_MODULE                = 16;
@@ -470,25 +448,6 @@ enum rTritonn_Error
 	OPCUA_ERROR_BADVARTYPE,
 
 };
-
-
-// Перечень ошибок при файловом вводе-выводе (обычный ввод-вывод, не нить)
-//enum FILEIOERROR
-//{
-//	FILEIOERROR_CFG = 1,
-//	FILEIOERROR_JSONTREE,
-//};
-
-
-
-
-#define TRACE(mask, format, ...)              {rLogManager::Instance().Add(       (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEI(mask, format, ...)             {rLogManager::Instance().Add(LM_I | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEW(mask, format, ...)             {rLogManager::Instance().Add(LM_W | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEA(mask, format, ...)             {rLogManager::Instance().Add(LM_A | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEP(mask, format, ...)             {rLogManager::Instance().Add(LM_P | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEERROR(format, ...)               {rLogManager::OutErr(            __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

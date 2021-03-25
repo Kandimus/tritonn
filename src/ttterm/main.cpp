@@ -52,11 +52,11 @@ int main(int argc, const char **argv)
 
 	rSimpleArgs::instance().parse(argc, argv);
 
-	rLogManager::Instance().Terminal.Set(false);  // Запрещаем вывод в терминал
-	rLogManager::Instance().Enable.Set(true);     // Запрещаем вещание по TCP
-	rLogManager::Instance().SetAddCalback(LogCallback);
-	rLogManager::Instance().Run(16);
-	gInfo_Log = rLogManager::Instance().GetThread();
+	rLogManager::instance().m_terminal.Set(false);  // Запрещаем вывод в терминал
+	rLogManager::instance().m_enable.Set(true);     // Запрещаем вещание по TCP
+	rLogManager::instance().setAddCalback(LogCallback);
+	rLogManager::instance().Run(16);
+	gInfo_Log = rLogManager::instance().GetThread();
 
 	//
 	gTritonnManager.Run(16);
@@ -96,7 +96,7 @@ int main(int argc, const char **argv)
 	gDisplayManager.Finish();
 	pthread_join(*gInfo_Display, NULL);
 
-	rLogManager::Instance().Finish();
+	rLogManager::instance().Finish();
 
    return 0;
 }

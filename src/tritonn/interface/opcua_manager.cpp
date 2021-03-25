@@ -37,7 +37,7 @@ extern const char *logLevelNames[6];
 extern void OPCServer_log(void *context, UA_LogLevel level, UA_LogCategory category, const char *msg, va_list args);
 
 //const char *logLevelNames[6] = {"trace", "debug", "info", "warn", "error", "fatal"};
-UDINT       log2Mask[6]      = {   LM_I,    LM_I,   LM_I,   LM_W,    LM_A,    LM_A};
+UDINT       log2Mask[6]      = {   LOG::I,    LOG::I,   LOG::I,   LOG::W,    LOG::A,    LOG::P};
 
 const UA_Logger OPCServer_Logger = {OPCServer_log, NULL, UA_Log_Stdout_clear};
 
@@ -54,7 +54,7 @@ void OPCServer_log(void *context, UA_LogLevel level, UA_LogCategory category, co
 	string logmsg  = String_vaformat(msg, args);
 	string logtext = String_format("OPC UA [%s/%s]" ANSI_COLOR_RESET " %s", logLevelNames[level], logCategoryNames[category], logmsg.c_str());
 
-	rLogManager::Instance().Add(log2Mask[level], __FILENAME__, __LINE__, logtext.c_str());
+	rLogManager::instance().add(log2Mask[level], __FILENAME__, __LINE__, logtext.c_str());
 }
 
 

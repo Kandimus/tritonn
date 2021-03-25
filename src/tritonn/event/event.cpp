@@ -1,8 +1,8 @@
 ﻿//=================================================================================================
 //===
-//=== event_class.cpp
+//=== event/event.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -14,76 +14,74 @@
 //=================================================================================================
 
 #include <string.h>
-#include "event_class.h"
+#include "event.h"
 
 
 rEvent::rEvent(void)
 {
-	Clear();
+	clear();
 }
 
 
 rEvent::rEvent(DINT eid)
 {
-	Reinit(eid);
+	reinit(eid);
 }
-
 
 rEvent::~rEvent()
 {
-	EID  = EID_UNDEF;
-	Size = 0;
+	m_EID  = EID_UNDEF;
+	m_size = 0;
 }
 
-rEvent& rEvent::operator = (const rEvent& event)
+rEvent &rEvent::operator = (const rEvent &event)
 {
 	if (&event == this) {
 		return *this;
 	}
 
-	EID  = event.EID;
-	Size = event.Size;
+	m_EID  = event.m_EID;
+	m_size = event.m_size;
 
-	gettimeofday(&Timestamp, NULL);
+	m_timeStamp = event.m_timeStamp;
+//	gettimeofday(&m_timestamp, NULL);
 
-	memcpy(Data, event.Data, MAX_EVENT_DATA);
+	memcpy(m_data, event.m_data, DATA_SIZE);
 
 	return *this;
 }
 
 //-------------------------------------------------------------------------------------------------
 //
-void rEvent::Clear()
+void rEvent::clear()
 {
-	Timestamp.tv_sec  = 0;
-	Timestamp.tv_usec = 0;
-	Size              = 0;
-	EID               = EID_UNDEF;
+	m_timestamp.tv_sec  = 0;
+	m_timestamp.tv_usec = 0;
+	m_size              = 0;
+	m_EID               = EID_UNDEF;
 
-	memset(Data, 0, MAX_EVENT_DATA);
+	memset(m_data, 0, DATA_SIZE);
 }
 
-
-//
-rEvent &rEvent::Reinit(UDINT eid)
+rEvent& rEvent::reinit(UDINT eid)
 {
-	EID  = eid;
-	Size = 0;
+	m_EID  = eid;
+	m_size = 0;
 
-	gettimeofday(&Timestamp, NULL);
-	memset(Data, 0, MAX_EVENT_DATA);
+	gettimeofday(&m_timestamp, NULL);
+	memset(Data, 0, DATA_SIZE);
 
 	return *this;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void *rEvent::GetParamByID(UDINT ID, UDINT &type)
+void* rEvent::getParamByID(UDINT ID, UDINT &type)
 {
 	UDINT pos   = 0;
 	UDINT curid = 0;
 	
-	while(pos < Size)
+	while(pos < m_size)
 	{
 		if(ID == curid)
 		{
@@ -98,6 +96,3 @@ void *rEvent::GetParamByID(UDINT ID, UDINT &type)
 	type = TYPE_UNDEF;
 	return nullptr;
 }
-
-
-

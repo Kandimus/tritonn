@@ -68,8 +68,8 @@ public:
 	const std::string *GetPtr(STRID id, const std::string &lang);
 	const std::string *GetPtr(STRID id);
 
-	UDINT         GetListLang(std::vector<std::string> &list);
-	UDINT         GetListSID (const std::string &lang, std::vector<rTextItem> &list);
+	UDINT         GetListLang(std::vector<std::string>& list);
+	UDINT         GetListSID (const std::string &lang, std::vector<rTextItem>& list);
 
 private:
 	UDINT         LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err);

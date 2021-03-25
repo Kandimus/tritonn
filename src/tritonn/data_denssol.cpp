@@ -19,10 +19,10 @@
 #include <cmath>
 #include "tinyxml2.h"
 #include "density.h"
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
 #include "text_manager.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_config.h"

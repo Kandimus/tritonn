@@ -108,7 +108,7 @@ rJSONManager::rJSONManager()
 	: rTCPClass("0.0.0.0", TCP_PORT_JSON, MAX_JSON_CLIENT) //TODO После тестов установить localhost 127.0.0.1
 {
 	RTTI       = "rJSONManager";
-	LogMask   |= LM_TERMINAL;
+	LogMask   |= LOG::TERMINAL;
 }
 
 

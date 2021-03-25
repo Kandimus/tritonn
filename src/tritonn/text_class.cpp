@@ -159,7 +159,7 @@ UDINT rTextClass::DeleteUnused()
 	{
 		if(!(Langs[ii]->Setup & TEXTLANG_SETUP_USED))
 		{
-			TRACEI(LM_TEXT, "Delete unused lang: '%s'", Langs[ii]->Name.c_str());
+			TRACEI(LOG::TEXT, "Delete unused lang: '%s'", Langs[ii]->Name.c_str());
 			delete Langs[ii];
 			Langs.erase(Langs.begin() + ii);
 			--ii;
@@ -254,7 +254,7 @@ UDINT rTextClass::Get(STRID id, const string &lang, string &text)
 }
 
 
-UDINT rTextClass::GetListLang(vector<string> &list)
+UDINT rTextClass::GetListLang(std::vector<string>& list)
 {
 	for(UDINT ii = 0; ii < Langs.size(); ++ii)
 	{
@@ -264,7 +264,7 @@ UDINT rTextClass::GetListLang(vector<string> &list)
 }
 
 
-UDINT rTextClass::GetListSID (const string &lang, vector<rTextItem> &list)
+UDINT rTextClass::GetListSID (const string &lang, std::vector<rTextItem>& list)
 {
 	rTextLang *langptr = GetLangPtr(lang);
 

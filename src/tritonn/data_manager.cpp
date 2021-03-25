@@ -31,7 +31,7 @@
 #include "data_report.h"
 #include "interface/interface.h"
 #include "text_manager.h"
-#include "event_manager.h"
+#include "event/manager.h"
 #include "io/manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
@@ -110,23 +110,23 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	switch(restart)
 	{
 		case RESTART_WARM:
-			TRACEI(LM_SYSTEM, "Command Warm-restart");
+			TRACEI(LOG::SYSTEM, "Command Warm-restart");
 			rEventManager::instance().AddEvent(EID_SYSTEM_RESTART_WARM);
 			break;
 
 		case RESTART_COLD:
-			TRACEI(LM_SYSTEM, "Command Cold-restart");
+			TRACEI(LOG::SYSTEM, "Command Cold-restart");
 			SimpleFileSave(FILE_RESTART, "cold");
 			rEventManager::instance().AddEvent(EID_SYSTEM_RESTART_COLD);
 			break;
 
 		case RESTART_DEBUG:
-			TRACEI(LM_SYSTEM, "Command Debug-restart");
+			TRACEI(LOG::SYSTEM, "Command Debug-restart");
 			SimpleFileSave(FILE_RESTART, "debug");
 			break;
 
 		default:
-			TRACEI(LM_SYSTEM, "Unkonow command restart");
+			TRACEI(LOG::SYSTEM, "Unkonow command restart");
 			rEventManager::instance().AddEventUDINT(EID_SYSTEM_RESTART_UNKNOW, restart);
 			return 1;
 	}
@@ -143,14 +143,14 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 		case Live::REBOOT_COLD:
 			if(filename.size())
 			{
-				TRACEW(LM_SYSTEM, "Set new conf file: '%s'", filename.c_str());
+				TRACEW(LOG::SYSTEM, "Set new conf file: '%s'", filename.c_str());
 				SimpleFileSave(FILE_CONF, filename);
 			}
 			rThreadMaster::instance().Finish();
 			return 0;
 
 		default:
-			TRACEA(LM_SYSTEM, "Unknow live status");
+			TRACEA(LOG::SYSTEM, "Unknow live status");
 			rThreadMaster::instance().Finish();
 			return 2;
 	}
@@ -215,7 +215,7 @@ UDINT rDataManager::LoadConfig()
 	if (Live::STARTING == GetLiveStatus()) {
 
 		//TODO проверить на валидность hash
-		TRACEI(LM_SYSTEM | LM_I, "Load config file '%s'", conf.c_str());
+		TRACEI(LOG::SYSTEM | LOG::I, "Load config file '%s'", conf.c_str());
 
 		if(rDataConfig::instance().LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
@@ -417,7 +417,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 				// Загружаем список конфигураций
 				rListConfig::Load();
 
-				TRACEI(LM_SYSTEM, "Cold restart!");
+				TRACEI(LOG::SYSTEM, "Cold restart!");
 				//TODO Нужно выложить в web все языковые файлы
 			}
 			if ("debug" == text) {
@@ -429,7 +429,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 			}
 		}
 	} else {
-		TRACEI(LM_SYSTEM, "Forced run!");
+		TRACEI(LOG::SYSTEM, "Forced run!");
 	}
 
 	// удаляем файл

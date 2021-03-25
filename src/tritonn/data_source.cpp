@@ -13,16 +13,14 @@
 //===
 //=================================================================================================
 
+#include "data_source.h"
 #include <limits>
 #include "def.h"
-#include "tinyxml2.h"
-#include "xml_util.h"
 #include "data_link.h"
 #include "data_config.h"
-#include "event_manager.h"
+#include "event/manager.h"
 #include "variable_item.h"
 #include "variable_list.h"
-#include "data_source.h"
 #include "text_manager.h"
 #include "xml_util.h"
 #include "text_manager.h"
@@ -84,7 +82,7 @@ LREAL rSource::getValue(const std::string& name, UDINT unit, UDINT& err)
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.Reinit(EID_SYSTEM_ERROUTVAL) << m_ID << m_descr << STRID(unit));
+		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.reinit(EID_SYSTEM_ERROUTVAL) << m_ID << m_descr << STRID(unit));
 
 		return std::numeric_limits<LREAL>::quiet_NaN();
 	}
@@ -93,7 +91,7 @@ LREAL rSource::getValue(const std::string& name, UDINT unit, UDINT& err)
 	err = rUnits::ConvertValue(link->m_value, link->m_unit, result, unit);
 
 	if(err) {
-		sendEventSetLE(SOURCE_LE_UNIT, m_event.Reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->m_unit) << STRID(unit));
+		sendEventSetLE(SOURCE_LE_UNIT, m_event.reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->m_unit) << STRID(unit));
 	}
 
 	return result;

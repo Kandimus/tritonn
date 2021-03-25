@@ -13,20 +13,17 @@
 //===
 //=================================================================================================
 
-#include <vector>
+#include "data_station.h"
 #include <limits>
 #include <string.h>
-#include "tinyxml2.h"
-#include "event_eid.h"
+//#include "event/eid.h"
+//#include "event/manager.h"
 #include "text_id.h"
-#include "event_manager.h"
 #include "precision.h"
 #include "data_config.h"
 #include "data_manager.h"
-#include "variable_item.h"
 #include "variable_list.h"
 #include "data_stream.h"
-#include "data_station.h"
 #include "xml_util.h"
 #include "error.h"
 #include "generator_md.h"
