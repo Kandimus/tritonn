@@ -109,14 +109,14 @@ UDINT rCounter::calculate()
 		auto channel     = static_cast<rIOFIChannel*>(channel_ptr.get());
 
 		if (channel == nullptr) {
-			rEventManager::instance().Add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
+			rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
 		checkExpr(channel->m_state, FI_LE_CODE_FAULT,
-				  event_f.Reinit(EID_COUNTER_CH_FAULT) << m_ID << m_descr,
-				  event_s.Reinit(EID_COUNTER_CH_OK)    << m_ID << m_descr);
+				  event_f.reinit(EID_COUNTER_CH_FAULT) << m_ID << m_descr,
+				  event_s.reinit(EID_COUNTER_CH_OK)    << m_ID << m_descr);
 
 		m_fault = channel->m_state;
 

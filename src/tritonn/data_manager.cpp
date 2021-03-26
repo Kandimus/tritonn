@@ -95,7 +95,7 @@ void rDataManager::DoHalt(UDINT reason)
 	Halt.Set(true);
 	m_live.Set(Live::HALT);
 
-	rEventManager::instance().AddEventUDINT(EID_SYSTEM_HALT, reason);
+	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, reason);
 
 	SimpleFileSave(FILE_RESTART, "cold");
 }
@@ -111,13 +111,13 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	{
 		case RESTART_WARM:
 			TRACEI(LOG::SYSTEM, "Command Warm-restart");
-			rEventManager::instance().AddEvent(EID_SYSTEM_RESTART_WARM);
+			rEventManager::instance().addEvent(EID_SYSTEM_RESTART_WARM);
 			break;
 
 		case RESTART_COLD:
 			TRACEI(LOG::SYSTEM, "Command Cold-restart");
 			SimpleFileSave(FILE_RESTART, "cold");
-			rEventManager::instance().AddEvent(EID_SYSTEM_RESTART_COLD);
+			rEventManager::instance().addEvent(EID_SYSTEM_RESTART_COLD);
 			break;
 
 		case RESTART_DEBUG:
@@ -127,7 +127,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 
 		default:
 			TRACEI(LOG::SYSTEM, "Unkonow command restart");
-			rEventManager::instance().AddEventUDINT(EID_SYSTEM_RESTART_UNKNOW, restart);
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_RESTART_UNKNOW, restart);
 			return 1;
 	}
 
@@ -287,7 +287,7 @@ const rConfigInfo *rDataManager::GetConfName() const
 
 UDINT rDataManager::SetLang(const string &lang)
 {
-	rEventManager::instance().SetCurLang(lang);
+	rEventManager::instance().setCurLang(lang);
 	rTextManager::instance().SetCurLang(lang);
 
 	strncpy(m_sysVar.Lang, lang.c_str(), 8);
@@ -312,7 +312,7 @@ rThreadStatus rDataManager::Proccesing()
 
 		Lock();
 
-		m_sysVar.m_state.EventAlarm = rEventManager::instance().GetAlarm();
+		m_sysVar.m_state.EventAlarm = rEventManager::instance().getAlarm();
 		m_sysVar.m_state.Live       = m_live.Get();
 
 		getCurrentTime(m_sysVar.UnixTime, &m_sysVar.DateTime);
@@ -365,13 +365,11 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 {
 	rEvent event(EID_SYSTEM_CFGERROR);
 
-	event << (HALT_REASON_CONFIGFILE | err.getError()) << err.getLineno();
-
-	rEventManager::instance().Add(event);
+	rEventManager::instance().add(event << (HALT_REASON_CONFIGFILE | err.getError()) << err.getLineno());
 
 	DoHalt(HALT_REASON_CONFIGFILE | err.getError());
 
-	TRACEERROR("Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.",
+	TRACEP(LOG::DATAMGR, "Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.",
 			   rDataConfig::instance().FileName.c_str(), err.getError(), err.getLineno(), err.getText().c_str());
 
 	return err.getError();
@@ -442,11 +440,11 @@ UDINT rDataManager::getConfFile(std::string& conf)
 
 	result = SimpleFileLoad(FILE_CONF, conf);
 	if(TRITONN_RESULT_OK != result) {
-		rEventManager::instance().AddEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
 
 		DoHalt(HALT_REASON_CONFIGFILE | result);
 
-		TRACEERROR("Can't load file '%s'. Error ID: %i", FILE_CONF.c_str(), result);
+		TRACEP(LOG::DATAMGR, "Can't load file '%s'. Error ID: %i", FILE_CONF.c_str(), result);
 
 		return result;
 	}

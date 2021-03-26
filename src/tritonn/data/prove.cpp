@@ -161,7 +161,7 @@ UDINT rProve::calculate()
 	if (m_state == State::IDLE) {
 		m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
 	} else if (m_setup.isDiff()) {
-		rEventManager::instance().Add(reinitEvent(EID_PROVE_CANNOTMODIFYSETUP) << m_strIdx.Value);
+		rEventManager::instance().add(reinitEvent(EID_PROVE_CANNOTMODIFYSETUP) << m_strIdx.Value);
 	}
 
 	if (isSetModule()) {
@@ -169,7 +169,7 @@ UDINT rProve::calculate()
 		auto module     = dynamic_cast<rModuleCRM*>(module_ptr.get());
 
 		if (!module) {
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_MODULE) << m_module);
+			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
@@ -190,7 +190,7 @@ UDINT rProve::calculate()
 		case Command::RESET: break;
 
 		default:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_BADCOMMAND) << static_cast<UINT>(m_command));
 			break;
 	}
 
@@ -238,16 +238,16 @@ void rProve::onIdle()
 {
 	switch(m_command) {
 		case Command::START:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDSTART));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_COMMANDSTART));
 			setState(State::START);
 			break;
 
 		case Command::ABORT:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_NOTSTARTED));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_NOTSTARTED));
 			break;
 
 		case Command::RESET:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDRESET));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_COMMANDRESET));
 			break;
 
 		default: break;
@@ -265,7 +265,7 @@ void rProve::onStart()
 
 		if (!connectToLine())
 		{
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
+			rEventManager::instance().add(reinitEvent(EID_PROVE_BADSTREAMNUMBER) << m_strIdx.Value);
 			setState(State::ERRORSTREAMID);
 			return;
 		}
@@ -591,7 +591,7 @@ void rProve::onErrorState()
 {
 	switch(m_command) {
 		case Command::START:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_ISERROR));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_ISERROR));
 			break;
 
 		case Command::ABORT:
@@ -600,7 +600,7 @@ void rProve::onErrorState()
 
 		case Command::RESET:
 			m_state = State::IDLE;
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDRESET));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_COMMANDRESET));
 			break;
 
 		default: break;
@@ -611,16 +611,16 @@ bool rProve::checkCommand()
 {
 	switch(m_command) {
 		case Command::START:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_ALREADYSTARTED));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_ALREADYSTARTED));
 			break;
 
 		case Command::ABORT:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_COMMANDABORT));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_COMMANDABORT));
 			setState(State::IDLE);
 			return true;
 
 		case Command::RESET:
-			rEventManager::instance().Add(reinitEvent(EID_PROVE_NOTERROR));
+			rEventManager::instance().add(reinitEvent(EID_PROVE_NOTERROR));
 			break;
 
 		default: break;
@@ -665,7 +665,7 @@ bool rProve::checkStab(LREAL start, LREAL present, LREAL maxstab, UDINT eid)
 	LREAL delta = std::fabs(present - start);
 
 	if (delta > maxstab) {
-		rEventManager::instance().Add(reinitEvent(eid) << delta << maxstab);
+		rEventManager::instance().add(reinitEvent(eid) << delta << maxstab);
 		setState(State::ERRORSTAB);
 		return true;
 	}
@@ -732,36 +732,36 @@ void rProve::setState(State state)
 
 	switch(m_state)
 	{
-		case State::IDLE:            m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_IDLE);        break;
-		case State::START:           m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_START);       break;
-		case State::STABILIZATION:   m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_STAB);        break;
-		case State::RUNBALL:         m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_RUNBALL);     break;
-		case State::VALVETOUP:       m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_VALVETOUP);   break;
-		case State::WAITTOUP:        m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITTOUP);    break;
-		case State::VALVETODOWN:     m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_VALVETODOWN); break;
-		case State::WAITD1:          m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITD1);      break;
-		case State::WAITD2:          m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITD2);      break;
-		case State::CALCULATE:       m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_CALCULATE);   break;
-		case State::RETURNBALL:      m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_RETURNBALL);  break;
-		case State::WAITD1_REVERSE:  m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITED1_RVS); break;
-		case State::WAITD2_REVERSE:  m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAITED2_RVS); break;
-		case State::WAYCOMPLITED:    m_inProgress.m_value = 1; event.Reinit(EID_PROVE_STATE_WAYCOMPLTED); break;
-		case State::FINISH:          m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_FINISH);      break;
-		case State::ABORT:           m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ABORT);       break;
-		case State::ERRORFLOW:       m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORFLOW);   break;
-		case State::ERRORSTAB:       m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORSTAB);   break;
-		case State::ERRORTOUP:       m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORTOUP);   break;
-		case State::ERRORTODOWN:     m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORTDOWN);  break;
-		case State::ERRORD1:         m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD1);     break;
-		case State::ERRORD2:         m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD2);     break;
-		case State::ERRORDETECTOR:   m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORDETS);   break;
-		case State::ERRORRETURN:     m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORRETURN); break;
-		case State::ERRORSTREAMID:   m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORRSTRID); break;
-		case State::ERRORD1_REVERSE: m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD1_RVS); break;
-		case State::ERRORD2_REVERSE: m_inProgress.m_value = 0; event.Reinit(EID_PROVE_STATE_ERRORD2_RVS); break;
+		case State::IDLE:            m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_IDLE);        break;
+		case State::START:           m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_START);       break;
+		case State::STABILIZATION:   m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_STAB);        break;
+		case State::RUNBALL:         m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_RUNBALL);     break;
+		case State::VALVETOUP:       m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_VALVETOUP);   break;
+		case State::WAITTOUP:        m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_WAITTOUP);    break;
+		case State::VALVETODOWN:     m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_VALVETODOWN); break;
+		case State::WAITD1:          m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_WAITD1);      break;
+		case State::WAITD2:          m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_WAITD2);      break;
+		case State::CALCULATE:       m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_CALCULATE);   break;
+		case State::RETURNBALL:      m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_RETURNBALL);  break;
+		case State::WAITD1_REVERSE:  m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_WAITED1_RVS); break;
+		case State::WAITD2_REVERSE:  m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_WAITED2_RVS); break;
+		case State::WAYCOMPLITED:    m_inProgress.m_value = 1; event.reinit(EID_PROVE_STATE_WAYCOMPLTED); break;
+		case State::FINISH:          m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_FINISH);      break;
+		case State::ABORT:           m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ABORT);       break;
+		case State::ERRORFLOW:       m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORFLOW);   break;
+		case State::ERRORSTAB:       m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORSTAB);   break;
+		case State::ERRORTOUP:       m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORTOUP);   break;
+		case State::ERRORTODOWN:     m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORTDOWN);  break;
+		case State::ERRORD1:         m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORD1);     break;
+		case State::ERRORD2:         m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORD2);     break;
+		case State::ERRORDETECTOR:   m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORDETS);   break;
+		case State::ERRORRETURN:     m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORRETURN); break;
+		case State::ERRORSTREAMID:   m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORRSTRID); break;
+		case State::ERRORD1_REVERSE: m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORD1_RVS); break;
+		case State::ERRORD2_REVERSE: m_inProgress.m_value = 0; event.reinit(EID_PROVE_STATE_ERRORD2_RVS); break;
 	}
 
-	rEventManager::instance().Add(event);
+	rEventManager::instance().add(event);
 }
 
 void rProve::calcAverage()

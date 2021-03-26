@@ -55,8 +55,8 @@ rEvent &rEvent::operator = (const rEvent &event)
 //
 void rEvent::clear()
 {
-	m_timestamp.tv_sec  = 0;
-	m_timestamp.tv_usec = 0;
+	m_timeStamp.tv_sec  = 0;
+	m_timeStamp.tv_usec = 0;
 	m_size              = 0;
 	m_EID               = EID_UNDEF;
 
@@ -68,15 +68,15 @@ rEvent& rEvent::reinit(UDINT eid)
 	m_EID  = eid;
 	m_size = 0;
 
-	gettimeofday(&m_timestamp, NULL);
-	memset(Data, 0, DATA_SIZE);
+	gettimeofday(&m_timeStamp, NULL);
+	memset(m_data, 0, DATA_SIZE);
 
 	return *this;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-void* rEvent::getParamByID(UDINT ID, UDINT &type)
+void* rEvent::getParamByID(UDINT ID, UDINT& type) const
 {
 	UDINT pos   = 0;
 	UDINT curid = 0;
@@ -85,11 +85,11 @@ void* rEvent::getParamByID(UDINT ID, UDINT &type)
 	{
 		if(ID == curid)
 		{
-			type = Data[pos];
-			return (void *)(Data + pos + 1);
+			type = m_data[pos];
+			return (void *)(m_data + pos + 1);
 		}
 		
-		pos += 1 + EPT_SIZE[Data[pos]];
+		pos += 1 + EPT_SIZE[m_data[pos]];
 		++curid;
 	}
 	

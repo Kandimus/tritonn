@@ -15,18 +15,18 @@
 
 #pragma once
 
-#include <vector>
-#include "tinyxml2.h"
 #include "def.h"
 #include "../variable_class.h"
 
-
-using std::vector;
-
 class rThreadClass;
 class rError;
-class rVariableList;
 class rGeneratorMD;
+
+namespace tinyxml2
+{
+	class XMLElement;
+}
+
 
 //-------------------------------------------------------------------------------------------------
 //

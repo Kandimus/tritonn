@@ -47,7 +47,7 @@ public:
 	DINT    getID()     const { return  m_EID        & 0xFFFF; } //
 	UDINT   getEID()    const { return  m_EID; }
 	
-	void* getParamByID(UDINT ID, UDINT &type);
+	void* getParamByID(UDINT ID, UDINT &type) const;
 
 	// Функции для добавления параметров события, в случае переполнения буффера возвращают 1, в случае успеха - 0
 	UDINT addSINT (SINT  val) { EVENT_ADDDATA(TYPE_SINT ,  SINT); }

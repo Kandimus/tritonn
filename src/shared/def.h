@@ -117,8 +117,6 @@ const USINT  AES_IV[16]                = {'0', '1', '2', '3', '4', '5', '6', '7'
 // Вспомогательные константы
 const LREAL  COMPARE_LREAL_PREC        = 1.0E-10;
 const LREAL  COMPARE_REAL_PREC         = 1.0E-7;
-const USINT  PRECISION_DEFAUILT        = 5;
-
 
 //-------------------------------------------------------------------------------------------------
 // rDataManager

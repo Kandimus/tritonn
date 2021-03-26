@@ -108,7 +108,7 @@ STRID rSource::getValueUnit(const std::string& name, UDINT& err)
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.Reinit(EID_SYSTEM_ERROUTPUT) << m_ID << m_descr);
+		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.reinit(EID_SYSTEM_ERROUTPUT) << m_ID << m_descr);
 
 		return 0xFFFFFFFF;
 	}
@@ -168,7 +168,7 @@ UDINT rSource::postCalculate()
 // Переинициализируем временный Event, записывая ID объекта и строку с его описанием
 rEvent& rSource::reinitEvent(rEvent& event, UDINT eid)
 {
-	event.Reinit(eid) << m_ID << m_descr;
+	event.reinit(eid) << m_ID << m_descr;
 
 	return event;
 }
@@ -509,7 +509,7 @@ UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& eve
 		if (!(m_lockErr & flag)) {
 			m_lockErr |= flag;
 
-			rEventManager::instance().Add(event_fault);
+			rEventManager::instance().add(event_fault);
 		}
 
 		return 1;
@@ -517,7 +517,7 @@ UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& eve
 		if (m_lockErr & flag) {
 			m_lockErr &= ~flag;
 
-			rEventManager::instance().Add(event_success);
+			rEventManager::instance().add(event_success);
 		}
 	}
 
@@ -528,7 +528,7 @@ UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& eve
 UDINT rSource::sendEventSetLE(UDINT flag, rEvent &event)
 {
 	if (!(m_lockErr & flag)) {
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 
 		m_lockErr |= flag;
 
@@ -542,7 +542,7 @@ UDINT rSource::sendEventSetLE(UDINT flag, rEvent &event)
 UDINT rSource::sendEventClearLE(UDINT flag, rEvent &event)
 {
 	if (m_lockErr & flag) {
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 		m_lockErr &= ~flag;
 
 		return 1;

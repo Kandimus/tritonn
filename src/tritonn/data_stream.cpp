@@ -16,14 +16,13 @@
 #include <vector>
 #include <limits>
 #include <string.h>
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
 #include "xml_util.h"
-#include "event_manager.h"
 #include "precision.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "variable_item.h"
 #include "variable_list.h"
 #include "data_station.h"
 #include "data_stream.h"
@@ -127,19 +126,19 @@ UDINT rStream::calculate()
 
 	// Вывод линии из учета
 	checkExpr(m_maintenance, STREAM_LE_ACCOUNTING,
-			  event_f.Reinit(EID_STREAM_ACCOUNTING_ON ) << m_ID << m_descr,
-			  event_s.Reinit(EID_STREAM_ACCOUNTING_OFF) << m_ID << m_descr);
+			  event_f.reinit(EID_STREAM_ACCOUNTING_ON ) << m_ID << m_descr,
+			  event_s.reinit(EID_STREAM_ACCOUNTING_OFF) << m_ID << m_descr);
 
 	// Использование ручного ввода KF
 	checkExpr(m_linearization, STREAM_LE_KEYPADKF,
-			  event_f.Reinit(EID_STREAM_KEYPADKF_OFF) << m_ID << m_descr,
-			  event_s.Reinit(EID_STREAM_KEYPADKF_ON ) << m_ID << m_descr);
+			  event_f.reinit(EID_STREAM_KEYPADKF_OFF) << m_ID << m_descr,
+			  event_s.reinit(EID_STREAM_KEYPADKF_ON ) << m_ID << m_descr);
 
 	// Ввод новых коэф-тов
 	if (m_acceptKF) {
 		m_curFactor = m_setFactor;
 		m_acceptKF  = 0;
-		rEventManager::instance().Add(reinitEvent(EID_STREAM_ACCEPT));
+		rEventManager::instance().add(reinitEvent(EID_STREAM_ACCEPT));
 	}
 
 	//-------------------------------------------------------------------------------------------

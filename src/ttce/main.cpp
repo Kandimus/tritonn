@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include "stringex.h"
 #include "simplefile.h"
-#include "event_eid.h"
+#include "../tritonn/event/eid.h"
 #include "event_info.h"
 #include "tinyxml2.h"
 #include "tritonn_version.h"

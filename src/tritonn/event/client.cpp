@@ -13,7 +13,7 @@
 //===
 //=================================================================================================
 
-#include "log_client.h"
+#include "client.h"
 
 
 rLogClient::rLogClient(SOCKET socket, sockaddr_in *addr) : rClientTCP(socket, addr)

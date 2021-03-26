@@ -159,14 +159,14 @@ UDINT rAI::calculate()
 		auto channel     = static_cast<rIOAIChannel*>(channel_ptr.get());
 
 		if (channel == nullptr) {
-			rEventManager::instance().Add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
+			rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
 		checkExpr(channel->m_state, AI_LE_CODE_FAULT,
-				  event_f.Reinit(EID_AI_CH_FAULT) << m_ID << m_descr,
-				  event_s.Reinit(EID_AI_CH_OK)    << m_ID << m_descr);
+				  event_f.reinit(EID_AI_CH_FAULT) << m_ID << m_descr,
+				  event_s.reinit(EID_AI_CH_OK)    << m_ID << m_descr);
 
 		m_phValue.m_value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
 		m_current.m_value = channel->getCurrent();
@@ -207,7 +207,7 @@ UDINT rAI::calculate()
 		m_lockErr |= AI_LE_SIM_MANUAL;
 		m_lockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
 		
-		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_MANUAL));
+		rEventManager::instance().add(reinitEvent(EID_AI_SIM_MANUAL));
 	}
 	
 	if(m_mode == Mode::AKEYPAD && !(m_lockErr & AI_LE_SIM_AUTO))
@@ -215,7 +215,7 @@ UDINT rAI::calculate()
 		m_lockErr |= AI_LE_SIM_AUTO;
 		m_lockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_MANUAL | AI_LE_SIM_LAST);
 		
-		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_AUTO));
+		rEventManager::instance().add(reinitEvent(EID_AI_SIM_AUTO));
 	}
 	
 	if(m_mode == Mode::LASTGOOD && !(m_lockErr & AI_LE_SIM_LAST))
@@ -223,7 +223,7 @@ UDINT rAI::calculate()
 		m_lockErr |= AI_LE_SIM_LAST;
 		m_lockErr &= ~(AI_LE_SIM_OFF | AI_LE_SIM_AUTO | AI_LE_SIM_MANUAL);
 		
-		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_LAST));
+		rEventManager::instance().add(reinitEvent(EID_AI_SIM_LAST));
 	}
 	
 	if(m_mode == Mode::PHIS && !(m_lockErr & AI_LE_SIM_OFF))
@@ -231,7 +231,7 @@ UDINT rAI::calculate()
 		m_lockErr |= AI_LE_SIM_OFF;
 		m_lockErr &= ~(AI_LE_SIM_MANUAL | AI_LE_SIM_AUTO | AI_LE_SIM_LAST);
 		
-		rEventManager::instance().Add(reinitEvent(EID_AI_SIM_OFF));
+		rEventManager::instance().add(reinitEvent(EID_AI_SIM_OFF));
 	}
 	
 	
@@ -280,7 +280,7 @@ UDINT rAI::calculate()
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
 		if (m_present.m_value > m_scale.Max.Value) {
 			if (oldStatus != Status::MAX) {
-				rEventManager::instance().Add(reinitEvent(EID_AI_MAX) << m_present.m_unit << m_present.m_value << m_scale.Max.Value);
+				rEventManager::instance().add(reinitEvent(EID_AI_MAX) << m_present.m_unit << m_present.m_value << m_scale.Max.Value);
 			}
 
 			m_status = Status::MAX;
@@ -288,7 +288,7 @@ UDINT rAI::calculate()
 		// Инженерный минимум
 		else if (m_present.m_value < m_scale.Min.Value) {
 			if(oldStatus != Status::MIN) {
-				rEventManager::instance().Add(reinitEvent(EID_AI_MIN) << m_present.m_unit << m_present.m_value << m_scale.Min.Value);
+				rEventManager::instance().add(reinitEvent(EID_AI_MIN) << m_present.m_unit << m_present.m_value << m_scale.Min.Value);
 			}
 
 			m_status = Status::MIN;

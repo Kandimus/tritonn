@@ -2,7 +2,7 @@
 
 #include "tritonn_version.h"
 #include "log_manager.h"
-#include "event_manager.h"
+#include "event/manager.h"
 #include "threadmaster.h"
 #include "data_manager.h"
 #include "io/manager.h"
@@ -113,8 +113,8 @@ int main(int argc, char* argv[])
 
 	//----------------------------------------------------------------------------------------------
 	// Менеджер сообщений
-	rEventManager::instance().LoadText(FILE_SYSTEMEVENT); // Системные события
-	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
+	rEventManager::instance().loadText(FILE_SYSTEMEVENT); // Системные события
+	rEventManager::instance().setCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
 	rEventManager::instance().Run(16);
 
 	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
@@ -155,11 +155,11 @@ int main(int argc, char* argv[])
 
 	//
 	// Событие о запуске
-	event.Reinit(EID_SYSTEM_RUNNING);
-	rEventManager::instance().Add(event);
+	event.reinit(EID_SYSTEM_RUNNING);
+	rEventManager::instance().add(event);
 
-	event.Reinit(EID_TEST_SUCCESS) << STRID(16) << 12.34 << 45.6 << STRID(33) << 9.87654;
-	rEventManager::instance().Add(event);
+	event.reinit(EID_TEST_SUCCESS) << STRID(16) << 12.34 << 45.6 << STRID(33) << 9.87654;
+	rEventManager::instance().add(event);
 	
 
 #ifdef TRITONN_TEST

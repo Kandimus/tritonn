@@ -15,21 +15,24 @@
 
 typedef void ( *Fn_LogAddCallback)(const std::string&);
 
-enum LOG : UINT
+enum LOG : UDINT
 {
-	I        = 0x0001,
-	W        = 0x0002,
-	A        = 0x0004,
-	P        = 0x0008,
-	SYSTEM   = 0x0010,
-	TCPSERV  = 0x0020,
-	TCPCLNT  = 0x0040,
-	EVENT    = 0x0080,
-	TERMINAL = 0x0100,
-	TEXT     = 0x0200,
-	OPCUA    = 0x0400,
-	LOGMGR   = 0x8000,
-	ALL      = 0xFFFF,
+	I        = 0x00000001,
+	W        = 0x00000002,
+	A        = 0x00000004,
+	P        = 0x00000008,
+	SYSTEM   = 0x00000010,
+	TCPSERV  = 0x00000020,
+	TCPCLNT  = 0x00000040,
+	EVENT    = 0x00000080,
+	TERMINAL = 0x00000100,
+	TEXT     = 0x00000200,
+	OPCUA    = 0x00000400,
+	CONFIG   = 0x02000000,
+	DATAMGR  = 0x04000000,
+	EVENTMGR = 0x08000000,
+	LOGMGR   = 0x80000000,
+	ALL      = 0xFFFFFFFF,
 };
 
 #define TRACE(mask, format, ...)              { rLogManager::instance().add(         (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__); }

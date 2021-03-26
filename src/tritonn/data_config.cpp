@@ -542,7 +542,7 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 	}
 
 	if (precision) {
-		if (TRITONN_RESULT_OK != rPrecision::Instance().Load(precision, m_error)) {
+		if (TRITONN_RESULT_OK != rPrecision::instance().load(precision, m_error)) {
 			return m_error.getError();
 		}
 	}
@@ -902,8 +902,8 @@ void rDataConfig::saveWeb()
 	free(str);
 	if(TRITONN_RESULT_OK != result)
 	{
-		rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
-		TRACEERROR("Can't save json tree");
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		TRACEP(LOG::CONFIG, "Can't save json tree");
 
 		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
 		return;
@@ -932,8 +932,8 @@ void rDataConfig::saveWeb()
 		result = SimpleFileSave(String_format("%sapplication/language/%s/custom_lang.php", DIR_WWW.c_str(), lang.c_str()), text);
 		if(TRITONN_RESULT_OK != result)
 		{
-			rEventManager::instance().AddEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
-			TRACEERROR("Can't save json tree");
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			TRACEP(LOG::CONFIG, "Can't save json tree");
 
 			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
 			return;

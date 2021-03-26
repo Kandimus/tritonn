@@ -130,9 +130,9 @@ rThreadStatus rLogManager::Proccesing()
 }
 
 
-UINT rLogManager::addLogMask(UINT lm)
+UDINT rLogManager::addLogMask(UDINT lm)
 {
-	UINT oldlvl = m_level.Get();
+	UDINT oldlvl = m_level.Get();
 
 	m_level.Set(oldlvl | lm);
 
@@ -140,9 +140,9 @@ UINT rLogManager::addLogMask(UINT lm)
 }
 
 
-UINT rLogManager::removeLogMask(UINT lm)
+UDINT rLogManager::removeLogMask(UDINT lm)
 {
-	UINT oldlvl = m_level.Get();
+	UDINT oldlvl = m_level.Get();
 
 	m_level.Set(oldlvl & (~lm));
 
@@ -150,9 +150,9 @@ UINT rLogManager::removeLogMask(UINT lm)
 }
 
 
-UINT rLogManager::setLogMask(UINT lm)
+UDINT rLogManager::setLogMask(UDINT lm)
 {
-	UINT oldlvl = m_level.Get();
+	UDINT oldlvl = m_level.Get();
 
 	m_level.Set(lm);
 
@@ -199,7 +199,7 @@ std::string rLogManager::saveLogText(UDINT mask, const UDT* time, const std::str
 		fulltext += ":" + source + String_format(":%u", lineno);
 	}
 
-	fulltext += String_format("] %04x %s\n", mask, text.c_str());
+	fulltext += String_format("] %08x %s\n", mask, text.c_str());
 
 	SimpleFileAppend(filename, fulltext);
 

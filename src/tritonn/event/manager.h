@@ -39,8 +39,9 @@ public:
 	UDINT loadText(const std::string& filename);
 	UDINT setCurLang(const std::string& lang);
 
-	void  add          (const rEvent& event);
-	UDINT addEvent     (DINT eid);
+	void add          (const rEvent& event);
+	void addEvent     (DINT eid);
+	void addEventUDINT(DINT eid, UDINT val);
 
 	UDINT getAlarm() { return m_alarm.Get();  }
 	UDINT confirm()  { return m_alarm.Set(0); } //TODO Будем ли реализовывать подтверждение каждого события?
@@ -58,9 +59,10 @@ private:
 
 	UDINT  LoadEEPROM();
 	UDINT  SaveEEPROM(int pos, rEvent &event);
-	string getDescr(rEvent &event);
-	UDINT  parseNumber(const char *str, UDINT &num, UDINT &prec, UDINT &exp);
-	string parseParameter(rEvent &event, const char *str, UDINT &offset);
+
+	std::string getDescr(const rEvent &event);
+	UDINT       parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT& exp);
+	std::string parseParameter(const rEvent& event, const char* str, UDINT& offset);
 };
 
 

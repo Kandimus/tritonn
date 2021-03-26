@@ -18,9 +18,9 @@
 #include "manager.h"
 #include <string.h>
 #include "log_manager.h"
-#include "text_manager.h"
-#include "precision.h"
-#include "error.h"
+#include "../text_manager.h"
+#include "../precision.h"
+#include "../error.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,14 +49,13 @@ rEventManager::~rEventManager()
 // Основная функция добавления события
 void rEventManager::add(const rEvent& event)
 {
-	UDINT curpos  = 0;
 	UDINT type    = event.getType();
 	UDINT mask    = LOG::EVENT;
 	UDINT log_obj = 0;
 
 	if(event.getEID() == 0)
 	{
-		TRACEERROR("Fault add event. EID is null.");
+		TRACEP(LOG::EVENTMGR, "Fault add event. EID is null.");
 		return;
 	}
 
@@ -96,68 +95,62 @@ void rEventManager::add(const rEvent& event)
 	rLogManager::instance().add(mask, "", -1, descr.c_str());
 	
 //	SaveEEPROM(curpos * sizeof(rEvent), event);
-
-	return curpos;
 }
 
 
-UDINT rEventManager::AddEvent(DINT eid)
+void rEventManager::addEvent(DINT eid)
 {
 	rEvent event(eid);
 
-	return Add(event);
+	add(event);
 }
 
-
-UDINT rEventManager::AddEventUDINT(DINT eid, UDINT val)
+void rEventManager::addEventUDINT(DINT eid, UDINT val)
 {
 	rEvent event(eid);
-	event.AddUDINT(val);
 
-	return Add(event);
+	add(event << val);
 }
-
 
 //-------------------------------------------------------------------------------------------------
-UDINT rEventManager::Get(rEventArray &arr)
-{
-	Lock();
+//UDINT rEventManager::Get(rEventArray &arr)
+//{
+//	Lock();
 	
-	memcpy((void*)&arr, (const void *)&Event, sizeof(rEventArray));
+//	memcpy((void*)&arr, (const void *)&Event, sizeof(rEventArray));
 	
-	Unlock();
+//	Unlock();
 	
-	return 0;
-}
+//	return 0;
+//}
 
 
 //-------------------------------------------------------------------------------------------------
 //
-string rEventManager::GetDescr(rEvent &event)
+std::string rEventManager::getDescr(const rEvent &event)
 {
 	string  text   = "";
 	string  result = "";
 
 	// Получим шаблон описания события
-	if(Texts.Get(event.GetEID(), text))
+	if(m_texts.Get(event.getEID(), text))
 	{
-		result = String_format("Event %u does not exist", event.GetEID());
+		result = String_format("Event %u does not exist", event.getEID());
 
-		TRACEERROR(result.c_str());
+		TRACEP(LOG::EVENTMGR, result.c_str());
 		return result;
 	}
 
 	if(text.empty())
 	{
-		result = String_format("Event %u have not decription", event.GetEID());
+		result = String_format("Event %u have not decription", event.getEID());
 
-		TRACEERROR(result.c_str());
+		TRACEP(LOG::EVENTMGR, result.c_str());
 		return result;
 	}
 
 	// Начнем подставлять данные в описание события
-	for(UDINT ii = 0; ii < text.size(); ++ii)
-	{
+	for (UDINT ii = 0; ii < text.size(); ++ii) {
 		// Это не начало параметра
 		if('$' != text[ii] || ii == text.size() - 1)
 		{
@@ -181,7 +174,7 @@ string rEventManager::GetDescr(rEvent &event)
 		}
 
 		// Сюда попадем только если встретили $[0-9]
-		result += ParseParameter(event, text.c_str() + ii + 1, ii);
+		result += parseParameter(event, text.c_str() + ii + 1, ii);
 	} // for
 
 	return result;
@@ -189,9 +182,9 @@ string rEventManager::GetDescr(rEvent &event)
 
 
 
-string rEventManager::ParseParameter(rEvent &event, const char *str, UDINT &offset)
+std::string rEventManager::parseParameter(const rEvent& event, const char* str, UDINT& offset)
 {
-	static string  floatformat[3] = {"%.*f", "%.*e", "%.*E"};
+	static std::string floatformat[3] = {"%.*f", "%.*e", "%.*E"};
 
 	UDINT   number = 0;
 	UDINT   prec   = 0xFFFFFFFF;
@@ -199,30 +192,29 @@ string rEventManager::ParseParameter(rEvent &event, const char *str, UDINT &offs
 	UDINT   type   = 0;
 	void   *data   = nullptr;
 
-	offset += ParseNumber(str, number, prec, exp);
-	data    = event.GetParamByID(number - 1, type); // Номера указываются с 1, а по факту с 0
+	offset += parseNumber(str, number, prec, exp);
+	data    = event.getParamByID(number - 1, type); // Номера указываются с 1, а по факту с 0
 
-	if(data == nullptr)
-	{
-		TRACEERROR(String_format("Event eid %i: unknow param %i", event.GetEID(), number).c_str());
+	if(data == nullptr) {
+		TRACEP(LOG::EVENTMGR, "Event eid %i: unknow param %i", event.getEID(), number);
 		return "<?>";
 	}
 
 	// Если точность не была указана, то ищем предшествующие единицы измерений
 	if(prec == 0xFFFFFFFF && (type == TYPE_LREAL || type == TYPE_REAL))
 	{
-		prec = PRECISION_DEFAUILT;
+		prec = rPrecision::DEFAUILT;
 
 		// Получаем значение точности из предыдущей ед.измерения
 		for(DINT jj = number - 2; jj >= 0; --jj)
 		{
 			UDINT  sidtype = 0;
-			UDINT *sid     = (UDINT *)event.GetParamByID(jj, sidtype);
+			UDINT* sid     = (UDINT *)event.getParamByID(jj, sidtype);
 
 			// Нашли ед.измерения
 			if(sidtype == TYPE_STRID && *sid < MAX_UNITS_COUNT)
 			{
-				prec = rPrecision::Instance().Get(*sid);
+				prec = rPrecision::instance().get(*sid);
 				break;
 			}
 		}
@@ -232,7 +224,7 @@ string rEventManager::ParseParameter(rEvent &event, const char *str, UDINT &offs
 	switch(type)
 	{
 		case TYPE_UNDEF:
-			TRACEERROR(String_format("Event eid %i, param %i: undefine type", event.GetEID(), number).c_str());
+			TRACEP(LOG::EVENTMGR, "Event eid %i, param %i: undefine type", event.getEID(), number);
 			return "<undefine type>";
 
 		case TYPE_SINT : return String_format("%hhi", *( SINT *)data);
@@ -245,12 +237,12 @@ string rEventManager::ParseParameter(rEvent &event, const char *str, UDINT &offs
 		case TYPE_LREAL: return String_format(floatformat[exp].c_str(), prec, *(LREAL *)data);
 		case TYPE_STRID:
 		{
-			const string *str = rTextManager::instance().GetPtr(*(UDINT *)data);
+			const std::string* str = rTextManager::instance().GetPtr(*(UDINT *)data);
 			return (str == nullptr) ? String_format("<unknow sid %u>", *(UDINT *)data) : *str;
 		}
 
 		default:
-			TRACEERROR(String_format("Event eid %i, param %i: unknow type", event.GetEID(), number).c_str());
+			TRACEP(LOG::EVENTMGR, "Event eid %i, param %i: unknow type", event.getEID(), number);
 			return "<unknow type>";
 	}
 }
@@ -259,7 +251,7 @@ string rEventManager::ParseParameter(rEvent &event, const char *str, UDINT &offs
 
 //-------------------------------------------------------------------------------------------------
 // Парсинг номеров параметров вида: $1, $2.3, $4.e5, $6.e
-UDINT rEventManager::ParseNumber(const char *str, UDINT &num, UDINT &prec, UDINT &exp)
+UDINT rEventManager::parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT& exp)
 {
 	const UDINT STATE_NUMBER = 0; // Состояния конечного автомата
 	const UDINT STATE_DOT    = 1;
@@ -411,13 +403,14 @@ rThreadStatus rEventManager::Proccesing()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rEventManager::LoadText(const string& filename)
+UDINT rEventManager::loadText(const string& filename)
 {
 	rError err;
 
-	if (TRITONN_RESULT_OK != Texts.LoadSystem(filename, err)) {
-		TRACEERROR("Can't load system event. Error %i, line %i", err.getError(), err.getLineno());
+	if (TRITONN_RESULT_OK != m_texts.LoadSystem(filename, err)) {
+		TRACEP(LOG::EVENTMGR, "Can't load system event. Error %i, line %i", err.getError(), err.getLineno());
 		exit(0);
+		//TODO Перейти в HALT
 	}
 
 	return err.getError();
@@ -425,52 +418,7 @@ UDINT rEventManager::LoadText(const string& filename)
 
 
 //
-UDINT rEventManager::SetCurLang(const string &lang)
+UDINT rEventManager::setCurLang(const std::string& lang)
 {
-	return Texts.SetCurLang(lang);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void Event_ID(UDINT eid, UDINT id)
-{
-	rEvent event(eid);
-	event.AddUDINT(id);
-	
-	rEventManager::instance().Add(event);
-}
-
-
-void Event_ID_UINT(UDINT eid, UDINT id, UINT val)
-{
-	rEvent event(eid);
-	event.AddUDINT(id);
-	event.AddUINT(val);
-	
-	rEventManager::instance().Add(event);
-}
-
-
-void Event_ID_UDINT(UDINT eid, UDINT id, UDINT val)
-{
-	rEvent event(eid);
-	event.AddUDINT(id);
-	event.AddUDINT(val);
-
-	rEventManager::instance().Add(event);
-}
-
-
-void Event_ID_UINT_UINT(UDINT eid, UDINT id, UINT val1, UINT val2)
-{
-	rEvent event(eid);
-	event.AddUDINT(id);
-	event.AddUINT(val1);
-	event.AddUINT(val2);
-	
-	rEventManager::instance().Add(event);
+	return m_texts.SetCurLang(lang);
 }
