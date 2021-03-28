@@ -13,6 +13,7 @@
 
 #include "def.h"
 #include "eid.h"
+#include "datetime.h"
 
 #define EVENT_ADDDATA(x, y)       {if(m_size + EPT_SIZE[x] + 1 >= DATA_SIZE) return 1; m_data[m_size++] = x; *(y *)(m_data + m_size) = val; m_size += EPT_SIZE[x]; return 0; }
 
@@ -46,8 +47,10 @@ public:
 	DINT    getObject() const { return (m_EID >> 16) & 0x03FF; } //
 	DINT    getID()     const { return  m_EID        & 0xFFFF; } //
 	UDINT   getEID()    const { return  m_EID; }
+	const rDateTime& getTime() const { return  m_timestamp; }
 	
 	void* getParamByID(UDINT ID, UDINT &type) const;
+	std::string toString() const;
 
 	// Функции для добавления параметров события, в случае переполнения буффера возвращают 1, в случае успеха - 0
 	UDINT addSINT (SINT  val) { EVENT_ADDDATA(TYPE_SINT ,  SINT); }
@@ -73,11 +76,11 @@ public:
 	rEvent& operator = (const rEvent &event);
 
 private:
-	UDT         m_timeStamp; // 8 байт
-	DINT        m_EID;       // 4 байта
-	USINT       m_size;      // 1 байт
-	USINT       m_reserv[3]; // 3 байта для выравнивания по границе 4 байт
-	USINT       m_data[DATA_SIZE];  // 64 байта
+	rDateTime m_timestamp; // 8 байт
+	DINT      m_EID;       // 4 байта
+	USINT     m_size;      // 1 байт
+	USINT     m_reserv[3]; // 3 байта для выравнивания по границе 4 байт
+	USINT     m_data[DATA_SIZE];  // 64 байта
 };
 
 #undef EVENT_ADDDATA

@@ -26,4 +26,4 @@ extern std::string String_tolower(const std::string &str);
 extern bool        String_equali(const std::string &str1, const std::string &str2);
 extern std::string String_deletewhite(const std::string &str);
 extern int         String_ToBuffer(const char *str, unsigned char *buf, unsigned int bufsize);
-extern std::string String_FromBuffer(unsigned char *buf, unsigned int bufsize);
+extern std::string String_FromBuffer(const unsigned char *buf, unsigned int bufsize);

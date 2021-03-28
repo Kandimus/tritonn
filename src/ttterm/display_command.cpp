@@ -17,7 +17,7 @@
 #include <sstream>
 #include "safity.h"
 #include "locker.h"
-#include "log_manager.h"
+//#include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
 #include "tritonn_version.h"

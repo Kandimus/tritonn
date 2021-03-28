@@ -28,9 +28,15 @@ enum LOG : UDINT
 	TERMINAL = 0x00000100,
 	TEXT     = 0x00000200,
 	OPCUA    = 0x00000400,
+	LINK     = 0x00000800,
+	JSON     = 0x00001000,
+	THREAD   = 0x00002000,
+
+	MAIN     = 0x01000000,
 	CONFIG   = 0x02000000,
 	DATAMGR  = 0x04000000,
 	EVENTMGR = 0x08000000,
+
 	LOGMGR   = 0x80000000,
 	ALL      = 0xFFFFFFFF,
 };
@@ -40,7 +46,6 @@ enum LOG : UDINT
 #define TRACEW(mask, format, ...)             { rLogManager::instance().add(LOG::W | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__); }
 #define TRACEA(mask, format, ...)             { rLogManager::instance().add(LOG::A | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__); }
 #define TRACEP(mask, format, ...)             { rLogManager::instance().add(LOG::P | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__); }
-#define TRACEERROR(format, ...)               { rLogManager::outErr(                         __FILENAME__, __LINE__, (format), ##__VA_ARGS__); }
 
 
 

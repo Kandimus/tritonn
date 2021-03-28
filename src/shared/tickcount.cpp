@@ -28,11 +28,11 @@ bool rTickCount::isStarted() const
 
 void rTickCount::start(UDINT setting)
 {
-	reset();
+	restart();
 	m_setting = setting;
 }
 
-void rTickCount::reset()
+void rTickCount::restart()
 {
 	m_isStart = true;
 	gettimeofday(&m_tv, NULL);

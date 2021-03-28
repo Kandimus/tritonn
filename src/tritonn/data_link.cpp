@@ -156,7 +156,7 @@ UDINT rLink::generateVars(rVariableList& list)
 	UINT   flags = rVariable::Flags::READONLY;
 
 	if (!m_owner) {
-		TRACEERROR("The link '%s' has no owner.", m_alias.c_str());
+		TRACEP(LOG::LINK, "The link '%s' has no owner.", m_alias.c_str());
 		return 0;
 	}
 

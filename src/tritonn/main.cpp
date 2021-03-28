@@ -4,6 +4,7 @@
 #include "log_manager.h"
 #include "event/manager.h"
 #include "threadmaster.h"
+#include "system_manager.h"
 #include "data_manager.h"
 #include "io/manager.h"
 #include "term_manager.h"
@@ -90,28 +91,31 @@ int main(int argc, char* argv[])
 
 	rLogManager::instance().m_enable.Set(true);
 	rLogManager::instance().setLogMask(logmask);
+	rLogManager::instance().m_terminal.Set(true);
+	TRACEI(LOG::MAIN, "------------------------------------------");
+	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
-
-	TRACEERROR("------------------------------------------");
-	TRACEERROR("Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
-//	rLogManager::instance().StartServer();
 	rLogManager::instance().Run(16);
 
 	rThreadMaster::instance().add(&rLogManager::instance(), TMF_NONE, "logs");
 
 
-	//----------------------------------------------------------------------------------------------
+	// Менеджер системных команд
+	rSystemManager::instance().Run(250);
+
+	rThreadMaster::instance().add(&rSystemManager::instance(), TMF_NONE, "system");
+
+
 	// Системные строки
 	rError err;
 	if(TRITONN_RESULT_OK != rTextManager::instance().LoadSystem(FILE_SYSTEMTEXT, err))
 	{
-		TRACEERROR("Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
+		TRACEP(LOG::MAIN, "Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
 		exit(0);
 	}
 	rTextManager::instance().SetCurLang("ru");
 
 
-	//----------------------------------------------------------------------------------------------
 	// Менеджер сообщений
 	rEventManager::instance().loadText(FILE_SYSTEMEVENT); // Системные события
 	rEventManager::instance().setCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
@@ -179,7 +183,7 @@ int main(int argc, char* argv[])
 #endif
 
 		if (rThreadMaster::instance().GetStatus() == rThreadStatus::CLOSED) {
-			TRACEW(LOG::SYSTEM, "Closing...");
+			TRACEW(LOG::MAIN, "Closing...");
 			break;
 		}
 
@@ -188,7 +192,7 @@ int main(int argc, char* argv[])
 
 	mSleep(500);
 	
-	TRACEERROR("Все потоки закрыты!");
+	TRACEI(LOG::MAIN, "Все потоки закрыты!");
 	
 	return 0;
 }

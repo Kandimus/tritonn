@@ -56,7 +56,7 @@ USINT *rJSONClient::Recv(USINT *read_buff, UDINT read_size)
 
 		memcpy(Buff, read_buff, Size);
 
-		TRACEERROR((const char *)Buff);
+		TRACEP(LOG::JSON, (const char *)Buff);
 	}
 	else
 	{

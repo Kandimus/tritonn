@@ -204,7 +204,7 @@ int String_ToBuffer(const char *str, unsigned char *buf, unsigned int bufsize)
 
 
 // Перевод числового массива в строку
-std::string String_FromBuffer(unsigned char *buf, unsigned int bufsize)
+std::string String_FromBuffer(const unsigned char *buf, unsigned int bufsize)
 {
 	std::string result = "";
 

@@ -13,8 +13,9 @@
 //===
 //=================================================================================================
 
-#include <string.h>
 #include "event.h"
+#include <string.h>
+#include "stringex.h"
 
 
 rEvent::rEvent(void)
@@ -43,7 +44,7 @@ rEvent &rEvent::operator = (const rEvent &event)
 	m_EID  = event.m_EID;
 	m_size = event.m_size;
 
-	m_timeStamp = event.m_timeStamp;
+	m_timestamp = event.m_timestamp;
 //	gettimeofday(&m_timestamp, NULL);
 
 	memcpy(m_data, event.m_data, DATA_SIZE);
@@ -55,12 +56,11 @@ rEvent &rEvent::operator = (const rEvent &event)
 //
 void rEvent::clear()
 {
-	m_timeStamp.tv_sec  = 0;
-	m_timeStamp.tv_usec = 0;
-	m_size              = 0;
-	m_EID               = EID_UNDEF;
+	m_size = 0;
+	m_EID  = EID_UNDEF;
 
 	memset(m_data, 0, DATA_SIZE);
+	m_timestamp.clear();
 }
 
 rEvent& rEvent::reinit(UDINT eid)
@@ -68,7 +68,7 @@ rEvent& rEvent::reinit(UDINT eid)
 	m_EID  = eid;
 	m_size = 0;
 
-	gettimeofday(&m_timeStamp, NULL);
+	m_timestamp.setCurTime();
 	memset(m_data, 0, DATA_SIZE);
 
 	return *this;
@@ -95,4 +95,14 @@ void* rEvent::getParamByID(UDINT ID, UDINT& type) const
 	
 	type = TYPE_UNDEF;
 	return nullptr;
+}
+
+std::string rEvent::toString() const
+{
+	std::string result = m_timestamp.toString();
+
+	result += String_format("\t%08x\t%02x\t", m_EID, m_size);
+	result += String_FromBuffer(m_data, DATA_SIZE);
+
+	return result;
 }

@@ -29,7 +29,7 @@ public:
 	bool  isFinished();
 	void  stop();
 	bool  isStarted() const;
-	void  reset();
+	void  restart();
 
 
 

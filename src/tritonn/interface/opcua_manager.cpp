@@ -206,7 +206,7 @@ rThreadStatus rOPCUAManager::Proccesing()
 			m_snapshot.resetAssign();
 
 			m_snapshot.get();
-			tick.reset();
+			tick.restart();
 
 			rVariableClass::processing();
 			rThreadClass::EndProccesing();

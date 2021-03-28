@@ -63,6 +63,7 @@ private:
 	std::string getDescr(const rEvent &event);
 	UDINT       parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT& exp);
 	std::string parseParameter(const rEvent& event, const char* str, UDINT& offset);
+	void        save(const rEvent& event);
 };
 
 

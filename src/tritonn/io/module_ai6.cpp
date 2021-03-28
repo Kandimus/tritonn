@@ -31,6 +31,11 @@ rModuleAI6::rModuleAI6()
 		m_channel.push_back(ch_ai);
 		m_listChannel.push_back(ch_ai);
 	}
+
+#ifndef TRITONN_TEST
+	m_channel[0]->m_simType  = rIOAIChannel::SimType::LINEAR;
+	m_channel[0]->m_simSpeed = 1234;
+#endif
 }
 
 rModuleAI6::rModuleAI6(const rModuleAI6* ai6) : rIOBaseModule(ai6)

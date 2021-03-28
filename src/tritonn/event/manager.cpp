@@ -21,13 +21,9 @@
 #include "../text_manager.h"
 #include "../precision.h"
 #include "../error.h"
+#include "simplefile.h"
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-
-//-------------------------------------------------------------------------------------------------
-//
 rEventManager::rEventManager()
 {
 	RTTI = "rEventManager";
@@ -92,8 +88,9 @@ void rEventManager::add(const rEvent& event)
 	//Выдаем расшифровку сообщения
 	std::string descr = getDescr(event);
 
-	rLogManager::instance().add(mask, "", -1, descr.c_str());
+	rLogManager::instance().add(mask, event.getTime(), descr.c_str());
 	
+	save(event);
 //	SaveEEPROM(curpos * sizeof(rEvent), event);
 }
 
@@ -421,4 +418,12 @@ UDINT rEventManager::loadText(const string& filename)
 UDINT rEventManager::setCurLang(const std::string& lang)
 {
 	return m_texts.SetCurLang(lang);
+}
+
+void rEventManager::save(const rEvent& event)
+{
+	std::string filename = DIR_EVENT + String_format("%u.event", event.getTime().getSec() / 86400);
+	std::string text = event.toString() + "\n";
+
+	SimpleFileAppend(filename, text);
 }

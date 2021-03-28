@@ -110,23 +110,23 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	switch(restart)
 	{
 		case RESTART_WARM:
-			TRACEI(LOG::SYSTEM, "Command Warm-restart");
+			TRACEI(LOG::DATAMGR, "Command Warm-restart");
 			rEventManager::instance().addEvent(EID_SYSTEM_RESTART_WARM);
 			break;
 
 		case RESTART_COLD:
-			TRACEI(LOG::SYSTEM, "Command Cold-restart");
+			TRACEI(LOG::DATAMGR, "Command Cold-restart");
 			SimpleFileSave(FILE_RESTART, "cold");
 			rEventManager::instance().addEvent(EID_SYSTEM_RESTART_COLD);
 			break;
 
 		case RESTART_DEBUG:
-			TRACEI(LOG::SYSTEM, "Command Debug-restart");
+			TRACEI(LOG::DATAMGR, "Command Debug-restart");
 			SimpleFileSave(FILE_RESTART, "debug");
 			break;
 
 		default:
-			TRACEI(LOG::SYSTEM, "Unkonow command restart");
+			TRACEI(LOG::DATAMGR, "Unkonow command restart");
 			rEventManager::instance().addEventUDINT(EID_SYSTEM_RESTART_UNKNOW, restart);
 			return 1;
 	}
@@ -143,14 +143,14 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 		case Live::REBOOT_COLD:
 			if(filename.size())
 			{
-				TRACEW(LOG::SYSTEM, "Set new conf file: '%s'", filename.c_str());
+				TRACEW(LOG::DATAMGR, "Set new conf file: '%s'", filename.c_str());
 				SimpleFileSave(FILE_CONF, filename);
 			}
 			rThreadMaster::instance().Finish();
 			return 0;
 
 		default:
-			TRACEA(LOG::SYSTEM, "Unknow live status");
+			TRACEA(LOG::DATAMGR, "Unknow live status");
 			rThreadMaster::instance().Finish();
 			return 2;
 	}
@@ -215,7 +215,7 @@ UDINT rDataManager::LoadConfig()
 	if (Live::STARTING == GetLiveStatus()) {
 
 		//TODO проверить на валидность hash
-		TRACEI(LOG::SYSTEM | LOG::I, "Load config file '%s'", conf.c_str());
+		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
 
 		if(rDataConfig::instance().LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
@@ -415,7 +415,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 				// Загружаем список конфигураций
 				rListConfig::Load();
 
-				TRACEI(LOG::SYSTEM, "Cold restart!");
+				TRACEI(LOG::DATAMGR, "Cold restart!");
 				//TODO Нужно выложить в web все языковые файлы
 			}
 			if ("debug" == text) {
@@ -427,7 +427,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 			}
 		}
 	} else {
-		TRACEI(LOG::SYSTEM, "Forced run!");
+		TRACEI(LOG::DATAMGR, "Forced run!");
 	}
 
 	// удаляем файл

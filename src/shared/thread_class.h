@@ -81,7 +81,7 @@ protected:
 	void EndProccesing();               //
 
 	string              RTTI    = "rThreadClass"; // Имя класса
-	UDINT               LogMask = LOG::SYSTEM;    // Маска для логирования. Для удобства
+	UDINT               LogMask;    // Маска для логирования. Для удобства
 	pthread_mutex_t     Mutex;                    // Защитный мьютекс внутренних данных
 
 	std::vector<rThreadTimeInfo* > TimeInfo;
