@@ -17,6 +17,7 @@
 
 #include "manager.h"
 #include <string.h>
+#include "client.h"
 #include "log_manager.h"
 #include "../text_manager.h"
 #include "../precision.h"
@@ -25,6 +26,7 @@
 
 
 rEventManager::rEventManager()
+	: rTCPClass("0.0.0.0", LanPort::PORT_EVENT, ClientCount::MAX)
 {
 	RTTI = "rEventManager";
 
@@ -37,8 +39,19 @@ rEventManager::~rEventManager()
 	//SaveEEPROM();
 }
 
-//-------------------------------------------------------------------------------------------------
-//
+rClientTCP *rEventManager::NewClient(SOCKET socket, sockaddr_in *addr)
+{
+	return (rClientTCP *)new rEventClient(socket, addr);
+}
+
+UDINT rEventManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
+{
+	UNUSED(client);
+	UNUSED(buff);
+	UNUSED(size);
+	return TRITONN_RESULT_OK;
+}
+
 
 
 //-------------------------------------------------------------------------------------------------
@@ -130,7 +143,7 @@ std::string rEventManager::getDescr(const rEvent &event)
 	string  result = "";
 
 	// Получим шаблон описания события
-	if(m_texts.Get(event.getEID(), text))
+	if(m_texts.get(event.getEID(), text))
 	{
 		result = String_format("Event %u does not exist", event.getEID());
 
@@ -234,7 +247,7 @@ std::string rEventManager::parseParameter(const rEvent& event, const char* str, 
 		case TYPE_LREAL: return String_format(floatformat[exp].c_str(), prec, *(LREAL *)data);
 		case TYPE_STRID:
 		{
-			const std::string* str = rTextManager::instance().GetPtr(*(UDINT *)data);
+			const std::string* str = rTextManager::instance().getPtr(*(UDINT *)data);
 			return (str == nullptr) ? String_format("<unknow sid %u>", *(UDINT *)data) : *str;
 		}
 
@@ -404,7 +417,7 @@ UDINT rEventManager::loadText(const string& filename)
 {
 	rError err;
 
-	if (TRITONN_RESULT_OK != m_texts.LoadSystem(filename, err)) {
+	if (TRITONN_RESULT_OK != m_texts.loadSystem(filename, err)) {
 		TRACEP(LOG::EVENTMGR, "Can't load system event. Error %i, line %i", err.getError(), err.getLineno());
 		exit(0);
 		//TODO Перейти в HALT
@@ -417,8 +430,9 @@ UDINT rEventManager::loadText(const string& filename)
 //
 UDINT rEventManager::setCurLang(const std::string& lang)
 {
-	return m_texts.SetCurLang(lang);
+	return m_texts.setCurLang(lang);
 }
+
 
 void rEventManager::save(const rEvent& event)
 {
@@ -426,4 +440,10 @@ void rEventManager::save(const rEvent& event)
 	std::string text = event.toString() + "\n";
 
 	SimpleFileAppend(filename, text);
+}
+
+
+UDINT rEventManager::startServer()
+{
+	return rTCPClass::StartServer("0.0.0.0", LanPort::PORT_EVENT);
 }

@@ -17,10 +17,14 @@
 
 #include <string>
 #include <vector>
-#include "tinyxml2.h"
 #include "def.h"
 
 class rError;
+
+namespace tinyxml2
+{
+	class XMLElement;
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class rTextItem
@@ -55,27 +59,27 @@ public:
 	virtual ~rTextClass();
 
 private:
-	std::vector<rTextLang*>  Langs;
+	std::vector<rTextLang*>  m_langs;
 	rTextLang* CurLang;
 
 public:
-	UDINT         LoadSystem(const std::string& filename, rError& err);
-	UDINT         Load(tinyxml2::XMLElement* root, rError& err);
-	UDINT         SetCurLang(const std::string& lang);
-	std::string   GetCurLang();
-	UDINT         Get(STRID id, const std::string& lang, std::string& text);
-	UDINT         Get(STRID id, std::string& text);
-	const std::string *GetPtr(STRID id, const std::string &lang);
-	const std::string *GetPtr(STRID id);
+	UDINT       loadSystem(const std::string& filename, rError& err);
+	UDINT       load(tinyxml2::XMLElement* root, rError& err);
+	bool        setCurLang(const std::string& lang);
+	std::string getCurLang() const;
+	bool        get(STRID id, const std::string& lang, std::string& text) const;
+	bool        get(STRID id, std::string& text) const;
+	const std::string *getPtr(STRID id, const std::string &lang) const;
+	const std::string *getPtr(STRID id) const;
 
-	UDINT         GetListLang(std::vector<std::string>& list);
-	UDINT         GetListSID (const std::string &lang, std::vector<rTextItem>& list);
+	void        getListLang(std::vector<std::string>& list) const;
+	void        getListSID (const std::string& lang, std::vector<rTextItem>& list) const;
 
 private:
-	UDINT         LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err);
-	UDINT         DeleteUnused();
-	rTextLang    *GetLangPtr(const std::string& name);
-	const std::string* GetPtr(STRID id, rTextLang* lang);
+	UDINT         loadLang(tinyxml2::XMLElement *root, UDINT create, rError& err);
+	UDINT         deleteUnused();
+	rTextLang    *getLangPtr(const std::string& name) const;
+	const std::string* getPtr(STRID id, rTextLang* lang) const;
 };
 
 

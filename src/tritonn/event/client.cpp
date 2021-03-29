@@ -1,34 +1,30 @@
 //=================================================================================================
 //===
-//=== log_client.cpp
+//=== event_client.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Клиент для класса-потока логов
 //===
 //=================================================================================================
 
 #include "client.h"
 
 
-rLogClient::rLogClient(SOCKET socket, sockaddr_in *addr) : rClientTCP(socket, addr)
+rEventClient::rEventClient(SOCKET socket, sockaddr_in* addr) : rClientTCP(socket, addr)
 {
 	Login = 0;
 }
 
 
-rLogClient::~rLogClient()
+rEventClient::~rEventClient()
 {
 	Login = 0;
 }
 
 
-USINT *rLogClient::Recv(USINT */*read_buff*/, UDINT /*read_size*/)
+USINT *rEventClient::Recv(USINT */*read_buff*/, UDINT /*read_size*/)
 {
 	return nullptr;
 }

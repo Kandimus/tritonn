@@ -44,10 +44,15 @@ const DINT   MAX_SELECT_USEC           = 5000;     // Функция select бу
 
 //-------------------------------------------------------------------------------------------------
 // Сетевые константы
-const UINT   TCP_PORT_LOG              = 22500;       // Порт логирования
-const UINT   TCP_PORT_JSON             = 22501;       // Порт JSON
-const UINT   TCP_PORT_TERM             = 22503;       // Порт терминала и конфигуратора
-const UINT   TCP_PORT_MODBUS           = 502;         // Стандартный порт для ModbusTCP
+
+enum LanPort : UINT
+{
+	PORT_EVENT  = 22500,       // Порт логирования
+	PORT_JSON   = 22501,       // Порт JSON
+	PORT_TERM   = 22503,       // Порт терминала и конфигуратора
+	PORT_MODBUS = 502,         // Стандартный порт для ModbusTCP
+};
+
 const UDINT  MAX_TCP_RECV_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCP_SEND_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCPCLIENT_BUFF        = 4 * MAX_TCP_RECV_BUFF; // Размер буффера принятых сообщений клиентом TCP
@@ -74,7 +79,6 @@ const UINT   LOG_CP_WIN1251            = 0x0000;
 const UINT   LOG_CP_UTF8               = 0x1000;
 const UINT   LOG_CP_UNICODE            = 0x2000;
 const UINT   LOG_CP_MASK               = 0x3000;
-const UDINT  MAX_LOG_CLIENT            = 2;           // Кол-во одновременных подключений к логам
 const UDINT  MAX_JSON_CLIENT           = 8;           // Кол-во одновременных сессий JSON
 const UDINT  MAX_JSON_IDLE             = 30;          // Максимальное время простоя без запросов в сессии JSON, сек
 const UDINT  MAX_JSON_SESSION          = 10 * 60;     // Максимальное время сессии JSON, сек
@@ -243,6 +247,9 @@ const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
 const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";
 const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 const std::string FILE_WWW_TREE_OBJ    = DIR_WWW  + "application/core/tree_objects.json";
+const std::string DIR_WWW_LANG         = DIR_WWW + "application/language/";
+const std::string FILE_WWW_LANG        = "custom_lang.php";
+const std::string FILE_WWW_EVENT       = "event_lang.php";
 #endif
 
 

@@ -536,7 +536,7 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 	precision = custom->FirstChildElement(XmlName::PRECISION);
 
 	if (userstr) {
-		if (TRITONN_RESULT_OK != rTextManager::instance().Load(userstr, m_error)) {
+		if (TRITONN_RESULT_OK != rTextManager::instance().load(userstr, m_error)) {
 			return m_error.getError();
 		}
 	}
@@ -912,28 +912,45 @@ void rDataConfig::saveWeb()
 	//TODO Нужно вначале удалить все языковые файлы для web
 
 	// Сохраняем массив строк
-	vector<string>    langlist;
-	vector<rTextItem> sidlist;
+	std::vector<std::string> lang_list;
+	std::vector<rTextItem>   sid_list;
+	std::vector<rTextItem>   event_list;
 
-	rTextManager::instance().GetListLang(langlist);
+	rTextManager::instance().getListLang(lang_list);
 
-	for (auto& lang : langlist) {
-		string  text     = "";
-		UDINT   result   = TRITONN_RESULT_OK;
+	for (auto& lang : lang_list) {
+		UDINT result = TRITONN_RESULT_OK;
 
-		rTextManager::instance().GetListSID(lang, sidlist);
+		rTextManager::instance().getListSID(lang, sid_list);
+		rEventManager::instance().getTextClass().getListSID(lang, event_list);
 
-		text = String_format("<?php\n$lang[\"language_locale\"] = \"%s\";\n\n", lang.c_str());
+		std::string text = "<?php\n";
 
-		for(auto& item : sidlist) {
+		for(auto& item : sid_list) {
 			text += String_format("$lang[\"core_%u\"]=\"%s\";\n", item.ID, item.Text.c_str());
 		}
 
-		result = SimpleFileSave(String_format("%sapplication/language/%s/custom_lang.php", DIR_WWW.c_str(), lang.c_str()), text);
-		if(TRITONN_RESULT_OK != result)
-		{
+		std::string filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_LANG;
+		result = SimpleFileSave(filename, text);
+		if (TRITONN_RESULT_OK != result) {
 			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
-			TRACEP(LOG::CONFIG, "Can't save json tree");
+			TRACEP(LOG::CONFIG, "Can't save sid file");
+
+			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+			return;
+		}
+
+		text = "<?php\n";
+
+		for(auto& item : event_list) {
+			text += String_format("$lang[\"event_%u\"]=\"%s\";\n", item.ID, item.Text.c_str());
+		}
+
+		filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_EVENT;
+		result = SimpleFileSave(filename, text);
+		if(TRITONN_RESULT_OK != result) {
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			TRACEP(LOG::CONFIG, "Can't save event file");
 
 			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
 			return;
