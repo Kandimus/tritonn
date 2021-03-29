@@ -108,12 +108,12 @@ int main(int argc, char* argv[])
 
 	// Системные строки
 	rError err;
-	if(TRITONN_RESULT_OK != rTextManager::instance().LoadSystem(FILE_SYSTEMTEXT, err))
+	if(TRITONN_RESULT_OK != rTextManager::instance().loadSystem(FILE_SYSTEMTEXT, err))
 	{
 		TRACEP(LOG::MAIN, "Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
 		exit(0);
 	}
-	rTextManager::instance().SetCurLang("ru");
+	rTextManager::instance().setCurLang(LANG_RU);
 
 
 	// Менеджер сообщений
@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// Терминал
 	rTermManager::Instance().Run(500);
-	rTermManager::Instance().StartServer("0.0.0.0", TCP_PORT_TERM);
+	rTermManager::Instance().StartServer("0.0.0.0", LanPort::PORT_TERM);
 
 	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "config");
 
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// JSON
 	rJSONManager::Instance().Run(500);
-	rJSONManager::Instance().StartServer("0.0.0.0", TCP_PORT_JSON);
+	rJSONManager::Instance().StartServer("0.0.0.0", LanPort::PORT_JSON);
 
 	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");
 

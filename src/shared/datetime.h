@@ -17,6 +17,12 @@
 class rDateTime
 {
 public:
+
+	enum : UDINT
+	{
+		SEC_IN_DAY = 24 * 60 * 60,
+	};
+
 	rDateTime();
 	virtual ~rDateTime() = default;
 

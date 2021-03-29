@@ -288,7 +288,7 @@ const rConfigInfo *rDataManager::GetConfName() const
 UDINT rDataManager::SetLang(const string &lang)
 {
 	rEventManager::instance().setCurLang(lang);
-	rTextManager::instance().SetCurLang(lang);
+	rTextManager::instance().setCurLang(lang);
 
 	strncpy(m_sysVar.Lang, lang.c_str(), 8);
 

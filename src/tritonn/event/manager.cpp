@@ -23,6 +23,7 @@
 #include "../precision.h"
 #include "../error.h"
 #include "simplefile.h"
+#include "locker.h"
 
 
 rEventManager::rEventManager()
@@ -30,12 +31,15 @@ rEventManager::rEventManager()
 {
 	RTTI = "rEventManager";
 
+	pthread_mutex_init(&m_mutexList, NULL);
+
 	LoadEEPROM();
 }
 
 
 rEventManager::~rEventManager()
 {
+	pthread_mutex_destroy(&m_mutexList);
 	//SaveEEPROM();
 }
 
@@ -53,6 +57,26 @@ UDINT rEventManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 }
 
 
+rThreadStatus rEventManager::Proccesing()
+{
+	// Возможно именно тут нужно записывать потихоньку данные в EEPROM, а если скорость будет нормальной, то эта нить не нужна.
+	rThreadStatus thread_status = rThreadStatus::UNDEF;
+
+	while(1)
+	{
+		// Обработка команд нити
+		thread_status = rThreadClass::Proccesing();
+		if(!THREAD_IS_WORK(thread_status))
+		{
+			return thread_status;
+		}
+
+		rThreadClass::EndProccesing();
+	}
+
+	return rThreadStatus::UNDEF;
+}
+
 
 //-------------------------------------------------------------------------------------------------
 // Основная функция добавления события
@@ -69,12 +93,14 @@ void rEventManager::add(const rEvent& event)
 	}
 
 	// Добавляем событие в кольцевой массив
-	Lock();
-	while (m_list.size() > MAX_EVENT) {
-		m_list.pop_front();
+	{
+		rLocker lock(&m_mutexList);
+
+		while (m_list.size() > MAX_EVENT) {
+			m_list.pop_front();
+		}
+		m_list.push_back(event);
 	}
-	m_list.push_back(event);
-	Unlock();
 
 	// Проверка на аварийное сообщение
 	if (type == EMT_ERROR) {
@@ -143,7 +169,7 @@ std::string rEventManager::getDescr(const rEvent &event)
 	string  result = "";
 
 	// Получим шаблон описания события
-	if(m_texts.get(event.getEID(), text))
+	if(!m_texts.get(event.getEID(), text))
 	{
 		result = String_format("Event %u does not exist", event.getEID());
 
@@ -389,28 +415,6 @@ UDINT rEventManager::SaveEEPROM(int /*pos*/, rEvent &/*event*/)
 }
 
 
-
-rThreadStatus rEventManager::Proccesing()
-{
-	// Возможно именно тут нужно записывать потихоньку данные в EEPROM, а если скорость будет нормальной, то эта нить не нужна.
-	rThreadStatus thread_status = rThreadStatus::UNDEF;
-
-	while(1)
-	{
-		// Обработка команд нити
-		thread_status = rThreadClass::Proccesing();
-		if(!THREAD_IS_WORK(thread_status))
-		{
-			return thread_status;
-		}
-
-		rThreadClass::EndProccesing();
-	}
-
-	return rThreadStatus::UNDEF;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 //
 UDINT rEventManager::loadText(const string& filename)
@@ -436,7 +440,7 @@ UDINT rEventManager::setCurLang(const std::string& lang)
 
 void rEventManager::save(const rEvent& event)
 {
-	std::string filename = DIR_EVENT + String_format("%u.event", event.getTime().getSec() / 86400);
+	std::string filename = DIR_EVENT + String_format("%u.event", event.getTime().getSec() / rDateTime::SEC_IN_DAY);
 	std::string text = event.toString() + "\n";
 
 	SimpleFileAppend(filename, text);

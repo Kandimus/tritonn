@@ -34,7 +34,7 @@
 //
 // КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rModbusTCPSlaveManager::rModbusTCPSlaveManager()
-	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT),
+	: rTCPClass("0.0.0.0", LanPort::PORT_MODBUS, MAX_MBTCP_CLIENT),
 	  rInterface(Mutex),
 	  m_snapshot(rDataManager::instance().getVariableClass())
 {

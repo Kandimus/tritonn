@@ -57,9 +57,33 @@ rThreadStatus rSystemManager::Proccesing()
 }
 
 
-void  rSystemManager::add(const std::string& text)
+void rSystemManager::add(const std::string& text)
 {
 	Lock();
 	m_list.push_back(text);
 	Unlock();
+}
+
+void rSystemManager::addTarByTime(const std::string& path, const std::string& mask, UDINT days, const std::string& tarname)
+{
+	std::string text = getTarByTime(path, mask,  days, tarname);
+	add(text);
+}
+
+void rSystemManager::addDelByTime(const std::string& path, const std::string& mask, UDINT days)
+{
+	std::string text = getDelByTime(path, mask,  days);
+	add(text);
+}
+
+std::string rSystemManager::getTarByTime(const std::string& path, const std::string& mask, UDINT days, const std::string& tarname)
+{
+	return "find " + path + "/" + mask + " -type f -mtime +" + String_format("%u", days) +
+			" | xargs tar -zcf " + path + "/" + tarname + ".tar.gz";
+}
+
+std::string rSystemManager::getDelByTime(const std::string& path, const std::string& mask, UDINT days)
+{
+	return "find " + path + "/" + mask + " -type f -mtime +" + String_format("%u", days) +
+			" | xargs rm -rf";
 }

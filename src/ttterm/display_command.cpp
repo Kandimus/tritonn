@@ -61,7 +61,7 @@ UDINT rDisplayManager::RunCmd(vector<string> &args)
 //
 void rDisplayManager::cmdConnect(vector<string> &args)
 {
-	UINT port = TCP_PORT_TERM;
+	UINT port = LanPort::PORT_TERM;
 
 	if(args.size() > 3)
 	{

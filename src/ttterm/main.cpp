@@ -48,7 +48,7 @@ int main(int argc, const char **argv)
 			.addOption(Args::USER    , 'U', "")
 			.addOption(Args::PASSWORD, 'P', "")
 			.addOption(Args::HOST    , 'h', "127.0.0.1")
-			.addOption(Args::PORT    , 'p', String_format("%u", TCP_PORT_TERM));
+			.addOption(Args::PORT    , 'p', String_format("%u", LanPort::PORT_TERM));
 
 	rSimpleArgs::instance().parse(argc, argv);
 

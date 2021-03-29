@@ -247,7 +247,7 @@ const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
 const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";
 const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 const std::string FILE_WWW_TREE_OBJ    = DIR_WWW  + "application/core/tree_objects.json";
-const std::string DIR_WWW_LANG         = DIR_WWW + "application/language/";
+const std::string DIR_WWW_LANG         = DIR_WWW  + "application/language/";
 const std::string FILE_WWW_LANG        = "custom_lang.php";
 const std::string FILE_WWW_EVENT       = "event_lang.php";
 #endif

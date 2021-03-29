@@ -22,6 +22,11 @@ class rSystemManager: public rThreadClass
 
 public:
 	void add(const std::string& command);
+	void addTarByTime(const std::string& path, const std::string& mask, UDINT days, const std::string& tarname);
+	void addDelByTime(const std::string& path, const std::string& mask, UDINT days);
+
+	std::string getTarByTime(const std::string& path, const std::string& mask, UDINT days, const std::string& tarname);
+	std::string getDelByTime(const std::string& path, const std::string& mask, UDINT days);
 
 protected:
 	virtual rThreadStatus Proccesing(void);

@@ -13,14 +13,13 @@
 //===
 //=================================================================================================
 
-
+#include "users.h"
+#include <vector>
 #include <string.h>
 #include "hash.h"
-#include "users.h"
 
 
-vector<rUser *> rUser::ListUser;
-
+std::vector<rUser*> rUser::ListUser;
 
 
 rUser::rUser(const string &name, USINT *pwd_hash, UDINT intaccess, UDINT extaccess, UDINT login, USINT *loginpwd_hash)

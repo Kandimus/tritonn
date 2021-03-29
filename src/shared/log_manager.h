@@ -26,6 +26,9 @@ class rLogManager: public rThreadClass
 		SYSTEM_TIMER  = 24 * 60 * 60 * 100,
 	};
 
+	const UDINT COMPRESS_DAYS = 95;
+	const UDINT DELETE_DAYS   = 366;
+
 	SINGLETON(rLogManager)
 
 public:

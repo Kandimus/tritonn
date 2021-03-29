@@ -50,9 +50,11 @@ rThreadStatus rLogManager::Proccesing()
 		}
 
 		if (m_systimer.isFinished()) {
+			rDateTime dt;
 
-			rSystemManager::instance().add("find <PATH> -type f -mtime +95 -exec rm -rf {} \\;");
-			rSystemManager::instance().add("find <PATH> -type f -mtime +366 -exec rm -rf {} \\;");
+			rSystemManager::instance().addTarByTime("./log", "*.log"   , COMPRESS_DAYS, String_format("%u", dt.getSec() / rDateTime::SEC_IN_DAY));
+			rSystemManager::instance().addDelByTime("./log", "*.log"   , COMPRESS_DAYS);
+			rSystemManager::instance().addDelByTime("./log", "*.tar.gz", DELETE_DAYS);
 
 			m_systimer.restart();
 
@@ -183,7 +185,7 @@ void rLogManager::outTerminal(UDINT mask, const std::string& text)
 
 std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text)
 {
-	std::string filename = m_dir + String_format("%u.log", timestamp.getSec() / 86400);
+	std::string filename = m_dir + String_format("%u.log", timestamp.getSec() / rDateTime::SEC_IN_DAY);
 	char logt[5] = "----";
 
 	// Тип сообщения

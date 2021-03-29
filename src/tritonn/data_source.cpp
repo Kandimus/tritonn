@@ -403,7 +403,7 @@ std::string rSource::getMarkDown()
 		for (auto link : m_inputs) {
 			std::string strunit = "";
 
-			rTextManager::instance().Get(link->m_unit, strunit);
+			rTextManager::instance().get(link->m_unit, strunit);
 
 			result += link->m_ioName + " | ";
 			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
@@ -420,7 +420,7 @@ std::string rSource::getMarkDown()
 		for (auto link : m_outputs) {
 			std::string strunit = "";
 
-			rTextManager::instance().Get(link->m_unit, strunit);
+			rTextManager::instance().get(link->m_unit, strunit);
 
 			result += link->m_ioName + " | ";
 			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";

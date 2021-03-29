@@ -137,7 +137,7 @@ LREAL rLink::getValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 //
 void rLink::init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr)
 {
-	auto comment = rTextManager::instance().GetPtr(descr, LANG_RU);
+	auto comment = rTextManager::instance().getPtr(descr, LANG_RU);
 
 	m_unit    = unit;
 	m_owner   = owner;
