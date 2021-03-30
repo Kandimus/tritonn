@@ -26,10 +26,10 @@ bool rTickCount::isStarted() const
 	return m_isStart;
 }
 
-void rTickCount::start(UDINT setting)
+void rTickCount::start(UDINT msec)
 {
 	restart();
-	m_setting = setting;
+	m_setting = msec;
 }
 
 void rTickCount::restart()

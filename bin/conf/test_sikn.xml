@@ -22,6 +22,7 @@
 	<config>
 		<settings>
 			<contracthour>0</contracthour>
+			<eventstorage>3</eventstorage>
 		</settings>
 		<io>
 			<ai name="GlobalTemp" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">

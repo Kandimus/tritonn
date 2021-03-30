@@ -78,12 +78,11 @@ void rSystemManager::addDelByTime(const std::string& path, const std::string& ma
 
 std::string rSystemManager::getTarByTime(const std::string& path, const std::string& mask, UDINT days, const std::string& tarname)
 {
-	return "find " + path + "/" + mask + " -type f -mtime +" + String_format("%u", days) +
-			" | xargs tar -zcf " + path + "/" + tarname + ".tar.gz";
+	return "find " + path + mask + " -type f -mtime +" + String_format("%u", days) +
+			" | xargs tar -zcf " + path + tarname + ".tar.gz";
 }
 
 std::string rSystemManager::getDelByTime(const std::string& path, const std::string& mask, UDINT days)
 {
-	return "find " + path + "/" + mask + " -type f -mtime +" + String_format("%u", days) +
-			" | xargs rm -rf";
+	return "find " + path + mask + " -type f -mtime +" + String_format("%u", days) + " | xargs rm -rf";
 }

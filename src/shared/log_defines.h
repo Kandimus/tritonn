@@ -13,8 +13,6 @@
 
 #include <string>
 
-typedef void ( *Fn_LogAddCallback)(const std::string&);
-
 enum LOG : UDINT
 {
 	I        = 0x00000001,

@@ -261,6 +261,10 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 		return m_error.set(DATACFGERR_CONFIG, root->GetLineNum());
 	}
 
+	if (loadSettings(config) != TRITONN_RESULT_OK) {
+		return m_error.getError();
+	}
+
 	if (loadIO(config, m_json_io, nullptr, "io") != TRITONN_RESULT_OK) {
 		return m_error.getError();
 	}
@@ -884,6 +888,29 @@ UDINT rDataConfig::ResolveReports(void)
 			}
 		}
 	}
+
+	return TRITONN_RESULT_OK;
+}
+
+
+UDINT rDataConfig::loadSettings(tinyxml2::XMLElement* root)
+{
+	if (!root) {
+		return TRITONN_RESULT_OK;
+	}
+
+	auto xml_settings = root->FirstChildElement(XmlName::SETTINGS);
+
+	if (!xml_settings) {
+		return TRITONN_RESULT_OK;
+	}
+
+	UDINT fault = 0;
+
+	rEventManager::instance().setStorage(
+				XmlUtils::getTextUDINT(xml_settings->FirstChildElement(XmlName::EVENTSTORAGE),
+									   rEventManager::instance().getStorage(),
+									   fault));
 
 	return TRITONN_RESULT_OK;
 }

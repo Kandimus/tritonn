@@ -19,6 +19,7 @@
 #include <string.h>
 #include "client.h"
 #include "log_manager.h"
+#include "system_manager.h"
 #include "../text_manager.h"
 #include "../precision.h"
 #include "../error.h"
@@ -27,11 +28,13 @@
 
 
 rEventManager::rEventManager()
-	: rTCPClass("0.0.0.0", LanPort::PORT_EVENT, ClientCount::MAX)
+	: rTCPClass("0.0.0.0", LanPort::PORT_EVENT, ClientCount::MAX), m_Storage(92)
 {
 	RTTI = "rEventManager";
 
 	pthread_mutex_init(&m_mutexList, NULL);
+
+	m_systimer.start(SYSTEM_TIMER);
 
 	LoadEEPROM();
 }
@@ -45,7 +48,14 @@ rEventManager::~rEventManager()
 
 rClientTCP *rEventManager::NewClient(SOCKET socket, sockaddr_in *addr)
 {
-	return (rClientTCP *)new rEventClient(socket, addr);
+	auto client = new rEventClient(socket, addr);
+	rLocker lock(&m_mutexList); lock.Nop();
+
+	for (auto& item : m_list) {
+		client->Send(static_cast<void*>(&item), sizeof(item));
+	}
+
+	return client;
 }
 
 UDINT rEventManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
@@ -74,8 +84,20 @@ rThreadStatus rEventManager::Proccesing()
 
 			if (rTCPClass::Client.size()) {
 				for (auto& item : m_list) {
-					rTCPClass::Send(nullptr, )
+					rTCPClass::Send(nullptr, static_cast<void*>(&item), sizeof(item));
 				}
+				m_list.clear();
+			}
+		}
+
+		if (m_systimer.isFinished()) {
+			rDateTime dt;
+
+			rSystemManager::instance().addTarByTime(DIR_EVENT, "*.event" , m_Storage.Get(), String_format("%u", dt.getSec() / rDateTime::SEC_IN_DAY));
+			rSystemManager::instance().addDelByTime(DIR_EVENT, "*.event" , m_Storage.Get());
+			rSystemManager::instance().addDelByTime(DIR_EVENT, "*.tar.gz", DELETE_DAYS);
+
+			m_systimer.restart();
 		}
 
 		rThreadClass::EndProccesing();
@@ -158,19 +180,6 @@ void rEventManager::addEventUDINT(DINT eid, UDINT val)
 }
 
 //-------------------------------------------------------------------------------------------------
-//UDINT rEventManager::Get(rEventArray &arr)
-//{
-//	Lock();
-	
-//	memcpy((void*)&arr, (const void *)&Event, sizeof(rEventArray));
-	
-//	Unlock();
-	
-//	return 0;
-//}
-
-
-//-------------------------------------------------------------------------------------------------
 //
 std::string rEventManager::getDescr(const rEvent &event)
 {
@@ -186,8 +195,7 @@ std::string rEventManager::getDescr(const rEvent &event)
 		return result;
 	}
 
-	if(text.empty())
-	{
+	if (text.empty()) {
 		result = String_format("Event %u have not decription", event.getEID());
 
 		TRACEP(LOG::EVENTMGR, result.c_str());
@@ -197,23 +205,20 @@ std::string rEventManager::getDescr(const rEvent &event)
 	// Начнем подставлять данные в описание события
 	for (UDINT ii = 0; ii < text.size(); ++ii) {
 		// Это не начало параметра
-		if('$' != text[ii] || ii == text.size() - 1)
-		{
+		if ('$' != text[ii] || ii == text.size() - 1) {
 			result += text[ii];
 			continue;
 		}
 
 		// Двойной $$ превращаем в одинарный
-		if('$' == text[ii + 1])
-		{
+		if ('$' == text[ii + 1]) {
 			result += '$';
 			++ii;
 			continue;
 		}
 
 		// Если следующий символ не цифра, то скорее всего это ошибка, и пропускаем такие комбинации
-		if(!isdigit(text[ii + 1]))
-		{
+		if (!isdigit(text[ii + 1])) {
 			result += text[ii];
 			continue;
 		}
@@ -246,19 +251,16 @@ std::string rEventManager::parseParameter(const rEvent& event, const char* str, 
 	}
 
 	// Если точность не была указана, то ищем предшествующие единицы измерений
-	if(prec == 0xFFFFFFFF && (type == TYPE_LREAL || type == TYPE_REAL))
-	{
+	if (prec == 0xFFFFFFFF && (type == TYPE_LREAL || type == TYPE_REAL)) {
 		prec = rPrecision::DEFAUILT;
 
 		// Получаем значение точности из предыдущей ед.измерения
-		for(DINT jj = number - 2; jj >= 0; --jj)
-		{
+		for (DINT jj = number - 2; jj >= 0; --jj) {
 			UDINT  sidtype = 0;
 			UDINT* sid     = (UDINT *)event.getParamByID(jj, sidtype);
 
 			// Нашли ед.измерения
-			if(sidtype == TYPE_STRID && *sid < MAX_UNITS_COUNT)
-			{
+			if (sidtype == TYPE_STRID && *sid < MAX_UNITS_COUNT) {
 				prec = rPrecision::instance().get(*sid);
 				break;
 			}
@@ -307,35 +309,28 @@ UDINT rEventManager::parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT
 	string  str_num = "";
 	char   *curch   = (char *)str;
 
-	while(0 != *curch)
-	{
-		switch(state)
-		{
+	while (0 != *curch) {
+		switch (state) {
 			case STATE_NUMBER:
 			{
 				// Если встретили точку, то получим номер параметра и перейдем в
 				// стостояние STATE_EXP (проверка на наличие знака 'e')
-				if('.' == *curch)
-				{
+				if ('.' == *curch) {
 					if(str_num.empty()) return 0;
 
 					num     = (str_num.size()) ? atoi(str_num.c_str()) : num;
 					state   = STATE_DOT;
 					str_num = "";
-				}
-				// Если это цифра, то добавим ее к строковому представлению
-				else if(isdigit(*curch))
-				{
+				} else if (isdigit(*curch)) {
+					// Если это цифра, то добавим ее к строковому представлению
 					str_num += *curch;
 					++curch;
-				}
-				// Если это не точка и не число, то получаем номер парамера и выходим
-				else
-				{
+				} else {
+					// Если это не точка и не число, то получаем номер парамера и выходим
 					num     = (str_num.size()) ? atoi(str_num.c_str()) : num;
 					str_num = "";
 
-						  return static_cast<UDINT>(curch - str);
+					return static_cast<UDINT>(curch - str);
 				}
 				break;
 			}
@@ -344,16 +339,11 @@ UDINT rEventManager::parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT
 			{
 				++curch; // перешли на следующий символ
 
-				if('e' == *curch || 'E' == *curch)
-				{
+				if ('e' == *curch || 'E' == *curch) {
 					state = STATE_EXP;
-				}
-				else if(isdigit(*curch))
-				{
+				} else if(isdigit(*curch)) {
 					state = STATE_PREC;
-				}
-				else
-				{
+				} else {
 					--curch;
 					return static_cast<UDINT>(curch - str);
 				}
@@ -366,13 +356,10 @@ UDINT rEventManager::parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT
 				str_num = "";
 				exp     = ('e' == *curch) ? 1 : 2;
 
-				if(isdigit(*curch))
-				{
+				if (isdigit(*curch)) {
 					str_num = "";
 					state   = STATE_PREC;
-				}
-				else
-				{
+				} else {
 					return static_cast<UDINT>(curch - str);
 				}
 				break;
@@ -380,13 +367,10 @@ UDINT rEventManager::parseNumber(const char* str, UDINT& num, UDINT& prec, UDINT
 
 			case STATE_PREC:
 			{
-				if(isdigit(*curch))
-				{
+				if (isdigit(*curch)) {
 					str_num += *curch;
 					++curch;
-				}
-				else
-				{
+				} else {
 					prec = (str_num.size()) ? atoi(str_num.c_str()) : prec;
 
 					return static_cast<UDINT>(curch - str);
@@ -459,4 +443,18 @@ void rEventManager::save(const rEvent& event)
 UDINT rEventManager::startServer()
 {
 	return rTCPClass::StartServer("0.0.0.0", LanPort::PORT_EVENT);
+}
+
+void rEventManager::setStorage(UDINT days)
+{
+	if (days > 180) {
+		days = 180;
+	}
+
+	m_Storage.Set(days);
+}
+
+UDINT rEventManager::getStorage()
+{
+	return m_Storage.Get();
 }

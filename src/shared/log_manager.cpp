@@ -17,11 +17,7 @@
 
 rLogManager::rLogManager()
 {
-	RTTI     = "rLogManager";
-
-	fnAddCalback = nullptr;
-
-	pthread_mutex_init(&m_mutexCallback, NULL);
+	RTTI = "rLogManager";
 
 	m_systimer.start(SYSTEM_TIMER);
 	
@@ -33,7 +29,6 @@ rLogManager::rLogManager()
 
 rLogManager::~rLogManager()
 {
-	pthread_mutex_destroy(&m_mutexCallback);
 }
 
 rThreadStatus rLogManager::Proccesing()
@@ -52,16 +47,12 @@ rThreadStatus rLogManager::Proccesing()
 		if (m_systimer.isFinished()) {
 			rDateTime dt;
 
-			rSystemManager::instance().addTarByTime("./log", "*.log"   , COMPRESS_DAYS, String_format("%u", dt.getSec() / rDateTime::SEC_IN_DAY));
-			rSystemManager::instance().addDelByTime("./log", "*.log"   , COMPRESS_DAYS);
-			rSystemManager::instance().addDelByTime("./log", "*.tar.gz", DELETE_DAYS);
+			rSystemManager::instance().addTarByTime(DIR_LOG, "*.log"   , COMPRESS_DAYS, String_format("%u", dt.getSec() / rDateTime::SEC_IN_DAY));
+			rSystemManager::instance().addDelByTime(DIR_LOG, "*.log"   , COMPRESS_DAYS);
+			rSystemManager::instance().addDelByTime(DIR_LOG, "*.tar.gz", DELETE_DAYS);
 
 			m_systimer.restart();
-
 		}
-
-
-		//TODO Удаление старых файлов. или архивация.
 
 		rThreadClass::EndProccesing();
 	}
@@ -79,16 +70,6 @@ void  rLogManager::add(UDINT mask, const rDateTime& timestamp, const std::string
 	auto fulltext = saveLogText(mask, timestamp, "", 0, text);
 
 	outTerminal(mask, fulltext);
-
-	// Запускаем callback функцию, если она есть
-//	lockCallback();
-//	{
-//		if(fnAddCalback)
-//		{
-//			fnAddCalback(fulltext);
-//		}
-//	}
-//	unlockCallback();
 }
 
 void rLogManager::add(UDINT mask, const char* filesource, UDINT lineno, const char *format, ...)
@@ -107,16 +88,6 @@ void rLogManager::add(UDINT mask, const char* filesource, UDINT lineno, const ch
 	delete[] buff;
 
 	outTerminal(mask, fulltext);
-
-	// Запускаем callback функцию, если она есть
-	lockCallback();
-	{
-		if(fnAddCalback)
-		{
-			fnAddCalback(fulltext);
-		}
-	}
-	unlockCallback();
 }
 
 UDINT rLogManager::addLogMask(UDINT lm)
@@ -149,13 +120,6 @@ UDINT rLogManager::setLogMask(UDINT lm)
 
 }
 
-
-void rLogManager::setAddCalback(Fn_LogAddCallback fn)
-{
-	lockCallback();
-	fnAddCalback = fn;
-	unlockCallback();
-}
 
 bool rLogManager::check(UDINT mask)
 {

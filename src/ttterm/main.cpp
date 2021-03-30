@@ -54,7 +54,7 @@ int main(int argc, const char **argv)
 
 	rLogManager::instance().m_terminal.Set(false);  // Запрещаем вывод в терминал
 	rLogManager::instance().m_enable.Set(true);     // Запрещаем вещание по TCP
-	rLogManager::instance().setAddCalback(LogCallback);
+//	rLogManager::instance().setAddCalback(LogCallback);
 	rLogManager::instance().Run(16);
 	gInfo_Log = rLogManager::instance().GetThread();
 

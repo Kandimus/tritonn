@@ -25,7 +25,7 @@ public:
 	virtual ~rTickCount() = default;
 
 	UDINT count();
-	void  start(UDINT setting);
+	void  start(UDINT msec);
 	bool  isFinished();
 	void  stop();
 	bool  isStarted() const;

@@ -92,7 +92,8 @@ int main(int argc, char* argv[])
 	rLogManager::instance().m_enable.Set(true);
 	rLogManager::instance().setLogMask(logmask);
 	rLogManager::instance().m_terminal.Set(true);
-	TRACEI(LOG::MAIN, "------------------------------------------");
+	TRACEI(LOG::MAIN, " ");
+	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
 	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 	rLogManager::instance().Run(16);
@@ -124,7 +125,6 @@ int main(int argc, char* argv[])
 	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
 
 
-	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
 	rDataManager::instance().LoadConfig();
 	rDataManager::instance().Run(100);
@@ -132,14 +132,16 @@ int main(int argc, char* argv[])
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
 
-	//----------------------------------------------------------------------------------------------
+	TRACEI(LOG::MAIN, "Log storage: %u / %u", rLogManager::instance().COMPRESS_DAYS, rLogManager::instance().DELETE_DAYS);
+	TRACEI(LOG::MAIN, "Event storage: %u / %u", rEventManager::instance().getStorage(), rEventManager::instance().DELETE_DAYS);
+
+
 	// Стартуем обмен с модулями IO
 	rIOManager::instance().Run(100);
 
 	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "io");
 
 
-	//----------------------------------------------------------------------------------------------
 	// Терминал
 	rTermManager::Instance().Run(500);
 	rTermManager::Instance().StartServer("0.0.0.0", LanPort::PORT_TERM);
