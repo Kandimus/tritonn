@@ -81,14 +81,14 @@ void  rLogManager::add(UDINT mask, const rDateTime& timestamp, const std::string
 	outTerminal(mask, fulltext);
 
 	// Запускаем callback функцию, если она есть
-	lockCallback();
-	{
-		if(fnAddCalback)
-		{
-			fnAddCalback(fulltext);
-		}
-	}
-	unlockCallback();
+//	lockCallback();
+//	{
+//		if(fnAddCalback)
+//		{
+//			fnAddCalback(fulltext);
+//		}
+//	}
+//	unlockCallback();
 }
 
 void rLogManager::add(UDINT mask, const char* filesource, UDINT lineno, const char *format, ...)

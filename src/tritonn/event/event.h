@@ -29,6 +29,11 @@
 
 class rEvent
 {
+	enum Packet : UDINT
+	{
+		MAGIC = 0xFFEEDDCC,
+	};
+
 	enum
 	{
 		DATA_SIZE = 64,
@@ -76,10 +81,12 @@ public:
 	rEvent& operator = (const rEvent &event);
 
 private:
+	UDINT     m_magic;
+	USINT     m_version;   // 1 byte
+	USINT     m_size;      // 1 byte
+	USINT     m_reserv[2]; // 2 байта для выравнивания по границе 4 байт
 	rDateTime m_timestamp; // 8 байт
 	DINT      m_EID;       // 4 байта
-	USINT     m_size;      // 1 байт
-	USINT     m_reserv[3]; // 3 байта для выравнивания по границе 4 байт
 	USINT     m_data[DATA_SIZE];  // 64 байта
 };
 

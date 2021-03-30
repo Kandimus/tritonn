@@ -62,13 +62,20 @@ rThreadStatus rEventManager::Proccesing()
 	// Возможно именно тут нужно записывать потихоньку данные в EEPROM, а если скорость будет нормальной, то эта нить не нужна.
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
 
-	while(1)
-	{
+	while(1) {
 		// Обработка команд нити
 		thread_status = rThreadClass::Proccesing();
-		if(!THREAD_IS_WORK(thread_status))
-		{
+		if (!THREAD_IS_WORK(thread_status)) {
 			return thread_status;
+		}
+
+		{
+			rLocker lock(&m_mutexList); lock.Nop();
+
+			if (rTCPClass::Client.size()) {
+				for (auto& item : m_list) {
+					rTCPClass::Send(nullptr, )
+				}
 		}
 
 		rThreadClass::EndProccesing();
@@ -94,11 +101,13 @@ void rEventManager::add(const rEvent& event)
 
 	// Добавляем событие в кольцевой массив
 	{
-		rLocker lock(&m_mutexList);
+		rLocker lock(&m_mutexList); lock.Nop();
 
-		while (m_list.size() > MAX_EVENT) {
-			m_list.pop_front();
+		while (m_archive.size() > MAX_EVENT) {
+			m_archive.pop_front();
 		}
+
+		m_archive.push_back(event);
 		m_list.push_back(event);
 	}
 
@@ -128,7 +137,7 @@ void rEventManager::add(const rEvent& event)
 	std::string descr = getDescr(event);
 
 	rLogManager::instance().add(mask, event.getTime(), descr.c_str());
-	
+
 	save(event);
 //	SaveEEPROM(curpos * sizeof(rEvent), event);
 }

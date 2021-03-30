@@ -20,12 +20,18 @@
 
 rEvent::rEvent(void)
 {
+	m_magic   = Packet::MAGIC;
+	m_version = 1;
+
 	clear();
 }
 
 
 rEvent::rEvent(DINT eid)
 {
+	m_magic   = Packet::MAGIC;
+	m_version = 1;
+
 	reinit(eid);
 }
 

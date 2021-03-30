@@ -48,8 +48,8 @@ protected:
 	virtual rThreadStatus Proccesing(void);
 
 private:
-	DINT lockCallback()   { return pthread_mutex_lock  (&m_mutexCallback); }
-	DINT unlockCallback() { return pthread_mutex_unlock(&m_mutexCallback); }
+//	DINT lockCallback()   { return pthread_mutex_lock  (&m_mutexCallback); }
+//	DINT unlockCallback() { return pthread_mutex_unlock(&m_mutexCallback); }
 
 	bool        check(UDINT mask);
 	std::string saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text);

@@ -63,7 +63,8 @@ public:
 	
 private:
 	rSafityValue<UDINT> m_alarm; //
-	std::list<rEvent>   m_list; // Кольцевой массив, размер зависит от реальной EEPROM памяти
+	std::list<rEvent>   m_list;  // current event
+	std::list<rEvent>   m_archive;  // current event
 	rTextClass          m_texts; //
 	pthread_mutex_t     m_mutexList;
 
