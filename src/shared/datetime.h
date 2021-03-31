@@ -13,6 +13,7 @@
 
 #include <string>
 #include "types.h"
+#include "container.h"
 
 class rDateTime
 {
@@ -34,7 +35,12 @@ public:
 	void setCurTime();
 	void clear();
 
+	Container& toContainer(Container& cnt) const;
+	Container& fromContainer(Container& cnt);
+
 private:
 	UDT m_datetime;
 };
 
+Container& operator << (Container& cnt, const rDateTime& event);
+Container& operator >> (Container& cnt, rDateTime& event);

@@ -52,7 +52,7 @@ protected:
 	virtual UDINT ClientRecv(rClientTCP *client, USINT *buff, UDINT size) = 0;
 	
 	// Отправка данных клиентам
-	virtual UDINT Send(rClientTCP *client, void *packet, UDINT size);
+	virtual UDINT Send(rClientTCP *client, const void *packet, UDINT size);
 
 	// Присоединение нового клиента
 	virtual rClientTCP* NewClient(SOCKET socket, sockaddr_in *addr) = 0;

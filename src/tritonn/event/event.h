@@ -14,6 +14,7 @@
 #include "def.h"
 #include "eid.h"
 #include "datetime.h"
+#include "container.h"
 
 #define EVENT_ADDDATA(x, y)       {if(m_size + EPT_SIZE[x] + 1 >= DATA_SIZE) return 1; m_data[m_size++] = x; *(y *)(m_data + m_size) = val; m_size += EPT_SIZE[x]; return 0; }
 
@@ -81,6 +82,9 @@ struct rEvent
 
 	rEvent& operator = (const rEvent &event);
 
+	Container& toContainer(Container& cnt) const;
+	Container& fromContainer(Container& cnt);
+
 private:
 	UDINT     m_magic;
 	USINT     m_version;   // 1 byte
@@ -93,3 +97,5 @@ private:
 
 #undef EVENT_ADDDATA
 
+Container& operator << (Container& cnt, const rEvent& event);
+Container& operator >> (Container& cnt, rEvent& event);

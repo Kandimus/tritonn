@@ -84,7 +84,10 @@ rThreadStatus rEventManager::Proccesing()
 
 			if (rTCPClass::Client.size()) {
 				for (auto& item : m_list) {
-					Send(nullptr, static_cast<void*>(&item), sizeof(item));
+					Container cnt;
+
+					cnt << item;
+					Send(nullptr, cnt.getRaw(), cnt.size());
 				}
 				m_list.clear();
 			}

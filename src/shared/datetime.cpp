@@ -41,3 +41,26 @@ void rDateTime::clear()
 	m_datetime.tv_sec  = 0;
 	m_datetime.tv_usec = 0;
 }
+
+Container& operator << (Container& cnt, const rDateTime& event)
+{
+	return event.toContainer(cnt);
+}
+
+Container& rDateTime::toContainer(Container& cnt) const
+{
+	cnt << m_datetime.tv_sec << m_datetime.tv_usec;
+
+	return cnt;
+}
+
+Container& operator >> (Container& cnt, rDateTime& event)
+{
+	return event.fromContainer(cnt);
+}
+
+Container& rDateTime::fromContainer(Container& cnt)
+{
+	cnt >> m_datetime.tv_sec >> m_datetime.tv_usec;
+	return cnt;
+}

@@ -112,3 +112,26 @@ std::string rEvent::toString() const
 
 	return result;
 }
+
+Container& operator << (Container& cnt, const rEvent& event)
+{
+	return event.toContainer(cnt);
+}
+
+Container& rEvent::toContainer(Container& cnt) const
+{
+	cnt << m_magic << m_version << m_size << m_timestamp << m_EID;
+
+	return cnt.add(m_data, DATA_SIZE);
+}
+
+Container& operator >> (Container& cnt, rEvent& event)
+{
+	return event.fromContainer(cnt);
+}
+
+Container& rEvent::fromContainer(Container& cnt)
+{
+	cnt >> m_magic >> m_version >> m_size >> m_timestamp >> m_EID;
+	return cnt.get(m_data, DATA_SIZE);
+}

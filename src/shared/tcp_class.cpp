@@ -361,7 +361,7 @@ UDINT rTCPClass::ReadFromClient(rClientTCP* client)
 }
 
 
-UDINT rTCPClass::Send(rClientTCP *client, void *packet, UDINT size)
+UDINT rTCPClass::Send(rClientTCP *client, const void *packet, UDINT size)
 {
 	UDINT  result = 0;
 
