@@ -42,7 +42,7 @@ rClientTCP::~rClientTCP()
 
 
 //
-UDINT rClientTCP::Send(void *packet, UDINT size)
+UDINT rClientTCP::Send(const void *packet, UDINT size)
 {
 	UDINT  sendbytes = 0;
 	UDINT  result    = 0;

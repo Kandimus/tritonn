@@ -27,7 +27,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-class rEvent
+struct rEvent
 {
 	enum Packet : UDINT
 	{
@@ -39,7 +39,6 @@ class rEvent
 		DATA_SIZE = 64,
 	};
 
-public:
 	rEvent();
 	rEvent(DINT eid);
 	virtual ~rEvent();
@@ -52,10 +51,12 @@ public:
 	DINT    getObject() const { return (m_EID >> 16) & 0x03FF; } //
 	DINT    getID()     const { return  m_EID        & 0xFFFF; } //
 	UDINT   getEID()    const { return  m_EID; }
+	UDINT   getMagic()  const { return  m_magic; }
 	const rDateTime& getTime() const { return  m_timestamp; }
 	
 	void* getParamByID(UDINT ID, UDINT &type) const;
 	std::string toString() const;
+	const void* getRaw() const { return &m_magic; }
 
 	// Функции для добавления параметров события, в случае переполнения буффера возвращают 1, в случае успеха - 0
 	UDINT addSINT (SINT  val) { EVENT_ADDDATA(TYPE_SINT ,  SINT); }

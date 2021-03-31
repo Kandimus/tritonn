@@ -20,7 +20,8 @@ rLogManager::rLogManager()
 	RTTI = "rLogManager";
 
 	m_systimer.start(SYSTEM_TIMER);
-	
+
+	m_save.Set(true);
 	m_level.Set(LOG::ALL);  //TODO Нужно изменить на нормальный уровень
 	m_terminal.Set(false);
 	m_enable.Set(false);    //TODO В штатном режиме можно после полной инициализации выключать
@@ -166,7 +167,9 @@ std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, con
 
 	fulltext += String_format("] %08x %s\n", mask, text.c_str());
 
-	SimpleFileAppend(filename, fulltext);
+	if (m_save.Get()) {
+		SimpleFileAppend(filename, fulltext);
+	}
 
 	return fulltext;
 }

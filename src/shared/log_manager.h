@@ -51,6 +51,7 @@ public:
 	const UDINT COMPRESS_DAYS = 95;
 	const UDINT DELETE_DAYS   = 366;
 
+	rSafityValue<bool>  m_save;
 	rSafityValue<UDINT> m_terminal;  // Включение/выключение дублирования сообщений на консоль
 	rSafityValue<UDINT> m_enable;    // Включение/выключение логирования
 

@@ -52,7 +52,7 @@ rClientTCP *rEventManager::NewClient(SOCKET socket, sockaddr_in *addr)
 	rLocker lock(&m_mutexList); lock.Nop();
 
 	for (auto& item : m_list) {
-		client->Send(static_cast<void*>(&item), sizeof(item));
+		client->Send(item.getRaw(), sizeof(item));
 	}
 
 	return client;
@@ -74,7 +74,7 @@ rThreadStatus rEventManager::Proccesing()
 
 	while(1) {
 		// Обработка команд нити
-		thread_status = rThreadClass::Proccesing();
+		thread_status = rTCPClass::Proccesing();
 		if (!THREAD_IS_WORK(thread_status)) {
 			return thread_status;
 		}
@@ -84,7 +84,7 @@ rThreadStatus rEventManager::Proccesing()
 
 			if (rTCPClass::Client.size()) {
 				for (auto& item : m_list) {
-					rTCPClass::Send(nullptr, static_cast<void*>(&item), sizeof(item));
+					Send(nullptr, static_cast<void*>(&item), sizeof(item));
 				}
 				m_list.clear();
 			}

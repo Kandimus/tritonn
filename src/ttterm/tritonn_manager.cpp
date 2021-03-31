@@ -36,7 +36,7 @@ rTritonnManager::rTritonnManager(rClientTCP &client) : rTCPClientClass(client)
 	RTTI    += "::rTritonnManager";
 	LogMask |= 0;
 
-	Setup.Set(TCPCLIENT_SETUP_NORECONNECT);
+	m_setup.Set(rTCPClientClass::Setup::NORECONNECT);
 }
 
 

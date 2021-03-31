@@ -13,31 +13,24 @@
 //===
 //=================================================================================================
 
+#include "tcpclient_class.h"
 #include <unistd.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
 #include "locker.h"
 #include "log_manager.h"
-#include "tcpclient_class.h"
 
 
-rTCPClientClass::rTCPClientClass(rClientTCP &client) : ReconnetTime(1000), Setup(0), Connected(0)
+
+rTCPClientClass::rTCPClientClass(rClientTCP &client) : ReconnetTime(1000), m_setup(0), Connected(0)
 {
 	Client    = &client;
 	LogMask   = LOG::TCPCLNT;
 }
 
-
-rTCPClientClass::~rTCPClientClass()
-{
-	;
-}
-
-
-//------------------------------------------------------------------------------------------------
-//
 UDINT rTCPClientClass::Destroy()
 {
 	if(Client->Socket != SOCKET_ERROR)
@@ -63,7 +56,7 @@ UDINT rTCPClientClass::Disconnect()
 {
 	rLocker locker(Mutex);
 
-	TRACEW(LogMask, "Disconnect from %s:%i", IP.c_str(), Port);
+	TRACEW(LogMask, "Disconnect from %s:%i", m_IP.c_str(), m_port);
 
 	return Destroy();
 }
@@ -76,10 +69,10 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 
 	Destroy();
 
-	IP   = ip;
-	Port = port;
+	m_IP   = ip;
+	m_port = port;
 
-	TRACEI(LogMask, "Connecting to %s:%i ...", IP.c_str(), Port);
+	TRACEI(LogMask, "Connecting to %s:%i ...", m_IP.c_str(), m_port);
 
 	Client->Socket = socket(AF_INET, SOCK_STREAM, 0);
 	if(Client->Socket == SOCKET_ERROR)
@@ -126,13 +119,14 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 	}
 
 	Client->Addr.sin_family      = AF_INET;
-	Client->Addr.sin_port        = htons(Port);
-	Client->Addr.sin_addr.s_addr = inet_addr(IP.c_str());
+	Client->Addr.sin_port        = htons(m_port);
+	Client->Addr.sin_addr.s_addr = inet_addr(m_IP.c_str());
 
 	if(connect(Client->Socket, (struct sockaddr *)&Client->Addr, sizeof(Client->Addr)) == SOCKET_ERROR)
 	{
-		Connected.Set(0);
-		TRACEA(LogMask, "Can't connect to %s:%i. Error %i", IP.c_str(), Port, errno);
+		Connected.Set(m_setup.Get() & Setup::NORECONNECT ? 0 : 1);
+		TRACEA(LogMask, "Can't connect to %s:%i. Error %i", m_IP.c_str(), m_port, errno);
+		Client->Socket = SOCKET_ERROR;
 
 		return 5;
 	}
@@ -141,9 +135,7 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 	SOCKET_SET_NONBLOCK(Client->Socket);
 
 	Connected.Set(1);
-	TRACEI(LogMask, "Connected to %s:%i", IP.c_str(), Port);
-
-
+	TRACEI(LogMask, "Connected to %s:%i", m_IP.c_str(), m_port);
 
 	return 0;
 }
@@ -154,7 +146,7 @@ rThreadStatus rTCPClientClass::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
 	UDINT   flagerr       = false;
-	UDINT   setup         = Setup.Get();
+	UDINT   setup         = m_setup.Get();
 	SOCKET  socket        = SOCKET_ERROR;
 	int     Maxfd;
 	fd_set  readfds;
@@ -181,7 +173,7 @@ rThreadStatus rTCPClientClass::Proccesing()
 	// Если сокет не открыт, то проверяем флаг реконнекта
 	if(socket == SOCKET_ERROR)
 	{
-		if(Connect(IP, Port))
+		if(Connect(m_IP, m_port))
 		{
 			// Команда на паузу, подождем перед реконнектом
 			rThreadClass::Pause.Set(ReconnetTime.Get());
@@ -230,12 +222,9 @@ rThreadStatus rTCPClientClass::Proccesing()
 	{
 		Destroy();
 
-		if(setup & TCPCLIENT_SETUP_NORECONNECT)
-		{
+		if (setup & Setup::NORECONNECT) {
 			Connected.Set(0);
-		}
-		else
-		{
+		} else {
 			// Команда на паузу, подождем перед реконнектом
 			rThreadClass::Pause.Set(ReconnetTime.Get());
 
@@ -278,7 +267,3 @@ UDINT rTCPClientClass::ReadFromServer()
 	
 	return result;
 }
-
-
-
-

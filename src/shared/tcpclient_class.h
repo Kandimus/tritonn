@@ -21,29 +21,28 @@
 #include "../shared/tcp_client.h"
 
 
-const UDINT TCPCLIENT_SETUP_NORECONNECT = 0x00000001;
-
-
 class rTCPClientClass : public rThreadClass
 {
 public:
-	rTCPClientClass(rClientTCP &client);
-	virtual ~rTCPClientClass();
+	enum Setup : UINT
+	{
+		NORECONNECT = 0x0001,
+	};
 
-	virtual UDINT Connect(const string &ip, UINT port);
+	rTCPClientClass(rClientTCP &client);
+	virtual ~rTCPClientClass() = default;
+
 	UDINT IsConnected();
 	UDINT Disconnect();
+	UDINT Send(void *packet, UDINT size); // Отправка данных серверу
 
-	// Call-back на получение данных от клиента
-	virtual UDINT RecvFromServer(USINT *buff, UDINT size) = 0;
-	
-	// Отправка данных серверу
-	UDINT Send(void *packet, UDINT size);
+public:
+	virtual UDINT Connect(const string &ip, UINT port);
+	virtual UDINT RecvFromServer(USINT *buff, UDINT size) = 0; // Call-back на получение данных от клиента
 
 public:
 	 rSafityValue<UDINT> ReconnetTime;
-	 rSafityValue<UDINT> Setup;
-
+	 rSafityValue<UINT>  m_setup;
 
 protected:
 	virtual rThreadStatus Proccesing();
@@ -51,8 +50,8 @@ protected:
 	UDINT ReadFromServer(void);
 
 	rClientTCP *Client;
-	string      IP;
-	UINT        Port;
+	std::string m_IP;
+	UINT        m_port;
 	rSafityValue<UDINT> Connected;
 
 private:

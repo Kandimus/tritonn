@@ -103,7 +103,6 @@ int main(int argc, char* argv[])
 
 	// Менеджер системных команд
 	rSystemManager::instance().Run(250);
-
 	rThreadMaster::instance().add(&rSystemManager::instance(), TMF_NONE, "system");
 
 
@@ -121,6 +120,7 @@ int main(int argc, char* argv[])
 	rEventManager::instance().loadText(FILE_SYSTEMEVENT); // Системные события
 	rEventManager::instance().setCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
 	rEventManager::instance().Run(16);
+	rEventManager::instance().startServer();
 
 	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
 

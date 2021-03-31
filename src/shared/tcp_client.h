@@ -27,12 +27,12 @@ public:
 	virtual ~rClientTCP();
 
 	virtual USINT *Recv(USINT *read_buff, UDINT read_size) = 0;
-	virtual UDINT Send(void *packet, UDINT size);
+	virtual UDINT Send(const void *packet, UDINT size);
 
 	void  Disconnect();
 
 public:
-	SOCKET      Socket;   //
+	SOCKET      Socket = SOCKET_ERROR;   //
 	sockaddr_in Addr;     //
 };
 
