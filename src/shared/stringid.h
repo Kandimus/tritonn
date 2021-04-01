@@ -1,45 +1,48 @@
 //=================================================================================================
 //===
-//=== threadclass.cpp
+//=== stringid.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
-//===
-//=== Класс обертка, для отделения STRID от типа UDINT
-//===
-//=================================================================================================
 
 #pragma once
 
+#include <string>
 #include "types.h"
+#include "container.h"
 
 class rStringID
 {
 public:
-	rStringID() { ID = 0; }
-	rStringID(UDINT id) { ID = id; }
-	virtual ~rStringID() { ; }
+	rStringID() : m_ID(0) { }
+	rStringID(UDINT id) : m_ID(id) { }
+	virtual ~rStringID() = default;
 
-	rStringID& operator =  (const UDINT&     val) { ID = val; return *this; }
+	rStringID& operator =  (const UDINT&     val) { m_ID = val; return *this; }
 
-	bool       operator != (const UDINT&     val) { return ID != val;    }
-	bool       operator != (const rStringID& val) { return ID != val.ID; }
-	bool       operator == (const UDINT&     val) { return ID == val;    }
-	bool       operator == (const rStringID& val) { return ID == val.ID; }
+	bool       operator != (const UDINT&     val) { return m_ID != val;      }
+	bool       operator != (const rStringID& val) { return m_ID != val.m_ID; }
+	bool       operator == (const UDINT&     val) { return m_ID == val;      }
+	bool       operator == (const rStringID& val) { return m_ID == val.m_ID; }
 
-	operator UDINT() { return ID; }
-	operator UDINT() const { return ID; }
-	operator UDINT*() { return &ID; }
+	operator UDINT() { return m_ID; }
+	operator UDINT() const { return m_ID; }
+	operator UDINT*() { return &m_ID; }
 	operator std::string() const { return "function not implemented"; }
 
-	UDINT *GetPtr() { return &ID; }
-	UDINT  toUDINT() const { return ID; }
+	UDINT *getPtr() { return &m_ID; }
+	UDINT  toUDINT() const { return m_ID; }
+
+	Container& toContainer(Container& cnt) const;
+	Container& fromContainer(Container& cnt);
 
 protected:
-	UDINT ID;
+	UDINT m_ID;
 };
 
+Container& operator << (Container& cnt, const rStringID& event);
+Container& operator >> (Container& cnt, rStringID& event);

@@ -242,11 +242,11 @@ UDINT rSelector::generateVars(rVariableList& list)
 			alias_unit   = String_format("%s.%s.keypad.unit" , m_alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", m_alias.c_str(), NameInput[grp].c_str());
 
-			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[grp].GetPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
+			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[grp].getPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
 			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
 		}
 	} else {
-		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].GetPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
+		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].getPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
 		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
 	}
 

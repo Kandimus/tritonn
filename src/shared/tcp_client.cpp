@@ -50,7 +50,7 @@ UDINT rClientTCP::Send(const void *packet, UDINT size)
 
 	do
 	{
-		result = send(Socket, buff + sendbytes, size - sendbytes, 0);
+		result = send(Socket, buff + sendbytes, size - sendbytes, MSG_NOSIGNAL);
 
 		if(result <= 0)
 		{

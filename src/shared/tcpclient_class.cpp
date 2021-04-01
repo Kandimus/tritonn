@@ -56,6 +56,8 @@ UDINT rTCPClientClass::Disconnect()
 {
 	rLocker locker(Mutex);
 
+	m_timerKeepAlive.stop();
+
 	TRACEW(LogMask, "Disconnect from %s:%i", m_IP.c_str(), m_port);
 
 	return Destroy();
@@ -124,7 +126,7 @@ bool configureSocketKeepAliveValues(SOCKET socket)
 		 * connection is marked to need keepalive,
 		 * this counter is not used any further
 		 */
-		int keepIdle = 10;
+		int keepIdle = 2;
 		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPIDLE, &keepIdle, sizeof(keepIdle)) != 0) {
 			TRACEA(LOG::TCPCLNT, "Can't set socket keepidle");
 		}
@@ -134,7 +136,7 @@ bool configureSocketKeepAliveValues(SOCKET socket)
 		 * considering the connection dead and notifying
 		 * the application layer
 		 */
-		int count = 10;
+		int count = 3;//10;
 		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPCNT, &count, sizeof(count)) != 0) {
 			TRACEA(LOG::TCPCLNT, "Can't set socket keepcnt");
 		}
@@ -144,7 +146,7 @@ bool configureSocketKeepAliveValues(SOCKET socket)
 		 * regardless of what the connection has exchanged in
 		 * the meantime
 		 */
-		int interval = 12;
+		int interval = 1;//12;
 		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval)) != 0) {
 			TRACEA(LOG::TCPCLNT, "Can't set socket keepintvl");
 		}
@@ -200,6 +202,9 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 
 	configureSocketKeepAliveValues(Client->Socket);
 
+//	int set = 1;
+//	setsockopt(Client->Socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+
 	// выключаем алгоритм Нэйгла
 	int flag = 1;
 	if(setsockopt(Client->Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag)) == SOCKET_ERROR)
@@ -228,6 +233,8 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 
 	// Устанавливаем асинхронный прием сообщений
 	SOCKET_SET_NONBLOCK(Client->Socket);
+
+	m_timerKeepAlive.start(1000);
 
 	Connected.Set(1);
 	TRACEI(LogMask, "Connected to %s:%i", m_IP.c_str(), m_port);
@@ -296,7 +303,7 @@ rThreadStatus rTCPClientClass::Proccesing()
 	// Проверка на закрытие сервера
 	if(FD_ISSET(Client->Socket, &exfds))
 	{
-		TRACEW(LOG::TCPCLNT, "Server is shutdown.");
+		TRACEW(LOG::TCPCLNT, "Disconect from server.");
 
 		flagerr = true;
 	}
@@ -308,6 +315,19 @@ rThreadStatus rTCPClientClass::Proccesing()
 			TRACEW(LOG::TCPCLNT, "Can't recv data from server. Error: %i", errno);
 
 			flagerr = true;
+		}
+	}
+
+	if (m_timerKeepAlive.isFinished()) {
+		int result = send(Client->Socket, nullptr, 0, MSG_NOSIGNAL);
+
+		if (result == -1) {
+
+			TRACEW(LOG::TCPCLNT, "Server is shutdown...");
+
+			flagerr = true;
+		} else {
+			m_timerKeepAlive.restart();
 		}
 	}
 

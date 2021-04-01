@@ -65,7 +65,7 @@ rThreadStatus rEventManager::Proccesing()
 
 UDINT rEventManager::RecvFromServer(USINT *buff, UDINT size)
 {
-	USINT* data = m_client.Recv(buff, size);
+	m_client.Recv(buff, size);
 
 	if (!m_client.getSize()) {
 		return TRITONN_RESULT_OK;

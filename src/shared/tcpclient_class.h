@@ -19,6 +19,7 @@
 #include "../shared/def.h"
 #include "../shared/thread_class.h"
 #include "../shared/tcp_client.h"
+#include "tickcount.h"
 
 
 class rTCPClientClass : public rThreadClass
@@ -53,6 +54,7 @@ protected:
 	std::string m_IP;
 	UINT        m_port;
 	rSafityValue<UDINT> Connected;
+	rTickCount  m_timerKeepAlive;
 
 private:
    UDINT Destroy();
