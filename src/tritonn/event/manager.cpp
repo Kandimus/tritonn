@@ -49,11 +49,15 @@ rEventManager::~rEventManager()
 rClientTCP *rEventManager::NewClient(SOCKET socket, sockaddr_in *addr)
 {
 	auto client = new rEventClient(socket, addr);
+	Container cnt;
 	rLocker lock(&m_mutexList); lock.Nop();
 
+
 	for (auto& item : m_list) {
-		client->Send(item.getRaw(), sizeof(item));
+		cnt << item;
 	}
+
+	client->Send(cnt.getRaw(), cnt.size());
 
 	return client;
 }

@@ -24,17 +24,25 @@ Container::Container(const Container& cnt)
 	m_data = cnt.m_data;
 }
 
+Container::Container(void* buff, unsigned int size)
+{
+	m_data.reserve(1024 * 1024);
+
+	add(buff, size);
+}
+
 Container& Container::add(const void* buff, unsigned int size)
 {
-	const unsigned char* cbuff = static_cast<const unsigned char*>(buff);
-
 	if (!buff) {
 		return *this;
 	}
 
-	for (unsigned int ii = 0; ii < size; ++ii) {
-		m_data.push_back(cbuff[ii]);
-	}
+	unsigned int oldsize = m_data.size();
+	unsigned int newsize = m_data.size() + size;
+	m_data.resize(newsize);
+	memcpy(m_data.data() + oldsize, buff, size);
+
+	m_isEOF = false;
 
 	if (m_data.capacity() - m_data.size() < 16) {
 		m_data.reserve(m_data.capacity() + 1024 * 1024);
@@ -45,12 +53,12 @@ Container& Container::add(const void* buff, unsigned int size)
 
 Container& Container::get(void* buff, unsigned int size)
 {
-	if (!buff) {
+	if (!buff || isEOF()) {
 		return *this;
 	}
 
 	if (m_readpos + size >  m_data.size()) {
-		m_readpos = m_data.size();
+		m_isEOF   = true;
 		return *this;
 	}
 
@@ -60,132 +68,3 @@ Container& Container::get(void* buff, unsigned int size)
 	return *this;
 }
 
-Container& Container::operator >> (char&  val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	unsigned char tmp = m_data[m_readpos++];
-	val = *(char *)&tmp;
-
-	return *this;
-}
-
-Container& Container::operator >> (unsigned char&  val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (short& val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (unsigned short& val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (         int&   val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (unsigned int&   val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (long& val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (unsigned long& val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (double& val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}
-
-Container& Container::operator >> (float&          val)
-{
-	if (m_readpos + sizeof(val) >  m_data.size()) {
-		m_readpos = m_data.size();
-		return *this;
-	}
-
-	memcpy(&val, m_data.data() + m_readpos, sizeof(val));
-	m_readpos += sizeof(val);
-
-	return *this;
-}

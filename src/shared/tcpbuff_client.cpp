@@ -89,6 +89,7 @@ void rTCPBufferClient::popFrontBuffer(UDINT size)
 
 	if (m_len == size) {
 		dropBuffer();
+		return;
 	}
 
 	USINT* tmp = new USINT[m_len - size];

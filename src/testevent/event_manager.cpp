@@ -11,6 +11,7 @@
 
 //#include <string.h>
 #include "event_manager.h"
+#include "container.h"
 #include "../tritonn/event/event.h"
 
 rEventManager::rEventManager() :
@@ -66,20 +67,36 @@ UDINT rEventManager::RecvFromServer(USINT *buff, UDINT size)
 {
 	USINT* data = m_client.Recv(buff, size);
 
-	while (m_client.getSize() >= sizeof(rEvent)) {
-		rEvent* event = (rEvent*)data;
+	if (!m_client.getSize()) {
+		return TRITONN_RESULT_OK;
+	}
 
-		if (event->getMagic() != rEvent::Packet::MAGIC) {
+	Container cnt(m_client.getData(), m_client.getSize());
+	rEvent    event;
+
+	while (!cnt.isEOF()) {
+		UDINT pos = cnt.getReadPos();
+
+		cnt >> event;
+
+		if (cnt.isEOF()) {
+			cnt.setReadPos(pos);
+			break;
+		}
+
+		if (event.getMagic() != rEvent::Packet::MAGIC) {
 			printf("recv bad paket\n");
 
 			m_client.dropBuffer();
-		} else {
-			auto text = event->toString();
-			printf("%s\n", text.c_str());
+			return TRITONN_RESULT_OK;
 
-			m_client.popFrontBuffer(sizeof(rEvent));
+		} else {
+			auto text = event.toString();
+			printf("%s\n", text.c_str());
 		}
 	}
+
+	m_client.popFrontBuffer(cnt.getReadPos());
 
 	return TRITONN_RESULT_OK;
 }
