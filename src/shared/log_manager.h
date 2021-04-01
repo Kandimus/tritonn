@@ -1,83 +1,64 @@
 //=================================================================================================
 //===
-//=== log_class.h
+//=== log_manager.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
-//===
-//=== Универсальный класс-поток для выдачи log-сообщений по TCP
-//===
-//=================================================================================================
 
 #pragma once
 
-#include <list>
-#include "tcp_class.h"
-#include "packet_log.h"
+#include "thread_class.h"
+#include "singlenton.h"
+#include "tickcount.h"
+#include "log_defines.h"
 
-using std::list;
+class rDateTime;
 
-
-typedef void ( *Fn_LogAddCallback)(const string &);
-
-class rLogManager: public rTCPClass
+class rLogManager: public rThreadClass
 {
-public:
-	virtual ~rLogManager();
+	enum
+	{
+		MAX_TEXT_BUFF = 4096,
+		SYSTEM_TIMER  = 24 * 60 * 60 * 100,
+	};
 
-	UDINT Add(UDINT mask, const char *filename, UDINT lineno, const char *format, ...);
+	SINGLETON(rLogManager)
+
+public:
+	void add(UDINT mask, const char* filesource, UDINT lineno, const char* format, ...);
+	void add(UDINT mask, const rDateTime& timestamp, const std::string& text);
 
 	// Управление логированием
-	UDINT AddLogMask(UDINT lm);     // Добавление маски к уже существующей
-	UDINT RemoveLogMask(UDINT lm);  // Удаление маски из существующей
-	UDINT SetLogMask(UDINT lm);     // Установка новой маски
+	UDINT addLogMask(UDINT lm);     // Добавление маски к уже существующей
+	UDINT removeLogMask(UDINT lm);  // Удаление маски из существующей
+	UDINT setLogMask(UDINT lm);     // Установка новой маски
 	
-	// Функция для выдачи сообщений в поток stderr
-	static void OutErr(const char *filename, UDINT lineno, const char *format, ...);
-
-	// Singleton
-	static rLogManager &Instance();
-
-//	UDINT Init(const string &syslog_name);
-	UDINT StartServer();
-	UDINT SetAddCalback(Fn_LogAddCallback fn);
+	void setDir(const std::string& dir) { m_dir = dir; }
 
 protected:
 	virtual rThreadStatus Proccesing(void);
-	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
-	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
-	
-	static  void        PrintToTerminal(rPacketLog *packet);
+
+private:
+	bool        check(UDINT mask);
+	std::string saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text);
+	void        outTerminal(UDINT mask, const std::string& text);
 
 public:
-	rSafityValue<UDINT>  Terminal;  // Включение/выключение дублирования сообщений на консоль
-	rSafityValue<UDINT>  Enable;    // Включение/выключение логирования
+	const UDINT COMPRESS_DAYS = 95;
+	const UDINT DELETE_DAYS   = 366;
 
-    static std::string   m_logAppName;
-//	rSafityValue<UDINT>  MaxLogs;   // Длина буффера сообщений //TODO Нужно ли?
-
-private:
-	rSafityValue<UDINT>  Level;     // Текущий уровень логирования
-	UDINT                IncCount;  // Инкрементный инкремент сообщения
-	list<rPacketLog>     List;      // Список сообщений
-	pthread_mutex_t      MutexList; // Защитный мьютекс списка лог-сообщений
-	pthread_mutex_t      MutexCallback; //
-
-	Fn_LogAddCallback    fnAddCalback;
+	rSafityValue<bool>  m_save;
+	rSafityValue<UDINT> m_terminal;  // Включение/выключение дублирования сообщений на консоль
+	rSafityValue<UDINT> m_enable;    // Включение/выключение логирования
 
 private:
-	rLogManager();
-	rLogManager( const rLogManager &);
-	rLogManager& operator=( rLogManager &);
-
-	DINT LockList();
-	DINT UnlockList();
-	DINT LockCallback();
-	DINT UnlockCallback();
+	std::string         m_dir = "";
+	rTickCount          m_systimer;
+	rSafityValue<UDINT> m_level;         // Текущий уровень логирования
 };
 
 

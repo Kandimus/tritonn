@@ -2,8 +2,9 @@
 
 #include "tritonn_version.h"
 #include "log_manager.h"
-#include "event_manager.h"
+#include "event/manager.h"
 #include "threadmaster.h"
+#include "system_manager.h"
 #include "data_manager.h"
 #include "io/manager.h"
 #include "term_manager.h"
@@ -45,7 +46,7 @@ int main(int argc, char* argv[])
 		SimpleFileSave("./users.uncrypt.xml", uncrypt);
 	}
 
-	rLogManager::m_logAppName = "tritonn";
+	rLogManager::instance().setDir(DIR_LOG);
 
 	// Разбираем командную строку
 #ifdef TRITONN_TEST
@@ -88,39 +89,42 @@ int main(int argc, char* argv[])
 	UDINT logmask = 0;
 	String_IsValidHex(rSimpleArgs::instance().getOption(rArg::Log).c_str(), logmask);
 
-	rLogManager::Instance().Enable.Set(true);
-	rLogManager::Instance().SetLogMask(logmask);
-	rLogManager::Instance().Terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
+	rLogManager::instance().m_enable.Set(true);
+	rLogManager::instance().setLogMask(logmask);
+	rLogManager::instance().m_terminal.Set(true);
+	TRACEI(LOG::MAIN, " ");
+	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
+	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
+	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
+	rLogManager::instance().Run(16);
 
-	TRACEERROR("------------------------------------------");
-	TRACEERROR("Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
-	rLogManager::Instance().StartServer();
-	rLogManager::Instance().Run(16);
-
-	rThreadMaster::instance().add(&rLogManager::Instance(), TMF_NONE, "logs");
+	rThreadMaster::instance().add(&rLogManager::instance(), TMF_NONE, "logs");
 
 
-	//----------------------------------------------------------------------------------------------
+	// Менеджер системных команд
+	rSystemManager::instance().Run(250);
+	rThreadMaster::instance().add(&rSystemManager::instance(), TMF_NONE, "system");
+
+
 	// Системные строки
 	rError err;
-	if(TRITONN_RESULT_OK != rTextManager::instance().LoadSystem(FILE_SYSTEMTEXT, err))
+	if(TRITONN_RESULT_OK != rTextManager::instance().loadSystem(FILE_SYSTEMTEXT, err))
 	{
-		TRACEERROR("Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
+		TRACEP(LOG::MAIN, "Can't load system string. Error %i, line %i '%s'", err.getError(), err.getLineno(), err.getText().c_str());
 		exit(0);
 	}
-	rTextManager::instance().SetCurLang("ru");
+	rTextManager::instance().setCurLang(LANG_RU);
 
 
-	//----------------------------------------------------------------------------------------------
 	// Менеджер сообщений
-	rEventManager::instance().LoadText(FILE_SYSTEMEVENT); // Системные события
-	rEventManager::instance().SetCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
+	rEventManager::instance().loadText(FILE_SYSTEMEVENT); // Системные события
+	rEventManager::instance().setCurLang(LANG_RU); //NOTE Пока по умолчанию выставляем русский язык
 	rEventManager::instance().Run(16);
+	rEventManager::instance().startServer();
 
 	rThreadMaster::instance().add(&rEventManager::instance(), TMF_NONE, "events");
 
 
-	//----------------------------------------------------------------------------------------------
 	// Загружаем конфигурацию или переходим в cold-start
 	rDataManager::instance().LoadConfig();
 	rDataManager::instance().Run(100);
@@ -128,17 +132,19 @@ int main(int argc, char* argv[])
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
 
-	//----------------------------------------------------------------------------------------------
+	TRACEI(LOG::MAIN, "Log storage: %u / %u", rLogManager::instance().COMPRESS_DAYS, rLogManager::instance().DELETE_DAYS);
+	TRACEI(LOG::MAIN, "Event storage: %u / %u", rEventManager::instance().getStorage(), rEventManager::instance().DELETE_DAYS);
+
+
 	// Стартуем обмен с модулями IO
 	rIOManager::instance().Run(100);
 
 	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "io");
 
 
-	//----------------------------------------------------------------------------------------------
 	// Терминал
 	rTermManager::Instance().Run(500);
-	rTermManager::Instance().StartServer("0.0.0.0", TCP_PORT_TERM);
+	rTermManager::Instance().StartServer("0.0.0.0", LanPort::PORT_TERM);
 
 	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "config");
 
@@ -146,7 +152,7 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// JSON
 	rJSONManager::Instance().Run(500);
-	rJSONManager::Instance().StartServer("0.0.0.0", TCP_PORT_JSON);
+	rJSONManager::Instance().StartServer("0.0.0.0", LanPort::PORT_JSON);
 
 	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");
 
@@ -155,11 +161,11 @@ int main(int argc, char* argv[])
 
 	//
 	// Событие о запуске
-	event.Reinit(EID_SYSTEM_RUNNING);
-	rEventManager::instance().Add(event);
+	event.reinit(EID_SYSTEM_RUNNING);
+	rEventManager::instance().add(event);
 
-	event.Reinit(EID_TEST_SUCCESS) << STRID(16) << 12.34 << 45.6 << STRID(33) << 9.87654;
-	rEventManager::instance().Add(event);
+	event.reinit(EID_TEST_SUCCESS) << STRID(16) << 12.34 << 45.6 << STRID(33) << 9.87654;
+	rEventManager::instance().add(event);
 	
 
 #ifdef TRITONN_TEST
@@ -179,7 +185,7 @@ int main(int argc, char* argv[])
 #endif
 
 		if (rThreadMaster::instance().GetStatus() == rThreadStatus::CLOSED) {
-			TRACEW(LM_SYSTEM, "Closing...");
+			TRACEW(LOG::MAIN, "Closing...");
 			break;
 		}
 
@@ -188,7 +194,7 @@ int main(int argc, char* argv[])
 
 	mSleep(500);
 	
-	TRACEERROR("Все потоки закрыты!");
+	TRACEI(LOG::MAIN, "Все потоки закрыты!");
 	
 	return 0;
 }

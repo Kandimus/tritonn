@@ -17,7 +17,7 @@
 #include <sstream>
 #include "safity.h"
 #include "locker.h"
-#include "log_manager.h"
+//#include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
 #include "tritonn_version.h"
@@ -61,7 +61,7 @@ UDINT rDisplayManager::RunCmd(vector<string> &args)
 //
 void rDisplayManager::cmdConnect(vector<string> &args)
 {
-	UINT port = TCP_PORT_TERM;
+	UINT port = LanPort::PORT_TERM;
 
 	if(args.size() > 3)
 	{

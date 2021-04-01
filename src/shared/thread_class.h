@@ -20,6 +20,7 @@
 #include "safity.h"
 #include "thread_time.h"
 #include "singlenton.h"
+#include "log_defines.h"
 
 #define THREAD_IS_WORK(x)       (((x) == rThreadStatus::RUNNING) || ((x) == rThreadStatus::PAUSED))
 
@@ -80,7 +81,7 @@ protected:
 	void EndProccesing();               //
 
 	string              RTTI    = "rThreadClass"; // Имя класса
-	UDINT               LogMask = LM_SYSTEM;      // Маска для логирования. Для удобства
+	UDINT               LogMask;    // Маска для логирования. Для удобства
 	pthread_mutex_t     Mutex;                    // Защитный мьютекс внутренних данных
 
 	std::vector<rThreadTimeInfo* > TimeInfo;

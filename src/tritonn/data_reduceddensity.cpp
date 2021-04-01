@@ -13,20 +13,18 @@
 //===
 //=================================================================================================
 
+#include "data_reduceddensity.h"
 #include <math.h>
 #include <vector>
 #include <limits>
-#include "tinyxml2.h"
 #include "density.h"
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "variable_item.h"
 #include "variable_list.h"
 #include "data_station.h"
-#include "data_reduceddensity.h"
 #include "xml_util.h"
 #include "generator_md.h"
 #include "comment_defines.h"

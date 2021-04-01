@@ -136,7 +136,7 @@ rThreadStatus rDisplayManager::Proccesing()
 
 		if(tperiod.isFinished())
 		{
-			tperiod.reset();
+			tperiod.restart();
 
 			if(PacketGetData.Count)
 			{
@@ -469,7 +469,7 @@ UDINT rDisplayManager::CallbackGetAnswe(rPacketGetAnsweData *data)
 
 			if(nullptr == file)
 			{
-				TRACEERROR("Can't open dump file!");
+				TRACEP(LOG::TERMINAL, "Can't open dump file!");
 				break;
 			}
 

@@ -98,6 +98,7 @@ protected:
 	UDINT LoadModbus    (tinyxml2::XMLElement* root);
 	UDINT LoadModbusTCP (tinyxml2::XMLElement* root);
 	UDINT LoadOPCUA     (tinyxml2::XMLElement* root);
+	UDINT loadSettings  (tinyxml2::XMLElement* root);
 
 	UDINT checkMaxCount();
 	UDINT checkSource(void);

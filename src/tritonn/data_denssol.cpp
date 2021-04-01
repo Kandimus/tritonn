@@ -19,10 +19,10 @@
 #include <cmath>
 #include "tinyxml2.h"
 #include "density.h"
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
 #include "text_manager.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_config.h"
@@ -120,19 +120,19 @@ UDINT rDensSol::calculate()
 		m_curCoef = m_setCoef;
 		m_accept  = 0;
 
-		rEventManager::instance().Add(reinitEvent(EID_DENSSOL_ACCEPT));
+		rEventManager::instance().add(reinitEvent(EID_DENSSOL_ACCEPT));
 	}
 
 	if (checkExpr(err, DENSSOL_LE_INPUTS,
-				  event_f.Reinit(EID_DENSSOL_FAULT_INPUTS) << m_ID << m_descr,
-				  event_s.Reinit(EID_DENSSOL_GOOD_INPUTS ) << m_ID << m_descr)) {
+				  event_f.reinit(EID_DENSSOL_FAULT_INPUTS) << m_ID << m_descr,
+				  event_s.reinit(EID_DENSSOL_GOOD_INPUTS ) << m_ID << m_descr)) {
 		return setFault();
 	}
 
 	//
 	if (checkExpr(m_period.m_value < 1, DENSSOL_LE_PERIOD,
-				  event_f.Reinit(EID_DENSSOL_FAULT_PERIOD) << m_ID << m_descr,
-				  event_s.Reinit(EID_DENSSOL_GOOD_PERIOD ) << m_ID << m_descr)) {
+				  event_f.reinit(EID_DENSSOL_FAULT_PERIOD) << m_ID << m_descr,
+				  event_s.reinit(EID_DENSSOL_GOOD_PERIOD ) << m_ID << m_descr)) {
 		return setFault();
 	}
 
@@ -179,8 +179,8 @@ UDINT rDensSol::calculate()
 
 		// Проверка полученной плотности
 		if(checkExpr(count_iteration >= 20, DENSSOL_LE_ITERATION,
-					 event_f.Reinit(EID_DENSSOL_FAULT_ITERATION) << m_ID << m_descr,
-					 event_s.Reinit(EID_DENSSOL_GOOD_ITERATION ) << m_ID << m_descr)) {
+					 event_f.reinit(EID_DENSSOL_FAULT_ITERATION) << m_ID << m_descr,
+					 event_s.reinit(EID_DENSSOL_GOOD_ITERATION ) << m_ID << m_descr)) {
 
 			return setFault();
 		}
@@ -331,7 +331,7 @@ UDINT rDensSol::loadFromXML(tinyxml2::XMLElement* element, rError& err, const st
 
 	// Проверки
 	if (!m_station) {
-		rEventManager::instance().Add(reinitEvent(EID_DENSSOL_FAULT_STATION));
+		rEventManager::instance().add(reinitEvent(EID_DENSSOL_FAULT_STATION));
 		return err.set(DATACFGERR_DENSSOL_NOSTN, element->GetLineNum(), "station is empty");
 	}
 

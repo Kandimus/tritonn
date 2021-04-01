@@ -16,9 +16,9 @@
 #pragma once
 
 #include <vector>
+#include "string.h"
 #include "def.h"
 
-using std::vector;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ protected:
 
 	rUser(const string &name, USINT *pwd_hash  , UDINT intaccess, UDINT extaccess, UDINT login, USINT *loginpwd_hash);
 
-	static vector<rUser *> ListUser;
+	static std::vector<rUser*> ListUser;
 };
 
 

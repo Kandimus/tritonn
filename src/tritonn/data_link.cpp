@@ -137,7 +137,7 @@ LREAL rLink::getValue(const string &/*name*/, UDINT /*unit*/, UDINT &err)
 //
 void rLink::init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr)
 {
-	auto comment = rTextManager::instance().GetPtr(descr, LANG_RU);
+	auto comment = rTextManager::instance().getPtr(descr, LANG_RU);
 
 	m_unit    = unit;
 	m_owner   = owner;
@@ -156,7 +156,7 @@ UDINT rLink::generateVars(rVariableList& list)
 	UINT   flags = rVariable::Flags::READONLY;
 
 	if (!m_owner) {
-		TRACEERROR("The link '%s' has no owner.", m_alias.c_str());
+		TRACEP(LOG::LINK, "The link '%s' has no owner.", m_alias.c_str());
 		return 0;
 	}
 
@@ -181,7 +181,7 @@ UDINT rLink::generateVars(rVariableList& list)
 		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value, m_unit, 0, m_comment);
 	} else {
 		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value        , m_unit   , 0, m_comment + ". Текущее значение");
-		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R__               ,  m_unit.GetPtr(), U_DIMLESS, 0, m_comment + ". Единицы измерения");
+		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R__               ,  m_unit.getPtr(), U_DIMLESS, 0, m_comment + ". Единицы измерения");
 
 		m_limit.generateVars(list, name, m_unit, m_comment);
 	}

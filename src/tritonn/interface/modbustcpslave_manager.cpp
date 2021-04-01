@@ -34,12 +34,12 @@
 //
 // КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rModbusTCPSlaveManager::rModbusTCPSlaveManager()
-	: rTCPClass("0.0.0.0", TCP_PORT_MODBUS, MAX_MBTCP_CLIENT),
+	: rTCPClass("0.0.0.0", LanPort::PORT_MODBUS, MAX_MBTCP_CLIENT),
 	  rInterface(Mutex),
 	  m_snapshot(rDataManager::instance().getVariableClass())
 {
 	RTTI     = "rModbusTCPSlaveManager";
-	LogMask |= LM_TERMINAL;
+	LogMask |= LOG::TERMINAL;
 	Modbus   = new UINT[65536];
 
 	memset(Modbus, 0, sizeof(Modbus[0]) * 65536);

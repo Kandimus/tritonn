@@ -16,7 +16,7 @@
 #include "text_class.h"
 #include "log_manager.h"
 #include "error.h"
-//#include "data_config.h"
+#include "tinyxml2.h"
 #include "text_id.h"
 #include "xml_util.h"
 
@@ -29,26 +29,27 @@ rTextClass::rTextClass()
 {
 	CurLang = nullptr;
 
-	Langs.clear();
+	m_langs.clear();
 }
 
 
 
 rTextClass::~rTextClass()
 {
-	for(auto lang: Langs) {
+	for (auto lang : m_langs) {
 		delete lang;
 	}
-	Langs.clear();
+
+	m_langs.clear();
 }
 
 
 //-------------------------------------------------------------------------------------------------
 // Загрузка из основного файла
-UDINT rTextClass::LoadSystem(const string& filename, rError& err)
+UDINT rTextClass::loadSystem(const string& filename, rError& err)
 {
 	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLElement *root = nullptr;
+	tinyxml2::XMLElement* root = nullptr;
 
 	if (tinyxml2::XML_SUCCESS != doc.LoadFile(filename.c_str())) {
 		return err.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
@@ -60,7 +61,7 @@ UDINT rTextClass::LoadSystem(const string& filename, rError& err)
 	}
 
 	XML_FOR(lang, root, XmlName::LANG) {
-		if (TRITONN_RESULT_OK != LoadLang(lang, true, err)) {
+		if (TRITONN_RESULT_OK != loadLang(lang, true, err)) {
 			return err.getError();
 		}
 	}
@@ -71,14 +72,14 @@ UDINT rTextClass::LoadSystem(const string& filename, rError& err)
 
 
 // Загрузка дополнительных строк
-UDINT rTextClass::Load(tinyxml2::XMLElement* root, rError& err)
+UDINT rTextClass::load(tinyxml2::XMLElement* root, rError& err)
 {
 	if (!root) {
 		return err.set(DATACFGERR_LANG_STRUCT, 0, "");
 	}
 
 	XML_FOR(lang, root, XmlName::LANG) {
-		if (TRITONN_RESULT_OK != LoadLang(lang, false, err)) {
+		if (TRITONN_RESULT_OK != loadLang(lang, false, err)) {
 			return err.getError();
 		}
 	}
@@ -95,14 +96,14 @@ UDINT rTextClass::Load(tinyxml2::XMLElement* root, rError& err)
 		return ErrorID;
 	}
 */
-	DeleteUnused();
+	deleteUnused();
 
 	return TRITONN_RESULT_OK;
 }
 
 
 
-UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err)
+UDINT rTextClass::loadLang(tinyxml2::XMLElement* root, UDINT create, rError& err)
 {
 	std::string langID = "";
 	rTextLang*  lang   = nullptr;
@@ -112,7 +113,7 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err
 	}
 
 	langID = String_tolower(root->Attribute(XmlName::VALUE));
-	lang   = GetLangPtr(langID);
+	lang   = getLangPtr(langID);
 
 	if (!lang) {
 		if (create) {
@@ -120,7 +121,7 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err
 			lang->Name  = langID;
 			lang->Setup = 0;
 
-			Langs.push_back(lang);
+			m_langs.push_back(lang);
 		} else {
 			return err.set(DATACFGERR_LANG_UNKNOW, root->GetLineNum(), "");
 		}
@@ -138,7 +139,7 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err
 		}
 
 		// Проверка на сопадение ID
-		if (GetPtr(id, lang)) {
+		if (getPtr(id, lang)) {
 			return err.set(DATACFGERR_LANG_DUPID, xml_item->GetLineNum(), "");
 		}
 
@@ -151,17 +152,16 @@ UDINT rTextClass::LoadLang(tinyxml2::XMLElement *root, UDINT create, rError& err
 
 
 
-UDINT rTextClass::DeleteUnused()
+UDINT rTextClass::deleteUnused()
 {
 	UDINT result = 0;
 
-	for(UDINT ii = 0; ii < Langs.size(); ++ii)
-	{
-		if(!(Langs[ii]->Setup & TEXTLANG_SETUP_USED))
+	for(UDINT ii = 0; ii < m_langs.size(); ++ii) {
+		if(!(m_langs[ii]->Setup & TEXTLANG_SETUP_USED))
 		{
-			TRACEI(LM_TEXT, "Delete unused lang: '%s'", Langs[ii]->Name.c_str());
-			delete Langs[ii];
-			Langs.erase(Langs.begin() + ii);
+			TRACEI(LOG::TEXT, "Delete unused lang: '%s'", m_langs[ii]->Name.c_str());
+			delete m_langs[ii];
+			m_langs.erase(m_langs.begin() + ii);
 			--ii;
 			++result;
 		}
@@ -172,13 +172,14 @@ UDINT rTextClass::DeleteUnused()
 
 
 //
-rTextLang *rTextClass::GetLangPtr(const string &name)
+rTextLang *rTextClass::getLangPtr(const string &name) const
 {
-	string lowname = String_tolower(name);
+	std::string lowname = String_tolower(name);
 
-	for(UDINT ii = 0; ii < Langs.size(); ++ii)
-	{
-		if(lowname == Langs[ii]->Name) return Langs[ii];
+	for(UDINT ii = 0; ii < m_langs.size(); ++ii) {
+		if(lowname == m_langs[ii]->Name) {
+			return m_langs[ii];
+		}
 	}
 
 	return nullptr;
@@ -186,47 +187,55 @@ rTextLang *rTextClass::GetLangPtr(const string &name)
 
 
 //
-string rTextClass::GetCurLang()
+std::string rTextClass::getCurLang() const
 {
-	if(nullptr == CurLang) return "";
+	if (nullptr == CurLang) {
+		return "";
+	}
+
 	return CurLang->Name;
 }
 
 
-UDINT rTextClass::SetCurLang(const string &lang)
+bool rTextClass::setCurLang(const std::string& lang)
 {
-	rTextLang *plang = GetLangPtr(lang);
+	rTextLang *plang = getLangPtr(lang);
 
-	if(nullptr == plang) return 0;
+	if (nullptr == plang) {
+		return false;
+	}
 
 	CurLang = plang;
 
-	return 1;
+	return true;
 }
 
 
 // Получение ссылки на строку в текущем языке
-const string *rTextClass::GetPtr(STRID id)
+const std::string* rTextClass::getPtr(STRID id) const
 {
-	return GetPtr(id, GetCurLang());
+	return getPtr(id, getCurLang());
 }
 
 
 // Получение ссылки на строку, с указанием имени языка
-const string *rTextClass::GetPtr(STRID id, const string &lang)
+const std::string* rTextClass::getPtr(STRID id, const string &lang) const
 {
-	return GetPtr(id, GetLangPtr(lang));
+	return getPtr(id, getLangPtr(lang));
 }
 
 
 //
-const string *rTextClass::GetPtr(STRID id, rTextLang *lang)
+const std::string* rTextClass::getPtr(STRID id, rTextLang* lang) const
 {
-	if(nullptr == lang) return nullptr;
+	if (!lang) {
+		return nullptr;
+	}
 
-	for(UDINT ii = 0;  ii < lang->Texts.size(); ++ii)
-	{
-		if(lang->Texts[ii].ID == id) return &lang->Texts[ii].Text;
+	for (auto& item : lang->Texts) {
+		if (item.ID == id) {
+			return &item.Text;
+		}
 	}
 
 	return nullptr;
@@ -234,45 +243,45 @@ const string *rTextClass::GetPtr(STRID id, rTextLang *lang)
 
 
 //
-UDINT rTextClass::Get(STRID id, string &text)
+bool rTextClass::get(STRID id, std::string& text) const
 {
-	return Get(id, GetCurLang(), text);
+	return get(id, getCurLang(), text);
 }
 
 
 
 //
-UDINT rTextClass::Get(STRID id, const string &lang, string &text)
+bool rTextClass::get(STRID id, const std::string& lang, std::string& text) const
 {
-	const std::string *result = GetPtr(id, lang);
+	const std::string* result = getPtr(id, lang);
 
-	if(nullptr == result) return 1;
+	if (!result) {
+		return false;
+	}
 
 	text = *result;
 
-	return 0;
+	return true;
 }
 
 
-UDINT rTextClass::GetListLang(vector<string> &list)
+void rTextClass::getListLang(std::vector<string>& list) const
 {
-	for(UDINT ii = 0; ii < Langs.size(); ++ii)
-	{
-		list.push_back(Langs[ii]->Name);
+	for (auto item : m_langs) {
+		list.push_back(item->Name);
 	}
-	return 0;
 }
 
 
-UDINT rTextClass::GetListSID (const string &lang, vector<rTextItem> &list)
+void rTextClass::getListSID(const std::string& lang, std::vector<rTextItem>& list) const
 {
-	rTextLang *langptr = GetLangPtr(lang);
+	rTextLang *langptr = getLangPtr(lang);
 
-	if(nullptr == langptr) return 1;
-
-	for(UDINT ii = 0; ii < langptr->Texts.size(); ++ii)
-	{
-		list.push_back(langptr->Texts[ii]);
+	if (!langptr) {
+		return;
 	}
-	return 0;
+
+	for (auto& item : langptr->Texts) {
+		list.push_back(item);
+	}
 }

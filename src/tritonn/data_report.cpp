@@ -13,21 +13,19 @@
 //===
 //=================================================================================================
 
+#include "data_report.h"
 #include <vector>
 #include <limits>
 #include <cmath>
 #include <string.h>
-#include "tinyxml2.h"
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
 #include "error.h"
-#include "variable_item.h"
 #include "variable_list.h"
 #include "simplefile.h"
-#include "data_report.h"
 #include "xml_util.h"
 #include "comment_defines.h"
 #include "generator_md.h"
@@ -532,7 +530,7 @@ UDINT rReport::Store()
 		p_itm->m_value = 0.0;
 	}
 
-	rEventManager::instance().Add(reinitEvent(EID_REPORT_GENERATED));
+	rEventManager::instance().add(reinitEvent(EID_REPORT_GENERATED));
 
 	// Формируем XML дерево отчета
 	SaveToXML();
@@ -711,7 +709,7 @@ UDINT rReport::SaveToXML(UDINT present)
 	UDINT   result  = SimpleFileSave(filename, printer.CStr());
 
 	if (result != TRITONN_RESULT_OK) {
-		rEventManager::instance().Add(reinitEvent(EID_REPORT_GENERATED) << result);
+		rEventManager::instance().add(reinitEvent(EID_REPORT_GENERATED) << result);
 		return 0;
 	}
 

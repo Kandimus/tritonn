@@ -161,7 +161,7 @@ std::string rVariableList::getMarkDown() const
 		std::string strunit = "";
 		std::string name    = (item->getName().size() && item->getName()[0] == '.') ? item->getName().substr(1) : item->getName();
 
-		rTextManager::instance().Get(item->getUnit(), strunit);
+		rTextManager::instance().get(item->getUnit(), strunit);
 
 		result += name + (item->isMutable() ? "[^mutable]" : "") + " | ";
 		result += NAME_TYPE[item->getType()] + " | ";

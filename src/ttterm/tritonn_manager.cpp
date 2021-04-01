@@ -36,7 +36,7 @@ rTritonnManager::rTritonnManager(rClientTCP &client) : rTCPClientClass(client)
 	RTTI    += "::rTritonnManager";
 	LogMask |= 0;
 
-	Setup.Set(TCPCLIENT_SETUP_NORECONNECT);
+	m_setup.Set(rTCPClientClass::Setup::NORECONNECT);
 }
 
 
@@ -117,13 +117,13 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 
 	if(TERMCLNT_RECV_ERROR == data)
 	{
-		return 0;
+		return 1;
 	}
 
 	// Посылку считали не полностью
 	if(nullptr == data)
 	{
-		return 1;
+		return 0;
 	}
 
 	// Проверка на то, что принимаемая посылка из перечня допустимых
@@ -138,7 +138,7 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 	{
 		TRACEW(LogMask, "Server send unknow packet. Marker %#X, length %u", client->Marker, client->Length);
 
-		return 0; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
+		return 2; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
 	}
 
 	// Получаем посылку
@@ -153,7 +153,7 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 
 	client->PopBuff(client->Length);
 
-	return result;
+	return 0;
 }
 
 

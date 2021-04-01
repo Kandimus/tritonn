@@ -4,6 +4,7 @@ add_subdirectory(open62541)
 add_subdirectory(tritonn)
 add_subdirectory(ttce)
 add_subdirectory(ttterm)
+add_subdirectory(testevent)
 
 compile_submodule("simpleargs" "" "")
 

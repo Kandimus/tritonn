@@ -16,9 +16,9 @@
 #include "data_di.h"
 #include <string.h>
 #include "tinyxml2.h"
-#include "event_eid.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "text_id.h"
-#include "event_manager.h"
 #include "data_manager.h"
 #include "data_config.h"
 #include "variable_item.h"
@@ -119,7 +119,7 @@ UDINT rDI::calculate()
 		auto channel     = static_cast<rIODIChannel*>(channel_ptr.get());
 
 		if (channel == nullptr) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
+			rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
@@ -127,8 +127,8 @@ UDINT rDI::calculate()
 		rEvent event_s;
 		rEvent event_f;
 		checkExpr(channel->m_state, DI_LE_CODE_FAULT,
-				  event_f.Reinit(EID_DI_CH_FAULT) << m_ID << m_descr,
-				  event_s.Reinit(EID_DI_CH_OK)    << m_ID << m_descr);
+				  event_f.reinit(EID_DI_CH_FAULT) << m_ID << m_descr,
+				  event_s.reinit(EID_DI_CH_OK)    << m_ID << m_descr);
 
 		m_physical.m_value = channel->getValue();
 		m_status           = Status::NORMAL;
@@ -158,14 +158,14 @@ UDINT rDI::calculate()
 		m_lockErr |= DI_LE_KEYPAD_ON;
 		m_lockErr &= ~DI_LE_KEYPAD_OFF;
 		
-		rEventManager::instance().Add(reinitEvent(EID_DI_KEYPAD_ON));
+		rEventManager::instance().add(reinitEvent(EID_DI_KEYPAD_ON));
 	}
 	
 	if (m_mode == Mode::PHIS && !(m_lockErr & DI_LE_KEYPAD_OFF)) {
 		m_lockErr |= DI_LE_KEYPAD_OFF;
 		m_lockErr &= ~DI_LE_KEYPAD_ON;
 		
-		rEventManager::instance().Add(reinitEvent(EID_DI_KEYPAD_OFF));
+		rEventManager::instance().add(reinitEvent(EID_DI_KEYPAD_OFF));
 	}
 	
 	
@@ -188,29 +188,29 @@ UDINT rDI::calculate()
 
 	if (m_present.m_value != oldvalue && m_present.m_value != 0.0) {
 		if (m_setup.Value & Setup::SUCCESS_ON) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_SUCCESS_ON));
+			rEventManager::instance().add(reinitEvent(EID_DI_SUCCESS_ON));
 		}
 
 		if (m_setup.Value & Setup::WARNING_ON) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_WARNING_ON));
+			rEventManager::instance().add(reinitEvent(EID_DI_WARNING_ON));
 		}
 
 		if (m_setup.Value & Setup::ALARM_ON) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_ALARM_ON));
+			rEventManager::instance().add(reinitEvent(EID_DI_ALARM_ON));
 		}
 	}
 
 	if (m_present.m_value != oldvalue && m_present.m_value == 0) {
 		if (m_setup.Value & Setup::SUCCESS_OFF) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_SUCCESS_OFF));
+			rEventManager::instance().add(reinitEvent(EID_DI_SUCCESS_OFF));
 		}
 
 		if (m_setup.Value & Setup::WARNING_OFF) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_WARNING_OFF));
+			rEventManager::instance().add(reinitEvent(EID_DI_WARNING_OFF));
 		}
 
 		if (m_setup.Value & Setup::ALARM_OFF) {
-			rEventManager::instance().Add(reinitEvent(EID_DI_ALARM_OFF));
+			rEventManager::instance().add(reinitEvent(EID_DI_ALARM_OFF));
 		}
 	}
 

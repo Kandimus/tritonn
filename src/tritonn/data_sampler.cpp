@@ -14,11 +14,10 @@
 //=================================================================================================
 
 #include "data_sampler.h"
-#include <vector>
 #include "tickcount.h"
-#include "event_manager.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "error.h"
-#include "event_eid.h"
 #include "data_config.h"
 #include "variable_list.h"
 #include "xml_util.h"
@@ -149,7 +148,7 @@ void rSampler::onIdle(void)
 		case Command::RESUME : break;
 
 		default:
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
 			break;
 	}
 }
@@ -170,7 +169,7 @@ void rSampler::onStart()
 
 	if (m_select >= CAN_MAX) {
 		m_state = State::ERROR;
-		rEventManager::instance().Add(reinitEvent(EID_SAMPLER_SELECT_FAULT));
+		rEventManager::instance().add(reinitEvent(EID_SAMPLER_SELECT_FAULT));
 		return;
 	}
 
@@ -181,7 +180,7 @@ void rSampler::onStart()
 
 			if (checkInterval()) {
 				m_state  = State::WORKTIME;
-				rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_PERIOD));
+				rEventManager::instance().add(reinitEvent(EID_SAMPLER_START_PERIOD));
 			}
 			break;
 
@@ -190,7 +189,7 @@ void rSampler::onStart()
 			m_interval  = m_probeVolume / m_grabRemain;
 			m_state     = State::WORKVOLUME;
 
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_VOLUME));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_START_VOLUME));
 			break;
 
 		case Method::MASS:
@@ -198,11 +197,11 @@ void rSampler::onStart()
 			m_interval  = m_probeMass / m_grabRemain;
 			m_state     = State::WORKMASS;
 
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_MASS));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_START_MASS));
 			break;
 
 		default:
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_method));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_MODE_FAULT) << static_cast<UINT>(m_method));
 			m_method = Method::PERIOD;
 			m_state  = State::ERROR;
 			return;
@@ -220,7 +219,7 @@ void rSampler::onStop(void)
 {
 	m_state = State::IDLE;
 
-	rEventManager::instance().Add(reinitEvent(EID_SAMPLER_STOP));
+	rEventManager::instance().add(reinitEvent(EID_SAMPLER_STOP));
 }
 
 
@@ -238,7 +237,7 @@ void rSampler::onStartTest(void)
 	m_timeStart     = rTickCount::UnixTime();
 	m_timerInterval = rTickCount::SysTick();
 
-	rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_TEST));
+	rEventManager::instance().add(reinitEvent(EID_SAMPLER_START_TEST));
 }
 
 
@@ -263,7 +262,7 @@ void rSampler::onWorkTimer(bool checkflow)
 		case Command::NONE: break;
 		case Command::STOP:
 			m_state = State::FINISH;
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_STOP));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_STOP));
 			return;
 
 		case Command::PAUSE:
@@ -271,7 +270,7 @@ void rSampler::onWorkTimer(bool checkflow)
 			return;
 
 		default:
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_DONT_STOP));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_DONT_STOP));
 			break;
 	}
 
@@ -310,7 +309,7 @@ void rSampler::onWorkTimer(bool checkflow)
 	}
 
 	if (rTickCount::UnixTime() > m_timeStart + m_probePeriod || m_grabRemain < 0.001 || isCanOverflow()) {
-		rEventManager::instance().Add(reinitEvent(EID_SAMPLER_FINISH));
+		rEventManager::instance().add(reinitEvent(EID_SAMPLER_FINISH));
 		m_state = State::FINISH;
 	}
 }
@@ -322,13 +321,13 @@ void rSampler::onWorkVolume(bool isMass)
 		case Command::NONE: break;
 		case Command::STOP:
 			m_state = State::FINISH;
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_STOP));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_STOP));
 			return;
 
 		case Command::PAUSE: onPause(); return;
 
 		default:
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_DONT_STOP));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_DONT_STOP));
 			break;
 	}
 
@@ -346,7 +345,7 @@ void rSampler::onWorkVolume(bool isMass)
 	}
 
 	if (m_grabRemain < 0.001 || isCanOverflow()) {
-		rEventManager::instance().Add(reinitEvent(EID_SAMPLER_FINISH));
+		rEventManager::instance().add(reinitEvent(EID_SAMPLER_FINISH));
 		m_state = State::FINISH;
 	}
 }
@@ -359,12 +358,12 @@ void rSampler::onWorkError()
 			break;
 
 		case Command::CONFIRM:
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_CONFIRM));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_CONFIRM));
 			m_state = State::IDLE;
 			break;
 
 		default:
-			rEventManager::instance().Add(reinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
+			rEventManager::instance().add(reinitEvent(EID_SAMPLER_COMMAND_FAULT) << static_cast<UINT>(m_command));
 			break;
 	}
 }
@@ -598,7 +597,7 @@ bool rSampler::checkInterval(void)
 		return true;
 	}
 
-	rEventManager::instance().Add(reinitEvent(EID_SAMPLER_START_FAULT));
+	rEventManager::instance().add(reinitEvent(EID_SAMPLER_START_FAULT));
 	return false;
 }
 

@@ -16,7 +16,7 @@
 
 #include <math.h>
 #include "compared_values.h"
-#include "event_manager.h"
+#include "event/manager.h"
 
 
 
@@ -37,7 +37,7 @@ UDINT rCompared<T>::Compare(rEvent &event)
 {
 	if (isDiff()) {
 		event << Value << Saved;
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 
 		Saved = Value;
 
@@ -95,7 +95,7 @@ UDINT rCmpREAL::Compare(REAL prec, rEvent &event)
 	if(fabsf(Value - Saved) < prec)
 	{
 		event << Value << Saved;
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 		
 		Saved = Value;
 		
@@ -121,7 +121,7 @@ UDINT rCmpLREAL::Compare(LREAL prec, rEvent &event)
 	if(fabs(Value - Saved) > prec)
 	{
 		event << Value << Saved;
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 		
 		Saved = Value;
 		

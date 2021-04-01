@@ -34,8 +34,8 @@
 		<str id="-536543229"/>
 		<!-- EID_SELECTOR_TONEXT -->
 		<str id="1610940420"/>
-		<!-- EID_SELECTOR_NOTHINGNEXT -->
-		<str id="-536543227"/>
+		<!-- EID_SELECTOR_NOTHINGNEXT - $1 ID, $2 Descr, $3 select -->
+		<str id="-536543227">$2. Нет входов без флага ошибки для перехода. Текущий вход $3</str>
 		<!-- EID_SELECTOR_CLEARERROR - $1 ID, $2 Descr, $3 select -->
 		<str id="537198598">$2. Ошибка входа $3 снята.</str>
 		<!-- EID_SELECTOR_SELECTED - $1 ID, $2 Descr, $3 value, $4 saved -->

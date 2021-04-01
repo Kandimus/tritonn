@@ -33,11 +33,11 @@ public:
 	rTCPClass(const string &ip, UINT port, UDINT maxclient);
 	virtual ~rTCPClass();
 
-	UDINT StartServer(const string &ip, UINT port);
-	void  SetServerIP(const string &ip, UINT port);
+	UDINT StartServer(const std::string& ip, UINT port);
+	void  SetServerIP(const std::string& ip, UINT port);
 	UDINT CloseServer();
 
-	UDINT IsStarted() const;
+	virtual UDINT IsStarted() const;
 
 	UDINT AddWhiteIP(UDINT  ip);
 	UDINT AddWhiteIP(USINT *ip);
@@ -52,10 +52,10 @@ protected:
 	virtual UDINT ClientRecv(rClientTCP *client, USINT *buff, UDINT size) = 0;
 	
 	// Отправка данных клиентам
-	UDINT Send(rClientTCP *client, void *packet, UDINT size);
+	virtual UDINT Send(rClientTCP *client, const void *packet, UDINT size);
 
 	// Присоединение нового клиента
-	virtual rClientTCP *NewClient(SOCKET socket, sockaddr_in *addr) = 0;
+	virtual rClientTCP* NewClient(SOCKET socket, sockaddr_in *addr) = 0;
 
 protected:
 	vector<rClientTCP *>  Client;     // Массив клиентов

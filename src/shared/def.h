@@ -39,15 +39,20 @@ const UDINT THREAD_FAULT        = -1;
 //-------------------------------------------------------------------------------------------------
 // Константы сокетов
 const DINT   MAX_SELECT_SEC            = 0;          // Функция select будет ожидать 1 секунду
-const DINT   MAX_SELECT_USEC           = 5000;     // Функция select будет ожидать 0 милисекунд
+const DINT   MAX_SELECT_USEC           = 50000;     // Функция select будет ожидать 0 милисекунд
 
 
 //-------------------------------------------------------------------------------------------------
 // Сетевые константы
-const UINT   TCP_PORT_LOG              = 22500;       // Порт логирования
-const UINT   TCP_PORT_JSON             = 22501;       // Порт JSON
-const UINT   TCP_PORT_TERM             = 22503;       // Порт терминала и конфигуратора
-const UINT   TCP_PORT_MODBUS           = 502;         // Стандартный порт для ModbusTCP
+
+enum LanPort : UINT
+{
+	PORT_EVENT  = 22500,       // Порт логирования
+	PORT_JSON   = 22501,       // Порт JSON
+	PORT_TERM   = 22503,       // Порт терминала и конфигуратора
+	PORT_MODBUS = 502,         // Стандартный порт для ModbusTCP
+};
+
 const UDINT  MAX_TCP_RECV_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCP_SEND_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCPCLIENT_BUFF        = 4 * MAX_TCP_RECV_BUFF; // Размер буффера принятых сообщений клиентом TCP
@@ -74,33 +79,10 @@ const UINT   LOG_CP_WIN1251            = 0x0000;
 const UINT   LOG_CP_UTF8               = 0x1000;
 const UINT   LOG_CP_UNICODE            = 0x2000;
 const UINT   LOG_CP_MASK               = 0x3000;
-const UDINT  MAX_LOG_CLIENT            = 2;           // Кол-во одновременных подключений к логам
 const UDINT  MAX_JSON_CLIENT           = 8;           // Кол-во одновременных сессий JSON
 const UDINT  MAX_JSON_IDLE             = 30;          // Максимальное время простоя без запросов в сессии JSON, сек
 const UDINT  MAX_JSON_SESSION          = 10 * 60;     // Максимальное время сессии JSON, сек
 const UDINT  MAX_MBTCP_CLIENT          = 8;
-
-const UDINT  LM_SYSTEM                 = 0x00000001;  //
-const UDINT  LM_TCPSERV                = 0x00000002;
-const UDINT  LM_TCPCLNT                = 0x00000004;
-const UDINT  LM_EVENT                  = 0x00000008;
-const UDINT  LM_TERMINAL               = 0x00000010;
-const UDINT  LM_TEXT                   = 0x00000020;
-const UDINT  LM_OPCUA                  = 0x00000040;
-const UDINT  LM_LOG                    = 0x08000000;
-const UDINT  LM_I                      = 0x10000000;
-const UDINT  LM_W                      = 0x20000000;
-const UDINT  LM_A                      = 0x40000000;
-const UDINT  LM_P                      = 0x80000000;
-const UDINT  LM_ALL                    = 0xFFFFFFFF;
-
-
-//-------------------------------------------------------------------------------------------------
-// События
-const UDINT  MAX_EVENT                 = 500;         // Константа определяется из размера энергонезависимой памяти и максимальное количество сохраняемых событий
-const UDINT  MAX_EVENT_DATA            = 64;          // Размер области данных одного сообщения //TODO Может сделать расчетной?
-const UDINT  MAX_EVENT_ALARM           = 3;           // Максимальное количество аварийных событий для индикации
-
 
 //-------------------------------------------------------------------------------------------------
 // Количество объектов
@@ -139,8 +121,6 @@ const USINT  AES_IV[16]                = {'0', '1', '2', '3', '4', '5', '6', '7'
 // Вспомогательные константы
 const LREAL  COMPARE_LREAL_PREC        = 1.0E-10;
 const LREAL  COMPARE_REAL_PREC         = 1.0E-7;
-const USINT  PRECISION_DEFAUILT        = 5;
-
 
 //-------------------------------------------------------------------------------------------------
 // rDataManager
@@ -242,6 +222,7 @@ const std::string DIR_HOME             = ".\\";
 const std::string DIR_CONF             = DIR_HOME + "conf\\";
 const std::string DIR_FTP              = DIR_HOME + "ftp\\";
 const std::string DIR_WWW              = DIR_HOME + "www\\";
+const std::string DIR_EVENT            = DIR_HOME + "log\\";
 const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports\\";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag\\";
 const std::string DIR_MARKDOWN         = DIR_HOME + "help\\";
@@ -253,9 +234,11 @@ const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 #else
 const std::string DIR_HOME             = "./";
 const std::string DIR_CONF             = DIR_HOME + "conf/";
+const std::string DIR_LOG              = DIR_HOME + "log/";
 const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
-const std::string DIR_REPORT           = DIR_HOME + DIR_FTP + "reports/";
+const std::string DIR_EVENT            = DIR_WWW  + "application/core/events/";
+const std::string DIR_REPORT           = DIR_FTP  + "reports/";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
 const std::string DIR_MARKDOWN         = DIR_HOME + "help/";
 const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
@@ -264,6 +247,9 @@ const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
 const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";
 const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 const std::string FILE_WWW_TREE_OBJ    = DIR_WWW  + "application/core/tree_objects.json";
+const std::string DIR_WWW_LANG         = DIR_WWW  + "application/language/";
+const std::string FILE_WWW_LANG        = "custom_lang.php";
+const std::string FILE_WWW_EVENT       = "event_lang.php";
 #endif
 
 
@@ -467,25 +453,6 @@ enum rTritonn_Error
 	OPCUA_ERROR_BADVARTYPE,
 
 };
-
-
-// Перечень ошибок при файловом вводе-выводе (обычный ввод-вывод, не нить)
-//enum FILEIOERROR
-//{
-//	FILEIOERROR_CFG = 1,
-//	FILEIOERROR_JSONTREE,
-//};
-
-
-
-
-#define TRACE(mask, format, ...)              {rLogManager::Instance().Add(       (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEI(mask, format, ...)             {rLogManager::Instance().Add(LM_I | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEW(mask, format, ...)             {rLogManager::Instance().Add(LM_W | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEA(mask, format, ...)             {rLogManager::Instance().Add(LM_A | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEP(mask, format, ...)             {rLogManager::Instance().Add(LM_P | (mask), __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-#define TRACEERROR(format, ...)               {rLogManager::OutErr(            __FILENAME__, __LINE__, (format), ##__VA_ARGS__);}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

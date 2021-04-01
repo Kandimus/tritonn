@@ -74,7 +74,7 @@ UDINT rThreadMaster::add(rThreadClass *thread, UDINT flags, const std::string& a
 		info->m_status = info->m_class->GetStatus();
 
 		if (info->m_status == rThreadStatus::FINISHED) {
-			TRACEERROR("Can't run thread.");
+			TRACEP(LOG::THREAD, "Can't run thread.");
 			exit(0); //NOTE Нужно ли так жестко, может быть Halt?
 			return 1;
 		}
@@ -104,7 +104,7 @@ void rThreadMaster::closeAll()
 
 		delete item;
 
-		TRACEERROR("--------- Поток %s закрыт!", name.c_str());
+		TRACEW(LOG::THREAD, "--------- Поток %s закрыт!", name.c_str());
 	}
 
 	m_threadList.clear();
@@ -146,7 +146,7 @@ rThreadStatus rThreadMaster::Proccesing()
 			}
 			else if(!(item->m_flags & TMF_NOTRUN))
 			{
-				TRACEERROR("--------- Аварийное закрытие потока %s!", item->m_class->GetRTTI());
+				TRACEP(LOG::THREAD, "--------- Аварийное закрытие потока %s!", item->m_class->GetRTTI());
 				break;
 			}
 
@@ -163,7 +163,7 @@ rThreadStatus rThreadMaster::Proccesing()
 		if(savetimer.isFinished())
 		{
 			saveAllTimerInfo();
-			savetimer.reset();
+			savetimer.restart();
 		}
 
 		m_curSysInfo.calculate();
@@ -182,7 +182,7 @@ UDINT rThreadMaster::calcThreadTimeInfo(rInfo *ti)
 {
 	UDINT worktime = 0;
 	UDINT idletime = 0;
-	vector<rThreadTimeInfo> vti;
+	std::vector<rThreadTimeInfo> vti;
 
 	ti->m_class->GetTimeInfo(vti);
 

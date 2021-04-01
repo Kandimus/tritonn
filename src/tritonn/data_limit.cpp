@@ -13,18 +13,15 @@
 //===
 //=================================================================================================
 
+#include "data_limit.h"
 #include <vector>
 #include <limits>
 #include <cmath>
 #include <string.h>
-#include "tinyxml2.h"
-//#include "data_selector.h"
-#include "event_eid.h"
-#include "event_manager.h"
+#include "event/eid.h"
+#include "event/manager.h"
 #include "data_config.h"
-#include "variable_item.h"
 #include "variable_list.h"
-#include "data_limit.h"
 #include "xml_util.h"
 #include "comment_defines.h"
 
@@ -179,7 +176,7 @@ void rLimit::sendEvent(rEvent &e, LREAL *val, LREAL *lim, UDINT dontsend)
 	if(val) event << *val;
 	if(lim) event << *lim;
 
-	rEventManager::instance().Add(event);
+	rEventManager::instance().add(event);
 }
 
 

@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "tinyxml2.h"
-#include "event_eid.h"
+#include "../tritonn/event/eid.h"
 
 
 const UDINT PROP_USED = 1;

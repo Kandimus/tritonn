@@ -13,31 +13,24 @@
 //===
 //=================================================================================================
 
+#include "tcpclient_class.h"
 #include <unistd.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
 #include "locker.h"
 #include "log_manager.h"
-#include "tcpclient_class.h"
 
 
-rTCPClientClass::rTCPClientClass(rClientTCP &client) : ReconnetTime(1000), Setup(0), Connected(0)
+
+rTCPClientClass::rTCPClientClass(rClientTCP &client) : ReconnetTime(1000), m_setup(0), Connected(0)
 {
 	Client    = &client;
-	LogMask   = LM_TCPCLNT;
+	LogMask   = LOG::TCPCLNT;
 }
 
-
-rTCPClientClass::~rTCPClientClass()
-{
-	;
-}
-
-
-//------------------------------------------------------------------------------------------------
-//
 UDINT rTCPClientClass::Destroy()
 {
 	if(Client->Socket != SOCKET_ERROR)
@@ -63,9 +56,104 @@ UDINT rTCPClientClass::Disconnect()
 {
 	rLocker locker(Mutex);
 
-	TRACEW(LogMask, "Disconnect from %s:%i", IP.c_str(), Port);
+	m_timerKeepAlive.stop();
+
+	TRACEW(LogMask, "Disconnect from %s:%i", m_IP.c_str(), m_port);
 
 	return Destroy();
+}
+
+bool configureSocketKeepAliveValues(SOCKET socket)
+{
+#ifdef WIN32
+	/*
+	 * On Windows Vista and later, the number of keep-alive probes
+	 * (data retransmissions) is set to 10 and cannot be changed.
+	 * On Windows Server 2003, Windows XP, and Windows 2000,
+	 * the default setting for number of keep-alive probes is 5
+	 */
+
+	struct tcp_keepalive settings;
+
+	/*
+	 * The value specified in the onoff member determines
+	 * if TCP keep-alive is enabled or disabled.
+	 * If the onoff member is set to a nonzero value,
+	 * TCP keep-alive is enabled and the other members in
+	 * the structure are used.
+	 */
+	settings.onoff = 1;
+
+	/*
+	 * The keepalivetime member specifies the timeout, in milliseconds,
+	 * with no activity until the first keep-alive packet is sent.
+	 */
+	settings.keepalivetime = 60 * 1000;
+
+	/*
+	 * The keepaliveinterval member specifies the interval,
+	 * in milliseconds, between when successive keep-alive packets
+	 * are sent if no acknowledgement is received.
+	 */
+	settings.keepaliveinterval = 12 * 1000;
+
+	// Random, useless pointers for WinSock call
+	DWORD bytesReturned;
+	WSAOVERLAPPED overlapped;
+	overlapped.hEvent = NULL;
+
+	if (WSAIoctl(fd,
+				 SIO_KEEPALIVE_VALS,
+				 &settings,
+				 sizeof( struct tcp_keepalive ),
+				 NULL,
+				 0,
+				 &bytesReturned,
+				 &overlapped,
+				 NULL) != 0) {
+		log_error("Can't set socket keepalive values");
+	}
+#else
+	int enableKeepAlive = 1;
+	if (setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &enableKeepAlive, sizeof(enableKeepAlive)) != 0) {
+		TRACEA(LOG::TCPCLNT, "Can't enable socket keepalive");
+		return false;
+	} else {
+		/*
+		 * The interval between the last data
+		 * packet sent (simple ACKs are not considered data)
+		 * and the first keepalive probe; after the
+		 * connection is marked to need keepalive,
+		 * this counter is not used any further
+		 */
+		int keepIdle = 2;
+		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPIDLE, &keepIdle, sizeof(keepIdle)) != 0) {
+			TRACEA(LOG::TCPCLNT, "Can't set socket keepidle");
+		}
+
+		/*
+		 * The number of unacknowledged probes to send before
+		 * considering the connection dead and notifying
+		 * the application layer
+		 */
+		int count = 3;//10;
+		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPCNT, &count, sizeof(count)) != 0) {
+			TRACEA(LOG::TCPCLNT, "Can't set socket keepcnt");
+		}
+
+		/*
+		 * The interval between subsequential keepalive probes,
+		 * regardless of what the connection has exchanged in
+		 * the meantime
+		 */
+		int interval = 1;//12;
+		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPINTVL, &interval, sizeof(interval)) != 0) {
+			TRACEA(LOG::TCPCLNT, "Can't set socket keepintvl");
+		}
+
+		return true;
+	}
+#endif
 }
 
 //-------------------------
@@ -76,10 +164,10 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 
 	Destroy();
 
-	IP   = ip;
-	Port = port;
+	m_IP   = ip;
+	m_port = port;
 
-	TRACEI(LogMask, "Connecting to %s:%i ...", IP.c_str(), Port);
+	TRACEI(LogMask, "Connecting to %s:%i ...", m_IP.c_str(), m_port);
 
 	Client->Socket = socket(AF_INET, SOCK_STREAM, 0);
 	if(Client->Socket == SOCKET_ERROR)
@@ -112,6 +200,11 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 		return 3;
 	}
 
+	configureSocketKeepAliveValues(Client->Socket);
+
+//	int set = 1;
+//	setsockopt(Client->Socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+
 	// выключаем алгоритм Нэйгла
 	int flag = 1;
 	if(setsockopt(Client->Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag)) == SOCKET_ERROR)
@@ -126,13 +219,14 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 	}
 
 	Client->Addr.sin_family      = AF_INET;
-	Client->Addr.sin_port        = htons(Port);
-	Client->Addr.sin_addr.s_addr = inet_addr(IP.c_str());
+	Client->Addr.sin_port        = htons(m_port);
+	Client->Addr.sin_addr.s_addr = inet_addr(m_IP.c_str());
 
 	if(connect(Client->Socket, (struct sockaddr *)&Client->Addr, sizeof(Client->Addr)) == SOCKET_ERROR)
 	{
-		Connected.Set(0);
-		TRACEA(LogMask, "Can't connect to %s:%i. Error %i", IP.c_str(), Port, errno);
+		Connected.Set(m_setup.Get() & Setup::NORECONNECT ? 0 : 1);
+		TRACEA(LogMask, "Can't connect to %s:%i. Error %i", m_IP.c_str(), m_port, errno);
+		Client->Socket = SOCKET_ERROR;
 
 		return 5;
 	}
@@ -140,10 +234,10 @@ UDINT rTCPClientClass::Connect(const string &ip, UINT port)
 	// Устанавливаем асинхронный прием сообщений
 	SOCKET_SET_NONBLOCK(Client->Socket);
 
+	m_timerKeepAlive.start(1000);
+
 	Connected.Set(1);
-	TRACEI(LogMask, "Connected to %s:%i", IP.c_str(), Port);
-
-
+	TRACEI(LogMask, "Connected to %s:%i", m_IP.c_str(), m_port);
 
 	return 0;
 }
@@ -154,7 +248,7 @@ rThreadStatus rTCPClientClass::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
 	UDINT   flagerr       = false;
-	UDINT   setup         = Setup.Get();
+	UDINT   setup         = m_setup.Get();
 	SOCKET  socket        = SOCKET_ERROR;
 	int     Maxfd;
 	fd_set  readfds;
@@ -181,7 +275,7 @@ rThreadStatus rTCPClientClass::Proccesing()
 	// Если сокет не открыт, то проверяем флаг реконнекта
 	if(socket == SOCKET_ERROR)
 	{
-		if(Connect(IP, Port))
+		if(Connect(m_IP, m_port))
 		{
 			// Команда на паузу, подождем перед реконнектом
 			rThreadClass::Pause.Set(ReconnetTime.Get());
@@ -194,8 +288,8 @@ rThreadStatus rTCPClientClass::Proccesing()
 	// очищаем
 	FD_ZERO(&readfds);
 	FD_ZERO(&exfds);
-	FD_SET(Client->Socket, &exfds);
 	FD_SET(Client->Socket, &readfds);
+	FD_SET(Client->Socket, &exfds);
 	tv.tv_sec  = MAX_SELECT_SEC;
 	tv.tv_usec = MAX_SELECT_USEC;
 	Maxfd      = Client->Socket;
@@ -203,24 +297,37 @@ rThreadStatus rTCPClientClass::Proccesing()
 
 	if(select(Maxfd + 1, &readfds, NULL, &exfds, &tv) == -1)
 	{
-		TRACEW(LM_TCPCLNT, "Function select fault. Error: %i", errno);
+		TRACEW(LOG::TCPCLNT, "Function select fault. Error: %i", errno);
 	}
 
 	// Проверка на закрытие сервера
 	if(FD_ISSET(Client->Socket, &exfds))
 	{
-		TRACEW(LM_TCPCLNT, "Server is shutdown.");
+		TRACEW(LOG::TCPCLNT, "Disconect from server.");
 
 		flagerr = true;
 	}
 	// Считывание данных от сервера
 	else if(FD_ISSET(Client->Socket, &readfds))
 	{
-		if(!ReadFromServer())
+		if(ReadFromServer())
 		{
-			TRACEW(LM_TCPCLNT, "Can't recv data from server. Error: %i", errno);
+			TRACEW(LOG::TCPCLNT, "Can't recv data from server. Error: %i", errno);
 
 			flagerr = true;
+		}
+	}
+
+	if (m_timerKeepAlive.isFinished()) {
+		int result = send(Client->Socket, nullptr, 0, MSG_NOSIGNAL);
+
+		if (result == -1) {
+
+			TRACEW(LOG::TCPCLNT, "Server is shutdown...");
+
+			flagerr = true;
+		} else {
+			m_timerKeepAlive.restart();
 		}
 	}
 
@@ -230,12 +337,9 @@ rThreadStatus rTCPClientClass::Proccesing()
 	{
 		Destroy();
 
-		if(setup & TCPCLIENT_SETUP_NORECONNECT)
-		{
+		if (setup & Setup::NORECONNECT) {
 			Connected.Set(0);
-		}
-		else
-		{
+		} else {
 			// Команда на паузу, подождем перед реконнектом
 			rThreadClass::Pause.Set(ReconnetTime.Get());
 
@@ -270,15 +374,14 @@ UDINT rTCPClientClass::ReadFromServer()
 	}
 	
 	delete[] buff;
+
+	if (!readbytes) {
+		return 0;
+	}
 	
-	if(readbytes == -1 && (errno != EAGAIN || errno != EWOULDBLOCK))
-	{
-		return 1;
+	if (readbytes == -1) {
+		return (errno == EAGAIN || errno == EWOULDBLOCK) ? 0 : 1;
 	}
 	
 	return result;
 }
-
-
-
-

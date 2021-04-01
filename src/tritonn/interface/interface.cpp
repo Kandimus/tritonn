@@ -14,16 +14,9 @@
 //=================================================================================================
 
 #include "interface.h"
-#include <limits>
 #include "def.h"
-#include "tinyxml2.h"
 #include "../xml_util.h"
 #include "../data_config.h"
-#include "../event_manager.h"
-#include "../variable_item.h"
-#include "../variable_list.h"
-#include "../text_manager.h"
-
 
 
 rInterface::rInterface(pthread_mutex_t& mutex)

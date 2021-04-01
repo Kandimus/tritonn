@@ -19,10 +19,38 @@
 #include "simplefile.h"
 
 
-
-UDINT SimpleFileCreateDir(const string &filename)
+UDINT SimpleFileErrno(UDINT deferrno)
 {
-	string path = "";
+	switch(errno)
+	{
+		case ENODEV:
+		case ENOENT:
+		case ENXIO:
+			return FILE_RESULT_NOTFOUND;
+
+		case EPERM:
+		case EACCES:
+			return FILE_RESULT_EACCESS;
+
+		case EISDIR:
+			return FILE_RESULT_ISDIR;
+
+		case ETXTBSY:
+		case EWOULDBLOCK:
+			return FILE_RESULT_BLOCKED;
+
+		case EROFS:
+			return FILE_RESULT_READONLY;
+
+		default:
+			return deferrno;
+	}
+}
+
+
+UDINT SimpleFileCreateDir(const std::string& filename)
+{
+	std::string path = "";
 
 	for(UDINT ii = 0; ii < filename.size(); ++ii)
 	{
@@ -44,31 +72,10 @@ UDINT SimpleFileCreateDir(const string &filename)
 }
 
 
-UDINT SimpleFileDelete(const string &filename)
+UDINT SimpleFileDelete(const std::string& filename)
 {
-	if(unlink(filename.c_str()))
-	{
-		switch(errno)
-		{
-			case ENODEV:
-			case ENOENT:
-			case ENXIO:
-				return FILE_RESULT_NOTFOUND;
-
-			case EPERM:
-			case EACCES:
-				return FILE_RESULT_EACCESS;
-
-			case EISDIR:
-				return FILE_RESULT_ISDIR;
-
-			case ETXTBSY:
-			case EWOULDBLOCK:
-				return FILE_RESULT_BLOCKED;
-
-			default:
-				return FILE_RESULT_CANTDELETE;
-		}
+	if (unlink(filename.c_str())) {
+		return SimpleFileErrno(FILE_RESULT_CANTDELETE);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -76,35 +83,15 @@ UDINT SimpleFileDelete(const string &filename)
 
 
 //
-UDINT SimpleFileLoad(const string &filename, string &text)
+UDINT SimpleFileLoad(const std::string& filename, std::string& text)
 {
 	FILE  *file = fopen(filename.c_str(), "rt");
 	char  *buff = nullptr;
 	UDINT  size = 0;
 	UDINT  fr   = 0;
 
-	if(!file)
-	{
-		switch(errno)
-		{
-			case ENODEV:
-			case ENOENT:
-			case ENXIO:
-				return FILE_RESULT_NOTFOUND;
-
-			case EACCES:
-				return FILE_RESULT_EACCESS;
-
-			case EISDIR:
-				return FILE_RESULT_ISDIR;
-
-			case ETXTBSY:
-			case EWOULDBLOCK:
-				return FILE_RESULT_BLOCKED;
-
-			default:
-				return FILE_RESULT_CANTOPEN;
-		}
+	if (!file) {
+		return SimpleFileErrno(FILE_RESULT_CANTOPEN);
 	}
 
 	fseek(file, 0, SEEK_END);
@@ -125,6 +112,7 @@ UDINT SimpleFileLoad(const string &filename, string &text)
 	if(fr != size)
 	{
 		delete[] buff;
+		text = "";
 		return FILE_RESULT_IOERROR;
 	}
 
@@ -135,7 +123,7 @@ UDINT SimpleFileLoad(const string &filename, string &text)
 }
 
 
-UDINT SimpleFileSave(const string &filename, const string &text)
+UDINT SimpleFileSaveExt(const std::string& filename, const std::string& text, const std::string& mode)
 {
 	FILE  *file = nullptr;
 	UDINT  fw   = 0;
@@ -149,32 +137,9 @@ UDINT SimpleFileSave(const string &filename, const string &text)
 		if(result) return result;
 	}
 
-	file = fopen(filename.c_str(), "wt");
-	if(!file)
-	{
-		switch(errno)
-		{
-			case ENODEV:
-			case ENOENT:
-			case ENXIO:
-				return FILE_RESULT_NOTFOUND;
-
-			case EACCES:
-				return FILE_RESULT_EACCESS;
-
-			case EISDIR:
-				return FILE_RESULT_ISDIR;
-
-			case ETXTBSY:
-			case EWOULDBLOCK:
-				return FILE_RESULT_BLOCKED;
-
-			case EROFS:
-				return FILE_RESULT_READONLY;
-
-			default:
-				return FILE_RESULT_CANTOPEN;
-		}
+	file = fopen(filename.c_str(), mode.c_str());
+	if (!file) {
+		return SimpleFileErrno(FILE_RESULT_CANTOPEN);
 	}
 
 	fw = fwrite(text.c_str(), 1, text.size(), file);
@@ -186,4 +151,15 @@ UDINT SimpleFileSave(const string &filename, const string &text)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+
+UDINT SimpleFileSave(const std::string& filename, const std::string& text)
+{
+	return SimpleFileSaveExt(filename, text, "wt");
+}
+
+UDINT SimpleFileAppend(const std::string& filename, const std::string& text)
+{
+	return SimpleFileSaveExt(filename, text, "at");
 }

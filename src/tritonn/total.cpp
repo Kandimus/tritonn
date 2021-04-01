@@ -17,7 +17,7 @@
 #include "total.h"
 #include "precision.h"
 #include "data_objunits.h"
-#include "event_manager.h"
+#include "event/manager.h"
 
 rTotal::rTotal(rEvent& mass, rEvent& volume, rEvent& volume15, rEvent& volume20)
 {
@@ -37,36 +37,36 @@ void rTotal::checkMax()
 {
 	if(Raw.Mass >= MAX_TOTAL_LIMIT)
 	{
-		if (m_eventMass.GetEID()) {
+		if (m_eventMass.getEID()) {
 			rEvent event = m_eventMass;
-			rEventManager::instance().Add(event);
+			rEventManager::instance().add(event);
 		}
 		Raw.Mass -= MAX_TOTAL_LIMIT;
 	}
 
 	if(Raw.Volume >= MAX_TOTAL_LIMIT)
 	{
-		if (m_eventVolume.GetEID()) {
+		if (m_eventVolume.getEID()) {
 			rEvent event = m_eventVolume;
-			rEventManager::instance().Add(event);
+			rEventManager::instance().add(event);
 		}
 		Raw.Volume -= MAX_TOTAL_LIMIT;
 	}
 
 	if(Raw.Volume15 >= MAX_TOTAL_LIMIT)
 	{
-		if (m_eventVolume15.GetEID()) {
+		if (m_eventVolume15.getEID()) {
 			rEvent event = m_eventVolume15;
-			rEventManager::instance().Add(event);
+			rEventManager::instance().add(event);
 		}
 		Raw.Volume15 -= MAX_TOTAL_LIMIT;
 	}
 
 	if(Raw.Volume20 >= MAX_TOTAL_LIMIT)
 	{
-		if (m_eventVolume20.GetEID()) {
+		if (m_eventVolume20.getEID()) {
 			rEvent event = m_eventVolume20;
-			rEventManager::instance().Add(event);
+			rEventManager::instance().add(event);
 		}
 		Raw.Volume20 -= MAX_TOTAL_LIMIT;
 	}
@@ -86,10 +86,10 @@ void rTotal::Calculate(const rObjUnit& unit)
 
 	checkMax();
 
-	Present.Mass     = Round(Raw.Mass    , rPrecision::Instance().Get(unit.getMass()));
-	Present.Volume   = Round(Raw.Volume  , rPrecision::Instance().Get(unit.getVolume()));
-	Present.Volume15 = Round(Raw.Volume15, rPrecision::Instance().Get(unit.getVolume()));
-	Present.Volume20 = Round(Raw.Volume20, rPrecision::Instance().Get(unit.getVolume()));
+	Present.Mass     = Round(Raw.Mass    , rPrecision::instance().get(unit.getMass()));
+	Present.Volume   = Round(Raw.Volume  , rPrecision::instance().get(unit.getVolume()));
+	Present.Volume15 = Round(Raw.Volume15, rPrecision::instance().get(unit.getVolume()));
+	Present.Volume20 = Round(Raw.Volume20, rPrecision::instance().get(unit.getVolume()));
 
 	Inc.Mass         = 0.0;
 	Inc.Volume       = 0.0;

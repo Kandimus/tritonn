@@ -13,16 +13,14 @@
 //===
 //=================================================================================================
 
+#include "data_source.h"
 #include <limits>
 #include "def.h"
-#include "tinyxml2.h"
-#include "xml_util.h"
 #include "data_link.h"
 #include "data_config.h"
-#include "event_manager.h"
+#include "event/manager.h"
 #include "variable_item.h"
 #include "variable_list.h"
-#include "data_source.h"
 #include "text_manager.h"
 #include "xml_util.h"
 #include "text_manager.h"
@@ -84,7 +82,7 @@ LREAL rSource::getValue(const std::string& name, UDINT unit, UDINT& err)
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.Reinit(EID_SYSTEM_ERROUTVAL) << m_ID << m_descr << STRID(unit));
+		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.reinit(EID_SYSTEM_ERROUTVAL) << m_ID << m_descr << STRID(unit));
 
 		return std::numeric_limits<LREAL>::quiet_NaN();
 	}
@@ -93,7 +91,7 @@ LREAL rSource::getValue(const std::string& name, UDINT unit, UDINT& err)
 	err = rUnits::ConvertValue(link->m_value, link->m_unit, result, unit);
 
 	if(err) {
-		sendEventSetLE(SOURCE_LE_UNIT, m_event.Reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->m_unit) << STRID(unit));
+		sendEventSetLE(SOURCE_LE_UNIT, m_event.reinit(EID_SYSTEM_ERRUNIT) << m_ID << m_descr << STRID(link->m_unit) << STRID(unit));
 	}
 
 	return result;
@@ -110,7 +108,7 @@ STRID rSource::getValueUnit(const std::string& name, UDINT& err)
 		err = 1;
 
 		//TODO NOTE Должны ли мы в этом случаее уйти в SERVICE
-		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.Reinit(EID_SYSTEM_ERROUTPUT) << m_ID << m_descr);
+		sendEventSetLE(SOURCE_LE_OUTPUT, m_event.reinit(EID_SYSTEM_ERROUTPUT) << m_ID << m_descr);
 
 		return 0xFFFFFFFF;
 	}
@@ -170,7 +168,7 @@ UDINT rSource::postCalculate()
 // Переинициализируем временный Event, записывая ID объекта и строку с его описанием
 rEvent& rSource::reinitEvent(rEvent& event, UDINT eid)
 {
-	event.Reinit(eid) << m_ID << m_descr;
+	event.reinit(eid) << m_ID << m_descr;
 
 	return event;
 }
@@ -405,7 +403,7 @@ std::string rSource::getMarkDown()
 		for (auto link : m_inputs) {
 			std::string strunit = "";
 
-			rTextManager::instance().Get(link->m_unit, strunit);
+			rTextManager::instance().get(link->m_unit, strunit);
 
 			result += link->m_ioName + " | ";
 			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
@@ -422,7 +420,7 @@ std::string rSource::getMarkDown()
 		for (auto link : m_outputs) {
 			std::string strunit = "";
 
-			rTextManager::instance().Get(link->m_unit, strunit);
+			rTextManager::instance().get(link->m_unit, strunit);
 
 			result += link->m_ioName + " | ";
 			result += strunit + " | " + String_format("%u", static_cast<UDINT>(link->m_unit)) + " | ";
@@ -511,7 +509,7 @@ UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& eve
 		if (!(m_lockErr & flag)) {
 			m_lockErr |= flag;
 
-			rEventManager::instance().Add(event_fault);
+			rEventManager::instance().add(event_fault);
 		}
 
 		return 1;
@@ -519,7 +517,7 @@ UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& eve
 		if (m_lockErr & flag) {
 			m_lockErr &= ~flag;
 
-			rEventManager::instance().Add(event_success);
+			rEventManager::instance().add(event_success);
 		}
 	}
 
@@ -530,7 +528,7 @@ UDINT rSource::checkExpr(bool expr, UDINT flag, rEvent& event_fault, rEvent& eve
 UDINT rSource::sendEventSetLE(UDINT flag, rEvent &event)
 {
 	if (!(m_lockErr & flag)) {
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 
 		m_lockErr |= flag;
 
@@ -544,7 +542,7 @@ UDINT rSource::sendEventSetLE(UDINT flag, rEvent &event)
 UDINT rSource::sendEventClearLE(UDINT flag, rEvent &event)
 {
 	if (m_lockErr & flag) {
-		rEventManager::instance().Add(event);
+		rEventManager::instance().add(event);
 		m_lockErr &= ~flag;
 
 		return 1;

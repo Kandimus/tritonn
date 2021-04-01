@@ -22,51 +22,35 @@
 //
 rPrecision::rPrecision()
 {
-	Reset(PRECISION_DEFAUILT);
+	reset(rPrecision::DEFAUILT);
 }
-
-
 
 rPrecision::~rPrecision()
 {
 	;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-//
-rPrecision &rPrecision::Instance()
+USINT rPrecision::get(UDINT unit)
 {
-	static rPrecision Singleton;
+	if(unit >= MAX_UNITS_COUNT) return m_defPrec;
 
-	return Singleton;
+	return m_unitPrec[unit];
 }
 
 
 
-USINT rPrecision::Get(UDINT unit)
+void rPrecision::reset(USINT def)
 {
-	if(unit >= MAX_UNITS_COUNT) return DefPrec;
-
-	return UnitPrec[unit];
-}
-
-
-
-UDINT rPrecision::Reset(USINT def)
-{
-	DefPrec = def;
+	m_defPrec = def;
 
 	for(UDINT ii = 0; ii < MAX_UNITS_COUNT; ++ii)
 	{
-		UnitPrec[ii] = DefPrec;
+		m_unitPrec[ii] = m_defPrec;
 	}
-
-	return 0;
 }
 
 
-UDINT rPrecision::Load(tinyxml2::XMLElement* element, rError& err)
+UDINT rPrecision::load(tinyxml2::XMLElement* element, rError& err)
 {
 	UDINT fault = 0;
 
@@ -74,17 +58,17 @@ UDINT rPrecision::Load(tinyxml2::XMLElement* element, rError& err)
 		return TRITONN_RESULT_OK;
 	}
 
-	DefPrec = XmlUtils::getAttributeUSINT(element, XmlName::DEFAULT, DefPrec);
+	m_defPrec = XmlUtils::getAttributeUSINT(element, XmlName::DEFAULT, m_defPrec);
 
 	XML_FOR(xml_prec, element, XmlName::UNIT) {
 		UDINT id  = XmlUtils::getAttributeUDINT(xml_prec, XmlName::ID, MAX_UNITS_COUNT);
-		USINT val = XmlUtils::getTextUSINT(xml_prec, DefPrec, fault);
+		USINT val = XmlUtils::getTextUSINT(xml_prec, m_defPrec, fault);
 
 		if (id >= MAX_UNITS_COUNT || fault) {
 			return err.set(DATACFGERR_PREC_ID, xml_prec->GetLineNum(), "");
 		}
 
-		UnitPrec[id] = val;
+		m_unitPrec[id] = val;
 	}
 
 	return TRITONN_RESULT_OK;
