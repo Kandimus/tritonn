@@ -113,7 +113,7 @@ enum UNITID
 	U_V            = 516,
 	U_1_C          = 517,
 	U_1_MPa        = 518,
-	U_perc_w       = 519,
+	U_perc_m       = 519,
 	U_perc_v       = 520,
 	U_COEFSOL      = 521,
 	U_discrete     = 522,
