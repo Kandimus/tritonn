@@ -401,32 +401,32 @@
 
 		<!--EID_DO_SUCCESS_ON - $1 ID, $2 Descr -->
 		<str id="537919489">$2. Сигнал установлен.</str>
-		<!--EID_DO_SUCCESS_OFF - $1 ID, $2 Descr -->
+		<!-- EID_DO_SUCCESS_OFF - $1 ID, $2 Descr -->
 		<str id="537919490">$2. Сигнал снят.</str>
-		<!--EID_DO_WARNING_ON - $1 ID, $2 Descr -->
+		<!-- EID_DO_WARNING_ON - $1 ID, $2 Descr -->
 		<str id="-1609564157">$2. Сигнал установлен.</str>
-		<!--EID_DO_WARNING_OFF - $1 ID, $2 Descr -->
+		<!-- EID_DO_WARNING_OFF - $1 ID, $2 Descr -->
 		<str id="-1609564156">$2. Сигнал снят.</str>
-		<!--EID_DO_ALARM_ON - $1 ID, $2 Descr -->
+		<!-- EID_DO_ALARM_ON - $1 ID, $2 Descr -->
 		<str id="-535822331">$2. Сигнал установлен.</str>
-		<!--EID_DO_ALARM_OFF - $1 ID, $2 Descr -->
+		<!-- EID_DO_ALARM_OFF - $1 ID, $2 Descr -->
 		<str id="-535822330">$2. Сигнал снят.</str>
 		<!--EID_DO_CH_FAULT-->
 		<str id="-535822326"/>
 		<!--EID_DO_CH_OK-->
 		<str id="537919499"/>
-		<!--EID_DO_KEYPAD_ON - $1 ID, $2 Descr -->
+		<!-- EID_DO_KEYPAD_ON - $1 ID, $2 Descr -->
 		<str id="-1609564148">$2. Установлен режим ручного ввода значения.</str>
-		<!--EID_DO_KEYPAD_OFF - $1 ID, $2 Descr -->
+		<!-- EID_DO_KEYPAD_OFF - $1 ID, $2 Descr -->
 		<str id="-1609564147">$2. Установлен режим физического значения.</str>
 		<!--EID_DO_MODULE-->
 		<str id="-535822322"/>
 		<!--EID_DO_NEW_SETUP-->
 		<str id="537919503"/>
 
-		<!--EID_SAMPLER_START_PERIOD - $1 ID, $2 Descr -->
+		<!-- EID_SAMPLER_START_PERIOD - $1 ID, $2 Descr -->
 		<str id="538050561">$2. Команда на запуск в режиме по времени.</str>
-		<!--EID_SAMPLER_START_VOLUME - $1 ID, $2 Descr -->
+		<!-- EID_SAMPLER_START_VOLUME - $1 ID, $2 Descr -->
 		<str id="538050562">$2. Команда на запуск в режиме отбора по объему.</str>
 		<!--EID_SAMPLER_START_MASS - $1 ID, $2 Descr -->
 		<str id="538050563">$2. Команда на запуск в режиме отбора по массе.</str>
@@ -449,12 +449,12 @@
 		<!--EID_SAMPLER_START_FAULT-->
 		<str id="-535691251"/>
 
-		<!--EID_PROVE_BADCOMMAND-->
-		<str id="-535625727"/>
+		<!-- EID_PROVE_BADCOMMAND - $1 ID, $2 Descr, $3 command -->
+		<str id="-535625727">$2. Неверная команда ($3)</str>
 		<!--EID_PROVE_MODULE-->
 		<str id="-535625726"/>
-		<!--EID_PROVE_ERRORSTABTEMP-->
-		<str id="-535625724"/>
+		<!--EID_PROVE_ERRORSTABTEMP - $1 ID, $2 Descr, $3 delta, $4 max -->
+		<str id="-535625724">$2. Ошибка стабилизации. Значение температуры превысило уставку $4 на $3</str>
 		<!--EID_PROVE_ERRORSTABPRES-->
 		<str id="-535625723"/>
 		<!--EID_PROVE_ERRORSTABDENS-->
@@ -463,93 +463,132 @@
 		<str id="-535625721"/>
 		<!--EID_PROVE_BADSTREAMNUMBER-->
 		<str id="-535625720"/>
-		<!--EID_PROVE_COMMANDSTART-->
-		<str id="538116107"/>
+		<!-- EID_PROVE_CANNOTMODIFYSETUP - $1 ID, $2 Descr -->
+		<str id="-535625719">$2. Попытка изменить настройки во время измерения</str>
+		<!-- EID_PROVE_COMMANDSTART - $1 ID, $2 Descr -->
+		<str id="538116117">$2. Команда СТАРТ</str>
 		<!--EID_PROVE_COMMANDABORT-->
-		<str id="-1609367540"/>
+		<str id="-1609367530"/>
 		<!--EID_PROVE_COMMANDRESET-->
-		<str id="538116109"/>
-		<!--EID_PROVE_NOTSTARTED-->
-		<str id="-1609367538"/>
-		<!--EID_PROVE_ALREADYSTARTED-->
-		<str id="-1609367537"/>
-		<!--EID_PROVE_NOTERROR-->
-		<str id="-1609367536"/>
-		<!--EID_PROVE_ISERROR-->
-		<str id="-1609367535"/>
-		<!--EID_PROVE_DETECTOR1-->
-		<str id="538116117"/>
-		<!--EID_PROVE_DETECTOR2-->
-		<str id="538116118"/>
-		<!--EID_PROVE_DETECTOR3-->
 		<str id="538116119"/>
-		<!--EID_PROVE_DETECTOR4-->
-		<str id="538116120"/>
-		<!--EID_PROVE_STATE_IDLE-->
+		<!--EID_PROVE_NOTSTARTED-->
+		<str id="-1609367528"/>
+		<!--EID_PROVE_ALREADYSTARTED-->
+		<str id="-1609367527"/>
+		<!--EID_PROVE_NOTERROR-->
+		<str id="-1609367526"/>
+		<!--EID_PROVE_ISERROR-->
+		<str id="-1609367525"/>
+		<!--EID_PROVE_DETECTOR1-->
 		<str id="538116127"/>
-		<!--EID_PROVE_STATE_START-->
+		<!--EID_PROVE_DETECTOR2-->
 		<str id="538116128"/>
-		<!--EID_PROVE_STATE_STAB-->
+		<!--EID_PROVE_DETECTOR3-->
 		<str id="538116129"/>
-		<!--EID_PROVE_STATE_VALVETOUP-->
+		<!--EID_PROVE_DETECTOR4-->
 		<str id="538116130"/>
-		<!--EID_PROVE_STATE_WAITTOUP-->
-		<str id="538116131"/>
-		<!--EID_PROVE_STATE_VALVETODOWN-->
-		<str id="538116132"/>
-		<!--EID_PROVE_STATE_WAITD1-->
-		<str id="538116133"/>
-		<!--EID_PROVE_STATE_WAITD2-->
-		<str id="538116134"/>
-		<!--EID_PROVE_STATE_CALCULATE-->
-		<str id="538116135"/>
-		<!--EID_PROVE_STATE_RETURNBALL-->
-		<str id="538116136"/>
-		<!--EID_PROVE_STATE_FINISH-->
+		<!--EID_PROVE_STATE_IDLE-->
 		<str id="538116137"/>
+		<!--EID_PROVE_STATE_START-->
+		<str id="538116138"/>
+		<!--EID_PROVE_STATE_STAB-->
+		<str id="538116139"/>
+		<!--EID_PROVE_STATE_RUNBALL-->
+		<str id="538116140"/>
+		<!--EID_PROVE_STATE_VALVETOUP-->
+		<str id="538116141"/>
+		<!--EID_PROVE_STATE_WAITTOUP-->
+		<str id="538116142"/>
+		<!--EID_PROVE_STATE_VALVETODOWN-->
+		<str id="538116143"/>
+		<!--EID_PROVE_STATE_WAITD1-->
+		<str id="538116144"/>
+		<!--EID_PROVE_STATE_WAITD2-->
+		<str id="538116145"/>
+		<!--EID_PROVE_STATE_CALCULATE-->
+		<str id="538116146"/>
+		<!--EID_PROVE_STATE_RETURNBALL-->
+		<str id="538116147"/>
+		<!--EID_PROVE_STATE_WAITED1_RVS-->
+		<str id="538116148"/>
+		<!--EID_PROVE_STATE_WAITED2_RVS-->
+		<str id="538116149"/>
+		<!--EID_PROVE_STATE_WAYCOMPLTED-->
+		<str id="538116150"/>
+		<!--EID_PROVE_STATE_FINISH-->
+		<str id="538116151"/>
 		<!--EID_PROVE_STATE_ABORT-->
-		<str id="-1609367510"/>
+		<str id="-1609367496"/>
 		<!--EID_PROVE_STATE_ERRORFLOW-->
-		<str id="-535625685"/>
+		<str id="-535625671"/>
 		<!--EID_PROVE_STATE_ERRORSTAB-->
-		<str id="-535625684"/>
+		<str id="-535625670"/>
 		<!--EID_PROVE_STATE_ERRORTOUP-->
-		<str id="-535625683"/>
+		<str id="-535625669"/>
 		<!--EID_PROVE_STATE_ERRORTDOWN-->
-		<str id="-535625682"/>
+		<str id="-535625668"/>
 		<!--EID_PROVE_STATE_ERRORD1-->
-		<str id="-535625681"/>
+		<str id="-535625667"/>
 		<!--EID_PROVE_STATE_ERRORD2-->
-		<str id="-535625680"/>
+		<str id="-535625666"/>
 		<!--EID_PROVE_STATE_ERRORDETS-->
-		<str id="-535625679"/>
+		<str id="-535625665"/>
 		<!--EID_PROVE_STATE_ERRORRETURN-->
-		<str id="-535625678"/>
+		<str id="-535625664"/>
 		<!--EID_PROVE_STATE_ERRORRSTRID-->
-		<str id="-535625677"/>
-		<!--EID_PROVE_NEW_AMIN-->
-		<str id="538116196"/>
-		<!--EID_PROVE_NEW_WMIN-->
-		<str id="538116197"/>
-		<!--EID_PROVE_NEW_WMAX-->
-		<str id="538116198"/>
-		<!--EID_PROVE_NEW_AMAX-->
-		<str id="538116199"/>
-		<!--EID_PROVE_NEW_HYST-->
-		<str id="538116200"/>
-		<!--EID_PROVE_NEW_SETUP-->
-		<str id="538116201"/>
-		<!--EID_PROVE_AMIN-->
-		<str id="-535625618"/>
-		<!--EID_PROVE_WMIN-->
-		<str id="-1609367441"/>
-		<!--EID_PROVE_AMAX-->
-		<str id="-535625616"/>
-		<!--EID_PROVE_WMAX-->
-		<str id="-1609367439"/>
-		<!--EID_PROVE_NORMAL-->
-		<str id="538116210"/>
-		<!--EID_PROVE_NAN-->
-		<str id="-535625613"/>
+		<str id="-535625663"/>
+		<!--EID_PROVE_STATE_ERRORD1_RVS-->
+		<str id="-535625662"/>
+		<!--EID_PROVE_STATE_ERRORD2_RVS-->
+		<str id="-535625661"/>
+		<!--EID_PROVE_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538116196">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
+		<!--EID_PROVE_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538116197">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
+		<!--EID_PROVE_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538116198">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
+		<!--EID_PROVE_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538116199">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
+		<!--EID_PROVE_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538116200">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
+		<!--EID_PROVE_NEW_SETUP - $1 ID, $2 Descr -->
+		<str id="538116201">$2. Изменены настройки.</str>
+		<!--EID_PROVE_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535625618">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_PROVE_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609367441">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_PROVE_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535625616">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_PROVE_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609367439">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_PROVE_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<str id="538116210">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
+		<!-- EID_PROVE_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
+		<str id="-535625613">$2 ($3). Не действительное значение.</str>
+
+		<!--EID_MASWTR_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538181732">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
+		<!--EID_MASWTR_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538181733">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
+		<!--EID_MASWTR_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538181734">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
+		<!--EID_MASWTR_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538181735">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
+		<!--EID_MASWTR_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538181736">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
+		<!--EID_MASWTR_NEW_SETUP - $1 ID, $2 Descr -->
+		<str id="538181737">$2. Изменены настройки.</str>
+		<!--EID_MASWTR_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535560082">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_MASWTR_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609301905">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_MASWTR_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535560080">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_MASWTR_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609301903">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_MASWTR_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<str id="538181746">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
+		<!-- EID_MASWTR_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
+		<str id="-535560077">$2 ($3). Не действительное значение.</str>
 	</lang>
 </strings>

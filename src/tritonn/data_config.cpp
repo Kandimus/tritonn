@@ -44,6 +44,7 @@
 #include "data_sampler.h"
 #include "data/prove.h"
 #include "data/average.h"
+#include "data/masswater.h"
 #include "interface/modbustcpslave_manager.h"
 #include "interface/opcua_manager.h"
 #include "structures.h"
@@ -363,6 +364,7 @@ UDINT rDataConfig::loadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		if (XmlName::SAMPLER     == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_SAMPLER , 0); source = dynamic_cast<rSource*>(new rSampler(owner));    }
 		if (XmlName::PROVE       == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_PROVE   , 0); source = dynamic_cast<rSource*>(new rProve(owner));      }
 		if (XmlName::AVERAGE     == name) { if (SysVar->m_max[name] >= MAX_AVERAGE    ) return m_error.set(DATACFGERR_MAX_AVERAGE , 0); source = dynamic_cast<rSource*>(new rAverage(owner));    }
+		if (XmlName::MASSWATER   == name) { if (SysVar->m_max[name] >= MAX_MASSWATER  ) return m_error.set(DATACFGERR_MAX_WATER   , 0); source = dynamic_cast<rSource*>(new rMassWater(owner));  }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);
@@ -569,7 +571,7 @@ UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 	XML_FOR(xml_var, xml_vars, XmlName::VARIABLE) {
 		rSource* source = new rRVar();
 
-		if (TRITONN_RESULT_OK != source->loadFromXML(xml_var, m_error, "")) {
+		if (TRITONN_RESULT_OK != source->loadFromXML(xml_var, m_error, "var")) {
 			delete source;
 
 			return m_error.getError();
