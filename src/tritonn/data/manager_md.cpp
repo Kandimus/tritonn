@@ -31,6 +31,7 @@
 #include "../data_sampler.h"
 #include "prove.h"
 #include "average.h"
+#include "masswater.h"
 #include "../io/manager.h"
 #include "../io/module_ai6.h"
 #include "../io/module_crm.h"
@@ -64,6 +65,7 @@ UDINT rDataManager::saveMarkDown()
 	rReducedDens rd;
 	rDensSol     ds;
 	rRVar        rvar;
+	rMassWater   mw;
 	rSelector    sel;
 	rSelector    msel;
 	rStation     stn;
@@ -79,6 +81,7 @@ UDINT rDataManager::saveMarkDown()
 	rd.generateMarkDown(md);
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);
+	mw.generateMarkDown(md);
 	sel.generateMarkDown(md);
 	msel.generateMarkDown(md);
 	str.generateMarkDown(md);

@@ -11,26 +11,31 @@
 
 #include "masswater.h"
 #include <limits>
-#include "tinyxml2.h"
 #include "../event/eid.h"
 #include "../event/manager.h"
 #include "../text_id.h"
 #include "../data_config.h"
 #include "../data_manager.h"
+#include "../densitywater.h"
 #include "../error.h"
 #include "../variable_list.h"
 #include "../xml_util.h"
 #include "../generator_md.h"
 #include "../comment_defines.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
+rBitsArray rMassWater::m_flagsSetup;
+
 rMassWater::rMassWater(const rStation* owner) : rSource(owner)
 {
-	initLink(rLink::Setup::OUTPUT, m_massWater, U_perc_m   , SID::MASSWATER, XmlName::MASSWATER, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_volWater , U_perc_v   , SID::VOLWATER , XmlName::VOLWATER , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_density  , U_kg_m3    , SID::DENSITY  , XmlName::DENSITY  , rLink::SHADOW_NONE);
-//	initLink(rLink::Setup::INPUT , m_inFault[0], U_discrete, SID::FAULT_1, XmlName::FAULT_1, XmlName::INPUT_1);
+	if (m_flagsSetup.empty()) {
+		m_flagsSetup
+				.add("NOWATER", static_cast<UINT>(Setup::NOWATER), "При расчетах не учитывать значение плотности воды.");
+	}
+
+	initLink(rLink::Setup::OUTPUT, m_massWater  , U_perc_m, SID::MASSWATER  , XmlName::MASSWATER, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_volWater   , U_perc_v, SID::VOLWATER   , XmlName::VOLWATER , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_density    , U_kg_m3 , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_temperature, U_C     , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
 }
 
 
@@ -60,6 +65,12 @@ UDINT rMassWater::calculate()
 		return TRITONN_RESULT_OK;
 	}
 
+	if (m_setup & Setup::NOWATER) {
+		m_waterDensity = 1.0;
+	} else {
+		m_waterDensity = rDensity::getDensityOfWater(m_temperature.m_value);
+	}
+
 	m_massWater.m_value = m_volWater.m_value * m_waterDensity / m_density.m_value;
 
 	//----------------------------------------------------------------------------------------------
@@ -75,24 +86,10 @@ UDINT rMassWater::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".water.density", TYPE_LREAL, rVariable::Flags::___, &m_waterDensity, U_kg_m3, ACCESS_FACTORS, "Вычисленное значение плотности воды");
+	list.add(m_alias + ".setup"        , TYPE_UINT , rVariable::Flags::R__, &m_setup       , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".water.density", TYPE_LREAL, rVariable::Flags::R__, &m_waterDensity, U_kg_m3  , 0, "Вычисленное значение плотности воды");
 
-//	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault          , U_DIMLESS       , 0, COMMENT::FAULT);
-
-	return TRITONN_RESULT_OK;
-}
-
-UDINT rMassWater::check(rError& err)
-{
-	STRID unit = m_inValue[0].getSourceUnit();
-
-	for (UDINT ii = 1; ii < m_count; ++ii) {
-		if (unit != m_inValue[ii].getSourceUnit()) {
-			return err.set(DATACFGERR_AVERAGE_DIFFUNITS, m_lineNum, "");
-		}
-	}
-
-	m_outValue.m_unit = unit;
+	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R__, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }
@@ -101,7 +98,7 @@ UDINT rMassWater::check(rError& err)
 //
 UDINT rMassWater::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(static_cast<UDINT>(Setup::NOAVRFAULT)));
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, m_flagsSetup.getNameByBits(static_cast<UDINT>(Setup::NONE)));
 
 	if (rSource::loadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -110,49 +107,31 @@ UDINT rMassWater::loadFromXML(tinyxml2::XMLElement* element, rError& err, const 
 	UDINT fault = 0;
 	m_setup = static_cast<Setup>(m_flagsSetup.getValue(strSetup, fault));
 	if (fault) {
-		return err.set(DATACFGERR_AVERAGE_SETUP, element->GetLineNum(), "");
+		return err.set(DATACFGERR_MASSWATER_SETUP, element->GetLineNum(), "");
 	}
 
-	tinyxml2::XMLElement* xml_inputs = element->FirstChildElement(XmlName::INPUTS);
+	auto xml_volwater = element->FirstChildElement(XmlName::VOLWATER);
 
-	if (!xml_inputs) {
-		return err.set(DATACFGERR_AVERAGE_NOINPUT, element->GetLineNum(), "");
+	if (!xml_volwater) {
+		return err.set(DATACFGERR_MASSWATER_NOVOLWATER, element->GetLineNum(), "");
 	}
 
-	m_count = 0;
-	XML_FOR(xml_input, xml_inputs, XmlName::INPUT) {
-		if (m_count >= COUNT) {
-			return err.set(DATACFGERR_AVERAGE_TOOMANYINPUT, xml_input->GetLineNum(), "");
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_volwater->FirstChildElement(XmlName::LINK), m_volWater)) return err.getError();
+
+	if (!(m_setup & Setup::NOWATER)) {
+		auto xml_density     = element->FirstChildElement(XmlName::DENSITY);
+		auto xml_temperature = element->FirstChildElement(XmlName::TEMP);
+
+		if (!xml_density) {
+			return err.set(DATACFGERR_MASSWATER_NODENSITY, element->GetLineNum(), "");
 		}
 
-		if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_input->FirstChildElement(XmlName::LINK), m_inValue[m_count])) {
-			return err.getError();
-		}
-		++m_count;
-	}
-
-	if (m_count < 2) {
-		return err.set(DATACFGERR_AVERAGE_TOOFEWINPUT, xml_inputs->GetLineNum(), "");
-	}
-
-	tinyxml2::XMLElement* xml_faults = element->FirstChildElement(XmlName::FAULTS);
-
-	if (xml_faults) {
-		UDINT count = 0;
-		XML_FOR(xml_fault, xml_faults, XmlName::FAULT) {
-			if (count >= COUNT) {
-				return err.set(DATACFGERR_AVERAGE_TOOMANYFAULTS, xml_fault->GetLineNum(), "");
-			}
-
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadShadowLink(xml_fault->FirstChildElement(XmlName::LINK), m_inFault[count], m_inValue[count], XmlName::FAULT)) {
-				return err.getError();
-			}
-			++count;
+		if (!xml_temperature) {
+			return err.set(DATACFGERR_MASSWATER_NODENSITY, element->GetLineNum(), "");
 		}
 
-		if (m_count != count) {
-			return err.set(DATACFGERR_AVERAGE_DIFFFAULTS, xml_faults->GetLineNum(), "");
-		}
+		if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_density->FirstChildElement    (XmlName::LINK), m_density)    ) return err.getError();
+		if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temperature->FirstChildElement(XmlName::LINK), m_temperature)) return err.getError();
 	}
 
 	reinitLimitEvents();
@@ -162,29 +141,13 @@ UDINT rMassWater::loadFromXML(tinyxml2::XMLElement* element, rError& err, const 
 
 UDINT rMassWater::generateMarkDown(rGeneratorMD& md)
 {
-	m_inValue[0].m_limit.m_setup.Init(LIMIT_SETUP_ALL);
-	m_inValue[1].m_limit.m_setup.Init(LIMIT_SETUP_ALL);
-	m_inValue[2].m_limit.m_setup.Init(LIMIT_SETUP_ALL);
-	m_inValue[3].m_limit.m_setup.Init(LIMIT_SETUP_ALL);
-	m_outValue.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_density.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_volWater.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_massWater.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 
-	md.add(this, false, rGeneratorMD::Type::CALCULATE)
+	md.add(this, true, rGeneratorMD::Type::CALCULATE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup, true)
-			.addXml("<" + std::string(XmlName::INPUTS) + ">")
-			.addLink(XmlName::INPUT, false, "\t")
-			.addLink(XmlName::INPUT, false, "\t")
-			.addLink(XmlName::INPUT, true, "\t")
-			.addLink(XmlName::INPUT, true, "\t")
-			.addXml("</" + std::string(XmlName::INPUTS) + ">")
-			.addXml("<" + std::string(XmlName::FAULTS) + ">" + rGeneratorMD::rItem::XML_OPTIONAL)
-			.addLink(XmlName::FAULT, false, "\t")
-			.addLink(XmlName::FAULT, false, "\t")
-			.addLink(XmlName::FAULT, false, "\t")
-			.addLink(XmlName::FAULT, false, "\t")
-			.addXml("</" + std::string(XmlName::FAULTS) + ">")
-			.addXml(getXmlLimits("\t"))
-			.addRemark("> Единицы измерений для всех входных значений должны быть одинаковы! В противном случае конфигурация не будет загружена.\n"
-					   "> Если указаны флаги недостоверности, то их количество должно быть равно количеству усредняемым входам.");
+			.addRemark("> При отсутвие флага NOWATER производтся расчет плотности воды согласно таблице из \"__ГСССД 2-77__ ВОДА. ПЛОТНОСТЬ ПРИ АТМОСФЕРНОМ ДАВЛЕНИИ И ТЕМПЕРАТУРАХ от 0 до 100 °С\".");
 
 	return TRITONN_RESULT_OK;
 }

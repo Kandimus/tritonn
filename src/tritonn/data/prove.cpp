@@ -161,7 +161,8 @@ UDINT rProve::calculate()
 	if (m_state == State::IDLE) {
 		m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
 	} else if (m_setup.isDiff()) {
-		rEventManager::instance().add(reinitEvent(EID_PROVE_CANNOTMODIFYSETUP) << m_strIdx.Value);
+		rEventManager::instance().add(reinitEvent(EID_PROVE_CANNOTMODIFYSETUP));
+		m_setup.Value = m_setup.Saved;
 	}
 
 	if (isSetModule()) {

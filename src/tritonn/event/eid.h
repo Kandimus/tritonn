@@ -436,7 +436,7 @@ CREATE_EID(EID_PROVE_NAN              , EMT_ERROR  , EVENT_OBJ_PROVE   , 115)
 
 //-------------------------------------------------------------------------------------------------
 //MASSWATER
-// Prove.Limits
+// Limits
 CREATE_EID(EID_MASWTR_NEW_AMIN        , EMT_SUCCESS, EVENT_OBJ_MASWTR  , 100)
 CREATE_EID(EID_MASWTR_NEW_WMIN        , EMT_SUCCESS, EVENT_OBJ_MASWTR  , 101)
 CREATE_EID(EID_MASWTR_NEW_WMAX        , EMT_SUCCESS, EVENT_OBJ_MASWTR  , 102)
