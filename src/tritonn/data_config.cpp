@@ -571,7 +571,7 @@ UDINT rDataConfig::LoadVariable(tinyxml2::XMLElement *root)
 	XML_FOR(xml_var, xml_vars, XmlName::VARIABLE) {
 		rSource* source = new rRVar();
 
-		if (TRITONN_RESULT_OK != source->loadFromXML(xml_var, m_error, "")) {
+		if (TRITONN_RESULT_OK != source->loadFromXML(xml_var, m_error, "var")) {
 			delete source;
 
 			return m_error.getError();

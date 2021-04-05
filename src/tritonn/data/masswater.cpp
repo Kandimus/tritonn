@@ -71,7 +71,7 @@ UDINT rMassWater::calculate()
 		m_waterDensity = rDensity::getDensityOfWater(m_temperature.m_value);
 	}
 
-	m_massWater.m_value = m_volWater.m_value * m_waterDensity / m_density.m_value;
+	m_massWater.m_value = m_volWater.m_value * m_density.m_value / m_waterDensity;
 
 	//----------------------------------------------------------------------------------------------
 	// Обрабатываем Limits для выходных значений
@@ -127,7 +127,7 @@ UDINT rMassWater::loadFromXML(tinyxml2::XMLElement* element, rError& err, const 
 		}
 
 		if (!xml_temperature) {
-			return err.set(DATACFGERR_MASSWATER_NODENSITY, element->GetLineNum(), "");
+			return err.set(DATACFGERR_MASSWATER_NOTEMPERATURE, element->GetLineNum(), "");
 		}
 
 		if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_density->FirstChildElement    (XmlName::LINK), m_density)    ) return err.getError();

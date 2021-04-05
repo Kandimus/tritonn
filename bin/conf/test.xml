@@ -444,6 +444,11 @@
 					</stream>
 				</streams>
 				<calculate>
+					<masswater name="masswater" description="4000" setup="">
+						<volwater><link alias="sikn1.bik.io.water1"/></volwater>
+						<density><link alias="var.testdens"/></density>
+						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
+					</masswater>
 					<average name="avr_temp" description="0">
 						<inputs>
 							<input><link alias="sikn1.bik.io.temp1"/></input>
@@ -611,6 +616,10 @@
 				</limits>
 				<value>33.33</value>
 				<unit>512</unit>
+			</variable>
+			<variable name="testdens" setup="" description="0">
+				<value>880.0</value>
+				<unit>48</unit>
 			</variable>
 		</variables>
 		<reportsystem>

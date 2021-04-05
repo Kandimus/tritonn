@@ -578,8 +578,9 @@
 						</keypad>
 					</selector>
 					<masswater name="masswater" setup="" description="4021">
-						<volwater><link alias="sikn_123.obj.stnwater.output"/></volwater>
+						<volwater><link alias="sikn_123.obj.stnwater:output"/></volwater>
 						<density><link alias="sikn_123.obj.stndenstemp:dens"/></density>
+						<temperature><link alias="sikn_123.obj.stndenstemp:temp"/></temperature>
 					</masswater>
 
 					<sampler name="Sampler1" method="PERIOD" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">

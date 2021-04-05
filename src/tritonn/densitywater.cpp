@@ -24,7 +24,7 @@ LREAL getDensityOfWater(LREAL tempwater)
 		tempwater = 100;
 	}
 
-	DINT temp = static_cast<DINT>(tempwater * 10);
+	DINT temp = static_cast<DINT>(tempwater * 10 + 0.5);
 
 	return DENSWATER[temp];
 }
