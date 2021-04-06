@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # do
-> 0.19.52.90a9f080
+> 0.19.60.69bd417b
 ## XML
 ````xml
 <do name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" >
