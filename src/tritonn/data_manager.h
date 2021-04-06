@@ -27,7 +27,7 @@ class rInterface;
 class rSource;
 class rReport;
 class rError;
-
+class rGeneratorMD;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -53,6 +53,7 @@ public:
 	// Конфигурация
 	UDINT    LoadConfig();
 	UDINT    saveMarkDown();
+	void     generateMarkDown(rGeneratorMD& md);
 	const rConfigInfo *GetConfName() const;
 
 	// Работа с языками

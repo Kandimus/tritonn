@@ -16,6 +16,7 @@
 
 #include "../data_manager.h"
 #include <string.h>
+#include "../xml_util.h"
 #include "../generator_md.h"
 #include "../data_station.h"
 #include "../data_stream.h"
@@ -45,6 +46,8 @@
 UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
+
+	generateMarkDown(md);
 
 	// io
 	rAI          ai;
@@ -120,4 +123,51 @@ UDINT rDataManager::saveMarkDown()
 	md.save(DIR_MARKDOWN);
 
 	return TRITONN_RESULT_OK;
+}
+
+
+void rDataManager::generateMarkDown(rGeneratorMD& md)
+{
+	std::string text = "## XML\n````xml\n";
+
+	text += "<" + std::string(XmlName::TRITONN) + " cfgver=\"configurator's version\" kernel=\"kernel's version\" development=\"text\" name=\"text\" hash=\"config's hash\">\n";
+	text += "\t<" + std::string(XmlName::HARDWARE) + ">\n";
+	text += "\t\t<!-- list of module -->\n";
+	text += "\t</" + std::string(XmlName::HARDWARE) + ">\n";
+	text += "\t<" + std::string(XmlName::CONFIG) + ">\n";
+	text += "\t\t<" + std::string(XmlName::SETTINGS) + ">\n";
+	text += "\t\t\t<!-- list of setting -->\n";
+	text += "\t\t</" + std::string(XmlName::SETTINGS) + ">\n";
+	text += "\t\t<" + std::string(XmlName::IO) + ">\n";
+	text += "\t\t\t<!-- list of global io -->\n";
+	text += "\t\t</" + std::string(XmlName::IO) + ">\n";
+	text += "\t\t<" + std::string(XmlName::STATIONS) + ">\n";
+	text += "\t\t\t<!-- list of stations -->\n";
+	text += "\t\t</" + std::string(XmlName::STATIONS) + ">\n";
+	text += "\t\t<" + std::string(XmlName::VARIABLES) + ">\n";
+	text += "\t\t\t<!-- list of variables -->\n";
+	text += "\t\t</" + std::string(XmlName::VARIABLES) + ">\n";
+	text += "\t\t<" + std::string(XmlName::REPORTSYSTEM) + ">\n";
+	text += "\t\t\t<!-- list of reports and datasets -->\n";
+	text += "\t\t</" + std::string(XmlName::REPORTSYSTEM) + ">\n";
+	text += "\t</" + std::string(XmlName::CONFIG) + ">\n";
+	text += "\t<" + std::string(XmlName::CUSTOM) + " lang=\"short name of language\">\n";
+	text += "\t\t<" + std::string(XmlName::PRECISION) + ">\n";
+	text += "\t\t\t<!-- list of unit's precision -->\n";
+	text += "\t\t</" + std::string(XmlName::PRECISION) + ">\n";
+	text += "\t\t<" + std::string(XmlName::STRINGS) + ">\n";
+	text += "\t\t\t<!-- list of user's string (descriptions) -->\n";
+	text += "\t\t</" + std::string(XmlName::STRINGS) + ">\n";
+	text += "\t</" + std::string(XmlName::CUSTOM) + ">\n";
+	text += "\t<" + std::string(XmlName::SECURITY) + ">\n";
+	text += "\t\t<!-- encoded user's datablock -->\n";
+	text += "\t</" + std::string(XmlName::SECURITY) + ">\n";
+	text += "\t<" + std::string(XmlName::COMMS) + ">\n";
+	text += "\t\t<!-- list of interfaces and datablocks -->\n";
+	text += "\t</" + std::string(XmlName::COMMS) + ">\n";
+	text += "</" + std::string(XmlName::TRITONN) + ">\n";
+	text += "````\n";
+
+	md.add("config").addRemark(text);
+
 }

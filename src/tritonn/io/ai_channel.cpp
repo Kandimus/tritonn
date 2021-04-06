@@ -37,10 +37,10 @@ rIOAIChannel::rIOAIChannel(USINT index, const std::string& comment) : rIOBaseCha
 
 	if (m_flagsType.empty()) {
 		m_flagsType
-				.add("", static_cast<UINT>(Type::mA_0_20), "0..20мА")
-				.add("", static_cast<UINT>(Type::mA_4_20), "4..40мА")
-				.add("", static_cast<UINT>(Type::mA_4_20), "-10..+10V")
-				.add("", static_cast<UINT>(Type::mA_4_20), "0..+10V");
+				.add("", static_cast<UINT>(Type::mA_0_20) , "0..20мА")
+				.add("", static_cast<UINT>(Type::mA_4_20) , "4..40мА")
+				.add("", static_cast<UINT>(Type::V_m10_10), "-10..+10V")
+				.add("", static_cast<UINT>(Type::V_0_10)  , "0..+10V");
 	}
 
 	if (m_flagsSimType.empty()) {
@@ -184,16 +184,16 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
 	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS_, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "adc"    , TYPE_UINT , rVariable::Flags::R__, &m_ADC    , U_DIMLESS , 0, "Текущий код АЦП");
-	list.add(p + "current", TYPE_REAL , rVariable::Flags::R__, &m_current, U_DIMLESS , 0, "Текущее значение тока/напряжения");
-	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R__, &m_state  , U_DIMLESS , 0, "Статус канала");
-	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::___, &m_type   , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsSetup.getInfo(true));
+	list.add(p + "adc"    ,             rVariable::Flags::R__, &m_ADC    , U_DIMLESS , 0, "Текущий код АЦП");
+	list.add(p + "current",             rVariable::Flags::R__, &m_current, U_DIMLESS , 0, "Текущее значение тока/напряжения");
+	list.add(p + "state"  ,             rVariable::Flags::R__, &m_state  , U_DIMLESS , 0, "Статус канала");
+	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::___, &m_type   , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
 
 	if (issimulate) {
-		list.add(p + "simulate.max"  , TYPE_UINT, rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, COMMENT::SIMULATE_MAX);
-		list.add(p + "simulate.min"  , TYPE_UINT, rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, COMMENT::SIMULATE_MIN);
-		list.add(p + "simulate.value", TYPE_UINT, rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, COMMENT::SIMULATE_VALUE);
-		list.add(p + "simulate.speed", TYPE_INT , rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, COMMENT::SIMULATE_SPEED);
+		list.add(p + "simulate.max"  , rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, COMMENT::SIMULATE_MAX);
+		list.add(p + "simulate.min"  , rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, COMMENT::SIMULATE_MIN);
+		list.add(p + "simulate.value", rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, COMMENT::SIMULATE_VALUE);
+		list.add(p + "simulate.speed", rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, COMMENT::SIMULATE_SPEED);
 	}
 
 	return TRITONN_RESULT_OK;

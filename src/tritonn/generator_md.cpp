@@ -20,6 +20,7 @@
 #include "simplefile.h"
 #include "io/basemodule.h"
 #include "interface/interface.h"
+#include "xml_util.h"
 
 const std::string rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
 const std::string rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";
@@ -229,7 +230,7 @@ rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, UDI
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addXml(const std::string& xmlname, LREAL defval, bool isoptional, const std::string& prefix)
 {
-	return addXml(String_format("%s<%s>%g<%s/>", prefix.c_str(), xmlname.c_str(), defval, xmlname.c_str()), isoptional);
+	return addXml(String_format("%s<%s>%g</%s>", prefix.c_str(), xmlname.c_str(), defval, xmlname.c_str()), isoptional);
 }
 
 rGeneratorMD::rItem& rGeneratorMD::rItem::addLink(const std::string& xmlname, bool isoptional, const std::string& prefix)
@@ -270,7 +271,13 @@ std::string rGeneratorMD::rItem::save()
 	}
 
 	result += "## XML\n````xml\n";
-	result += "<" + m_name + " name=\"valid object name\" descr=\"string index\" ";
+
+	if (isHarware()) {
+		result += "<" + std::string(XmlName::MODULE) + " name=\"" + m_name + "\" ";
+	} else {
+		result += "<" + m_name + " name=\"valid object name\" ";
+	}
+	result += std::string(XmlName::DESC) + "=\"string index\" ";
 
 	for (auto& prop : m_properties) {
 		switch (prop.m_type) {
@@ -307,7 +314,12 @@ std::string rGeneratorMD::rItem::save()
 	for (auto& item : m_xml) {
 		result += "\t" + item + "\n";
 	}
-	result += "</" + m_name + ">\n````\n";
+
+	if (isHarware()) {
+		result += "</" + std::string(XmlName::MODULE) + ">\n````\n";
+	} else {
+		result += "</" + m_name + ">\n````\n";
+	}
 
 	for (auto& item : m_properties) {
 		if (item.m_type == ItemType::BITSFLAG && item.m_bits) {
@@ -323,7 +335,8 @@ std::string rGeneratorMD::rItem::save()
 		result += m_source->getMarkDown();
 	}
 
-	if (result.find("[^mutable]") >= 0) {
+	int pos = result.find("[^mutable]");
+	if (pos >= 0) {
 		m_remark += "\n[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.\n";
 	}
 

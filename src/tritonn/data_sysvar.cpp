@@ -32,7 +32,7 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 			.add("", static_cast<USINT>(Live::STARTING)   , "Система загружается")
 			.add("", static_cast<USINT>(Live::REBOOT_COLD), "Система в режиме COLD-START")
 			.add("", static_cast<USINT>(Live::RUNNING)    , "Система работает")
-			.add("", static_cast<USINT>(Live::RUNNING)    , "Система в режиме HALT");
+			.add("", static_cast<USINT>(Live::HALT)       , "Система в режиме HALT");
 
 	list.add("system.version.major"      , TYPE_USINT, rVariable::Flags::RS_, &m_version.m_major     , U_DIMLESS, ACCESS_SA, "Версия ПО");
 	list.add("system.version.minor"      , TYPE_USINT, rVariable::Flags::RS_, &m_version.m_minor     , U_DIMLESS, ACCESS_SA, "Подверсия ПО");
