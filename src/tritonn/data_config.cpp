@@ -925,6 +925,7 @@ void rDataConfig::saveWeb()
 	return;
 #endif
 
+	const std::string begin_php = "<?php\n";
 	char* str = cJSON_Print(m_json);
 	UDINT result = SimpleFileSave(FILE_WWW_TREE_OBJ, str);
 
@@ -940,6 +941,21 @@ void rDataConfig::saveWeb()
 
 	//TODO Нужно вначале удалить все языковые файлы для web
 
+	// Precision
+	std::string text = begin_php;
+	for (UDINT ii = 0; ii < MAX_UNITS_COUNT; ++ii) {
+		text += String_format("$precision[\"core_%u\"]=%u;\n", ii, rPrecision::instance().get(ii));
+	}
+
+	result = SimpleFileSave(FILE_WWW_PRECISION, text);
+	if (TRITONN_RESULT_OK != result) {
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		TRACEP(LOG::CONFIG, "Can't save precision file");
+
+		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+		return;
+	}
+
 	// Сохраняем массив строк
 	std::vector<std::string> lang_list;
 	std::vector<rTextItem>   sid_list;
@@ -953,7 +969,7 @@ void rDataConfig::saveWeb()
 		rTextManager::instance().getListSID(lang, sid_list);
 		rEventManager::instance().getTextClass().getListSID(lang, event_list);
 
-		std::string text = "<?php\n";
+		std::string text = begin_php;
 
 		for(auto& item : sid_list) {
 			text += String_format("$lang[\"core_%u\"]=\"%s\";\n", item.ID, item.Text.c_str());
@@ -969,7 +985,7 @@ void rDataConfig::saveWeb()
 			return;
 		}
 
-		text = "<?php\n";
+		text = begin_php;
 
 		for(auto& item : event_list) {
 			text += String_format("$lang[\"event_%u\"]=\"%s\";\n", item.ID, item.Text.c_str());
