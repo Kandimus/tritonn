@@ -23,6 +23,7 @@
 #include "data_config.h"
 #include "variable_list.h"
 #include "xml_util.h"
+#include "generator_md.h"
 #include "comment_defines.h"
 
 rBitsArray rLimit::m_flagsSetup;
@@ -131,13 +132,13 @@ UDINT rLimit::generateVars(rVariableList& list, const string &owner_name, STRID 
 		return TRITONN_RESULT_OK;
 	}
 
-	list.add(owner_name + ".lolo"      , TYPE_LREAL, rVariable::Flags::___, &m_lolo.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного минимума");
-	list.add(owner_name + ".lo"        , TYPE_LREAL, rVariable::Flags::___, &m_lo.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного минимума");
-	list.add(owner_name + ".hi"        , TYPE_LREAL, rVariable::Flags::___, &m_hi.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного максимума");
-	list.add(owner_name + ".hihi"      , TYPE_LREAL, rVariable::Flags::___, &m_hihi.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного максимума");
-	list.add(owner_name + ".hysteresis", TYPE_LREAL, rVariable::Flags::___, &Hysteresis.Value, owner_unit, ACCESS_LIMITS, owner_comment + ". Значение гистерезиса");
+	list.add(owner_name + ".lolo"      ,             rVariable::Flags::___, &m_lolo.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного минимума");
+	list.add(owner_name + ".lo"        ,             rVariable::Flags::___, &m_lo.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного минимума");
+	list.add(owner_name + ".hi"        ,             rVariable::Flags::___, &m_hi.Value      , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение предаварийного максимума");
+	list.add(owner_name + ".hihi"      ,             rVariable::Flags::___, &m_hihi.Value    , owner_unit, ACCESS_LIMITS, owner_comment + ". Значение аварийного максимума");
+	list.add(owner_name + ".hysteresis",             rVariable::Flags::___, &Hysteresis.Value, owner_unit, ACCESS_LIMITS, owner_comment + ". Значение гистерезиса");
 	list.add(owner_name + ".status"    , TYPE_UINT , rVariable::Flags::R__, &m_status        , U_DIMLESS , 0            , owner_comment + ". " + COMMENT::STATUS + m_flagsStatus.getInfo(true));
-	list.add(owner_name + ".setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS, owner_comment + ". " + COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(owner_name + ".setup"     ,             rVariable::Flags::RS_, &m_setup.Value   , U_DIMLESS , ACCESS_LIMITS, owner_comment + ". " + COMMENT::SETUP + m_flagsSetup.getInfo());
 
 	return TRITONN_RESULT_OK;
 }
@@ -185,10 +186,10 @@ std::string rLimit::getXML(const std::string& name, const std::string& prefix) c
 	std::string result = "";
 
 	if (m_setup.Value != Setup::OFF) {
-		result += prefix + String_format("<%s name=\"%s\" setup=\"%s\">\n",
+		result += prefix + String_format("<%s name=\"%s\" setup=\"%s\">%s\n",
 								 XmlName::LIMIT,
 								 name.c_str(),
-								 m_flagsSetup.getNameByBits(m_setup.Value).c_str());
+								 m_flagsSetup.getNameByBits(m_setup.Value).c_str(), rGeneratorMD::rItem::XML_OPTIONAL.c_str());
 
 		if (m_setup.Value & Setup::LOLO) {
 			result += prefix + String_format("\t<lolo>%g</lolo>\n", m_lolo.Value);
@@ -203,7 +204,11 @@ std::string rLimit::getXML(const std::string& name, const std::string& prefix) c
 		}
 
 		if (m_setup.Value & Setup::HIHI) {
-			result += prefix + String_format("\t<hihi>%g</hihi>\n", m_hihi.Value);
+			result += prefix + String_format("\t<%s>%g</%s>\n", XmlName::HIHI, m_hihi.Value, XmlName::HIHI);
+		}
+
+		if (m_setup.Value & (Setup::LOLO | Setup::LO | Setup::HI | Setup::HIHI)) {
+			result += prefix + String_format("\t<%s>%g</%s>\n", XmlName::HYSTER, m_hihi.Value, XmlName::HYSTER);
 		}
 
 		result += prefix + "</" + XmlName::LIMIT + ">\n";
