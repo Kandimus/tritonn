@@ -1,16 +1,16 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # crm
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<crm name="valid object name" descr="string index" >
+<module name="crm" description="string index" >
 	<channel number="0" setup="DI setup flags" />
 	<channel number="1" setup="DI setup flags" />
 	<channel number="2" setup="DI setup flags" />
 	<channel number="3" setup="DI setup flags" />
 	<channel number="4" setup="FI setup flags" />
-</crm>
+</module>
 ````
 
 ## Channels
@@ -85,8 +85,6 @@ crm.ch_05.simulate.speed | INT |  | 512 |  |   | Скорость изменен
 
 
 [^simtype]: **Тип симуляции DI:**<br/>0: Симуляция отключена<br/>1: Константное значение<br/>2: Пульсация сигнала<br/>3: Случайное значение<br/><br/>**Тип симуляции FI:**</br>0: Симуляция отключена<br/>1: Константное значение<br/>2: Линейная функция<br/>3: Синусообразная функция<br/>4: Случайное значение<br/>
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # average
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<average name="valid object name" descr="string index" setup="text value" >
+<average name="valid object name" description="string index" setup="text value" >
 	<inputs>
 		<input><link alias="object's output"/><input/>
 		<input><link alias="object's output"/><input/>
@@ -18,35 +18,40 @@
 		<fault><link alias="object's output"/><fault/>
 	</faults>
 	<limits><!-- Optional -->
-		<limit name="input_1" setup="LOLO|LO|HI|HIHI">
+		<limit name="input_1" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="input_2" setup="LOLO|LO|HI|HIHI">
+		<limit name="input_2" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="input_3" setup="LOLO|LO|HI|HIHI">
+		<limit name="input_3" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="input_4" setup="LOLO|LO|HI|HIHI">
+		<limit name="input_4" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="output" setup="LOLO|LO|HI|HIHI">
+		<limit name="output" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
 
@@ -136,8 +141,6 @@ setup | LREAL |  | 512 |  |   | Настройка:<br/>0: Не усреднят
 
 > Единицы измерений для всех входных значений должны быть одинаковы! В противном случае конфигурация не будет загружена.
 > Если указаны флаги недостоверности, то их количество должно быть равно количеству усредняемым входам.
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

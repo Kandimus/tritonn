@@ -1,13 +1,13 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # do
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<do name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" >
+<do name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" >
 	<io_link module="module index" channel="channel index"/> <!-- Optional -->
 	<present><link alias="object's output"/></present>
-		<value>0<value/>
+		<value>0</value>
 </do>
 ````
 
@@ -43,10 +43,6 @@ setup | UINT |  | 512 | Yes | 0x80000000 | Настройка:<br/>0x0001: Вы�
 mode | UINT |  | 512 |  | 0x00000800 | Режим:<br/>0: Используется физическое значение<br/>1: Переключение пользователем на ручной ввод<br/>
 status | UINT |  | 512 | Yes |   | Статус:<br/>0x0000: Статус неопределен<br/>0x0001: Сигнал выключен<br/>0x0002: Значение в норме<br/>0x0004: Выход из строя канала или модуля<br/>
 fault | UDINT |  | 512 | Yes |   | Флаг ошибки
-
-
-
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
 
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>

@@ -1,31 +1,34 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # masswater
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<masswater name="valid object name" descr="string index" setup="text value" >
+<masswater name="valid object name" description="string index" setup="text value" >
 	<volwater><link alias="object's output"/></volwater>
 	<density><link alias="object's output"/></density>
 	<temperature><link alias="object's output"/></temperature>
 	<limits><!-- Optional -->
-		<limit name="volwater" setup="LOLO|LO|HI|HIHI">
+		<limit name="volwater" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density" setup="LOLO|LO|HI|HIHI">
+		<limit name="density" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="masswater" setup="LOLO|LO|HI|HIHI">
+		<limit name="masswater" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
 </masswater>
@@ -84,8 +87,6 @@ fault | UDINT |  | 512 | Yes |   | Флаг ошибки
 
 
 > При отсутвие флага NOWATER производтся расчет плотности воды согласно таблице из "__ГСССД 2-77__ ВОДА. ПЛОТНОСТЬ ПРИ АТМОСФЕРНОМ ДАВЛЕНИИ И ТЕМПЕРАТУРАХ от 0 до 100 °С".
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # stream
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<stream name="valid object name" descr="string index" setup="text value | text value | ... | text value" flowmeter="text value" linearization="0" maintenance="1" >
+<stream name="valid object name" description="string index" setup="text value | text value | ... | text value" flowmeter="text value" linearization="0" maintenance="1" >
 	<impulse><link alias="object's output"/></impulse>
 	<frequency><link alias="object's output"/></frequency><!-- Optional -->
 	<temperature><link alias="object's output"/></temperature>
@@ -15,83 +15,96 @@
 	<b15><link alias="object's output"/></b15><!-- Optional -->
 	<y15><link alias="object's output"/></y15><!-- Optional -->
 	<limits><!-- Optional -->
-		<limit name="impulse" setup="LOLO|LO|HI|HIHI">
+		<limit name="impulse" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="frequency" setup="LOLO|LO|HI|HIHI">
+		<limit name="frequency" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="temperature" setup="LOLO|LO|HI|HIHI">
+		<limit name="temperature" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="pressure" setup="LOLO|LO|HI|HIHI">
+		<limit name="pressure" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density" setup="LOLO|LO|HI|HIHI">
+		<limit name="density" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density15" setup="LOLO|LO|HI|HIHI">
+		<limit name="density15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density20" setup="LOLO|LO|HI|HIHI">
+		<limit name="density20" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="b15" setup="LOLO|LO|HI|HIHI">
+		<limit name="b15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="y15" setup="LOLO|LO|HI|HIHI">
+		<limit name="y15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.mass" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.mass" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.volume" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.volume" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.volume15" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.volume15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.volume20" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.volume20" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
 	<io> <!-- Optional -->
@@ -101,17 +114,17 @@
 		<!-- list of calculate objects -->
 	</calculate>
 	<factors> <!-- Optional -->
-		<keypad_mf>0<keypad_mf/> <!-- Optional -->
-		<keypad_kf>0<keypad_kf/> <!-- Optional -->
+		<keypad_mf>0</keypad_mf> <!-- Optional -->
+		<keypad_kf>0</keypad_kf> <!-- Optional -->
 		<points> <!-- Optional -->
 			<point> <!-- Optional -->
-				<hz>0<hz/>
-				<kf>0<kf/>
+				<hz>0</hz>
+				<kf>0</kf>
 			</point>
 			...
 			<point> <!-- Optional -->
-				<hz>0<hz/>
-				<kf>0<kf/>
+				<hz>0</hz>
+				<kf>0</kf>
 			</point>
 		</points>
 	</factors>
@@ -275,8 +288,8 @@ flowrate.volume20.status | UINT |  | 512 | Yes |   | расход объемны
 flowrate.volume20.setup | UINT |  | 512 | Yes | 0x00000200 | расход объемный при 20 °C. Настройка:<br/>0x0001: Не выдавать сообщения<br/>0x0002: Выдавать сообщение аварийного минимума<br/>0x0004: Выдавать сообщение предаварийного минимума<br/>0x0008: Выдавать сообщение предаварийного максимума<br/>0x0010: Выдавать сообщение аварийного максимума<br/>
 setup | UINT |  | 512 | Yes | 0x80000000 | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>
 flowmeter | USINT |  | 512 | Yes |   | Тип расходомера:<br/>2: Турбинный ПР<br/>1: Кориолисовый ПР<br/>3: Ультрозвуковой ПР<br/>
-maintenance | UDINT |  | 512 |  | 0x00002000 | Статус учета:<br/>0 - в учете<br/>1 - не в учете
-linearization | UDINT |  | 512 |  | 0x00001000 | Тип коэффициентов:<br/>0 - единый К-фактор<br/>1 - кусочно-линейная интерполяция
+maintenance | USINT |  | 512 |  | 0x00002000 | Статус учета:<br/>0 - в учете<br/>1 - не в учете
+linearization | USINT |  | 512 |  | 0x00001000 | Тип коэффициентов:<br/>0 - единый К-фактор<br/>1 - кусочно-линейная интерполяция
 total.present.volume | LREAL | м³ | 112 | Yes |   | Текущие нарастающие. Объем
 total.present.volume15 | LREAL | м³ | 112 | Yes |   | Текущие нарастающие. Объем при 15 гр.С
 total.present.volume20 | LREAL | м³ | 112 | Yes |   | Текущие нарастающие. Объем при 20 гр.С
@@ -355,8 +368,6 @@ fault | UDINT |  | 512 | Yes |   | Флаг ошибки
 
 
 [^maxpoint]: Количество точек зависит от количества точек в конфигурации и не может быть изменено во время работы. Максимальное количество точек равно 12.
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

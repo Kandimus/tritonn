@@ -1,36 +1,39 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # ai
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<ai name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" >
+<ai name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" >
 	<io_link module="module index" channel="channel index"/> <!-- Optional -->
 	<limits><!-- Optional -->
-		<limit name="present" setup="LOLO|LO|HI|HIHI">
+		<limit name="present" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="physical" setup="LOLO|LO|HI|HIHI">
+		<limit name="physical" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="current" setup="LOLO|LO|HI|HIHI">
+		<limit name="current" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
 	<unit>0<unit/>
-	<keypad>0<keypad/>
+	<keypad>0</keypad>
 	<scale>
-		<min>0<min/>
-		<max>100<max/>
+		<min>0</min>
+		<max>100</max>
 	</scale>
 </ai>
 ````

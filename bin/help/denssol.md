@@ -1,98 +1,110 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # denssol
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<denssol name="valid object name" descr="string index" >
+<denssol name="valid object name" description="string index" >
 	<temperature><link alias="object's output"/></temperature>
 	<pressure><link alias="object's output"/></pressure>
 	<period><link alias="object's output"/></period>
 	<limits><!-- Optional -->
-		<limit name="temperature" setup="LOLO|LO|HI|HIHI">
+		<limit name="temperature" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="pressure" setup="LOLO|LO|HI|HIHI">
+		<limit name="pressure" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="period" setup="LOLO|LO|HI|HIHI">
+		<limit name="period" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density" setup="LOLO|LO|HI|HIHI">
+		<limit name="density" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density15" setup="LOLO|LO|HI|HIHI">
+		<limit name="density15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density20" setup="LOLO|LO|HI|HIHI">
+		<limit name="density20" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="b" setup="LOLO|LO|HI|HIHI">
+		<limit name="b" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="b15" setup="LOLO|LO|HI|HIHI">
+		<limit name="b15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="y" setup="LOLO|LO|HI|HIHI">
+		<limit name="y" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="y15" setup="LOLO|LO|HI|HIHI">
+		<limit name="y15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="ctl" setup="LOLO|LO|HI|HIHI">
+		<limit name="ctl" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="cpl" setup="LOLO|LO|HI|HIHI">
+		<limit name="cpl" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
-	<calibration>20<calibration/>
+	<calibration>20</calibration>
 	<factors>
-		<k0>0<k0/>
-		<k1>0<k1/>
-		<k2>0<k2/>
-		<k18>0<k18/>
-		<k19>0<k19/>
-		<k20a>0<k20a/>
-		<k20b>0<k20b/>
-		<k21a>0<k21a/>
-		<k21b>0<k21b/>
+		<k0>0</k0>
+		<k1>0</k1>
+		<k2>0</k2>
+		<k18>0</k18>
+		<k19>0</k19>
+		<k20a>0</k20a>
+		<k20b>0</k20b>
+		<k21a>0</k21a>
+		<k21b>0</k21b>
 	</factors>
 </denssol>
 ````
@@ -254,10 +266,6 @@ factor.set.k21b | LREAL |  | 521 |  | 0x00001000 | Введенный коффи
 factor.set.accept | USINT |  | 512 |  | 0x00001000 | Команда:<br/> 0 - нет действия<br/>1 - применить введенные коффициенты
 calibration | LREAL | °C | 16 |  | 0x00001000 | Значение температуры калибровки
 fault | UDINT |  | 512 | Yes |   | Флаг ошибки
-
-
-
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
 
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>

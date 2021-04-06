@@ -1,55 +1,62 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # station
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<station name="valid object name" descr="string index" product="text value" >
+<station name="valid object name" description="string index" product="text value" >
 	<temperature><link alias="object's output"/></temperature>
 	<pressure><link alias="object's output"/></pressure>
 	<density><link alias="object's output"/></density>
 	<limits><!-- Optional -->
-		<limit name="temperature" setup="LOLO|LO|HI|HIHI">
+		<limit name="temperature" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="pressure" setup="LOLO|LO|HI|HIHI">
+		<limit name="pressure" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density" setup="LOLO|LO|HI|HIHI">
+		<limit name="density" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.mass" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.mass" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.volume" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.volume" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.volume15" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.volume15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="flowrate.volume20" setup="LOLO|LO|HI|HIHI">
+		<limit name="flowrate.volume20" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
 	<units> <!-- Optional -->
@@ -185,8 +192,6 @@ fault | UDINT |  | 512 | Yes |   | Флаг ошибки
 
 
 > Если для станции не указаны источники температуры, давления или плотности, то данные параметры будут расчитываться как средневзвешанное по линиям.
-
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
 
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>

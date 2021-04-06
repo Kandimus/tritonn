@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # report
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<report name="valid object name" descr="string index" type="text value" >
+<report name="valid object name" description="string index" type="text value" >
 	<storage>31<storage/>
 	<dataset>dataset name<dataset/>
 </report>
@@ -137,8 +137,6 @@ archive.snapshot.#report_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значен
 	</dataset>
 </datasets>
 ````
-
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
 
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>

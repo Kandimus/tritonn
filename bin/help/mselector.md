@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # mselector
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<mselector name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >
+<mselector name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >
 	<names>
 		<name>valid output 0 name<name/>
 		<name>valid output 1 name<name/>
@@ -102,35 +102,35 @@
 	<keypads>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 		<keypad>
 			<unit>0<unit/>
-			<value>0<value/>
+			<value>0</value>
 		</keypad>
 	</keypads>
 </mselector>
@@ -366,8 +366,6 @@ selectorcount | UINT |  | 512 | Yes |   | Количество групп
 
 
 В каждой группе количество входов должно совпадать!
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

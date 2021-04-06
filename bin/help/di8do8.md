@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # di8do8
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<di8do8 name="valid object name" descr="string index" >
+<module name="di8do8" description="string index" >
 	<channel number="0" setup="DI setup flags" />
 	<channel number="1" setup="DI setup flags" />
 	<channel number="2" setup="DI setup flags" />
@@ -21,7 +21,7 @@
 	<channel number="13" setup="DO setup flags" />
 	<channel number="14" setup="DO setup flags" />
 	<channel number="15" setup="DO setup flags" />
-</di8do8>
+</module>
 ````
 
 ## Channels
@@ -150,8 +150,6 @@ di8do8.ch_15.state | USINT |  | 512 | Yes |   | Статус:<br/>Нет дан�
 
 
 [^simtype]: **Тип симуляции DI:**<br/>0: Симуляция отключена<br/>1: Константное значение<br/>2: Пульсация сигнала<br/>3: Случайное значение<br/><br/>
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

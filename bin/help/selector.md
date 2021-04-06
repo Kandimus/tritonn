@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # selector
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<selector name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >
+<selector name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >
 	<inputs>
 		<link alias="object's output"/>
 		<link alias="object's output"/>
@@ -19,7 +19,7 @@
 	</faults>
 	<keypad>
 		<unit>0<unit/>
-		<value>0<value/>
+		<value>0</value>
 	</keypad>
 </selector>
 ````
@@ -78,8 +78,6 @@ keypad.value | LREAL |  | 0 |  | 0x00000800 | Значение ручного в
 
 
 Количество входных значений не должно быть меньше чем количество флагов ошибки входа!
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

@@ -1,15 +1,15 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # fi4
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<fi4 name="valid object name" descr="string index" >
+<module name="fi4" description="string index" >
 	<channel number="0" setup="FI setup flags" />
 	<channel number="1" setup="FI setup flags" />
 	<channel number="2" setup="FI setup flags" />
 	<channel number="3" setup="FI setup flags" />
-</fi4>
+</module>
 ````
 
 ## Channels
@@ -78,8 +78,6 @@ fi4outtype | USINT |  | 512 | Yes | 0x80000000 | Выбранный канал �
 
 
 [^simtype]: **Тип симуляции:**<br/>0: Симуляция отключена<br/>1: Константное значение<br/>2: Линейная функция<br/>3: Синусообразная функция<br/>4: Случайное значение<br/><br/>
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
-
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 

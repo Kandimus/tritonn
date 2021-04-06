@@ -1,80 +1,91 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # rdcdens
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<rdcdens name="valid object name" descr="string index" >
+<rdcdens name="valid object name" description="string index" >
 	<temperature><link alias="object's output"/></temperature>
 	<pressure><link alias="object's output"/></pressure>
 	<density15><link alias="object's output"/></density15>
 	<b15><link alias="object's output"/></b15><!-- Optional -->
 	<limits><!-- Optional -->
-		<limit name="temperature" setup="LOLO|LO|HI|HIHI">
+		<limit name="temperature" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="pressure" setup="LOLO|LO|HI|HIHI">
+		<limit name="pressure" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density15" setup="LOLO|LO|HI|HIHI">
+		<limit name="density15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="b15" setup="LOLO|LO|HI|HIHI">
+		<limit name="b15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density" setup="LOLO|LO|HI|HIHI">
+		<limit name="density" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="density20" setup="LOLO|LO|HI|HIHI">
+		<limit name="density20" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="ctl" setup="LOLO|LO|HI|HIHI">
+		<limit name="ctl" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="cpl" setup="LOLO|LO|HI|HIHI">
+		<limit name="cpl" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="b" setup="LOLO|LO|HI|HIHI">
+		<limit name="b" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="y" setup="LOLO|LO|HI|HIHI">
+		<limit name="y" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
-		<limit name="y15" setup="LOLO|LO|HI|HIHI">
+		<limit name="y15" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>
 			<lo>0</lo>
 			<hi>0</hi>
 			<hihi>0</hihi>
+			<hysteresis>0</hysteresis>
 		</limit>
 	</limits>
 </rdcdens>
@@ -206,10 +217,6 @@ y15.hysteresis | LREAL | МПа¯¹ | 518 |  | 0x00000200 | коэфициент
 y15.status | UINT |  | 512 | Yes |   | коэфициент γ при 15 °C. Статус:<br/>0: Неопределен<br/>1: Недействительное значение<br/>2: Значение ниже аварийного минимума<br/>3: Значение ниже предаварийного минимума<br/>4: Значение в рабочем диапазоне<br/>5: Значение выше предаварийного максимума<br/>6: Значение выше аварийного максимума<br/>
 y15.setup | UINT |  | 512 | Yes | 0x00000200 | коэфициент γ при 15 °C. Настройка:<br/>0x0001: Не выдавать сообщения<br/>0x0002: Выдавать сообщение аварийного минимума<br/>0x0004: Выдавать сообщение предаварийного минимума<br/>0x0008: Выдавать сообщение предаварийного максимума<br/>0x0010: Выдавать сообщение аварийного максимума<br/>
 fault | UDINT |  | 512 | Yes |   | Флаг ошибки
-
-
-
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
 
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>

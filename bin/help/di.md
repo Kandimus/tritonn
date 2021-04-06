@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # di
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<di name="valid object name" descr="string index" setup="text value | text value | ... | text value" mode="text value" >
+<di name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" >
 	<io_link module="module index" channel="channel index"/> <!-- Optional -->
 		<keypad>0<keypad/>
 </di>

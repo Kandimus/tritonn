@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # prove
-> 0.19.54.3734f64e
+> 0.19.52.90a9f080
 ## XML
 ````xml
-<prove name="valid object name" descr="string index" setup="text value | text value | ... | text value" >
+<prove name="valid object name" description="string index" setup="text value | text value | ... | text value" >
 	<io_link module="module index"/>
 	<temperature><link alias="object's output"/><temperature/> <!-- Optional -->
 	<pressure><link alias="object's output"/><pressure/> <!-- Optional -->
@@ -24,10 +24,10 @@
 		<bounce>1000<bounce/>
 	</timers>
 	<stabilise> <!-- Optional -->
-		<temperature>0.2<temperature/>
-		<pressure>0.01<pressure/>
-		<density>0.5<density/>
-		<frequency>10<frequency/>
+		<temperature>0.2</temperature>
+		<pressure>0.01</pressure>
+		<density>0.5</density>
+		<frequency>10</frequency>
 	</stabilise>
 </prove>
 ````
@@ -137,10 +137,6 @@ result.volume2.ftime | LREAL | с | 211 | Yes |   | Время прохода ш
 result.volume2.rcount | LREAL | имп | 514 | Yes |   | Количество импульсов для объема 4-2
 result.volume2.rtime | LREAL | с | 211 | Yes |   | Время прохода шара 4-2
 fault | UDINT |  | 512 | Yes |   | Флаг ошибки
-
-
-
-[^mutable]: Если объект не привязан к модулю ввода-вывода, то данная переменная будет записываемой.
 
 
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
