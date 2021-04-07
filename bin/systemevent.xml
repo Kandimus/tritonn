@@ -17,13 +17,13 @@
 		<str id="-536805364">$2. Запрашиваемое выходное значение не найдено. (ID $1. Unit '$3')</str>
 		<!-- EID_SYSTEM_CFGERROR -->
 		<str id="-536805356">Ошибка загрузки конфигурационного файла (код ошибки $1, строка $2)</str>
-		<!--EID_SYSTEM_FILEIOERROR-->
+		<!-- EID_SYSTEM_FILEIOERROR -->
 		<str id="-536805355">Ошибка файлового ввода-вывода (код ошибки $1)</str>
-		<!--EID_SYSTEM_RESTART_WARM-->
+		<!-- EID_SYSTEM_RESTART_WARM -->
 		<str id="-1610547170">Команда на перезагрузку в режим WARM</str>
-		<!--EID_SYSTEM_RESTART_COLD-->
+		<!-- EID_SYSTEM_RESTART_COLD -->
 		<str id="-1610547169">Команда на перезагрузку в режим COLD</str>
-		<!--EID_SYSTEM_RESTART_UNKNOW-->
+		<!-- EID_SYSTEM_RESTART_UNKNOW -->
 		<str id="-536805344">Ошибка в команде на перезагрузку (код команды $1)</str>
 
 		<!-- EID_SELECTOR_ERROR - $1 ID, $2 Descr, $3 value -->
@@ -451,26 +451,26 @@
 
 		<!-- EID_PROVE_BADCOMMAND - $1 ID, $2 Descr, $3 command -->
 		<str id="-535625727">$2. Неверная команда ($3)</str>
-		<!--EID_PROVE_MODULE-->
-		<str id="-535625726"/>
+		<!--EID_PROVE_MODULE - $1 ID, $2 Descr, $3 module number -->
+		<str id="-535625726">$2. Ошибка получения данных с модуля ввода-вывода.</str>
 		<!--EID_PROVE_ERRORSTABTEMP - $1 ID, $2 Descr, $3 delta, $4 max -->
-		<str id="-535625724">$2. Ошибка стабилизации. Значение температуры превысило уставку $4 на $3</str>
-		<!--EID_PROVE_ERRORSTABPRES-->
-		<str id="-535625723"/>
-		<!--EID_PROVE_ERRORSTABDENS-->
-		<str id="-535625722"/>
-		<!--EID_PROVE_ERRORSTABFREQ-->
-		<str id="-535625721"/>
-		<!--EID_PROVE_BADSTREAMNUMBER-->
-		<str id="-535625720"/>
+		<str id="-535625724">$2. Ошибка стабилизации. Значение температуры превысило уставку $4 на $3.</str>
+		<!--EID_PROVE_ERRORSTABPRES - $1 ID, $2 Descr, $3 delta, $4 max -->
+		<str id="-535625723">$2. Ошибка стабилизации. Значение давления превысило уставку $4 на $3.</str>
+		<!--EID_PROVE_ERRORSTABDENS - $1 ID, $2 Descr, $3 delta, $4 max -->
+		<str id="-535625722">$2. Ошибка стабилизации. Значение плотности превысило уставку $4 на $3.</str>
+		<!--EID_PROVE_ERRORSTABFREQ - $1 ID, $2 Descr, $3 delta, $4 max -->
+		<str id="-535625721">$2. Ошибка стабилизации. Значение частоты превысило уставку $4 на $3.</str>
+		<!--EID_PROVE_BADSTREAMNUMBER - $1 ID, $2 Descr, $3 stream num -->
+		<str id="-535625720">$2. Неверно указан номер линии ($3).</str>
 		<!-- EID_PROVE_CANNOTMODIFYSETUP - $1 ID, $2 Descr -->
 		<str id="-535625719">$2. Попытка изменить настройки во время измерения</str>
 		<!-- EID_PROVE_COMMANDSTART - $1 ID, $2 Descr -->
-		<str id="538116117">$2. Команда СТАРТ</str>
-		<!--EID_PROVE_COMMANDABORT-->
-		<str id="-1609367530"/>
-		<!--EID_PROVE_COMMANDRESET-->
-		<str id="538116119"/>
+		<str id="538116117">$2. Команда СТАРТ.</str>
+		<!--EID_PROVE_COMMANDABORT - $1 ID, $2 Descr -->
+		<str id="-1609367530">$2. Команда ПРЕРВАТЬ.</str>
+		<!--EID_PROVE_COMMANDRESET - $1 ID, $2 Descr -->
+		<str id="538116119">$2. Команда СБРОС.</str>
 		<!--EID_PROVE_NOTSTARTED-->
 		<str id="-1609367528"/>
 		<!--EID_PROVE_ALREADYSTARTED-->
@@ -566,27 +566,27 @@
 		<!-- EID_PROVE_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
 		<str id="-535625613">$2 ($3). Не действительное значение.</str>
 
-		<!--EID_MASWTR_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<!-- EID_MASWTR_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="538181732">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
-		<!--EID_MASWTR_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<!-- EID_MASWTR_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="538181733">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
-		<!--EID_MASWTR_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<!-- EID_MASWTR_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="538181734">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
-		<!--EID_MASWTR_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<!-- EID_MASWTR_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="538181735">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
-		<!--EID_MASWTR_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<!-- EID_MASWTR_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="538181736">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
-		<!--EID_MASWTR_NEW_SETUP - $1 ID, $2 Descr -->
+		<!-- EID_MASWTR_NEW_SETUP - $1 ID, $2 Descr -->
 		<str id="538181737">$2. Изменены настройки.</str>
-		<!--EID_MASWTR_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<!-- EID_MASWTR_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
 		<str id="-535560082">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
-		<!--EID_MASWTR_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<!-- EID_MASWTR_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
 		<str id="-1609301905">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
-		<!--EID_MASWTR_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<!-- EID_MASWTR_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
 		<str id="-535560080">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
-		<!--EID_MASWTR_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<!-- EID_MASWTR_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
 		<str id="-1609301903">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
-		<!--EID_MASWTR_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<!-- EID_MASWTR_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
 		<str id="538181746">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
 		<!-- EID_MASWTR_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
 		<str id="-535560077">$2 ($3). Не действительное значение.</str>
