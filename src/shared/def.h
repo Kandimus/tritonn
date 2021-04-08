@@ -104,6 +104,7 @@ const UDINT  MAX_SAMPLER               = 32;
 const UDINT  MAX_PROVE                 = 8;
 const UDINT  MAX_AVERAGE               = 32;
 const UDINT  MAX_MASSWATER             = 16;
+const UDINT  MAX_VOLWATER              = 16;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
@@ -383,8 +384,8 @@ enum rTritonn_Error
 	DATACFGERR_MAX_SAMPLER,                 //
 	DATACFGERR_MAX_PROVE,                   // 140
 	DATACFGERR_MAX_AVERAGE,                 //
-	DATACFGERR_MAX_WATER,                   // 142
-	DATACFGERR_MAX_RESERV2,                 //
+	DATACFGERR_MAX_MASSWATER,               // 142
+	DATACFGERR_MAX_VOLWATER,                //
 	DATACFGERR_MAX_RESERV3,                 // 144
 	DATACFGERR_MAX_RESERV4,                 //
 	DATACFGERR_MAX_RESERV5,                 // 146
@@ -440,6 +441,10 @@ enum rTritonn_Error
 	DATACFGERR_MASSWATER_NOVOLWATER,        // 196
 	DATACFGERR_MASSWATER_NODENSITY,         //
 	DATACFGERR_MASSWATER_NOTEMPERATURE,     // 198
+	DATACFGERR_VOLWATER_SETUP,              //
+	DATACFGERR_VOLWATER_NOMASSWATER,        // 200
+	DATACFGERR_VOLWATER_NODENSITY,          //
+	DATACFGERR_VOLWATER_NOTEMPERATURE,      // 202
 
 	DATACFGERR_LANG_STRUCT = 500,
 	DATACFGERR_LANG_UNKNOW,

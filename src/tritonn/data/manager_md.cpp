@@ -33,6 +33,7 @@
 #include "prove.h"
 #include "average.h"
 #include "masswater.h"
+#include "volwater.h"
 #include "../io/manager.h"
 #include "../io/module_ai6.h"
 #include "../io/module_crm.h"
@@ -46,8 +47,6 @@
 UDINT rDataManager::saveMarkDown()
 {
 	rGeneratorMD md;
-
-	generateMarkDown(md);
 
 	// io
 	rAI          ai;
@@ -69,6 +68,7 @@ UDINT rDataManager::saveMarkDown()
 	rDensSol     ds;
 	rRVar        rvar;
 	rMassWater   mw;
+	rVolWater    vw;
 	rSelector    sel;
 	rSelector    msel;
 	rStation     stn;
@@ -85,6 +85,7 @@ UDINT rDataManager::saveMarkDown()
 	smp.generateMarkDown(md);
 	ds.generateMarkDown(md);
 	mw.generateMarkDown(md);
+	vw.generateMarkDown(md);
 	sel.generateMarkDown(md);
 	msel.generateMarkDown(md);
 	str.generateMarkDown(md);
@@ -116,6 +117,7 @@ UDINT rDataManager::saveMarkDown()
 	prpt.m_type = rReport::Type::PERIODIC;
 	brpt.m_type = rReport::Type::BATCH;
 
+	generateMarkDown(md);
 	prpt.generateMarkDown(md);
 	brpt.generateMarkDown(md);
 	sysvar.generateMarkDown(md);

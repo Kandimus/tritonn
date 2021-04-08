@@ -7,9 +7,9 @@
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 
-TEST_CASE("testing masswater.", "[MassWater]")
+TEST_CASE("testing masswater and volwater.", "[MassWater]")
 {
-	SECTION("Check calculating") {
+	SECTION("Check calculating masswater and volwater") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
 		ss.add("var.testdens.value"        , 880.0);
@@ -24,17 +24,23 @@ TEST_CASE("testing masswater.", "[MassWater]")
 		ss.clear();
 		ss.add("var.testdens.value");
 		ss.add("sikn1.obj.masswater.masswater.value");
+		ss.add("sikn1.obj.volwater.volwater.value");
 		ss.add("sikn1.obj.masswater.water.density");
+		ss.add("sikn1.obj.volwater.water.density");
 		ss.get();
 
 		LREAL epsilon = Catch::Epsilon::instance().setDouble(0.0001);
 
 		REQUIRE(ss("var.testdens.value"));
 		REQUIRE(ss("sikn1.obj.masswater.masswater.value"));
+		REQUIRE(ss("sikn1.obj.volwater.volwater.value"));
 		REQUIRE(ss("sikn1.obj.masswater.water.density"));
+		REQUIRE(ss("sikn1.obj.volwater.water.density"));
 		CHECK  (ss("var.testdens.value")->getValueLREAL() == 880.0);
-		CHECK  (ss("sikn1.obj.masswater.masswater.value")->getValueLREAL() == 0.176177774);
+		CHECK  (ss("sikn1.obj.masswater.masswater.value")->getValueLREAL() == 0.2270433954);
+		CHECK  (ss("sikn1.obj.volwater.volwater.value")->getValueLREAL() == 0.2);
 		CHECK  (ss("sikn1.obj.masswater.water.density")->getValueLREAL() == 998.991);
+		CHECK  (ss("sikn1.obj.volwater.water.density" )->getValueLREAL() == 998.991);
 
 		Catch::Epsilon::instance().setDouble(epsilon);
 	}

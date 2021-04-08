@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # counter
-> 0.19.60.69bd417b
+> 0.19.62.6eb4308c
 ## XML
 ````xml
 <counter name="valid object name" description="string index" setup="text value | text value | ... | text value" >

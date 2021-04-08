@@ -444,6 +444,11 @@
 					</stream>
 				</streams>
 				<calculate>
+					<volwater name="volwater" description="4000" setup="">
+						<masswater><link alias="sikn1.obj.masswater:masswater"/></masswater>
+						<density><link alias="var.testdens"/></density>
+						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
+					</volwater>
 					<masswater name="masswater" description="4000" setup="">
 						<volwater><link alias="sikn1.bik.io.water1"/></volwater>
 						<density><link alias="var.testdens"/></density>
