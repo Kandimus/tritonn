@@ -19,7 +19,7 @@
 
 namespace COMMENT
 {
-
+const std::string ADC            = "Код АЦП. ";
 const std::string BEGIN          = "Начало. ";
 const std::string CALC_COEF      = "Вычисленный коэффициент";
 const std::string COMMAND        = "Команда:<br/>";
@@ -36,6 +36,7 @@ const std::string FACTORS_SET    = "Введенные коффициенты. "
 const std::string FAULT          = "Флаг ошибки";
 const std::string FREQ           = "Частота";
 const std::string HOURS          = "Часы";
+const std::string IMP_SIM        = "Количество импульсов в секунду. ";
 const std::string IMP_COUNT      = "Счетчик импульсов";
 const std::string KEYPAD         = "Значение ручного ввода";
 const std::string KFACTOR        = "К-фактор";
