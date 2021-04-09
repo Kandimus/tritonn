@@ -167,7 +167,7 @@ UDINT rProve::calculate()
 
 	if (isSetModule()) {
 		auto module_ptr = rIOManager::instance().getModule(m_module);
-		auto module     = dynamic_cast<rModuleCRM*>(module_ptr.get());
+		auto module     = dynamic_cast<rModuleCRM*>(module_ptr);
 
 		if (!module) {
 			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
@@ -179,6 +179,10 @@ UDINT rProve::calculate()
 		m_moduleFreq  = module->getFreq();
 		m_moduleDet   = module->getDetectors();
 		m_moduleCount = module->getCounter();
+
+		if (module_ptr) {
+			delete module_ptr;
+		}
 	}
 
 	detectorsProcessing();

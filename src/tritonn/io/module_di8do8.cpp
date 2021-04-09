@@ -95,7 +95,7 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 }
 
 
-std::unique_ptr<rIOBaseChannel> rModuleDI8DO8::getChannel(USINT num)
+rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num)
 {
 	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
 		return nullptr;
@@ -104,13 +104,10 @@ std::unique_ptr<rIOBaseChannel> rModuleDI8DO8::getChannel(USINT num)
 	rLocker lock(m_mutex); UNUSED(lock);
 
 	if (num < CHANNEL_DI_COUNT) {
-		auto module_ptr = std::make_unique<rIODIChannel>(*m_channelDI[num]);
-		return module_ptr;
+		return new rIODIChannel(*m_channelDI[num]);
 	}
 
-	auto module_ptr = std::make_unique<rIODOChannel>(*m_channelDO[num - CHANNEL_DI_COUNT]);
-
-	return module_ptr;
+	return new rIODOChannel(*m_channelDO[num - CHANNEL_DI_COUNT]);
 }
 
 UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

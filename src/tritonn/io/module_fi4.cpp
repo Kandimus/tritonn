@@ -80,7 +80,7 @@ UDINT rModuleFI4::processing(USINT issim)
 }
 
 
-std::unique_ptr<rIOBaseChannel> rModuleFI4::getChannel(USINT num)
+rIOBaseChannel* rModuleFI4::getChannel(USINT num)
 {
 	if (num >= CHANNEL_COUNT) {
 		return nullptr;
@@ -88,9 +88,7 @@ std::unique_ptr<rIOBaseChannel> rModuleFI4::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	auto module_ptr = std::make_unique<rIOFIChannel>(*m_channel[num]);
-
-	return module_ptr;
+	return new rIOFIChannel(*m_channel[num]);
 }
 
 

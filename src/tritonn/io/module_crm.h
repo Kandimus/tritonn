@@ -52,13 +52,13 @@ public:
 	
 	// Виртуальные функции от rBaseModule
 public:
-	virtual std::string getModuleType() { return rModuleCRM::getRTTI(); }
-	virtual UDINT processing(USINT issim);
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
-	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
-	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel);
-	virtual std::unique_ptr<rIOBaseModule>  getModulePtr() { return std::make_unique<rModuleCRM>(this); }
+	virtual std::string getModuleType() override { return rModuleCRM::getRTTI(); }
+	virtual UDINT processing(USINT issim) override;
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
+	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
+	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual rIOBaseChannel* getChannel(USINT channel) override;
+	virtual rIOBaseModule*  getModulePtr() override { return new rModuleCRM(this); }
 
 public:
 	UDINT start();

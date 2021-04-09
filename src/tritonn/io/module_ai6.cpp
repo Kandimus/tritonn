@@ -78,7 +78,7 @@ UDINT rModuleAI6::processing(USINT issim)
 }
 
 
-std::unique_ptr<rIOBaseChannel> rModuleAI6::getChannel(USINT num)
+rIOBaseChannel* rModuleAI6::getChannel(USINT num)
 {
 	if (num >= CHANNEL_COUNT) {
 		return nullptr;
@@ -86,9 +86,7 @@ std::unique_ptr<rIOBaseChannel> rModuleAI6::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	auto module_ptr = std::make_unique<rIOAIChannel>(*m_channel[num]);
-
-	return module_ptr;
+	return new rIOAIChannel(m_channel[num]);
 }
 
 UDINT rModuleAI6::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

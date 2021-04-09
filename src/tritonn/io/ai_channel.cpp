@@ -53,6 +53,17 @@ rIOAIChannel::rIOAIChannel(USINT index, const std::string& comment) : rIOBaseCha
 	}
 }
 
+rIOAIChannel::rIOAIChannel(const rIOAIChannel* parent) : rIOBaseChannel(rIOBaseChannel::Type::AI, -1, "")
+{
+	m_setup        = parent->m_setup;
+	m_ADC          = parent->m_ADC;
+	m_current      = parent->m_current;
+	m_type         = parent->m_type;
+	m_actionRedLED = parent->m_actionRedLED;
+	m_state        = parent->m_state;
+	m_stateRedLED  = parent->m_stateRedLED;
+}
+
 
 UINT rIOAIChannel::getMinValue() const
 {

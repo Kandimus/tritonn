@@ -156,7 +156,7 @@ UDINT rAI::calculate()
 	// Преобразуем код АЦП в значение
 	if (isSetModule()) {
 		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-		auto channel     = static_cast<rIOAIChannel*>(channel_ptr.get());
+		auto channel     = static_cast<rIOAIChannel*>(channel_ptr);
 
 		if (channel == nullptr) {
 			rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
@@ -186,6 +186,10 @@ UDINT rAI::calculate()
 			}
 
 			setFault();
+		}
+
+		if (channel_ptr) {
+			delete channel_ptr;
 		}
 	}
 	else //if !virtual

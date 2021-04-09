@@ -95,7 +95,7 @@ UDINT rModuleCRM::processing(USINT issim)
 }
 
 
-std::unique_ptr<rIOBaseChannel> rModuleCRM::getChannel(USINT num)
+rIOBaseChannel* rModuleCRM::getChannel(USINT num)
 {
 	if (num >= CHANNEL_DI_COUNT) {
 		return nullptr;
@@ -104,14 +104,10 @@ std::unique_ptr<rIOBaseChannel> rModuleCRM::getChannel(USINT num)
 	rLocker lock(m_mutex); UNUSED(lock);
 
 	if (num < CHANNEL_DI_COUNT) {
-		auto module_ptr = std::make_unique<rIODIChannel>(*m_channelDI[num]);
-
-		return module_ptr;
+		return new rIODIChannel(*m_channelDI[num]);
 	}
 
-	auto module_ptr = std::make_unique<rIOFIChannel>(*m_channelFI);
-
-	return module_ptr;
+	return new rIOFIChannel(*m_channelFI);
 }
 
 LREAL rModuleCRM::getFreq() const
