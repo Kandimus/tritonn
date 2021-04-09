@@ -190,10 +190,10 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 	list.add(p + "type"   , TYPE_USINT, rVariable::Flags::___, &m_type   , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
 
 	if (issimulate) {
-		list.add(p + "simulate.max"  , rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, COMMENT::SIMULATE_MAX);
-		list.add(p + "simulate.min"  , rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, COMMENT::SIMULATE_MIN);
-		list.add(p + "simulate.value", rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, COMMENT::SIMULATE_VALUE);
-		list.add(p + "simulate.speed", rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, COMMENT::SIMULATE_SPEED);
+		list.add(p + "simulate.max"  , rVariable::Flags::___, &m_simMax  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MAX);
+		list.add(p + "simulate.min"  , rVariable::Flags::___, &m_simMin  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MIN);
+		list.add(p + "simulate.value", rVariable::Flags::___, &m_simValue, U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_VALUE);
+		list.add(p + "simulate.speed", rVariable::Flags::___, &m_simSpeed, U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_SPEED);
 	}
 
 	return TRITONN_RESULT_OK;
