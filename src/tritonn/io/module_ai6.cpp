@@ -64,6 +64,8 @@ rModuleAI6::~rModuleAI6()
 
 UDINT rModuleAI6::processing(USINT issim)
 {
+	rLocker lock(m_mutex); UNUSED(lock);
+
 	rIOBaseModule::processing(issim);
 
 	for (auto channel : m_channel) {

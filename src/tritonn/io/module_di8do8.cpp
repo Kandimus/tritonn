@@ -81,6 +81,8 @@ rModuleDI8DO8::~rModuleDI8DO8()
 
 UDINT rModuleDI8DO8::processing(USINT issim)
 {
+	rLocker lock(m_mutex); UNUSED(lock);
+
 	rIOBaseModule::processing(issim);
 
 	for (auto channel : m_listChannel) {

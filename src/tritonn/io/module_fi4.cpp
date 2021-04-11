@@ -62,6 +62,8 @@ rModuleFI4::~rModuleFI4()
 
 UDINT rModuleFI4::processing(USINT issim)
 {
+	rLocker lock(m_mutex); UNUSED(lock);
+
 	rIOBaseModule::processing(issim);
 
 	for (auto& channel : m_channel) {
