@@ -43,8 +43,8 @@ public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
 
-	std::unique_ptr<rIOBaseChannel> getChannel(USINT module, USINT channel);
-	std::unique_ptr<rIOBaseModule>  getModule(USINT module);
+	rIOBaseChannel* getChannel(USINT module, USINT channel);
+	rIOBaseModule*  getModule(USINT module);
 	std::string getModuleAlias(USINT module) const;
 
 protected:

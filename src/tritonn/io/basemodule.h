@@ -54,8 +54,8 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual std::unique_ptr<rIOBaseChannel> getChannel(USINT channel) = 0;
-	virtual std::unique_ptr<rIOBaseModule>  getModulePtr() = 0;
+	virtual rIOBaseChannel* getChannel(USINT channel) = 0;
+	virtual rIOBaseModule*  getModulePtr() = 0;
 	virtual std::string getAlias() const;
 	virtual std::string getName() const;
 	virtual STRID       getDescr() const;

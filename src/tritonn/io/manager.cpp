@@ -49,7 +49,7 @@ rIOManager::~rIOManager()
 }
 
 
-std::unique_ptr<rIOBaseChannel> rIOManager::getChannel(USINT module, USINT channel)
+rIOBaseChannel* rIOManager::getChannel(USINT module, USINT channel)
 {
 	if (module >= m_modules.size()) {
 		return nullptr;
@@ -58,7 +58,7 @@ std::unique_ptr<rIOBaseChannel> rIOManager::getChannel(USINT module, USINT chann
 	return m_modules[module]->getChannel(channel);
 }
 
-std::unique_ptr<rIOBaseModule> rIOManager::getModule(USINT module)
+rIOBaseModule* rIOManager::getModule(USINT module)
 {
 	if (module >= m_modules.size()) {
 		return nullptr;
