@@ -80,8 +80,8 @@ UDINT rIODOChannel::generateVars(const std::string& name, rVariableList& list, b
 	rIOBaseChannel::generateVars(name, list, false);
 
 	list.add(p + "setup", TYPE_UINT , rVariable::Flags::RS_, &m_setup, U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "value", TYPE_USINT, rVariable::Flags::R__, &m_value, U_DIMLESS , 0, COMMENT::VALUE);
-	list.add(p + "state", TYPE_USINT, rVariable::Flags::R__, &m_state, U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");
+	list.add(p + "value",             rVariable::Flags::R__, &m_value, U_DIMLESS , 0, COMMENT::VALUE);
+	list.add(p + "state",             rVariable::Flags::R__, &m_state, U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");
 
 	return TRITONN_RESULT_OK;
 }

@@ -62,7 +62,7 @@ public:
 //	USINT m_actionRedLED = 0;             // Управление касным диодом
 //	USINT m_stateRedLED  = 0;             // Статус красного диода
 
-	USINT m_simValue    = 0;
+	UINT  m_simValue    = 0;
 	UDINT m_simBlink    = 1000;
 	UDINT m_simTimer    = 0;
 

@@ -56,13 +56,13 @@ UDINT rIODIChannel::generateVars(const std::string& name, rVariableList& list, b
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
 	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS_, &m_setup , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "value"  , TYPE_USINT, rVariable::Flags::R__, &m_value , U_DIMLESS, 0, COMMENT::VALUE);
-	list.add(p + "state"  , TYPE_USINT, rVariable::Flags::R__, &m_state , U_DIMLESS, 0, COMMENT::STATUS + "Нет данных");
-	list.add(p + "bounce" , TYPE_UDINT, rVariable::Flags::___, &m_bounce, U_msec   , 0, "Значение таймера антидребезга");
+	list.add(p + "value"  ,             rVariable::Flags::R__, &m_value , U_DIMLESS, 0, COMMENT::VALUE);
+	list.add(p + "state"  ,             rVariable::Flags::R__, &m_state , U_DIMLESS, 0, COMMENT::STATUS + "Нет данных");
+	list.add(p + "bounce" ,             rVariable::Flags::___, &m_bounce, U_msec   , 0, "Значение таймера антидребезга");
 
 	if (issimulate) {
-		list.add(p + "simulate.value", TYPE_USINT, rVariable::Flags::___, &m_simValue, U_DIMLESS, 0, "Значение симулированного значения");
-		list.add(p + "simulate.blink", TYPE_UDINT, rVariable::Flags::___, &m_simBlink, U_msec   , 0, "Период мигания");
+		list.add(p + "simulate.value", rVariable::Flags::___, &m_simValue, U_DIMLESS, 0, "Значение симулированного значения");
+		list.add(p + "simulate.blink", rVariable::Flags::___, &m_simBlink, U_msec   , 0, "Период мигания");
 	}
 
 	return TRITONN_RESULT_OK;
