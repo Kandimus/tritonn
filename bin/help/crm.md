@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # crm
-> 0.19.64.51a28d15
+> 0.19.72.ae243884
 ## XML
 ````xml
 <module name="crm" description="string index" >
@@ -50,33 +50,33 @@ crm.ch_01.setup | UINT |  | 512 | Yes |   | Настройка:<br/>0x0001: Вы
 crm.ch_01.value | USINT |  | 512 | Yes |   | Текущее значение
 crm.ch_01.state | USINT |  | 512 | Yes |   | Статус:<br/>Нет данных
 crm.ch_01.bounce | UDINT | мс | 210 |  |   | Значение таймера антидребезга
-crm.ch_01.simulate.value | USINT |  | 512 |  |   | Значение симулированного значения
+crm.ch_01.simulate.value | UINT |  | 512 |  |   | Значение симулированного значения
 crm.ch_01.simulate.blink | UDINT | мс | 210 |  |   | Период мигания
 crm.ch_02.simulate.type | USINT |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 crm.ch_02.setup | UINT |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 crm.ch_02.value | USINT |  | 512 | Yes |   | Текущее значение
 crm.ch_02.state | USINT |  | 512 | Yes |   | Статус:<br/>Нет данных
 crm.ch_02.bounce | UDINT | мс | 210 |  |   | Значение таймера антидребезга
-crm.ch_02.simulate.value | USINT |  | 512 |  |   | Значение симулированного значения
+crm.ch_02.simulate.value | UINT |  | 512 |  |   | Значение симулированного значения
 crm.ch_02.simulate.blink | UDINT | мс | 210 |  |   | Период мигания
 crm.ch_03.simulate.type | USINT |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 crm.ch_03.setup | UINT |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 crm.ch_03.value | USINT |  | 512 | Yes |   | Текущее значение
 crm.ch_03.state | USINT |  | 512 | Yes |   | Статус:<br/>Нет данных
 crm.ch_03.bounce | UDINT | мс | 210 |  |   | Значение таймера антидребезга
-crm.ch_03.simulate.value | USINT |  | 512 |  |   | Значение симулированного значения
+crm.ch_03.simulate.value | UINT |  | 512 |  |   | Значение симулированного значения
 crm.ch_03.simulate.blink | UDINT | мс | 210 |  |   | Период мигания
 crm.ch_04.simulate.type | USINT |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 crm.ch_04.setup | UINT |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 crm.ch_04.value | USINT |  | 512 | Yes |   | Текущее значение
 crm.ch_04.state | USINT |  | 512 | Yes |   | Статус:<br/>Нет данных
 crm.ch_04.bounce | UDINT | мс | 210 |  |   | Значение таймера антидребезга
-crm.ch_04.simulate.value | USINT |  | 512 |  |   | Значение симулированного значения
+crm.ch_04.simulate.value | UINT |  | 512 |  |   | Значение симулированного значения
 crm.ch_04.simulate.blink | UDINT | мс | 210 |  |   | Период мигания
 crm.ch_05.simulate.type | USINT |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 crm.ch_05.setup | UINT |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Усреднять значение частоты<br/>
 crm.ch_05.count | UDINT |  | 512 | Yes |   | Количество накопленных импульсов
-crm.ch_05.frequecy | UDINT | Гц | 192 | Yes |   | Частота
+crm.ch_05.frequecy | LREAL | Гц | 192 | Yes |   | Частота
 crm.ch_05.state | USINT |  | 512 | Yes |   | Статус:<br/>Нет данных
 crm.ch_05.simulate.max | UINT |  | 512 |  |   | Количество импульсов в секунду. Максимум симулированного значения
 crm.ch_05.simulate.min | UINT |  | 512 |  |   | Количество импульсов в секунду. Минимум симулированного значения

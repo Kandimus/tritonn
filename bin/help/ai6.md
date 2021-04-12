@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # ai6
-> 0.19.64.51a28d15
+> 0.19.72.ae243884
 ## XML
 ````xml
 <module name="ai6" description="string index" >

@@ -41,7 +41,7 @@
 #include "../io/module_fi4.h"
 #include "../interface/modbustcpslave_manager.h"
 #include "../interface/opcua_manager.h"
-
+#include "../users.h"
 
 
 UDINT rDataManager::saveMarkDown()
@@ -121,6 +121,7 @@ UDINT rDataManager::saveMarkDown()
 	prpt.generateMarkDown(md);
 	brpt.generateMarkDown(md);
 	sysvar.generateMarkDown(md);
+	rUser::generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);
 

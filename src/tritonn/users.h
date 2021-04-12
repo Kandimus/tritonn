@@ -19,7 +19,7 @@
 #include "string.h"
 #include "def.h"
 
-
+class rGeneratorMD;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -40,7 +40,7 @@ private:
 	};
 
 public:
-	virtual ~rUser();
+	virtual ~rUser() = default;
 
 	UDINT  GetAccess  (UDINT external = false) const;
 	UDINT  CheckAccess(UDINT access, UDINT external = false) const;
@@ -49,6 +49,8 @@ public:
 
 	USINT  GetStatus()    const;
 	string GetName()      const;
+
+	static void generateMarkDown(rGeneratorMD& md);
 
 	// Добавление пользователя
 	static UDINT        Add      (const string &name, const string &pwd, UDINT intaccess, UDINT extaccess, UDINT login, USINT *loginpwd_hash);
@@ -64,7 +66,7 @@ public:
 	static UDINT        NewPwd   (const string &name, const USINT *newpwd);
 	static UDINT        SetAccess(const string &name, UDINT access, UDINT webaccess);
 	static UDINT        SetStatus(const string &name, USINT status);
-	static void         DeleteAll();
+	static void         deleteAll();
 
 protected:
 	USINT      Hash[MAX_HASH_SIZE]; // Hash имени пользователя

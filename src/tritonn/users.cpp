@@ -17,7 +17,8 @@
 #include <vector>
 #include <string.h>
 #include "hash.h"
-
+#include "xml_util.h"
+#include "generator_md.h"
 
 std::vector<rUser*> rUser::ListUser;
 
@@ -38,13 +39,6 @@ rUser::rUser(const string &name, USINT *pwd_hash, UDINT intaccess, UDINT extacce
 	Interface.Login = login;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-//
-rUser::~rUser()
-{
-	;
-}
 
 
 UDINT rUser::GetAccess(UDINT external) const { return (external) ? ExtAccess : IntAccess; }
@@ -199,8 +193,7 @@ const rUser *rUser::Login(UDINT login, UDINT pwd, UDINT &result)
 {
 	const rUser *user = Find(login);
 
-	if(nullptr == user)
-	{
+	if (nullptr == user) {
 		result = LOGIN_FAULT;
 		return nullptr;
 	}
@@ -229,14 +222,73 @@ const rUser *rUser::Login(UDINT login, UDINT pwd, UDINT &result)
 
 //-------------------------------------------------------------------------------------------------
 //
-void rUser::DeleteAll()
+void rUser::deleteAll()
 {
-	for(UDINT ii = 0; ii < ListUser.size(); ++ii)
-	{
-		delete ListUser[ii];
+	for (auto item : ListUser) {
+		if (item) {
+			delete item;
+		}
 	}
+
 	ListUser.clear();
 }
 
 
+void rUser::generateMarkDown(rGeneratorMD& md)
+{
+	std::string text = "## XML\n````xml\n";
+	std::string key  = "";
+	std::string iv   = "";
+
+	for (UDINT ii = 0; ii < 16; ++ii) {
+		key += static_cast<char>(AES_KEY[ii]);
+		iv  += static_cast<char>(AES_IV[ii]);
+	}
+
+	text += "<" + std::string(XmlName::SECURITY) + ">\n";
+	text += "\t<!-- binary encode data to text string -->\n";
+	text += "</" + std::string(XmlName::SECURITY) + ">\n";
+	text += "````\n\n";
+
+	text += "> Данные кодируются и записываются в текством виде (пример: A0B134FE)\n\n";
+	text += "> Формат кодирования: SHA-1</br>";
+	text += "Режим: CBC</br>";
+	text += "Размер ключа: 128 bits</br>";
+	text += "Вектор IV: " + iv + "</br>";
+	text += "Ключ: " + key + "</br>\n\n";
+	text += "## Формат исходных данных\n````xml\n";
+
+	text += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	text += "<" + std::string(XmlName::SECURITY) + ">\n";
+	text += "\t<" + std::string(XmlName::CONFIG) + ">\n";
+	text += "\t\t<" + std::string(XmlName::LOGIN) + ">user name</" + std::string(XmlName::LOGIN) + ">\n";
+	text += "\t\t<" + std::string(XmlName::PASSWORD) + ">SHA-1 hash password</" + std::string(XmlName::PASSWORD) + ">\n";
+	text += "\t</" + std::string(XmlName::CONFIG) + ">\n";
+	text += "\t<" + std::string(XmlName::USERS) + ">\n";
+	text += "\t\t<" + std::string(XmlName::USER) + " name=\"user name\">\n";
+	text += "\t\t\t<" + std::string(XmlName::PASSWORD) + ">SHA-1 hash password</" + std::string(XmlName::PASSWORD) + ">\n";
+	text += "\t\t\t<" + std::string(XmlName::COMMS) + ">\n";
+	text += "\t\t\t\t<" + std::string(XmlName::LOGIN) + ">user number name</" + std::string(XmlName::LOGIN) + ">\n";
+	text += "\t\t\t\t<" + std::string(XmlName::PASSWORD) + ">SHA-1 hash password</" + std::string(XmlName::PASSWORD) + ">\n";
+	text += "\t\t\t</" + std::string(XmlName::COMMS) + ">\n";
+	text += "\t\t\t<" + std::string(XmlName::RIGHTS) + ">\n";
+	text += "\t\t\t\t<" + std::string(XmlName::INTERNAL) + ">internal hex access</" + std::string(XmlName::INTERNAL) + ">\n";
+	text += "\t\t\t\t<" + std::string(XmlName::EXTERNAL) + ">external hex access</" + std::string(XmlName::EXTERNAL) + ">\n";
+	text += "\t\t\t</" + std::string(XmlName::RIGHTS) + ">\n";
+	text += "\t\t</" + std::string(XmlName::USER) + ">\n";
+	text += "\t\t<" + std::string(XmlName::USER) + ">\n";
+	text += "\t\t\t<!-- ... -->\n";
+	text += "\t\t</" + std::string(XmlName::USER) + ">\n";
+	text += "\t</" + std::string(XmlName::USERS) + ">\n";
+	text += "\t<" + std::string(XmlName::OPCUA) + ">\n";
+	text += "\t\t<" + std::string(XmlName::USER) + ">\n";
+	text += "\t\t\t<" + std::string(XmlName::LOGIN) + ">user name</" + std::string(XmlName::LOGIN) + ">\n";
+	text += "\t\t\t<" + std::string(XmlName::PASSWORD) + ">uncrypted password</" + std::string(XmlName::PASSWORD) + ">\n";
+	text += "\t\t</" + std::string(XmlName::USER) + ">\n";
+	text += "\t</" + std::string(XmlName::OPCUA) + ">\n";
+	text += "</" + std::string(XmlName::SECURITY) + ">\n";
+	text += "````\n\n";
+
+	md.add("users").addRemark(text);
+}
 
