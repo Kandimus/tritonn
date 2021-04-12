@@ -78,7 +78,6 @@ public:
 
 public:
 	rIOAIChannel(USINT index, const std::string& comment = "");
-	rIOAIChannel(const rIOAIChannel* parent);
 	virtual ~rIOAIChannel() = default;
 
 	UINT getMinValue() const;

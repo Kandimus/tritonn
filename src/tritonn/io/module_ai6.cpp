@@ -88,7 +88,7 @@ rIOBaseChannel* rModuleAI6::getChannel(USINT num)
 
 	rLocker lock(m_mutex); UNUSED(lock);
 
-	return new rIOAIChannel(m_channel[num]);
+	return new rIOAIChannel(*m_channel[num]);
 }
 
 UDINT rModuleAI6::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
