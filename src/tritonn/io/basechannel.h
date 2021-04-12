@@ -29,7 +29,7 @@ class XMLElement;
 class rIOBaseChannel
 {
 public:
-	enum Type
+	enum Type : USINT
 	{
 		UNDEF = 0,
 		AI,

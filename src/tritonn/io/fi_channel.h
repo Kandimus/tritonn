@@ -72,7 +72,7 @@ public:
 
 private:
 	USINT m_hardState   = 0;             // Статус канала с модуля
-	USINT m_simSinus    = 0;
+	UINT  m_simSinus    = 0;
 	UDINT m_simTimer    = 0;
 	UDINT m_simTimerRem = 0;
 	LREAL m_simCountRem = 0.0;
