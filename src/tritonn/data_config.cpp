@@ -46,6 +46,7 @@
 #include "data/average.h"
 #include "data/masswater.h"
 #include "data/volwater.h"
+#include "data/cinematicviscosity.h"
 #include "interface/modbustcpslave_manager.h"
 #include "interface/opcua_manager.h"
 #include "structures.h"
@@ -358,15 +359,16 @@ UDINT rDataConfig::loadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		name   = obj->Name();
 		source = nullptr;
 
-		if (XmlName::DENSSOL     == name) { if (SysVar->m_max[name] >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL  , 0); source = dynamic_cast<rSource*>(new rDensSol(owner));    }
-		if (XmlName::REDUCEDDENS == name) { if (SysVar->m_max[name] >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS  , 0); source = dynamic_cast<rSource*>(new rReducedDens(owner));}
-		if (XmlName::MSELECTOR   == name) { if (SysVar->m_max[name] >= MAX_MSELECTOR  ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));   }
-		if (XmlName::SELECTOR    == name) { if (SysVar->m_max[name] >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));   }
-		if (XmlName::SAMPLER     == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_SAMPLER  , 0); source = dynamic_cast<rSource*>(new rSampler(owner));    }
-		if (XmlName::PROVE       == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_PROVE    , 0); source = dynamic_cast<rSource*>(new rProve(owner));      }
-		if (XmlName::AVERAGE     == name) { if (SysVar->m_max[name] >= MAX_AVERAGE    ) return m_error.set(DATACFGERR_MAX_AVERAGE  , 0); source = dynamic_cast<rSource*>(new rAverage(owner));    }
-		if (XmlName::MASSWATER   == name) { if (SysVar->m_max[name] >= MAX_MASSWATER  ) return m_error.set(DATACFGERR_MAX_MASSWATER, 0); source = dynamic_cast<rSource*>(new rMassWater(owner));  }
-		if (XmlName::VOLWATER    == name) { if (SysVar->m_max[name] >= MAX_VOLWATER   ) return m_error.set(DATACFGERR_MAX_VOLWATER , 0); source = dynamic_cast<rSource*>(new rVolWater(owner));   }
+		if (XmlName::DENSSOL     == name) { if (SysVar->m_max[name] >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL  , 0); source = dynamic_cast<rSource*>(new rDensSol(owner));            }
+		if (XmlName::REDUCEDDENS == name) { if (SysVar->m_max[name] >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS  , 0); source = dynamic_cast<rSource*>(new rReducedDens(owner));        }
+		if (XmlName::MSELECTOR   == name) { if (SysVar->m_max[name] >= MAX_MSELECTOR  ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));           }
+		if (XmlName::SELECTOR    == name) { if (SysVar->m_max[name] >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));           }
+		if (XmlName::SAMPLER     == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_SAMPLER  , 0); source = dynamic_cast<rSource*>(new rSampler(owner));            }
+		if (XmlName::PROVE       == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_PROVE    , 0); source = dynamic_cast<rSource*>(new rProve(owner));              }
+		if (XmlName::AVERAGE     == name) { if (SysVar->m_max[name] >= MAX_AVERAGE    ) return m_error.set(DATACFGERR_MAX_AVERAGE  , 0); source = dynamic_cast<rSource*>(new rAverage(owner));            }
+		if (XmlName::MASSWATER   == name) { if (SysVar->m_max[name] >= MAX_MASSWATER  ) return m_error.set(DATACFGERR_MAX_MASSWATER, 0); source = dynamic_cast<rSource*>(new rMassWater(owner));          }
+		if (XmlName::VOLWATER    == name) { if (SysVar->m_max[name] >= MAX_VOLWATER   ) return m_error.set(DATACFGERR_MAX_VOLWATER , 0); source = dynamic_cast<rSource*>(new rVolWater(owner));           }
+		if (XmlName::CINVISC     == name) { if (SysVar->m_max[name] >= MAX_CINVISC    ) return m_error.set(DATACFGERR_MAX_CINVISC  , 0); source = dynamic_cast<rSource*>(new rCinematicViscosity(owner)); }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);
