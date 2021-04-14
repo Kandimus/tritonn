@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # ai
-> 0.19.72.ae243884
+> 0.19.73.343f7010
 ## XML
 ````xml
 <ai name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" >

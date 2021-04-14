@@ -425,6 +425,10 @@
 					</do>
 				</io>
 				<calculate>
+					<cinviscosity name="cinvisc" description="">
+						<dynviscosity><link alias="sikn_123.bik.io.visc"/></dynviscosity>
+						<density><link alias="sikn_123.obj.stndenstemp:dens"/></density>
+					</cinviscosity>
 					<prove name="prove" setup="STABILIZATION | BOUNCE" description="">
 						<io_link module="3" />
 						<temperature><link alias="sikn_123.obj.avr_temp_tpu" /></temperature>

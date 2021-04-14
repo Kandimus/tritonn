@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # di8do8
-> 0.19.72.ae243884
+> 0.19.73.343f7010
 ## XML
 ````xml
 <module name="di8do8" description="string index" >

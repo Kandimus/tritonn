@@ -118,19 +118,21 @@ UDINT rVolWater::loadFromXML(tinyxml2::XMLElement* element, rError& err, const s
 
 	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_masswater->FirstChildElement(XmlName::LINK), m_massWater)) return err.getError();
 
-	if (!(m_setup & Setup::NOWATER)) {
-		auto xml_density     = element->FirstChildElement(XmlName::DENSITY);
-		auto xml_temperature = element->FirstChildElement(XmlName::TEMP);
+	auto xml_density = element->FirstChildElement(XmlName::DENSITY);
 
-		if (!xml_density) {
-			return err.set(DATACFGERR_VOLWATER_NODENSITY, element->GetLineNum(), "");
-		}
+	if (!xml_density) {
+		return err.set(DATACFGERR_VOLWATER_NODENSITY, element->GetLineNum(), "");
+	}
+
+	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_density->FirstChildElement(XmlName::LINK), m_density)) return err.getError();
+
+	if (!(m_setup & Setup::NOWATER)) {
+		auto xml_temperature = element->FirstChildElement(XmlName::TEMP);
 
 		if (!xml_temperature) {
 			return err.set(DATACFGERR_VOLWATER_NOTEMPERATURE, element->GetLineNum(), "");
 		}
 
-		if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_density->FirstChildElement    (XmlName::LINK), m_density)    ) return err.getError();
 		if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_temperature->FirstChildElement(XmlName::LINK), m_temperature)) return err.getError();
 	}
 

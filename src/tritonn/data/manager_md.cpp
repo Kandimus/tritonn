@@ -34,6 +34,7 @@
 #include "average.h"
 #include "masswater.h"
 #include "volwater.h"
+#include "cinematicviscosity.h"
 #include "../io/manager.h"
 #include "../io/module_ai6.h"
 #include "../io/module_crm.h"
@@ -69,6 +70,7 @@ UDINT rDataManager::saveMarkDown()
 	rRVar        rvar;
 	rMassWater   mw;
 	rVolWater    vw;
+	rCinematicViscosity cv;
 	rSelector    sel;
 	rSelector    msel;
 	rStation     stn;
@@ -86,6 +88,7 @@ UDINT rDataManager::saveMarkDown()
 	ds.generateMarkDown(md);
 	mw.generateMarkDown(md);
 	vw.generateMarkDown(md);
+	cv.generateMarkDown(md);
 	sel.generateMarkDown(md);
 	msel.generateMarkDown(md);
 	str.generateMarkDown(md);

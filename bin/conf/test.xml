@@ -444,6 +444,10 @@
 					</stream>
 				</streams>
 				<calculate>
+					<cinviscosity name="cinvisc" description="">
+						<dynviscosity><link alias="sikn1.bik.io.visc"/></dynviscosity>
+						<density><link alias="var.testdens"/></density>
+					</cinviscosity>
 					<volwater name="volwater" description="4000" setup="">
 						<masswater><link alias="sikn1.obj.masswater:masswater"/></masswater>
 						<density><link alias="var.testdens"/></density>
