@@ -29,6 +29,7 @@
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "data_report.h"
+#include "data_station.h"
 #include "interface/interface.h"
 #include "text_manager.h"
 #include "event/manager.h"
@@ -450,4 +451,32 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+
+void rDataManager::saveData()
+{
+
+}
+
+void rDataManager::saveDataTotals()
+{
+
+}
+
+void rDataManager::loadData()
+{
+	rStation tmpstn;
+	std::string stn_rtti = tmpstn.RTTI();
+	std::vector<rStation*> liststn;
+
+	// создаем уникальное число, описывающее текущую конфигурацию
+	for (auto item : m_listSource) {
+		if (stn_rtti == item->RTTI()) {
+			liststn.push_back(item);
+		}
+	}
+
+	for (auto stn : liststn)
+
 }

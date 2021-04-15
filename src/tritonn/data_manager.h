@@ -71,13 +71,16 @@ protected:
 
 	UDINT getConfFile(std::string& conf);
 
+	void  saveData();
+	void  loadData();
+
 
 private:
 	rSafityValue<USINT> m_live;     // Текущий статус жизни процесса
 	rSafityValue<USINT> Halt;     // Флаг, перехода в HALT режим
 
 	rSystemVariable          m_sysVar;     // Системные переменные
-	std::vector<rSource*>    ListSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
+	std::vector<rSource*>    m_listSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
 	std::vector<rInterface*> ListInterface;
 	std::vector<rReport*>    ListReport; // Список отчетов
 	std::vector<string>      ListLang;
