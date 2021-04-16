@@ -39,11 +39,14 @@ public:
 
 	void Calculate(const rObjUnit& unit);
 
+	std::string toXml(const char* name) const;
+
 	static LREAL Sub(LREAL sub1, LREAL sub2);
 	static void  clear(rBaseTotal &total);
 
 protected:
 	void checkMax();
+	std::string toXmlBase(const char* name, const rBaseTotal& total) const;
 
 public:
 	rBaseTotal Past;    // Нарастающие на прошлом скане

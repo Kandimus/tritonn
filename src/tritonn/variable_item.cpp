@@ -57,7 +57,7 @@ rVariable::~rVariable()
 	m_external = nullptr;
 }
 
-std::string rVariable::saveToCSV()
+std::string rVariable::saveToCSV() const
 {
 	if (isHide()) {
 		return "";
@@ -66,3 +66,40 @@ std::string rVariable::saveToCSV()
 	return String_format("%s;%s;%#06x;%08X;%#010x;\n", m_name.c_str(), NAME_TYPE[m_type].c_str(), m_flags, m_access, m_hash);
 }
 
+std::string rVariable::valueToXml() const
+{
+	return "<" + m_name + ">" + valueToString() + "</" + m_name + ">";
+}
+
+
+std::string rVariable::valueToString() const
+{
+	switch(getType()) {
+		case TYPE_USINT: return String_format("%hhu", *(USINT *)m_pointer); break;
+		case TYPE_SINT : return String_format("%hhi", *(SINT  *)m_pointer); break;
+		case TYPE_UINT : return String_format("%hu" , *(UINT  *)m_pointer); break;
+		case TYPE_INT  : return String_format("%hi" , *(INT   *)m_pointer); break;
+		case TYPE_UDINT: return String_format("%u"  , *(UDINT *)m_pointer); break;
+		case TYPE_DINT : return String_format("%i"  , *(DINT  *)m_pointer); break;
+		case TYPE_REAL : return String_format("%#g" , *(REAL  *)m_pointer); break;
+		case TYPE_LREAL: return String_format("%#g" , *(LREAL *)m_pointer); break;
+		case TYPE_STRID: return String_format("%u"  , *(UDINT *)m_pointer); break;
+		default: return "";
+	}
+}
+
+void rVariable::stringToValue(const std::string& strvalue) const
+{
+	switch(getType()) {
+		case TYPE_USINT: { USINT value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_SINT : { SINT  value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_UINT : { UINT  value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_INT  : { INT   value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_UDINT: { UDINT value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_DINT : { DINT  value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_REAL : { REAL  value = atof(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_LREAL: { LREAL value = atof(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_STRID: { UDINT value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		default: return;
+	}
+}

@@ -72,6 +72,7 @@ protected:
 	UDINT getConfFile(std::string& conf);
 
 	void  saveData();
+	UDINT saveDataTotals();
 	void  loadData();
 
 
@@ -85,9 +86,10 @@ private:
 	std::vector<rReport*>    ListReport; // Список отчетов
 	std::vector<string>      ListLang;
 
+	std::string m_hashCfg;
+
 	int LoadEEPROM();
 	int SaveEEPROM();
-
 };
 
 

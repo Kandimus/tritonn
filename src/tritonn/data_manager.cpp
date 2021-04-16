@@ -36,7 +36,7 @@
 #include "io/manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
-
+#include "xml_util.h"
 
 extern rSafityValue<DINT> gReboot;
 
@@ -218,7 +218,7 @@ UDINT rDataManager::LoadConfig()
 		//TODO проверить на валидность hash
 		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
 
-		if(rDataConfig::instance().LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
+		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
 
@@ -235,7 +235,7 @@ UDINT rDataManager::LoadConfig()
 	}
 
 	// Собираем переменные от объектов
-	for (auto source : ListSource) {
+	for (auto source : m_listSource) {
 		result = source->generateVars(m_varList);
 		if (result != TRITONN_RESULT_OK) {
 			//TODO Нужно ли выдавать ошибку?
@@ -334,12 +334,12 @@ rThreadStatus rDataManager::Proccesing()
 		if(m_sysVar.m_state.Live == Live::RUNNING)
 		{
 			// Пердвычисления для всех объектов
-			for (auto item : ListSource) {
+			for (auto item : m_listSource) {
 				item->preCalculate();
 			}
 
 			// Основной расчет всех объектов
-			for (auto item : ListSource) {
+			for (auto item : m_listSource) {
 				item->calculate();
 			}
 
@@ -354,9 +354,11 @@ rThreadStatus rDataManager::Proccesing()
 			}
 		}
 
+		Unlock();
+
 		rVariableClass::processing();
 		rThreadClass::EndProccesing();
-		Unlock();
+
 	} // while
 }
 
@@ -456,12 +458,35 @@ UDINT rDataManager::getConfFile(std::string& conf)
 
 void rDataManager::saveData()
 {
+	std::string text;
 
+	text += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+	for (auto item : m_varList) {
+
+		if (item->isDumped()) {
+			text += item->toXml(item->m_alias.c_str());
+		}
+	}
+
+	return SimpleFileSave("./total.xml", text);
 }
 
-void rDataManager::saveDataTotals()
+UDINT rDataManager::saveDataTotals()
 {
+	std::string text;
 
+	text += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+	for (auto item : m_listSource) {
+		auto total = item->getTotal();
+
+		if (!total) {
+			continue;
+		}
+
+		text += total->toXml(item->m_alias.c_str());
+	}
+
+	return SimpleFileSave("./total.xml", text);
 }
 
 void rDataManager::loadData()

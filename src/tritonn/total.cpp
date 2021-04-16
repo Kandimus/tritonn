@@ -18,6 +18,7 @@
 #include "precision.h"
 #include "data_objunits.h"
 #include "event/manager.h"
+#include "xml_util.h"
 
 rTotal::rTotal(rEvent& mass, rEvent& volume, rEvent& volume15, rEvent& volume20)
 {
@@ -117,4 +118,33 @@ void rTotal::clear(rBaseTotal &total)
 	total.Volume   = 0.0;
 	total.Volume15 = 0.0;
 	total.Volume20 = 0.0;
+}
+
+std::string rTotal::toXmlBase(const char* name, const rBaseTotal& total) const
+{
+	std::string text = "";
+
+	text += String_format("<%s>", name);
+	text += String_format("<%s>%.15f</%s>", XmlName::MASS    , total.Mass    , XmlName::MASS);
+	text += String_format("<%s>%.15f</%s>", XmlName::VOLUME  , total.Volume  , XmlName::VOLUME);
+	text += String_format("<%s>%.15f</%s>", XmlName::VOLUME15, total.Volume15, XmlName::VOLUME15);
+	text += String_format("<%s>%.15f</%s>", XmlName::VOLUME20, total.Volume20, XmlName::VOLUME20);
+	text += String_format("<%s>%u</%s>"   , XmlName::COUNT   , total.Count   , XmlName::COUNT);
+	text += String_format("</%s>", name);
+
+	return text;
+}
+
+std::string rTotal::toXml(const char* name) const
+{
+	std::string text = "";
+
+	text += String_format("<%s>", name);
+	text += toXmlBase(XmlName::PAST   , Past);
+	text += toXmlBase(XmlName::RAW    , Raw);
+	text += toXmlBase(XmlName::INC    , Inc);
+	text += toXmlBase(XmlName::PRESENT, Present);
+	text += String_format("</%s>", name);
+
+	return text;
 }

@@ -191,23 +191,31 @@ std::string rSnapshotItem::getValueString()
 		return "";
 	}
 
+	std::string value = "";
 	try
 	{
-		switch(m_var->getType())
-		{
-			case TYPE_USINT: return String_format("%hhu", *(USINT *)m_data); break;
-			case TYPE_SINT : return String_format("%hhi", *(SINT  *)m_data); break;
-			case TYPE_UINT : return String_format("%hu" , *(UINT  *)m_data); break;
-			case TYPE_INT  : return String_format("%hi" , *(INT   *)m_data); break;
-			case TYPE_UDINT: return String_format("%u"  , *(UDINT *)m_data); break;
-			case TYPE_DINT : return String_format("%i"  , *(DINT  *)m_data); break;
-			case TYPE_REAL : return String_format("%#g" , *(REAL  *)m_data); break;
-			case TYPE_LREAL: return String_format("%#g" , *(LREAL *)m_data); break;
-			case TYPE_STRID: return String_format("%u"  , *(UDINT *)m_data); break;
-			default:
-				m_status = Status::ERROR;
-				return "";
+		value = m_var->valueToString();
+
+		if (value.empty()) {
+			m_status = Status::ERROR;
 		}
+
+		return value;
+//		switch(m_var->getType())
+//		{
+//			case TYPE_USINT: return String_format("%hhu", *(USINT *)m_data); break;
+//			case TYPE_SINT : return String_format("%hhi", *(SINT  *)m_data); break;
+//			case TYPE_UINT : return String_format("%hu" , *(UINT  *)m_data); break;
+//			case TYPE_INT  : return String_format("%hi" , *(INT   *)m_data); break;
+//			case TYPE_UDINT: return String_format("%u"  , *(UDINT *)m_data); break;
+//			case TYPE_DINT : return String_format("%i"  , *(DINT  *)m_data); break;
+//			case TYPE_REAL : return String_format("%#g" , *(REAL  *)m_data); break;
+//			case TYPE_LREAL: return String_format("%#g" , *(LREAL *)m_data); break;
+//			case TYPE_STRID: return String_format("%u"  , *(UDINT *)m_data); break;
+//			default:
+//				m_status = Status::ERROR;
+//				return "";
+//		}
 	}
 	catch(...)
 	{
