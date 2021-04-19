@@ -39,7 +39,7 @@ rThreadStatus rSystemManager::Proccesing()
 		if (m_timer.isFinished()) {
 			Lock();
 			if (m_list.size()) {
-				int result = execl(m_list.front().c_str());
+				int result = system(m_list.front().c_str());
 
 				TRACEI(LOG::SYSTEM, "%i <- [%s]", result, m_list.front().c_str());
 

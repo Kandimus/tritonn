@@ -74,16 +74,18 @@ std::string rVariable::valueToXml() const
 
 std::string rVariable::valueToString() const
 {
+	void *ptr = (isExternal()) ? m_external->m_read : m_pointer;
+
 	switch(getType()) {
-		case TYPE_USINT: return String_format("%hhu", *(USINT *)m_pointer); break;
-		case TYPE_SINT : return String_format("%hhi", *(SINT  *)m_pointer); break;
-		case TYPE_UINT : return String_format("%hu" , *(UINT  *)m_pointer); break;
-		case TYPE_INT  : return String_format("%hi" , *(INT   *)m_pointer); break;
-		case TYPE_UDINT: return String_format("%u"  , *(UDINT *)m_pointer); break;
-		case TYPE_DINT : return String_format("%i"  , *(DINT  *)m_pointer); break;
-		case TYPE_REAL : return String_format("%#g" , *(REAL  *)m_pointer); break;
-		case TYPE_LREAL: return String_format("%#g" , *(LREAL *)m_pointer); break;
-		case TYPE_STRID: return String_format("%u"  , *(UDINT *)m_pointer); break;
+		case TYPE_USINT: return String_format("%hhu", *(USINT *)ptr); break;
+		case TYPE_SINT : return String_format("%hhi", *(SINT  *)ptr); break;
+		case TYPE_UINT : return String_format("%hu" , *(UINT  *)ptr); break;
+		case TYPE_INT  : return String_format("%hi" , *(INT   *)ptr); break;
+		case TYPE_UDINT: return String_format("%u"  , *(UDINT *)ptr); break;
+		case TYPE_DINT : return String_format("%i"  , *(DINT  *)ptr); break;
+		case TYPE_REAL : return String_format("%#g" , *(REAL  *)ptr); break;
+		case TYPE_LREAL: return String_format("%#g" , *(LREAL *)ptr); break;
+		case TYPE_STRID: return String_format("%u"  , *(UDINT *)ptr); break;
 		default: return "";
 	}
 }
@@ -91,15 +93,15 @@ std::string rVariable::valueToString() const
 void rVariable::stringToValue(const std::string& strvalue) const
 {
 	switch(getType()) {
-		case TYPE_USINT: { USINT value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_SINT : { SINT  value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_UINT : { UINT  value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_INT  : { INT   value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_UDINT: { UDINT value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_DINT : { DINT  value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_REAL : { REAL  value = atof(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_LREAL: { LREAL value = atof(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
-		case TYPE_STRID: { UDINT value = atoi(strvalue.c_str()); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_USINT: { USINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_SINT : { SINT  value = std::stoi (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_UINT : { UINT  value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_INT  : { INT   value = std::stoi (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_UDINT: { UDINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_DINT : { DINT  value = std::stoi (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_REAL : { REAL  value = std::stof (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_LREAL: { LREAL value = std::stod (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_STRID: { UDINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
 		default: return;
 	}
 }

@@ -241,6 +241,7 @@ const std::string DIR_CONF             = DIR_HOME + "conf/";
 const std::string DIR_LOG              = DIR_HOME + "log/";
 const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
+const std::string DIR_DUMP             = DIR_HOME + "dump/";
 const std::string DIR_EVENT            = DIR_WWW  + "application/core/events/";
 const std::string DIR_REPORT           = DIR_FTP  + "reports/";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
@@ -255,6 +256,8 @@ const std::string FILE_WWW_PRECISION   = DIR_WWW  + "application/core/precision.
 const std::string DIR_WWW_LANG         = DIR_WWW  + "application/language/";
 const std::string FILE_WWW_LANG        = "custom_lang.php";
 const std::string FILE_WWW_EVENT       = "event_lang.php";
+const std::string FILE_DUMP_VARIABLES  = DIR_DUMP + "variables.xml";
+const std::string FILE_DUMP_TOTALS     = DIR_DUMP + "totals.xml";
 #endif
 
 

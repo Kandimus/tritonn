@@ -43,7 +43,8 @@ extern rSafityValue<DINT> gReboot;
 
 rDataManager::rDataManager() : rVariableClass(Mutex), m_live(Live::UNDEF)
 {
-	RTTI                 = "rDataManager";
+	RTTI = "rDataManager";
+
 	m_sysVar.m_version.m_major = TRITONN_VERSION_MAJOR;
 	m_sysVar.m_version.m_minor = TRITONN_VERSION_MINOR;
 	m_sysVar.m_version.m_build = TRITONN_VERSION_BUILD;
@@ -60,18 +61,6 @@ rDataManager::rDataManager() : rVariableClass(Mutex), m_live(Live::UNDEF)
 rDataManager::~rDataManager()
 {
 }
-
-
-//-------------------------------------------------------------------------------------------------
-//
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -284,8 +273,6 @@ const rConfigInfo *rDataManager::GetConfName() const
 }
 
 
-
-
 UDINT rDataManager::SetLang(const string &lang)
 {
 	rEventManager::instance().setCurLang(lang);
@@ -302,6 +289,8 @@ UDINT rDataManager::SetLang(const string &lang)
 rThreadStatus rDataManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
+
+	m_timerTotal.start(1000);
 
 	while(true)
 	{
@@ -354,7 +343,12 @@ rThreadStatus rDataManager::Proccesing()
 			}
 
 			if (m_doSaveVars.Get()) {
+				saveDataVariables();
+			}
 
+			if (m_timerTotal.isFinished()) {
+				saveDataTotals();
+				m_timerTotal.restart();
 			}
 		}
 
@@ -456,6 +450,20 @@ UDINT rDataManager::getConfFile(std::string& conf)
 		return result;
 	}
 
+	m_dumpVariablesPrefix  = "<" + std::string(XmlName::VARIABLES) + ">";
+	m_dumpVariablesPrefix += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+	m_dumpVariablesPrefix += "<" + std::string(XmlName::DUMP) + ">";
+
+	m_dumpVariablesSuffix  = "</" + std::string(XmlName::DUMP) + ">";
+	m_dumpVariablesSuffix += "</" + std::string(XmlName::VARIABLES) + ">";
+
+	m_dumpTotalsPrefix  = "<" + std::string(XmlName::TOTALS) + ">";
+	m_dumpTotalsPrefix += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+	m_dumpTotalsPrefix += "<" + std::string(XmlName::DUMP) + ">";
+
+	m_dumpTotalsSuffix  = "</" + std::string(XmlName::DUMP) + ">";
+	m_dumpTotalsSuffix += "</" + std::string(XmlName::TOTALS) + ">";
+
 	return TRITONN_RESULT_OK;
 }
 
@@ -466,12 +474,9 @@ void rDataManager::doSaveVars()
 
 UDINT rDataManager::saveDataVariables()
 {
-	std::string text;
+	std::string text = m_dumpVariablesPrefix;
 
 	m_doSaveVars.Set(0);
-
-	text += "<" + std::string(XmlName::VARIABLES) + ">";
-	text += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
 
 	for (auto item : m_varList) {
 
@@ -480,9 +485,9 @@ UDINT rDataManager::saveDataVariables()
 		}
 	}
 
-	text += "</" + std::string(XmlName::VARIABLES) + ">";
+	text += m_dumpVariablesSuffix;
 
-	UDINT result = SimpleFileSave("./variables.xml", text);
+	UDINT result = SimpleFileSave(FILE_DUMP_VARIABLES, text);
 
 	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
@@ -497,10 +502,7 @@ UDINT rDataManager::saveDataVariables()
 
 UDINT rDataManager::saveDataTotals()
 {
-	std::string text;
-
-	text += "<" + std::string(XmlName::TOTALS) + ">";
-	text += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+	std::string text = m_dumpTotalsPrefix;
 
 	for (auto item : m_listSource) {
 		auto total = item->getTotal();
@@ -512,9 +514,9 @@ UDINT rDataManager::saveDataTotals()
 		text += total->toXml(item->m_alias.c_str());
 	}
 
-	text += "</" + std::string(XmlName::TOTALS) + ">";
+	text += m_dumpTotalsSuffix;
 
-	UDINT result = SimpleFileSave("./total.xml", text);
+	UDINT result = SimpleFileSave(FILE_DUMP_TOTALS, text);
 
 	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);

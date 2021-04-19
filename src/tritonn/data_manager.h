@@ -20,7 +20,7 @@
 #include "thread_class.h"
 #include "variable_class.h"
 #include "data_sysvar.h"
-
+#include "tickcount.h"
 
 class rSnapshot;
 class rInterface;
@@ -88,6 +88,12 @@ private:
 	std::vector<rInterface*> ListInterface;
 	std::vector<rReport*>    ListReport; // Список отчетов
 	std::vector<string>      ListLang;
+
+	rTickCount  m_timerTotal;
+	std::string m_dumpVariablesPrefix;
+	std::string m_dumpVariablesSuffix;
+	std::string m_dumpTotalsPrefix;
+	std::string m_dumpTotalsSuffix;
 
 	std::string m_hashCfg;
 

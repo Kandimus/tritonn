@@ -73,6 +73,7 @@ const char CPL[]           = "cpl";
 const char CTL[]           = "ctl";
 const char CURRENT[]       = "current";
 const char CUSTOM[]        = "custom";
+const char DUMP[]          = "dump";
 const char DATABLOCK[]     = "datablock";
 const char DATABLOCKS[]    = "datablocks";
 const char DATAMAP[]       = "datamap";
