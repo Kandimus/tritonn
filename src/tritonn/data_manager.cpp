@@ -352,6 +352,10 @@ rThreadStatus rDataManager::Proccesing()
 			for (auto item : ListReport) {
 				item->calculate();
 			}
+
+			if (m_doSaveVars.Get()) {
+
+			}
 		}
 
 		Unlock();
@@ -455,27 +459,49 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	return TRITONN_RESULT_OK;
 }
 
+void rDataManager::doSaveVars()
+{
+	m_doSaveVars.Set(1);
+}
 
-void rDataManager::saveData()
+UDINT rDataManager::saveDataVariables()
 {
 	std::string text;
 
+	m_doSaveVars.Set(0);
+
+	text += "<" + std::string(XmlName::VARIABLES) + ">";
 	text += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+
 	for (auto item : m_varList) {
 
 		if (item->isDumped()) {
-			text += item->toXml(item->m_alias.c_str());
+			text += item->valueToXml();
 		}
 	}
 
-	return SimpleFileSave("./total.xml", text);
+	text += "</" + std::string(XmlName::VARIABLES) + ">";
+
+	UDINT result = SimpleFileSave("./variables.xml", text);
+
+	if (result != TRITONN_RESULT_OK) {
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+
+		DoHalt(HALT_REASON_DUMP | result);
+
+		TRACEP(LOG::DATAMGR, "Can't save variable dump file. Error ID: %i", result);
+	}
+
+	return result;
 }
 
 UDINT rDataManager::saveDataTotals()
 {
 	std::string text;
 
+	text += "<" + std::string(XmlName::TOTALS) + ">";
 	text += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
+
 	for (auto item : m_listSource) {
 		auto total = item->getTotal();
 
@@ -486,22 +512,35 @@ UDINT rDataManager::saveDataTotals()
 		text += total->toXml(item->m_alias.c_str());
 	}
 
-	return SimpleFileSave("./total.xml", text);
+	text += "</" + std::string(XmlName::TOTALS) + ">";
+
+	UDINT result = SimpleFileSave("./total.xml", text);
+
+	if (result != TRITONN_RESULT_OK) {
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+
+		DoHalt(HALT_REASON_DUMP | result);
+
+		TRACEP(LOG::DATAMGR, "Can't save totals dump file. Error ID: %i", result);
+	}
+
+	return result;
 }
 
-void rDataManager::loadData()
+UDINT rDataManager::loadDataTotals()
 {
 	rStation tmpstn;
 	std::string stn_rtti = tmpstn.RTTI();
 	std::vector<rStation*> liststn;
 
 	// создаем уникальное число, описывающее текущую конфигурацию
-	for (auto item : m_listSource) {
-		if (stn_rtti == item->RTTI()) {
-			liststn.push_back(item);
-		}
-	}
+//	for (auto item : m_listSource) {
+//		if (stn_rtti == item->RTTI()) {
+//			liststn.push_back(item);
+//		}
+//	}
 
-	for (auto stn : liststn)
+//	for (auto stn : liststn)
 
+	return TRITONN_RESULT_OK;
 }

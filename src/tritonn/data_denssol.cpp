@@ -253,32 +253,32 @@ UDINT rDensSol::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".k0"               , TYPE_LREAL, rVariable::Flags::R__, &m_k0                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K0");
-	list.add(m_alias + ".k1"               , TYPE_LREAL, rVariable::Flags::R__, &m_k1                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K1");
-	list.add(m_alias + ".k2"               , TYPE_LREAL, rVariable::Flags::R__, &m_k2                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K2");
-	list.add(m_alias + ".factor.k0"        , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K0.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K0");
-	list.add(m_alias + ".factor.k1"        , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K1.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K1");
-	list.add(m_alias + ".factor.k2"        , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K2.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K2");
-	list.add(m_alias + ".factor.k18"       , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K18.Value , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K18");
-	list.add(m_alias + ".factor.k19"       , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K19.Value , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K19");
-	list.add(m_alias + ".factor.k20a"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K20A.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K20A");
-	list.add(m_alias + ".factor.k20b"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K20B.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K20B");
-	list.add(m_alias + ".factor.k21a"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K21A.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K21A");
-	list.add(m_alias + ".factor.k21b"      , TYPE_LREAL, rVariable::Flags::RS_, &m_curCoef.K21B.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K21B");
-	list.add(m_alias + ".factor.set.k0"    , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K0.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K0");
-	list.add(m_alias + ".factor.set.k1"    , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K1.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K1");
-	list.add(m_alias + ".factor.set.k2"    , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K2.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K2");
-	list.add(m_alias + ".factor.set.k18"   , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K18.Value , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K18");
-	list.add(m_alias + ".factor.set.k19"   , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K19.Value , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K19");
-	list.add(m_alias + ".factor.set.k20a"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K20A.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K20A");
-	list.add(m_alias + ".factor.set.k20b"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K20B.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K20B");
-	list.add(m_alias + ".factor.set.k21a"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K21A.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K21A");
-	list.add(m_alias + ".factor.set.k21b"  , TYPE_LREAL, rVariable::Flags::___, &m_setCoef.K21B.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K21B");
-	list.add(m_alias + ".factor.set.accept", TYPE_USINT, rVariable::Flags::___, &m_accept            , U_DIMLESS, ACCESS_FACTORS, COMMENT::FACTOR_ACC);
-	list.add(m_alias + ".Calibration"      , TYPE_LREAL, rVariable::Flags::___, &m_calibrT.Value     , U_C      , ACCESS_FACTORS, "Значение температуры калибровки");
-//	list.add(m_alias + ".Setup"            , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value       , U_DIMLESS, ACCESS_FACTORS);
+	list.add(m_alias + ".k0"               , rVariable::Flags::R___, &m_k0                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K0");
+	list.add(m_alias + ".k1"               , rVariable::Flags::R___, &m_k1                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K1");
+	list.add(m_alias + ".k2"               , rVariable::Flags::R___, &m_k2                , U_DIMLESS, 0             , COMMENT::CALC_COEF + " K2");
+	list.add(m_alias + ".factor.k0"        , rVariable::Flags::RS_D, &m_curCoef.K0.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K0");
+	list.add(m_alias + ".factor.k1"        , rVariable::Flags::RS_D, &m_curCoef.K1.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K1");
+	list.add(m_alias + ".factor.k2"        , rVariable::Flags::RS_D, &m_curCoef.K2.Value  , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K2");
+	list.add(m_alias + ".factor.k18"       , rVariable::Flags::RS_D, &m_curCoef.K18.Value , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K18");
+	list.add(m_alias + ".factor.k19"       , rVariable::Flags::RS_D, &m_curCoef.K19.Value , U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K19");
+	list.add(m_alias + ".factor.k20a"      , rVariable::Flags::RS_D, &m_curCoef.K20A.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K20A");
+	list.add(m_alias + ".factor.k20b"      , rVariable::Flags::RS_D, &m_curCoef.K20B.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K20B");
+	list.add(m_alias + ".factor.k21a"      , rVariable::Flags::RS_D, &m_curCoef.K21A.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K21A");
+	list.add(m_alias + ".factor.k21b"      , rVariable::Flags::RS_D, &m_curCoef.K21B.Value, U_COEFSOL, ACCESS_SA     , COMMENT::FACTOR + " K21B");
+	list.add(m_alias + ".factor.set.k0"    , rVariable::Flags::____, &m_setCoef.K0.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K0");
+	list.add(m_alias + ".factor.set.k1"    , rVariable::Flags::____, &m_setCoef.K1.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K1");
+	list.add(m_alias + ".factor.set.k2"    , rVariable::Flags::____, &m_setCoef.K2.Value  , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K2");
+	list.add(m_alias + ".factor.set.k18"   , rVariable::Flags::____, &m_setCoef.K18.Value , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K18");
+	list.add(m_alias + ".factor.set.k19"   , rVariable::Flags::____, &m_setCoef.K19.Value , U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K19");
+	list.add(m_alias + ".factor.set.k20a"  , rVariable::Flags::____, &m_setCoef.K20A.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K20A");
+	list.add(m_alias + ".factor.set.k20b"  , rVariable::Flags::____, &m_setCoef.K20B.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K20B");
+	list.add(m_alias + ".factor.set.k21a"  , rVariable::Flags::____, &m_setCoef.K21A.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K21A");
+	list.add(m_alias + ".factor.set.k21b"  , rVariable::Flags::____, &m_setCoef.K21B.Value, U_COEFSOL, ACCESS_FACTORS, COMMENT::FACTOR_SET + " K21B");
+	list.add(m_alias + ".factor.set.accept", rVariable::Flags::____, &m_accept            , U_DIMLESS, ACCESS_FACTORS, COMMENT::FACTOR_ACC);
+	list.add(m_alias + ".Calibration"      , rVariable::Flags::___D, &m_calibrT.Value     , U_C      , ACCESS_FACTORS, "Значение температуры калибровки");
+//	list.add(m_alias + ".Setup"            , rVariable::Flags::RS_, &m_setup.Value       , U_DIMLESS, ACCESS_FACTORS);
 
-	list.add(m_alias + ".fault"            , TYPE_UDINT, rVariable::Flags::R__, &m_fault             , U_DIMLESS, 0             , COMMENT::FAULT);
+	list.add(m_alias + ".fault"            , rVariable::Flags::R___, &m_fault             , U_DIMLESS, 0             , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

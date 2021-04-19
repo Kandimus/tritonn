@@ -378,28 +378,28 @@ UDINT rSampler::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".method"      , TYPE_UINT , rVariable::Flags::___, &m_method         , U_DIMLESS, ACCESS_SAMPLERS   , COMMENT::METHOD + m_flagsMethod.getInfo(true));
-	list.add(m_alias + ".setup"       , TYPE_UINT , rVariable::Flags::___, &m_setup.Value    , U_DIMLESS, ACCESS_SETSAMPLERS, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".select"      , TYPE_UINT , rVariable::Flags::___, &m_select         , U_DIMLESS, ACCESS_SAMPLERS   , "Выбор бака:<br/>0 - емкость А<br/>1 - емкость Б");
-	list.add(m_alias + ".command"     , TYPE_UINT , rVariable::Flags::___, &m_command        , U_DIMLESS, ACCESS_SAMPLERS   , COMMENT::COMMAND + m_flagsCommand.getInfo(true));
-	list.add(m_alias + ".state"       , TYPE_UINT , rVariable::Flags::R__, &m_state          , U_DIMLESS, 0                 , COMMENT::STATUS + m_flagsState.getInfo(true));
-	list.add(m_alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R__, &m_noflow         , U_DIMLESS, 0                 , "Флаг отсутствия расхода");
-	list.add(m_alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___, &m_probePeriod    , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по времени. Период отбора");
-	list.add(m_alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___, &m_probeVolume    , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по объему. Требуемый объем для отбора");
-	list.add(m_alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___, &m_probeMass      , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по массе. Требуемая масса для отбора");
-	list.add(m_alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___, &m_probeTest      , U_DIMLESS, ACCESS_SETSAMPLERS, "Количество тестовых доз");
-	list.add(m_alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R__, &m_grabVol        , U_ml     , 0                 , "Объем единичной дозы");
-	list.add(m_alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R__, &m_grabCount      , U_DIMLESS, 0                 , "Общее количество доз");
-	list.add(m_alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R__, &m_grabPresent    , U_DIMLESS, 0                 , "Количество отобранных доз");
-	list.add(m_alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R__, &m_grabRemain     , U_DIMLESS, 0                 , "Количство оставшихся доз");
-	list.add(m_alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::___, &m_canVolume      , U_ml     , ACCESS_SETSAMPLERS, "Требуемый объем емкости");
-	list.add(m_alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R__, &m_canPresent     , U_ml     , 0                 , "Заполенный объем емкости");
-	list.add(m_alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R__, &m_canRemain      , U_ml     , 0                 , "Оставшийся для заполнения объем емкости");
-	list.add(m_alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R__, &m_interval       , U_DIMLESS, 0                 , "Интервал отбора");
-	list.add(m_alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R__, &m_timeRemain     , U_msec   , 0                 , "Оставшееся время обора");
-	list.add(m_alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R__, &m_timeStart      , U_sec    , 0                 , "Время старта пробоотбора");
-	list.add(prefix  + "a.volume"     , TYPE_LREAL, rVariable::Flags::___, &m_can[0].m_volume, U_ml     , ACCESS_SAMPLERS   , "Объем емкости А");
-	list.add(prefix  + "b.volume"     , TYPE_LREAL, rVariable::Flags::___, &m_can[1].m_volume, U_ml     , ACCESS_SAMPLERS   , "Объем емкости Б");
+	list.add(m_alias + ".method"      , TYPE_UINT , rVariable::Flags::___D, &m_method         , U_DIMLESS, ACCESS_SAMPLERS   , COMMENT::METHOD + m_flagsMethod.getInfo(true));
+	list.add(m_alias + ".setup"       , TYPE_UINT , rVariable::Flags::___D, &m_setup.Value    , U_DIMLESS, ACCESS_SETSAMPLERS, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".select"      , TYPE_UINT , rVariable::Flags::___D, &m_select         , U_DIMLESS, ACCESS_SAMPLERS   , "Выбор бака:<br/>0 - емкость А<br/>1 - емкость Б");
+	list.add(m_alias + ".command"     , TYPE_UINT , rVariable::Flags::____, &m_command        , U_DIMLESS, ACCESS_SAMPLERS   , COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+	list.add(m_alias + ".state"       , TYPE_UINT , rVariable::Flags::R___, &m_state          , U_DIMLESS, 0                 , COMMENT::STATUS + m_flagsState.getInfo(true));
+	list.add(m_alias + ".noflow"      , TYPE_UINT , rVariable::Flags::R___, &m_noflow         , U_DIMLESS, 0                 , "Флаг отсутствия расхода");
+	list.add(m_alias + ".probe.period", TYPE_UDINT, rVariable::Flags::___D, &m_probePeriod    , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по времени. Период отбора");
+	list.add(m_alias + ".probe.volume", TYPE_LREAL, rVariable::Flags::___D, &m_probeVolume    , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по объему. Требуемый объем для отбора");
+	list.add(m_alias + ".probe.mass"  , TYPE_LREAL, rVariable::Flags::___D, &m_probeMass      , U_DIMLESS, ACCESS_SAMPLERS   , "Отбор по массе. Требуемая масса для отбора");
+	list.add(m_alias + ".probe.test"  , TYPE_UDINT, rVariable::Flags::___D, &m_probeTest      , U_DIMLESS, ACCESS_SETSAMPLERS, "Количество тестовых доз");
+	list.add(m_alias + ".grab.volume" , TYPE_LREAL, rVariable::Flags::R___, &m_grabVol        , U_ml     , 0                 , "Объем единичной дозы");
+	list.add(m_alias + ".grab.count"  , TYPE_UDINT, rVariable::Flags::R___, &m_grabCount      , U_DIMLESS, 0                 , "Общее количество доз");
+	list.add(m_alias + ".grab.present", TYPE_UDINT, rVariable::Flags::R___, &m_grabPresent    , U_DIMLESS, 0                 , "Количество отобранных доз");
+	list.add(m_alias + ".grab.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_grabRemain     , U_DIMLESS, 0                 , "Количство оставшихся доз");
+	list.add(m_alias + ".can.volume"  , TYPE_LREAL, rVariable::Flags::___D, &m_canVolume      , U_ml     , ACCESS_SETSAMPLERS, "Требуемый объем емкости");
+	list.add(m_alias + ".can.present" , TYPE_LREAL, rVariable::Flags::R___, &m_canPresent     , U_ml     , 0                 , "Заполенный объем емкости");
+	list.add(m_alias + ".can.remain"  , TYPE_LREAL, rVariable::Flags::R___, &m_canRemain      , U_ml     , 0                 , "Оставшийся для заполнения объем емкости");
+	list.add(m_alias + ".interval"    , TYPE_LREAL, rVariable::Flags::R___, &m_interval       , U_DIMLESS, 0                 , "Интервал отбора");
+	list.add(m_alias + ".time.remain" , TYPE_UDINT, rVariable::Flags::R___, &m_timeRemain     , U_msec   , 0                 , "Оставшееся время обора");
+	list.add(m_alias + ".time.start"  , TYPE_UDINT, rVariable::Flags::R___, &m_timeStart      , U_sec    , 0                 , "Время старта пробоотбора");
+	list.add(prefix  + "a.volume"     , TYPE_LREAL, rVariable::Flags::___D, &m_can[0].m_volume, U_ml     , ACCESS_SAMPLERS   , "Объем емкости А");
+	list.add(prefix  + "b.volume"     , TYPE_LREAL, rVariable::Flags::___D, &m_can[1].m_volume, U_ml     , ACCESS_SAMPLERS   , "Объем емкости Б");
 
 	return TRITONN_RESULT_OK;
 }

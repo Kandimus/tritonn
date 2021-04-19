@@ -138,7 +138,7 @@ UDINT rReducedDens::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R__, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
+	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R___, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

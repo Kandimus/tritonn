@@ -149,7 +149,7 @@ const UDINT  HALT_REASON_HARDWARE      = 0x00030000;
 const UDINT  HALT_REASON_REPORT        = 0x00040000;
 const UDINT  HALT_REASON_OPC           = 0x00050000;
 const UDINT  HALT_REASON_RUNTIME       = 0x00060000;
-
+const UDINT  HALT_REASON_DUMP          = 0x00070000;
 
 //THREADMASTER_FLAGS
 const UDINT  TMF_NONE                  = 0x00000000;
@@ -343,6 +343,7 @@ enum rTritonn_Error
 	FILE_RESULT_EDIR,                       //  39 Ошибка считывания директории
 	FILE_RESULT_CANTDELETE    = 40,         //  40 Ошибка операции удаления файла или директории
 	FILE_RESULT_EFILE,                      //  41 Прочие ошибки файла (сбой функции stat)
+	FILE_RESULT_CANTREMOVE,                 //  42
 
 	DATACFGERR_STRUCT         = 100,        // 100
 	DATACFGERR_NOTFOUND_HARDWARE,           //

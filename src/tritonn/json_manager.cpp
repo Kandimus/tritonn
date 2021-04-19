@@ -766,7 +766,7 @@ string rJSONManager::Packet_ListConf(cJSON */*root*/)
 		cJSON_AddItemToObject(aconf   , JSONSTR_NAME  , cJSON_CreateString(rListConfig::Get(ii)->Description.c_str()));
 		cJSON_AddItemToObject(aconf   , JSONSTR_TIME  , cJSON_CreateString(String_FileTime(rListConfig::Get(ii)->Filetime).c_str()));
 		cJSON_AddItemToObject(aconf   , JSONSTR_STATUS, cJSON_CreateNumber(rListConfig::Get(ii)->Status));
-		cJSON_AddItemToObject(aconf   , JSONSTR_HASH  , cJSON_CreateString(rListConfig::Get(ii)->StrHash.c_str()));
+		cJSON_AddItemToObject(aconf   , JSONSTR_HASH  , cJSON_CreateString(rListConfig::Get(ii)->m_strHash.c_str()));
 
 		cJSON_AddItemToArray(list, aconf);
 	}

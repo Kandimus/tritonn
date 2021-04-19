@@ -243,12 +243,12 @@ UDINT rDI::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".keypad", TYPE_USINT, rVariable::Flags::___, &m_keypadValue.Value, U_DIMLESS, ACCESS_KEYPAD, COMMENT::KEYPAD);
-	list.add(m_alias + ".setup" , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value      , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".mode"  , TYPE_UINT , rVariable::Flags::___, &m_mode             , U_DIMLESS, ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
-	list.add(m_alias + ".status", TYPE_UINT , rVariable::Flags::R__, &m_status           , U_DIMLESS, 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
+	list.add(m_alias + ".keypad",            rVariable::Flags::___D, &m_keypadValue.Value, U_DIMLESS, ACCESS_KEYPAD, COMMENT::KEYPAD);
+	list.add(m_alias + ".setup" ,            rVariable::Flags::RS__, &m_setup.Value      , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".mode"  , TYPE_UINT, rVariable::Flags::___D, &m_mode             , U_DIMLESS, ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
+	list.add(m_alias + ".status", TYPE_UINT, rVariable::Flags::R___, &m_status           , U_DIMLESS, 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
 
-	list.add(m_alias + ".fault" , TYPE_UDINT, rVariable::Flags::R__, &m_fault            , U_DIMLESS, 0            , COMMENT::FAULT);
+	list.add(m_alias + ".fault" ,            rVariable::Flags::R___, &m_fault            , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

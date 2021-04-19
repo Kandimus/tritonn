@@ -99,16 +99,16 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 
 	std::string p = m_alias + ".";
 
-	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R__, &m_type        , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R__, &m_nodeID      , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "vendor"      , TYPE_UDINT, rVariable::Flags::R__, &m_vendorID    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "productCode" , TYPE_UDINT, rVariable::Flags::R__, &m_productCode , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "revision"    , TYPE_UDINT, rVariable::Flags::R__, &m_revision    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "serialNumber", TYPE_UDINT, rVariable::Flags::R__, &m_serialNumber, U_DIMLESS , 0, "Нет данных");
-	list.add(p + "temperature" , TYPE_REAL , rVariable::Flags::R__, &m_temperature , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "can"         , TYPE_UINT , rVariable::Flags::R__, &m_CAN         , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "firmware"    , TYPE_UINT , rVariable::Flags::R__, &m_firmware    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "hardware"    , TYPE_UINT , rVariable::Flags::R__, &m_hardware    , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "type"        , TYPE_UINT , rVariable::Flags::R___, &m_type        , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "node"        , TYPE_UINT , rVariable::Flags::R___, &m_nodeID      , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "vendor"      , TYPE_UDINT, rVariable::Flags::R___, &m_vendorID    , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "productCode" , TYPE_UDINT, rVariable::Flags::R___, &m_productCode , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "revision"    , TYPE_UDINT, rVariable::Flags::R___, &m_revision    , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "serialNumber", TYPE_UDINT, rVariable::Flags::R___, &m_serialNumber, U_DIMLESS , 0, "Нет данных");
+	list.add(p + "temperature" , TYPE_REAL , rVariable::Flags::R___, &m_temperature , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "can"         , TYPE_UINT , rVariable::Flags::R___, &m_CAN         , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "firmware"    , TYPE_UINT , rVariable::Flags::R___, &m_firmware    , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "hardware"    , TYPE_UINT , rVariable::Flags::R___, &m_hardware    , U_DIMLESS , 0, "Нет данных");
 
 	return TRITONN_RESULT_OK;
 }

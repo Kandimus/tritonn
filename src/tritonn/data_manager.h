@@ -59,6 +59,8 @@ public:
 	// Работа с языками
 	UDINT    SetLang(const string &lang);
 
+	void     doSaveVars();
+
 	UDINT    StartInterfaces();
 
 protected:
@@ -71,14 +73,15 @@ protected:
 
 	UDINT getConfFile(std::string& conf);
 
-	void  saveData();
+	UDINT saveDataVariables();
 	UDINT saveDataTotals();
-	void  loadData();
-
+	UDINT loadDataVariables();
+	UDINT loadDataTotals();
 
 private:
 	rSafityValue<USINT> m_live;     // Текущий статус жизни процесса
-	rSafityValue<USINT> Halt;     // Флаг, перехода в HALT режим
+	rSafityValue<USINT> Halt;       // Флаг, перехода в HALT режим
+	rSafityValue<USINT> m_doSaveVars;
 
 	rSystemVariable          m_sysVar;     // Системные переменные
 	std::vector<rSource*>    m_listSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)

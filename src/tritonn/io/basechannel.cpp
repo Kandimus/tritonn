@@ -34,7 +34,7 @@ UDINT rIOBaseChannel::generateVars(const std::string &name, rVariableList &list,
 	std::string p = name + ".";
 
 	if (issimulate) {
-		list.add(p + "simulate.type", TYPE_USINT, rVariable::Flags::___, &m_simType, U_DIMLESS , 0, "Тип симуляции (зависит от типа канала) [^simtype]");
+		list.add(p + "simulate.type", rVariable::Flags::____, &m_simType, U_DIMLESS , 0, "Тип симуляции (зависит от типа канала) [^simtype]");
 	}
 
 	return TRITONN_RESULT_OK;
