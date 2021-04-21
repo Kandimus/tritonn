@@ -130,10 +130,12 @@ const LREAL  COMPARE_REAL_PREC         = 1.0E-7;
 // rDataManager
 enum Live : USINT
 {
-	UNDEF       = 0,
-	STARTING    = 1,
-	REBOOT_COLD = 3,
-	RUNNING     = 4,
+	UNDEF = 0,
+	STARTING,
+	REBOOT_COLD,
+	DUMP_TOTALS,
+	DUMP_VARS,
+	RUNNING,
 	HALT        = 0xFF,
 };
 

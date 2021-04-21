@@ -225,26 +225,26 @@ UDINT rStream::generateVars(rVariableList& list)
 	list.add(m_alias + ".flowmeter"      , TYPE_USINT, rVariable::Flags::R___, &m_flowmeter               , U_DIMLESS       , 0             , "Тип расходомера:<br/>" + m_flagsFlowmeter.getInfo(true));
 	list.add(m_alias + ".maintenance"    ,             rVariable::Flags::___D, &m_maintenance             , U_DIMLESS       , ACCESS_MAINTENANCE, "Статус учета:<br/>0 - в учете<br/>1 - не в учете");
 	list.add(m_alias + ".linearization"  ,             rVariable::Flags::___D, &m_linearization           , U_DIMLESS       , ACCESS_FACTORS, "Тип коэффициентов:<br/>0 - единый К-фактор<br/>1 - кусочно-линейная интерполяция");
-	list.add(strtot  + "present.Volume"  ,             rVariable::Flags::R___, &m_total.Present.Volume    , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
-	list.add(strtot  + "present.Volume15",             rVariable::Flags::R___, &m_total.Present.Volume15  , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
-	list.add(strtot  + "present.Volume20",             rVariable::Flags::R___, &m_total.Present.Volume20  , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
-	list.add(strtot  + "present.Mass"    ,             rVariable::Flags::R___, &m_total.Present.Mass      , unit.getMass()  , 0             , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
-	list.add(strtot  + "present.impulse" ,             rVariable::Flags::R___, &m_total.Present.Count     , U_imp           , 0             , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
-	list.add(strtot  + "Inc.Volume"      ,             rVariable::Flags::RSH_, &m_total.Inc.Volume        , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
-	list.add(strtot  + "Inc.Volume15"    ,             rVariable::Flags::RSH_, &m_total.Inc.Volume15      , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
-	list.add(strtot  + "Inc.Volume20"    ,             rVariable::Flags::RSH_, &m_total.Inc.Volume20      , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
-	list.add(strtot  + "Inc.Mass"        ,             rVariable::Flags::RSH_, &m_total.Inc.Mass          , unit.getMass()  , ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::MASS);
-	list.add(strtot  + "Inc.inpulse"     ,             rVariable::Flags::RSH_, &m_total.Inc.Count         , U_imp           , ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
-	list.add(strtot  + "raw.Volume"      ,             rVariable::Flags::RSH_, &m_total.Raw.Volume        , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
-	list.add(strtot  + "raw.Volume15"    ,             rVariable::Flags::RSH_, &m_total.Raw.Volume15      , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
-	list.add(strtot  + "raw.Volume20"    ,             rVariable::Flags::RSH_, &m_total.Raw.Volume20      , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
-	list.add(strtot  + "raw.Mass"        ,             rVariable::Flags::RSH_, &m_total.Raw.Mass          , unit.getMass()  , 0             , COMMENT::TOTAL_RAW     + COMMENT::MASS);
-	list.add(strtot  + "raw.impulse"     ,             rVariable::Flags::RSH_, &m_total.Raw.Count         , U_imp           , 0             , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
-	list.add(strtot  + "past.Volume"     ,             rVariable::Flags::RSH_, &m_total.Past.Volume       , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
-	list.add(strtot  + "past.Volume15"   ,             rVariable::Flags::RSH_, &m_total.Past.Volume15     , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
-	list.add(strtot  + "past.Volume20"   ,             rVariable::Flags::RSH_, &m_total.Past.Volume20     , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
-	list.add(strtot  + "past.Mass"       ,             rVariable::Flags::RSH_, &m_total.Past.Mass         , unit.getMass()  , 0             , COMMENT::TOTAL_PAST    + COMMENT::MASS);
-	list.add(strtot  + "past.impulse"    ,             rVariable::Flags::RSH_, &m_total.Past.Count        , U_imp           , 0             , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
+	list.add(strtot  + "present.Volume"  ,             rVariable::Flags::R___, &m_total.m_present.Volume    , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
+	list.add(strtot  + "present.Volume15",             rVariable::Flags::R___, &m_total.m_present.Volume15  , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
+	list.add(strtot  + "present.Volume20",             rVariable::Flags::R___, &m_total.m_present.Volume20  , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
+	list.add(strtot  + "present.Mass"    ,             rVariable::Flags::R___, &m_total.m_present.Mass      , unit.getMass()  , 0             , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
+	list.add(strtot  + "present.impulse" ,             rVariable::Flags::R___, &m_total.m_present.Count     , U_imp           , 0             , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
+	list.add(strtot  + "Inc.Volume"      ,             rVariable::Flags::RSH_, &m_total.m_inc.Volume        , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
+	list.add(strtot  + "Inc.Volume15"    ,             rVariable::Flags::RSH_, &m_total.m_inc.Volume15      , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
+	list.add(strtot  + "Inc.Volume20"    ,             rVariable::Flags::RSH_, &m_total.m_inc.Volume20      , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
+	list.add(strtot  + "Inc.Mass"        ,             rVariable::Flags::RSH_, &m_total.m_inc.Mass          , unit.getMass()  , ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::MASS);
+	list.add(strtot  + "Inc.inpulse"     ,             rVariable::Flags::RSH_, &m_total.m_inc.Count         , U_imp           , ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "raw.Volume"      ,             rVariable::Flags::RSH_, &m_total.m_raw.Volume        , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
+	list.add(strtot  + "raw.Volume15"    ,             rVariable::Flags::RSH_, &m_total.m_raw.Volume15      , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
+	list.add(strtot  + "raw.Volume20"    ,             rVariable::Flags::RSH_, &m_total.m_raw.Volume20      , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
+	list.add(strtot  + "raw.Mass"        ,             rVariable::Flags::RSH_, &m_total.m_raw.Mass          , unit.getMass()  , 0             , COMMENT::TOTAL_RAW     + COMMENT::MASS);
+	list.add(strtot  + "raw.impulse"     ,             rVariable::Flags::RSH_, &m_total.m_raw.Count         , U_imp           , 0             , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "past.Volume"     ,             rVariable::Flags::RSH_, &m_total.m_past.Volume       , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
+	list.add(strtot  + "past.Volume15"   ,             rVariable::Flags::RSH_, &m_total.m_past.Volume15     , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
+	list.add(strtot  + "past.Volume20"   ,             rVariable::Flags::RSH_, &m_total.m_past.Volume20     , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
+	list.add(strtot  + "past.Mass"       ,             rVariable::Flags::RSH_, &m_total.m_past.Mass         , unit.getMass()  , 0             , COMMENT::TOTAL_PAST    + COMMENT::MASS);
+	list.add(strtot  + "past.impulse"    ,             rVariable::Flags::RSH_, &m_total.m_past.Count        , U_imp           , 0             , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
 	list.add(m_alias + ".presentkf"      ,             rVariable::Flags::R___, &m_curKF                   , getUnitKF()     , 0             , "Вычисленный К-фактор");
 	list.add(strfac  + "kf"              ,             rVariable::Flags::R__D, &m_curFactor.KeypadKF.Value, getUnitKF()     , 0             , COMMENT::FACTORS     + COMMENT::KFACTOR);
 	list.add(strfac  + "mf"              ,             rVariable::Flags::R__D, &m_curFactor.KeypadMF.Value, U_DIMLESS       , 0             , COMMENT::FACTORS     + COMMENT::MFACTOR);
@@ -415,30 +415,30 @@ LREAL rStream::calcualateKF()
 void rStream::calcTotal()
 {
 	if (m_maintenance) {
-		m_total.Inc.Count    = 0;
-		m_total.Inc.Mass     = 0;
-		m_total.Inc.Volume   = 0;
-		m_total.Inc.Volume15 = 0;
-		m_total.Inc.Volume20 = 0;
+		m_total.m_inc.Count    = 0;
+		m_total.m_inc.Mass     = 0;
+		m_total.m_inc.Volume   = 0;
+		m_total.m_inc.Volume15 = 0;
+		m_total.m_inc.Volume20 = 0;
 		return;
 	}
 
 	if (m_flowmeter == Type::CORIOLIS) {
-		m_total.Inc.Mass     = m_total.Inc.Count  / m_curKF          * m_curFactor.KeypadMF.Value;
-		m_total.Inc.Volume   = m_total.Inc.Mass   / m_dens.m_value   * 1000.0;
-		m_total.Inc.Volume15 = m_total.Inc.Mass   / m_dens15.m_value * 1000.0;
-		m_total.Inc.Volume20 = m_total.Inc.Mass   / m_dens20.m_value * 1000.0;
+		m_total.m_inc.Mass     = m_total.m_inc.Count  / m_curKF          * m_curFactor.KeypadMF.Value;
+		m_total.m_inc.Volume   = m_total.m_inc.Mass   / m_dens.m_value   * 1000.0;
+		m_total.m_inc.Volume15 = m_total.m_inc.Mass   / m_dens15.m_value * 1000.0;
+		m_total.m_inc.Volume20 = m_total.m_inc.Mass   / m_dens20.m_value * 1000.0;
 	} else {
-		m_total.Inc.Volume   = m_total.Inc.Count  / m_curKF        * m_curFactor.KeypadMF.Value;
-		m_total.Inc.Mass     = m_total.Inc.Volume * m_dens.m_value                    / 1000.0;
-		m_total.Inc.Volume15 = m_total.Inc.Volume * m_dens.m_value / m_dens15.m_value / 1000.0;
-		m_total.Inc.Volume20 = m_total.Inc.Volume * m_dens.m_value / m_dens20.m_value / 1000.0;
+		m_total.m_inc.Volume   = m_total.m_inc.Count  / m_curKF        * m_curFactor.KeypadMF.Value;
+		m_total.m_inc.Mass     = m_total.m_inc.Volume * m_dens.m_value                    / 1000.0;
+		m_total.m_inc.Volume15 = m_total.m_inc.Volume * m_dens.m_value / m_dens15.m_value / 1000.0;
+		m_total.m_inc.Volume20 = m_total.m_inc.Volume * m_dens.m_value / m_dens20.m_value / 1000.0;
 	}
 
-	m_total.Inc.Mass     = Round(m_total.Inc.Mass    , 5);
-	m_total.Inc.Volume   = Round(m_total.Inc.Volume  , 5);
-	m_total.Inc.Volume15 = Round(m_total.Inc.Volume15, 5);
-	m_total.Inc.Volume20 = Round(m_total.Inc.Volume20, 5);
+	m_total.m_inc.Mass     = Round(m_total.m_inc.Mass    , 5);
+	m_total.m_inc.Volume   = Round(m_total.m_inc.Volume  , 5);
+	m_total.m_inc.Volume15 = Round(m_total.m_inc.Volume15, 5);
+	m_total.m_inc.Volume20 = Round(m_total.m_inc.Volume20, 5);
 
 	m_total.Calculate(m_station->getUnit());
 }

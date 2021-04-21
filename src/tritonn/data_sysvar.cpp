@@ -31,6 +31,8 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 			.add("", static_cast<USINT>(Live::UNDEF)      , "Не определенный статус")
 			.add("", static_cast<USINT>(Live::STARTING)   , "Система загружается")
 			.add("", static_cast<USINT>(Live::REBOOT_COLD), "Система в режиме COLD-START")
+			.add("", static_cast<USINT>(Live::DUMP_TOTALS), "Система в режиме загрузки нарастающих")
+			.add("", static_cast<USINT>(Live::DUMP_VARS)  , "Система в режиме загрузки уставок")
 			.add("", static_cast<USINT>(Live::RUNNING)    , "Система работает")
 			.add("", static_cast<USINT>(Live::HALT)       , "Система в режиме HALT");
 

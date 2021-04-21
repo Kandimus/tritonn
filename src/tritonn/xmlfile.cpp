@@ -18,16 +18,11 @@
 #include "hash.h"
 #include "simplefile.h"
 
-
-using tinyxml2::XMLElement;
-
-
 UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std::string& strhash)
 {
 	USINT       fhash[MAX_HASH_SIZE] = {0};
 	USINT       shash[MAX_HASH_SIZE] = {0};
 	std::string text;
-	XMLElement* root   = nullptr;
 	UDINT       result = SimpleFileLoad(filename, text);
 
 	strhash.clear();
@@ -42,7 +37,7 @@ UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std:
 		return doc.ErrorID();
 	}
 
-	root = doc.RootElement();
+	auto root = doc.RootElement();
 
 	if (!root->Attribute("hash")) {
 		return XMLFILE_RESULT_NFHASH;
@@ -77,3 +72,35 @@ UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std:
 	return TRITONN_RESULT_OK;
 }
 
+
+UDINT XMLDumpFile(const std::string&filename, tinyxml2::XMLDocument &doc, std::string& strhash)
+{
+	std::string text;
+	UDINT       result = SimpleFileLoad(filename, text);
+
+	strhash.clear();
+
+	if (TRITONN_RESULT_OK != result) {
+		return result;
+	}
+
+	doc.Clear();
+
+	if (tinyxml2::XML_SUCCESS != doc.Parse(text.c_str())) {
+		return doc.ErrorID();
+	}
+
+	auto root = doc.RootElement();
+
+	if (!root->Attribute("hash")) {
+		return XMLFILE_RESULT_NFHASH;
+	}
+
+	strhash = root->Attribute("hash");
+
+	if (MAX_HASH_SIZE != strhash.size()) {
+		return XMLFILE_RESULT_NFHASH;
+	}
+
+	return TRITONN_RESULT_OK;
+}

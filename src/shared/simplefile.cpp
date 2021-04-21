@@ -174,4 +174,5 @@ UDINT SimpleFileGaranteedSave(const std::string& filename, const std::string& te
 	}
 
 	::rename(nametmp.c_str(), filename.c_str());
+	return SimpleFileErrno(FILE_RESULT_CANTOPEN);
 }

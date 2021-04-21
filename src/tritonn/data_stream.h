@@ -81,6 +81,7 @@ public:
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
 	virtual UDINT calculate() override;
 	virtual const rTotal *getTotal(void) const override { return &m_total; }
+	virtual rTotal* getTotalNoConst(void) override { return &m_total; }
 
 protected:
 	virtual UDINT initLimitEvent(rLink &link) override;

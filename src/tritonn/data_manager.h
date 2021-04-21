@@ -73,6 +73,7 @@ protected:
 
 	UDINT getConfFile(std::string& conf);
 
+	void  generateDumpPrefixes();
 	UDINT saveDataVariables();
 	UDINT saveDataTotals();
 	UDINT loadDataVariables();

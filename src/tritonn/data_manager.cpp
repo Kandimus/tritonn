@@ -29,14 +29,12 @@
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 #include "data_report.h"
-#include "data_station.h"
 #include "interface/interface.h"
 #include "text_manager.h"
 #include "event/manager.h"
 #include "io/manager.h"
 #include "listconf.h"
 #include "def_arguments.h"
-#include "xml_util.h"
 
 extern rSafityValue<DINT> gReboot;
 
@@ -207,9 +205,12 @@ UDINT rDataManager::LoadConfig()
 		//TODO проверить на валидность hash
 		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
 
+		//TODO тут нужно заменить на вызов XMLFileCheck()
 		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
+
+		generateDumpPrefixes();
 
 		//TODO После нужно загрузить данные из EEPROM и сравнить с конфигой
 	}
@@ -260,7 +261,38 @@ UDINT rDataManager::LoadConfig()
 	SetLang(m_sysVar.Lang);
 
 	if (Live::STARTING == GetLiveStatus()) {
-		SetLiveStatus(Live::RUNNING);
+
+		UDINT result = loadDataTotals();
+		if (result != TRITONN_RESULT_OK) {
+			if (result == XMLFILE_RESULT_NOTEQUAL) {
+
+				TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_TOTALS.c_str());
+				SetLiveStatus(Live::DUMP_TOTALS);
+			} else {
+				rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+
+				DoHalt(HALT_REASON_CONFIGFILE | result);
+
+				TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_TOTALS.c_str(), result);
+			}
+		} else {
+			result = loadDataVariables();
+			if (result != TRITONN_RESULT_OK) {
+				if (result == XMLFILE_RESULT_NOTEQUAL) {
+
+					TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_VARIABLES.c_str());
+					SetLiveStatus(Live::DUMP_VARS);
+				} else {
+					rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+
+					DoHalt(HALT_REASON_CONFIGFILE | result);
+
+					TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_VARIABLES.c_str(), result);
+				}
+			} else {
+				SetLiveStatus(Live::RUNNING);
+			}
+		}
 	}
 
 	return result;
@@ -450,99 +482,10 @@ UDINT rDataManager::getConfFile(std::string& conf)
 		return result;
 	}
 
-	m_dumpVariablesPrefix  = "<" + std::string(XmlName::VARIABLES) + ">";
-	m_dumpVariablesPrefix += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
-	m_dumpVariablesPrefix += "<" + std::string(XmlName::DUMP) + ">";
-
-	m_dumpVariablesSuffix  = "</" + std::string(XmlName::DUMP) + ">";
-	m_dumpVariablesSuffix += "</" + std::string(XmlName::VARIABLES) + ">";
-
-	m_dumpTotalsPrefix  = "<" + std::string(XmlName::TOTALS) + ">";
-	m_dumpTotalsPrefix += String_format("<%s>%s</%s>", XmlName::HASH, m_hashCfg.c_str(), XmlName::HASH);
-	m_dumpTotalsPrefix += "<" + std::string(XmlName::DUMP) + ">";
-
-	m_dumpTotalsSuffix  = "</" + std::string(XmlName::DUMP) + ">";
-	m_dumpTotalsSuffix += "</" + std::string(XmlName::TOTALS) + ">";
-
 	return TRITONN_RESULT_OK;
 }
 
 void rDataManager::doSaveVars()
 {
 	m_doSaveVars.Set(1);
-}
-
-UDINT rDataManager::saveDataVariables()
-{
-	std::string text = m_dumpVariablesPrefix;
-
-	m_doSaveVars.Set(0);
-
-	for (auto item : m_varList) {
-
-		if (item->isDumped()) {
-			text += item->valueToXml();
-		}
-	}
-
-	text += m_dumpVariablesSuffix;
-
-	UDINT result = SimpleFileSave(FILE_DUMP_VARIABLES, text);
-
-	if (result != TRITONN_RESULT_OK) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
-
-		DoHalt(HALT_REASON_DUMP | result);
-
-		TRACEP(LOG::DATAMGR, "Can't save variable dump file. Error ID: %i", result);
-	}
-
-	return result;
-}
-
-UDINT rDataManager::saveDataTotals()
-{
-	std::string text = m_dumpTotalsPrefix;
-
-	for (auto item : m_listSource) {
-		auto total = item->getTotal();
-
-		if (!total) {
-			continue;
-		}
-
-		text += total->toXml(item->m_alias.c_str());
-	}
-
-	text += m_dumpTotalsSuffix;
-
-	UDINT result = SimpleFileSave(FILE_DUMP_TOTALS, text);
-
-	if (result != TRITONN_RESULT_OK) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
-
-		DoHalt(HALT_REASON_DUMP | result);
-
-		TRACEP(LOG::DATAMGR, "Can't save totals dump file. Error ID: %i", result);
-	}
-
-	return result;
-}
-
-UDINT rDataManager::loadDataTotals()
-{
-	rStation tmpstn;
-	std::string stn_rtti = tmpstn.RTTI();
-	std::vector<rStation*> liststn;
-
-	// создаем уникальное число, описывающее текущую конфигурацию
-//	for (auto item : m_listSource) {
-//		if (stn_rtti == item->RTTI()) {
-//			liststn.push_back(item);
-//		}
-//	}
-
-//	for (auto stn : liststn)
-
-	return TRITONN_RESULT_OK;
 }

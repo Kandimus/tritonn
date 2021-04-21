@@ -207,7 +207,7 @@ void rSampler::onStart()
 			return;
 	}
 
-	m_lastRawTotal   = m_totals->Raw;
+	m_lastRawTotal   = m_totals->m_raw;
 	m_grabRemain    = m_grabCount;
 	m_canRemain     = m_can[m_select].m_volume;
 	m_timeStart     = rTickCount::UnixTime();
@@ -228,7 +228,7 @@ void rSampler::onStartTest(void)
 	m_noflow        = false;
 	m_interval      = 2000 * m_probeTest;
 	m_state         = State::TEST;
-	m_lastRawTotal  = m_totals->Raw;
+	m_lastRawTotal  = m_totals->m_raw;
 	m_grabCount     = m_probeTest;
 	m_grabRemain    = m_grabCount;
 	m_grabPresent   = 0;
@@ -281,7 +281,7 @@ void rSampler::onWorkTimer(bool checkflow)
 
 	if (checkflow) {
 		//if (m_totals->Raw.Volume - m_lastRawTotal.Volume < 0.00001) {
-		if (m_totals->Inc.Volume < 0.00001) {
+		if (m_totals->m_inc.Volume < 0.00001) {
 			m_noflow = true;
 		} else {
 			if (m_noflow) {
@@ -302,7 +302,7 @@ void rSampler::onWorkTimer(bool checkflow)
 		m_canPresent    += m_grabVol;
 		m_canRemain     -= m_grabVol;
 		m_timerInterval += static_cast<UDINT>(m_interval); // учитываем то время, что прое*али
-		m_lastRawTotal   = m_totals->Raw;
+		m_lastRawTotal   = m_totals->m_raw;
 
 		++m_grabPresent;
 		--m_grabRemain;
@@ -331,14 +331,14 @@ void rSampler::onWorkVolume(bool isMass)
 			break;
 	}
 
-	LREAL currvol = isMass ? m_totals->Raw.Mass  : m_totals->Raw.Volume;
+	LREAL currvol = isMass ? m_totals->m_raw.Mass  : m_totals->m_raw.Volume;
 	LREAL lastvol = isMass ? m_lastRawTotal.Mass : m_lastRawTotal.Volume;
 
 	if (currvol > lastvol + m_interval) {
 		m_grab.m_value  = true;
 		m_canPresent   += m_grabVol;
 		m_canRemain    -= m_grabVol;
-		m_lastRawTotal  = m_totals->Raw;
+		m_lastRawTotal  = m_totals->m_raw;
 
 		++m_grabPresent;
 		--m_grabRemain;
