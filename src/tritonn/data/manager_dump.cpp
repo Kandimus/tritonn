@@ -124,3 +124,36 @@ UDINT rDataManager::loadDataTotals()
 
 	return TRITONN_RESULT_OK;
 }
+
+
+UDINT rDataManager::loadDataTotals()
+{
+	tinyxml2::XMLDocument doc;
+	std::string           strhash = "";
+
+	UDINT result = XMLDumpFile(FILE_DUMP_TOTALS, doc, strhash);
+
+	if (result != TRITONN_RESULT_OK) {
+		SimpleFileDelete(FILE_DUMP_TOTALS);
+
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+		TRACEP(LOG::DATAMGR, "Can't load variables dump file. Error ID: %i", result);
+
+		return result;
+	}
+
+	if (strhash != m_hashCfg) {
+		return XMLFILE_RESULT_NOTEQUAL;
+	}
+
+	auto root = doc.RootElement();
+
+	for (auto item : m_varList) {
+
+		if (item->isDumped()) {
+			item->valueFromXml(root);
+		}
+	}
+
+	return TRITONN_RESULT_OK;
+}
