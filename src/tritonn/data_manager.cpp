@@ -125,6 +125,8 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 		case Live::STARTING:
 		case Live::RUNNING:
 		case Live::HALT:
+		case Live::DUMP_TOTALS:
+		case Live::DUMP_VARS:
 			rThreadMaster::instance().Finish();
 			return 0;
 
@@ -262,35 +264,35 @@ UDINT rDataManager::LoadConfig()
 
 	if (Live::STARTING == GetLiveStatus()) {
 
-		UDINT result = loadDataTotals();
-		if (result != TRITONN_RESULT_OK) {
-			if (result == XMLFILE_RESULT_NOTEQUAL) {
-
-				TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_TOTALS.c_str());
-				SetLiveStatus(Live::DUMP_TOTALS);
-			} else {
-				rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
-
-				DoHalt(HALT_REASON_CONFIGFILE | result);
-
-				TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_TOTALS.c_str(), result);
-			}
-		} else {
-			result = loadDataVariables();
-			if (result != TRITONN_RESULT_OK) {
-				if (result == XMLFILE_RESULT_NOTEQUAL) {
+		m_dumpTotals.checkFile(FILE_DUMP_TOTALS, m_hashCfg);
+		if (m_dumpTotals.getResult() == TRITONN_RESULT_OK || m_dumpTotals.getResult() == FILE_RESULT_NOTFOUND) {
+			m_dumpVars.checkFile(FILE_DUMP_VARIABLES, m_hashCfg);
+			if (m_dumpVars.getResult() != TRITONN_RESULT_OK) {
+				if (m_dumpVars.getResult() == XMLFILE_RESULT_NOTEQUAL) {
 
 					TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_VARIABLES.c_str());
 					SetLiveStatus(Live::DUMP_VARS);
 				} else {
-					rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+					rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
 
-					DoHalt(HALT_REASON_CONFIGFILE | result);
+					DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
 
-					TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_VARIABLES.c_str(), result);
+					TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_VARIABLES.c_str(), m_dumpVars.getResult());
 				}
 			} else {
 				SetLiveStatus(Live::RUNNING);
+			}
+		} else {
+			if (m_dumpTotals.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+
+				TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_TOTALS.c_str());
+				SetLiveStatus(Live::DUMP_TOTALS);
+			} else {
+				rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
+
+				DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
+
+				TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_TOTALS.c_str(), m_dumpVars.getResult());
 			}
 		}
 	}
@@ -332,7 +334,8 @@ rThreadStatus rDataManager::Proccesing()
 			return thread_status;
 		}
 
-		Lock();
+		//Lock();
+		rLocker lock(rVariableClass::m_mutex); lock.Nop();
 
 		m_sysVar.m_state.EventAlarm = rEventManager::instance().getAlarm();
 		m_sysVar.m_state.Live       = m_live.Get();
@@ -352,39 +355,52 @@ rThreadStatus rDataManager::Proccesing()
 			m_sysVar.SetDateTime.tm_year = 0;
 		}
 
-		if(m_sysVar.m_state.Live == Live::RUNNING)
-		{
-			// Пердвычисления для всех объектов
-			for (auto item : m_listSource) {
-				item->preCalculate();
+		switch (m_sysVar.m_state.Live) {
+			case Live::RUNNING: {
+				// Пердвычисления для всех объектов
+				for (auto item : m_listSource) {
+					item->preCalculate();
+				}
+
+				// Основной расчет всех объектов
+				for (auto item : m_listSource) {
+					item->calculate();
+				}
+
+				// Пердвычисления для отчетов
+				for (auto item : ListReport) {
+					item->preCalculate();
+				}
+
+				// Основной расчет отчетов
+				for (auto item : ListReport) {
+					item->calculate();
+				}
+
+				if (m_doSaveVars.Get()) {
+					saveDataVariables();
+				}
+
+				if (m_timerTotal.isFinished()) {
+					saveDataTotals();
+					m_timerTotal.restart();
+				}
+				break;
 			}
 
-			// Основной расчет всех объектов
-			for (auto item : m_listSource) {
-				item->calculate();
+			case Live::DUMP_TOTALS: {
+
+				break;
 			}
 
-			// Пердвычисления для отчетов
-			for (auto item : ListReport) {
-				item->preCalculate();
+			case Live::DUMP_VARS: {
+
+				break;
 			}
 
-			// Основной расчет отчетов
-			for (auto item : ListReport) {
-				item->calculate();
-			}
-
-			if (m_doSaveVars.Get()) {
-				saveDataVariables();
-			}
-
-			if (m_timerTotal.isFinished()) {
-				saveDataTotals();
-				m_timerTotal.restart();
-			}
 		}
 
-		Unlock();
+//		Unlock();
 
 		rVariableClass::processing();
 		rThreadClass::EndProccesing();

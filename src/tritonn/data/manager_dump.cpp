@@ -20,22 +20,49 @@
 #include "../xml_util.h"
 #include "../xmlfile.h"
 
+UDINT rDumpFile::checkFile(const std::string& filename, const std::string& hash)
+{
+	std::string strhash = "";
+
+	m_filename = filename;
+	m_result   = XMLDumpFile(m_filename, m_xmlDoc, strhash);
+
+	if (m_result == FILE_RESULT_NOTFOUND) {
+		m_xmlDoc.Clear();
+
+		return m_result;
+	}
+
+	if (m_result != TRITONN_RESULT_OK) {
+		SimpleFileDelete(m_filename);
+		m_xmlDoc.Clear();
+
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i", m_filename.c_str(), result);
+
+		return m_result;
+	}
+
+	if (strhash != hash) {
+		return m_result = XMLFILE_RESULT_NOTEQUAL;
+	}
+
+	return m_result = TRITONN_RESULT_OK;
+}
+
+
 void rDataManager::generateDumpPrefixes()
 {
-	m_dumpVariablesPrefix  = "<" + std::string(XmlName::VARIABLES) + " ";
-	m_dumpVariablesPrefix += std::string(XmlName::HASH) + "=\"" + m_hashCfg + "\">";
+	m_dumpVars.m_prefix = "<" + std::string(XmlName::VARIABLES) + " " + std::string(XmlName::HASH) + "=\"" + m_hashCfg + "\">";
+	m_dumpVars.m_suffix = "</" + std::string(XmlName::VARIABLES) + ">";
 
-	m_dumpVariablesSuffix += "</" + std::string(XmlName::VARIABLES) + ">";
-
-	m_dumpTotalsPrefix  = "<" + std::string(XmlName::TOTALS) + " ";
-	m_dumpTotalsPrefix += std::string(XmlName::HASH) + "=\"" + m_hashCfg + "\">";
-
-	m_dumpTotalsSuffix += "</" + std::string(XmlName::TOTALS) + ">";
+	m_dumpTotals.m_prefix = "<" + std::string(XmlName::TOTALS) + " " + std::string(XmlName::HASH) + "=\"" + m_hashCfg + "\">";
+	m_dumpTotals.m_suffix = "</" + std::string(XmlName::TOTALS) + ">";
 }
 
 UDINT rDataManager::saveDataVariables()
 {
-	std::string text = m_dumpVariablesPrefix;
+	std::string text = m_dumpVars.m_prefix;
 
 	m_doSaveVars.Set(0);
 
@@ -46,7 +73,7 @@ UDINT rDataManager::saveDataVariables()
 		}
 	}
 
-	text += m_dumpVariablesSuffix;
+	text += m_dumpVars.m_suffix;
 
 	UDINT result = SimpleFileSave(FILE_DUMP_VARIABLES, text);
 
@@ -63,7 +90,7 @@ UDINT rDataManager::saveDataVariables()
 
 UDINT rDataManager::saveDataTotals()
 {
-	std::string text = m_dumpTotalsPrefix;
+	std::string text = m_dumpTotals.m_prefix;
 
 	for (auto item : m_listSource) {
 		auto total = item->getTotal();
@@ -75,7 +102,7 @@ UDINT rDataManager::saveDataTotals()
 		text += total->toXml(item->m_alias);
 	}
 
-	text += m_dumpTotalsSuffix;
+	text += m_dumpTotals.m_suffix;
 
 	UDINT result = SimpleFileSave(FILE_DUMP_TOTALS, text);
 
@@ -90,27 +117,25 @@ UDINT rDataManager::saveDataTotals()
 	return result;
 }
 
+UDINT rDataManager::loadDataVariables()
+{
+	auto root = m_dumpVars.xmlRoot();
+
+	for (auto item : m_varList) {
+
+		if (item->isDumped()) {
+			item->valueFromXml(root);
+		}
+	}
+
+	m_dumpVars.xmlClear();
+
+	return TRITONN_RESULT_OK;
+}
+
 UDINT rDataManager::loadDataTotals()
 {
-	tinyxml2::XMLDocument doc;
-	std::string           strhash = "";
-
-	UDINT result = XMLDumpFile(FILE_DUMP_TOTALS, doc, strhash);
-
-	if (result != TRITONN_RESULT_OK) {
-		SimpleFileDelete(FILE_DUMP_TOTALS);
-
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
-		TRACEP(LOG::DATAMGR, "Can't load totals dump file. Error ID: %i", result);
-
-		return result;
-	}
-
-	if (strhash != m_hashCfg) {
-		return XMLFILE_RESULT_NOTEQUAL;
-	}
-
-	auto root = doc.RootElement();
+	auto root = m_dumpTotals.xmlRoot();
 
 	for (auto item : m_listSource) {
 		auto total = item->getTotalNoConst();
@@ -122,38 +147,7 @@ UDINT rDataManager::loadDataTotals()
 		total->fromXml(root, item->m_alias);
 	}
 
-	return TRITONN_RESULT_OK;
-}
-
-
-UDINT rDataManager::loadDataTotals()
-{
-	tinyxml2::XMLDocument doc;
-	std::string           strhash = "";
-
-	UDINT result = XMLDumpFile(FILE_DUMP_TOTALS, doc, strhash);
-
-	if (result != TRITONN_RESULT_OK) {
-		SimpleFileDelete(FILE_DUMP_TOTALS);
-
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
-		TRACEP(LOG::DATAMGR, "Can't load variables dump file. Error ID: %i", result);
-
-		return result;
-	}
-
-	if (strhash != m_hashCfg) {
-		return XMLFILE_RESULT_NOTEQUAL;
-	}
-
-	auto root = doc.RootElement();
-
-	for (auto item : m_varList) {
-
-		if (item->isDumped()) {
-			item->valueFromXml(root);
-		}
-	}
+	m_dumpTotals.xmlClear();
 
 	return TRITONN_RESULT_OK;
 }

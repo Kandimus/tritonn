@@ -19,8 +19,13 @@
 #include "safity.h"
 #include "thread_class.h"
 #include "variable_class.h"
+#include "data/dump.h"
 #include "data_sysvar.h"
 #include "tickcount.h"
+
+namespace tinyxml2 {
+	class XMLDocument;
+}
 
 class rSnapshot;
 class rInterface;
@@ -76,8 +81,10 @@ protected:
 	void  generateDumpPrefixes();
 	UDINT saveDataVariables();
 	UDINT saveDataTotals();
-	UDINT loadDataVariables();
-	UDINT loadDataTotals();
+	UDINT checkDataVariables();
+	UDINT checkDataTotals();
+	void  loadDataVariables();
+	void  loadDataTotals();
 
 private:
 	rSafityValue<USINT> m_live;     // Текущий статус жизни процесса
@@ -90,13 +97,11 @@ private:
 	std::vector<rReport*>    ListReport; // Список отчетов
 	std::vector<string>      ListLang;
 
-	rTickCount  m_timerTotal;
-	std::string m_dumpVariablesPrefix;
-	std::string m_dumpVariablesSuffix;
-	std::string m_dumpTotalsPrefix;
-	std::string m_dumpTotalsSuffix;
-
 	std::string m_hashCfg;
+
+	rTickCount m_timerTotal;
+	rDumpFile  m_dumpVars;
+	rDumpFile  m_dumpTotals;
 
 	int LoadEEPROM();
 	int SaveEEPROM();
