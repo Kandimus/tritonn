@@ -88,6 +88,49 @@ UDINT rDataManager::saveDataVariables()
 	return result;
 }
 
+viod rDataManager::loadDumps()
+{
+	if (Live::STARTING != GetLiveStatus()) {
+		return;
+	}
+
+	// TOTALS
+	m_dumpTotals.checkFile(FILE_DUMP_TOTALS, m_hashCfg);
+	if (m_dumpTotals.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+
+		TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_TOTALS.c_str());
+		SetLiveStatus(Live::DUMP_TOTALS);
+		return;
+	}
+
+	if (m_dumpTotals.getResult() != TRITONN_RESULT_OK && m_dumpTotals.getResult() != FILE_RESULT_NOTFOUND) {
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
+
+		DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
+
+		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_TOTALS.c_str(), m_dumpVars.getResult());
+	}
+
+	// VARS
+	m_dumpVars.checkFile(FILE_DUMP_VARIABLES, m_hashCfg);
+	if (m_dumpVars.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+
+		TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_VARIABLES.c_str());
+		SetLiveStatus(Live::DUMP_VARS);
+		return;
+	}
+
+	if (m_dumpVars.getResult() != TRITONN_RESULT_OK && m_dumpVars.getResult() != FILE_RESULT_NOTFOUND) {
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
+
+		DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
+
+		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_VARIABLES.c_str(), m_dumpVars.getResult());
+	}
+
+	SetLiveStatus(Live::RUNNING);
+}
+
 UDINT rDataManager::saveDataTotals()
 {
 	std::string text = m_dumpTotals.m_prefix;

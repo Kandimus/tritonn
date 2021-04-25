@@ -85,6 +85,7 @@ protected:
 	UDINT checkDataTotals();
 	void  loadDataVariables();
 	void  loadDataTotals();
+	viod  loadDumps();
 
 private:
 	rSafityValue<USINT> m_live;     // Текущий статус жизни процесса
