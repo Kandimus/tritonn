@@ -16,7 +16,8 @@
 class rDumpFile
 {
 public:
-	rDumpFile();
+	rDumpFile() = default;
+	virtual ~rDumpFile() = default;
 
 	std::string m_filename;
 	std::string m_prefix = "";
@@ -28,7 +29,7 @@ protected:
 	UDINT m_result = TRITONN_RESULT_OK;
 
 public:
-	tinyxml2::XMLElement* xmlRoot() const { return m_xmlDoc; }
+	tinyxml2::XMLElement* xmlRoot() { return m_xmlDoc.RootElement(); }
 	void  xmlClear() { m_xmlDoc.Clear(); }
 	UDINT checkFile(const std::string& filename, const std::string& hash);
 	UDINT getResult() const { return m_result; }

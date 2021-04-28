@@ -62,15 +62,16 @@ rDataManager::~rDataManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-void rDataManager::SetLiveStatus(USINT status)
+void rDataManager::setLiveStatus(Live status)
 {
 	if(m_live.Get() != Live::HALT) {
+		TRACEW(LOG::DATAMGR, "Set Live Status is %u", status);
 		m_live.Set(status);
 	}
 }
 
 
-USINT rDataManager::GetLiveStatus()
+Live rDataManager::getLiveStatus()
 {
 	return m_live.Get();
 }
@@ -93,7 +94,7 @@ void rDataManager::DoHalt(UDINT reason)
 //
 UDINT rDataManager::Restart(USINT restart, const string &filename)
 {
-	UDINT live = GetLiveStatus();
+	Live status = getLiveStatus();
 
 	switch(restart)
 	{
@@ -120,7 +121,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	}
 
 	//
-	switch(live)
+	switch(status)
 	{
 		case Live::STARTING:
 		case Live::RUNNING:
@@ -192,7 +193,7 @@ UDINT rDataManager::LoadConfig()
 	strcpy(m_sysVar.Lang, LANG_RU.c_str());
 
 	// Устанавливаем флаг, что загружаемся
-	SetLiveStatus(Live::STARTING);
+	setLiveStatus(Live::STARTING);
 
 	//TODO Нужно очистить директорию ftp
 
@@ -202,7 +203,7 @@ UDINT rDataManager::LoadConfig()
 	}
 
 	// Если это не cold-start, то загружаем конфигурацию
-	if (Live::STARTING == GetLiveStatus()) {
+	if (Live::STARTING == getLiveStatus()) {
 
 		//TODO проверить на валидность hash
 		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
@@ -211,10 +212,6 @@ UDINT rDataManager::LoadConfig()
 		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
-
-		generateDumpPrefixes();
-
-		//TODO После нужно загрузить данные из EEPROM и сравнить с конфигой
 	}
 
 	//--------------------------------------------
@@ -250,7 +247,7 @@ UDINT rDataManager::LoadConfig()
 
 	//--------------------------------------------
 	//NOTE только в процессе разработки
-	if (Live::STARTING == GetLiveStatus()) {
+	if (getLiveStatus() == Live::STARTING) {
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		saveMarkDown();
 	}
@@ -413,7 +410,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 		result = SimpleFileLoad(FILE_RESTART, text);
 		if (TRITONN_RESULT_OK == result) {
 			if ("cold" == text) {
-				SetLiveStatus(Live::REBOOT_COLD);
+				setLiveStatus(Live::REBOOT_COLD);
 
 				// Загружаем список конфигураций
 				rListConfig::Load();
@@ -423,7 +420,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 			}
 			if ("debug" == text) {
 				//TODO Доделать
-				SetLiveStatus(Live::REBOOT_COLD);
+				setLiveStatus(Live::REBOOT_COLD);
 
 				// Загружаем список конфигураций
 				rListConfig::Load();

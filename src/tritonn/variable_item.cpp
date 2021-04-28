@@ -17,6 +17,7 @@
 #include "variable_item.h"
 #include <algorithm>
 #include <string.h>
+#include "xml_util.h"
 
 
 rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment)
@@ -104,4 +105,26 @@ void rVariable::stringToValue(const std::string& strvalue) const
 		case TYPE_STRID: { UDINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
 		default: return;
 	}
+}
+
+void rVariable::valueFromXml(tinyxml2::XMLElement* root)
+{
+	if (!root) {
+		return;
+	}
+
+	auto xml_item = root->FirstChildElement(m_name.c_str());
+
+	if (!xml_item) {
+		return;
+	}
+
+	UDINT       err       = 0;
+	std::string textvalue = XmlUtils::getTextString(xml_item, "", err);
+
+	if (err) {
+		return;
+	}
+
+	stringToValue(textvalue);
 }

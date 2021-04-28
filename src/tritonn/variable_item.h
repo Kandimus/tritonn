@@ -19,6 +19,10 @@
 #include "def.h"
 #include <string>
 
+namespace tinyxml2 {
+	class XMLElement;
+}
+
 class rVariableClass;
 
 //-------------------------------------------------------------------------------------------------
@@ -77,6 +81,7 @@ public:
 	std::string saveToCSV() const;
 	std::string valueToXml() const;
 	std::string valueToString() const;
+	void        valueFromXml(tinyxml2::XMLElement* root);
 
 	bool operator < (const rVariable* right) { return this->m_hash < right->m_hash; }
 

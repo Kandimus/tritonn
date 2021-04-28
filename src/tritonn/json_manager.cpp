@@ -48,6 +48,7 @@ const char JSONSTR_DATASET[]   = "data.set";
 const char JSONSTR_DATA[]      = "data";
 const char JSONSTR_DAY[]       = "day";
 const char JSONSTR_DEV[]       = "dev";
+const char JSONSTR_DUMP[]      = "dump";
 const char JSONSTR_ERROR[]     = "error";
 const char JSONSTR_ERRORID[]   = "error_id";
 const char JSONSTR_ERRORMSG[]  = "error_msg";
@@ -56,6 +57,7 @@ const char JSONSTR_HASH[]      = "hash";
 const char JSONSTR_HOUR[]      = "hour";
 const char JSONSTR_ICONF[]     = "i.conf";
 const char JSONSTR_ILISTCONF[] = "i.listconf";
+const char JSONSTR_ILOADDUMP[] = "i.loaddump";
 const char JSONSTR_IRESTART[]  = "i.restart";
 const char JSONSTR_ISTATUS[]   = "i.status";
 const char JSONSTR_IDS[]       = "ids";
@@ -112,12 +114,6 @@ rJSONManager::rJSONManager()
 }
 
 
-rJSONManager::~rJSONManager()
-{
-	;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 //
 rJSONManager &rJSONManager::Instance()
@@ -126,9 +122,6 @@ rJSONManager &rJSONManager::Instance()
 
 	return Singleton;
 }
-
-
-
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -293,7 +286,7 @@ string rJSONManager::ParsingJSON(const char *text)
 
 		if(error_ptr != NULL)
 		{
-			fprintf(stderr, "Error after: %s, size %i, first byte 0x%0X\n", error_ptr, strlen(text), text[0]);
+			fprintf(stderr, "Error after: %s, size %u, first byte 0x%0X\n", error_ptr, strlen(text), text[0]);
 			ErrMsg = String_format("Parse error after '%s'", error_ptr);
 		}
 		else
@@ -379,6 +372,10 @@ string rJSONManager::Packet_REQ(cJSON *root)
 	else if(!strcmp(jcmd->valuestring, JSONSTR_IRESTART))
 	{
 		return Packet_Restart(root);
+	}
+	else if(!strcmp(jcmd->valuestring, JSONSTR_ILOADDUMP))
+	{
+		return packetRestart(root);
 	}
 
 	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "unknow command");
@@ -745,7 +742,7 @@ string rJSONManager::Packet_ListConf(cJSON */*root*/)
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_ILISTCONF));
 
-	if(Live::REBOOT_COLD != rDataManager::instance().GetLiveStatus())
+	if(Live::REBOOT_COLD != rDataManager::instance().getLiveStatus())
 	{
 		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
 		CreateErrorJSON(response, JSONERR_NOTCOLDSTART, "");
@@ -782,7 +779,7 @@ string rJSONManager::Packet_Restart (cJSON *root)
 	cJSON     *jrestart = cJSON_GetObjectItem(root, JSONSTR_RESTART);
 	cJSON     *jlocal   = cJSON_GetObjectItem(root, JSONSTR_LOCAL);
 	rActivity *act      = nullptr;
-	USINT      live     = rDataManager::instance().GetLiveStatus();
+	USINT      live     = rDataManager::instance().getLiveStatus();
 	string     conf     = "";
 	// ответ
 	cJSON     *answe    = cJSON_CreateObject();
@@ -843,6 +840,38 @@ string rJSONManager::Packet_Restart (cJSON *root)
 
 	// Выдаем результат
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateBool(0 == result));
+
+	return JSONtoString(answe, true);
+}
+
+
+std::string rJSONManager::packetRestart(cJSON* root)
+{
+	cJSON*      jdump = cJSON_GetObjectItem(root, JSONSTR_LOCAL);
+	rActivity*  act   = nullptr;
+	USINT       live  = rDataManager::instance().getLiveStatus();
+	std::string conf  = "";
+	// ответ
+	cJSON* answe    = cJSON_CreateObject();
+	cJSON* response = cJSON_CreateObject();
+
+	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
+	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_IRESTART));
+
+	if (!jdump) {
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
+		CreateErrorJSON(response, JSONERR_BADPARAM, "");
+		return JSONtoString(answe, true);
+	}
+
+	if (live == Live::DUMP_TOTALS) {
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateTrue());
+	} else if (live == Live::DUMP_VARS) {
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateTrue());
+	} else {
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
+		CreateErrorJSON(response, JSONERR_NOTCOLDSTART, "");
+	}
 
 	return JSONtoString(answe, true);
 }

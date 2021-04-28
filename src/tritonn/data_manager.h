@@ -43,30 +43,32 @@ class rDataManager : public rThreadClass, public rVariableClass
 // Методы
 public:
 	// Текущий статус и работа со статусами
-	void     SetLiveStatus(USINT status/*, UDINT haltreason*/);
-	USINT    GetLiveStatus();
+	void  setLiveStatus(Live status/*, UDINT haltreason*/);
+	Live  getLiveStatus();
 
-	void     GetVersion(rVersion &ver) const;
-	void     GetConfigInfo(rConfigInfo &conf) const;
-	void     GetState(rState &st);
-	void     GetTime(struct tm &sdt);
+	void  GetVersion(rVersion &ver) const;
+	void  GetConfigInfo(rConfigInfo &conf) const;
+	void  GetState(rState &st);
+	void  GetTime(struct tm &sdt);
 
 	// Перезагрузка
-	void     DoHalt(UDINT reason);
-	UDINT    Restart(USINT restart, const string &filename);
+	void  DoHalt(UDINT reason);
+	UDINT Restart(USINT restart, const string &filename);
 
 	// Конфигурация
-	UDINT    LoadConfig();
-	UDINT    saveMarkDown();
-	void     generateMarkDown(rGeneratorMD& md);
+	UDINT LoadConfig();
+	UDINT saveMarkDown();
+	void  generateMarkDown(rGeneratorMD& md);
 	const rConfigInfo *GetConfName() const;
 
 	// Работа с языками
-	UDINT    SetLang(const string &lang);
+	UDINT SetLang(const string &lang);
 
-	void     doSaveVars();
+	void  doSaveVars();
+	void  forceLoadDumpVars(bool forceload);
+	void  forceLoadDumpTotals(bool forceload);
 
-	UDINT    StartInterfaces();
+	UDINT StartInterfaces();
 
 protected:
 	virtual rThreadStatus Proccesing();
@@ -78,17 +80,16 @@ protected:
 
 	UDINT getConfFile(std::string& conf);
 
-	void  generateDumpPrefixes();
 	UDINT saveDataVariables();
 	UDINT saveDataTotals();
+	void  loadDumps();
 	UDINT checkDataVariables();
 	UDINT checkDataTotals();
 	void  loadDataVariables();
 	void  loadDataTotals();
-	viod  loadDumps();
 
 private:
-	rSafityValue<USINT> m_live;     // Текущий статус жизни процесса
+	rSafityValue<Live> m_live;     // Текущий статус жизни процесса
 	rSafityValue<USINT> Halt;       // Флаг, перехода в HALT режим
 	rSafityValue<USINT> m_doSaveVars;
 
