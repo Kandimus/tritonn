@@ -327,6 +327,7 @@ enum JSON_ERROR
 	JSONERR_TOKEN_FAULT,        // Данный токен не найден
 	JSONERR_NOTCOLDSTART,       // Режим не COLDSTART
 	JSONERR_CONFISEMPTY,        // Конфигурация не указана
+	JSONERR_NOTLOADDUMP,
 };
 
 

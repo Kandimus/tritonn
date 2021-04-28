@@ -259,7 +259,9 @@ UDINT rDataManager::LoadConfig()
 	//
 	SetLang(m_sysVar.Lang);
 
-	loadDumps();
+	if (!rSimpleArgs::instance().isSet(rArg::NoDump)) {
+		loadDumps();
+	}
 
 	return result;
 }
