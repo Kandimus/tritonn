@@ -4,3 +4,6 @@
 [submodule "src/simpleargs"]
 	path = src/simpleargs
 	url = ssh://git@github.com:Kandimus/SimpleArgs.git
+[submodule "www"]
+	path = www
+	url = git@github.com:kingrussian/webtritonn.git
