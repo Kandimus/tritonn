@@ -20,7 +20,7 @@
 #include "../xml_util.h"
 #include "../generator_md.h"
 
-rModuleCRM::rModuleCRM()
+rModuleCRM::rModuleCRM(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::CRM;
 	m_comment = "Module of prove";

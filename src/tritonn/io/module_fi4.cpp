@@ -23,7 +23,7 @@
 #include "../units.h"
 #include "../generator_md.h"
 
-rModuleFI4::rModuleFI4()
+rModuleFI4::rModuleFI4(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::FI4;
 	m_comment = "Module with 4 frequency input";
@@ -34,9 +34,14 @@ rModuleFI4::rModuleFI4()
 		m_channel.push_back(ch_fi);
 		m_listChannel.push_back(ch_fi);
 	}
+
+#ifndef TRITONN_TEST
+	m_channel[0]->m_simType  = rIOFIChannel::SimType::CONST;
+	m_channel[0]->m_simValue = 5000;
+#endif
 }
 
-rModuleFI4::rModuleFI4(const rModuleFI4* fi4)
+rModuleFI4::rModuleFI4(const rModuleFI4* fi4) : rIOBaseModule(fi4)
 {
 	m_channel.clear();
 	m_listChannel.clear();

@@ -26,7 +26,7 @@
 
 rBitsArray rIOBaseModule::m_flagsType;
 
-rIOBaseModule::rIOBaseModule()
+rIOBaseModule::rIOBaseModule(UDINT id)
 {
 	if (m_flagsType.empty()) {
 		m_flagsType
@@ -37,12 +37,16 @@ rIOBaseModule::rIOBaseModule()
 				.add("", static_cast<UINT>(Type::CRM)   , "Модуль CRM");
 	}
 
+	m_ID = id;
+
 	pthread_mutex_init(&m_mutex, nullptr);
 }
 
 rIOBaseModule::rIOBaseModule(const rIOBaseModule* module)
 {
 	pthread_mutex_init(&m_mutex, nullptr);
+
+	m_ID           = module->m_ID;
 
 	m_type         = module->m_type;
 	m_nodeID       = module->m_nodeID;

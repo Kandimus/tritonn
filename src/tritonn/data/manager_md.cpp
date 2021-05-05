@@ -95,10 +95,11 @@ UDINT rDataManager::saveMarkDown()
 	stn.generateMarkDown(md);
 
 	// Hardware
-	rModuleAI6 ai6;
-	rModuleCRM crm;
-	rModuleDI8DO8 di8do8;
-	rModuleFI4 fi4;
+	UDINT moduleID = 0;
+	rModuleAI6 ai6(moduleID);
+	rModuleCRM crm(moduleID);
+	rModuleDI8DO8 di8do8(moduleID);
+	rModuleFI4 fi4(moduleID);
 
 	ai6.generateMarkDown(md);
 	crm.generateMarkDown(md);

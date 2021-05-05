@@ -42,7 +42,7 @@ public:
 		CRM    = 4,
 	};
 
-	rIOBaseModule();
+	rIOBaseModule(UDINT id);
 	rIOBaseModule(const rIOBaseModule* module);
 	virtual ~rIOBaseModule();
 
@@ -89,6 +89,7 @@ public:
 	static rBitsArray m_flagsType;
 
 protected:
+	UDINT           m_ID;
 	pthread_mutex_t m_mutex;
 	std::string     m_name  = "";
 	std::string     m_alias = "";

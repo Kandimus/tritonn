@@ -164,6 +164,10 @@ void rDataManager::loadDataVariables()
 {
 	auto root = m_dumpVars.xmlRoot();
 
+	if (!root) {
+		return;
+	}
+
 	for (auto item : m_varList) {
 
 		if (item->isDumped()) {
@@ -177,6 +181,10 @@ void rDataManager::loadDataVariables()
 void rDataManager::loadDataTotals()
 {
 	auto root = m_dumpTotals.xmlRoot();
+
+	if (!root) {
+		return;
+	}
 
 	for (auto item : m_listSource) {
 		auto total = item->getTotalNoConst();

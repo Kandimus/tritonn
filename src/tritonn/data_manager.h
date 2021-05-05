@@ -70,6 +70,8 @@ public:
 
 	UDINT StartInterfaces();
 
+	rSystemVariable* getSysVar() { return &m_sysVar; }
+
 protected:
 	virtual rThreadStatus Proccesing();
 
@@ -89,7 +91,7 @@ protected:
 	void  loadDataTotals();
 
 private:
-	rSafityValue<Live> m_live;     // Текущий статус жизни процесса
+	rSafityValue<Live>  m_live;     // Текущий статус жизни процесса
 	rSafityValue<USINT> Halt;       // Флаг, перехода в HALT режим
 	rSafityValue<USINT> m_doSaveVars;
 

@@ -18,6 +18,7 @@
 #include "tinyxml2.h"
 #include "basechannel.h"
 #include "../data_config.h"
+#include "../data_manager.h"
 #include "../units.h"
 #include "simpleargs.h"
 #include "../def_arguments.h"
@@ -117,19 +118,24 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 
 rIOBaseModule* rIOManager::addModule(const std::string& type)
 {
+	auto sysvar = rDataManager::instance().getSysVar();
 	rIOBaseModule* module = nullptr;
 
 	if (type == rModuleAI6::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleAI6());
+		module = dynamic_cast<rIOBaseModule*>(new rModuleAI6(sysvar->m_max[rModuleAI6::getRTTI()]));
+		++sysvar->m_max[rModuleAI6::getRTTI()];
 
 	} else if (type == rModuleDI8DO8::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8());
+		module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(sysvar->m_max[rModuleDI8DO8::getRTTI()]));
+		++sysvar->m_max[rModuleDI8DO8::getRTTI()];
 
 	} else if (type == rModuleFI4::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleFI4());
+		module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(sysvar->m_max[rModuleFI4::getRTTI()]));
+		++sysvar->m_max[rModuleFI4::getRTTI()];
 
 	} else if (type == rModuleCRM::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleCRM());
+		module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(sysvar->m_max[rModuleCRM::getRTTI()]));
+		++sysvar->m_max[rModuleCRM::getRTTI()];
 
 	} else {
 		return nullptr;

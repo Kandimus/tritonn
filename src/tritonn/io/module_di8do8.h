@@ -36,7 +36,7 @@ public:
 	const UDINT CHANNEL_DI_COUNT = 8;
 	const UDINT CHANNEL_DO_COUNT = 8;
 
-	rModuleDI8DO8();
+	rModuleDI8DO8(UDINT id);
 	rModuleDI8DO8(const rModuleDI8DO8* di8do8);
 	virtual ~rModuleDI8DO8();
 

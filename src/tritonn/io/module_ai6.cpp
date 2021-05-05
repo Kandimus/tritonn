@@ -20,7 +20,7 @@
 #include "../xml_util.h"
 #include "../generator_md.h"
 
-rModuleAI6::rModuleAI6()
+rModuleAI6::rModuleAI6(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::AI6;
 	m_comment = "Module 6 current/voltage channels";
