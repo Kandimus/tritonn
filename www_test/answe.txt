@@ -1,0 +1,1 @@
+{"response":{"command":"i.status","time":{"sec":14,"min":13,"hour":3,"day":7,"mon":4,"year":2021},"success":true,"live":255,"alarm":3}}

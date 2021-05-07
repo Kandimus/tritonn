@@ -34,7 +34,6 @@ UDINT rDumpFile::checkFile(const std::string& filename, const std::string& hash)
 	}
 
 	if (m_result != TRITONN_RESULT_OK) {
-		SimpleFileDelete(m_filename);
 		m_xmlDoc.Clear();
 
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_result);
@@ -93,36 +92,50 @@ void rDataManager::loadDumps()
 
 	// TOTALS
 	m_dumpTotals.checkFile(FILE_DUMP_TOTALS, m_hashCfg);
-	if (m_dumpTotals.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+	if (m_dumpTotals.getResult() == TRITONN_RESULT_OK) {
+		TRACEW(LOG::DATAMGR, "found dump file '%s'.", m_dumpTotals.getFilename());
 
-		TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_TOTALS.c_str());
+	} else if (m_dumpTotals.getResult() == FILE_RESULT_NOTFOUND) {
+		TRACEW(LOG::DATAMGR, "Not found dump file '%s'. Error ID: %i.", m_dumpTotals.getFilename(), m_dumpTotals.getResult());
+
+	} else if (m_dumpTotals.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+		TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", m_dumpTotals.getFilename());
 		setLiveStatus(Live::DUMP_TOTALS);
 		return;
-	}
 
-	if (m_dumpTotals.getResult() != TRITONN_RESULT_OK && m_dumpTotals.getResult() != FILE_RESULT_NOTFOUND) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
+	} else {
+		SimpleFileDelete(m_dumpTotals.getStrFilename());
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpTotals.getResult());
 
-		DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
+		DoHalt(HALT_REASON_CONFIGFILE | m_dumpTotals.getResult());
 
-		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_TOTALS.c_str(), m_dumpVars.getResult());
+		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i. Dump file was delete",
+			   m_dumpTotals.getFilename(), m_dumpTotals.getResult());
+		return;
 	}
 
 	// VARS
 	m_dumpVars.checkFile(FILE_DUMP_VARIABLES, m_hashCfg);
-	if (m_dumpVars.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+	if (m_dumpVars.getResult() == TRITONN_RESULT_OK) {
+		TRACEW(LOG::DATAMGR, "found dump file '%s'.", m_dumpVars.getFilename());
 
-		TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", FILE_DUMP_VARIABLES.c_str());
+	} else if (m_dumpVars.getResult() == FILE_RESULT_NOTFOUND) {
+		TRACEW(LOG::DATAMGR, "Not found dump file '%s'. Error ID: %i.", m_dumpVars.getFilename(), m_dumpVars.getResult());
+
+	} else if (m_dumpVars.getResult() == XMLFILE_RESULT_NOTEQUAL) {
+		TRACEW(LOG::DATAMGR, "Hash in dump file '%s' is not qual to hash in config file.", m_dumpVars.getFilename());
 		setLiveStatus(Live::DUMP_VARS);
 		return;
-	}
 
-	if (m_dumpVars.getResult() != TRITONN_RESULT_OK && m_dumpVars.getResult() != FILE_RESULT_NOTFOUND) {
+	} else {
+		SimpleFileDelete(m_dumpVars.getStrFilename());
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
 
 		DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
 
-		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i.", FILE_DUMP_VARIABLES.c_str(), m_dumpVars.getResult());
+		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i. Dump file was delete",
+			   m_dumpVars.getFilename(), m_dumpVars.getResult());
+		return;
 	}
 
 	loadDataTotals();
@@ -204,15 +217,17 @@ void rDataManager::forceLoadDumpVars(bool forceload)
 	Live status = getLiveStatus();
 
 	if (getLiveStatus() != Live::DUMP_VARS) {
-		TRACEW(LOG::DATAMGR, "Fault command to load dump file '%s'. Live status is %u", FILE_DUMP_VARIABLES.c_str(), static_cast<UINT>(status));
+		TRACEW(LOG::DATAMGR, "Fault command to load dump file '%s'. Live status is %u.", FILE_DUMP_VARIABLES.c_str(), static_cast<UINT>(status));
 		return;
 	}
 
 	if (forceload) {
 		TRACEW(LOG::DATAMGR, "Force load dump file '%s'.", FILE_DUMP_VARIABLES.c_str());
 		loadDataVariables();
+
 	} else {
-		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'.", FILE_DUMP_VARIABLES.c_str());
+		SimpleFileDelete(m_dumpVars.getStrFilename());
+		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'. Dump file was delete.", FILE_DUMP_VARIABLES.c_str());
 	}
 
 	setLiveStatus(Live::STARTING);
@@ -223,7 +238,7 @@ void rDataManager::forceLoadDumpTotals(bool forceload)
 	Live status = getLiveStatus();
 
 	if (getLiveStatus() != Live::DUMP_TOTALS) {
-		TRACEW(LOG::DATAMGR, "Fault command to load dump file '%s'. Live status is %u", FILE_DUMP_TOTALS.c_str(), static_cast<UINT>(status));
+		TRACEW(LOG::DATAMGR, "Fault command to load dump file '%s'. Live status is %u.", FILE_DUMP_TOTALS.c_str(), static_cast<UINT>(status));
 		return;
 	}
 
@@ -231,7 +246,8 @@ void rDataManager::forceLoadDumpTotals(bool forceload)
 		TRACEW(LOG::DATAMGR, "Force load dump file '%s'.", FILE_DUMP_TOTALS.c_str());
 		loadDataTotals();
 	} else {
-		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'.", FILE_DUMP_TOTALS.c_str());
+		SimpleFileDelete(m_dumpTotals.getStrFilename());
+		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'. Dump file was delete.", FILE_DUMP_TOTALS.c_str());
 	}
 
 	if (m_dumpVars.getResult() == TRITONN_RESULT_OK || m_dumpVars.getResult() == XMLFILE_RESULT_NOTEQUAL) {

@@ -15,12 +15,22 @@
 		</module>
 		<module type="crm" name="crm_1">
 		</module>
-		<module name="ai6_2" type="AI6">
+		<module type="ai6" name="ai6_2" >
 			<channel number="0" setup="AVERAGE" />
 		</module>
 	</hardware>
 	<config>
 		<settings>
+			<ethernet name="eth0">
+				<ip>192.168.1.100</ip>
+				<mask>255.255.255.0</mask>
+				<gateway></gateway>
+			</ethernet>
+			<ethernet name="eth1">
+				<ip>192.168.1.101</ip>
+				<mask>255.255.255.0</mask>
+				<gateway></gateway>
+			</ethernet>
 			<contracthour>0</contracthour>
 			<eventstorage>3</eventstorage>
 		</settings>
