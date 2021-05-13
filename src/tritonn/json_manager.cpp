@@ -48,6 +48,7 @@ const char JSONSTR_DATASET[]   = "data.set";
 const char JSONSTR_DATA[]      = "data";
 const char JSONSTR_DAY[]       = "day";
 const char JSONSTR_DEV[]       = "dev";
+const char JSONSTR_DUMP[]      = "dump";
 const char JSONSTR_ERROR[]     = "error";
 const char JSONSTR_ERRORID[]   = "error_id";
 const char JSONSTR_ERRORMSG[]  = "error_msg";
@@ -56,12 +57,14 @@ const char JSONSTR_HASH[]      = "hash";
 const char JSONSTR_HOUR[]      = "hour";
 const char JSONSTR_ICONF[]     = "i.conf";
 const char JSONSTR_ILISTCONF[] = "i.listconf";
+const char JSONSTR_ILOADDUMP[] = "i.loaddump";
 const char JSONSTR_IRESTART[]  = "i.restart";
 const char JSONSTR_ISTATUS[]   = "i.status";
 const char JSONSTR_IDS[]       = "ids";
 const char JSONSTR_ID[]        = "id";
 const char JSONSTR_LIST[]      = "list";
 const char JSONSTR_LIVE[]      = "live";
+const char JSONSTR_LOAD[]      = "load";
 const char JSONSTR_LOCAL[]     = "local";
 const char JSONSTR_MAJOR[]     = "major";
 const char JSONSTR_MIN[]       = "min";
@@ -112,12 +115,6 @@ rJSONManager::rJSONManager()
 }
 
 
-rJSONManager::~rJSONManager()
-{
-	;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 //
 rJSONManager &rJSONManager::Instance()
@@ -126,9 +123,6 @@ rJSONManager &rJSONManager::Instance()
 
 	return Singleton;
 }
-
-
-
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -291,34 +285,25 @@ string rJSONManager::ParsingJSON(const char *text)
 		string ErrMsg = "";
 		const char *error_ptr = cJSON_GetErrorPtr();
 
-		if(error_ptr != NULL)
-		{
-			fprintf(stderr, "Error after: %s, size %i, first byte 0x%0X\n", error_ptr, strlen(text), text[0]);
+		if(!error_ptr) {
+			fprintf(stderr, "Error after: %s, size %u, first byte 0x%0X\n", error_ptr, static_cast<UDINT>(strlen(text)), text[0]);
 			ErrMsg = String_format("Parse error after '%s'", error_ptr);
-		}
-		else
-		{
+		} else {
 			ErrMsg = "Unknow parse error";
 		}
 
-		if(text[0] != '{')
-		{
+		if (text[0] != '{') {
 			ErrMsg = "First char is not open brace";
-		}
-		else if(text[strlen(text) - 1] != '}')
-		{
+		} else if (text[strlen(text) - 1] != '}') {
 			ErrMsg = "Last char is not close brace";
 		}
-
 
 		return GetErrorJSON(JSONERR_BADREQ, ErrMsg);
 	}
 
 	req = cJSON_GetObjectItem(root, "request");
 
-
-	if(req)
-	{
+	if (req) {
 		result = Packet_REQ(req);
 	}
 	else
@@ -330,10 +315,6 @@ string rJSONManager::ParsingJSON(const char *text)
 
 	return result;
 }
-
-
-
-
 
 //
 string rJSONManager::Packet_REQ(cJSON *root)
@@ -379,6 +360,10 @@ string rJSONManager::Packet_REQ(cJSON *root)
 	else if(!strcmp(jcmd->valuestring, JSONSTR_IRESTART))
 	{
 		return Packet_Restart(root);
+	}
+	else if(!strcmp(jcmd->valuestring, JSONSTR_ILOADDUMP))
+	{
+		return packetLoadDump(root);
 	}
 
 	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "unknow command");
@@ -745,7 +730,7 @@ string rJSONManager::Packet_ListConf(cJSON */*root*/)
 	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_ILISTCONF));
 
-	if(Live::REBOOT_COLD != rDataManager::instance().GetLiveStatus())
+	if(Live::REBOOT_COLD != rDataManager::instance().getLiveStatus())
 	{
 		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
 		CreateErrorJSON(response, JSONERR_NOTCOLDSTART, "");
@@ -766,7 +751,7 @@ string rJSONManager::Packet_ListConf(cJSON */*root*/)
 		cJSON_AddItemToObject(aconf   , JSONSTR_NAME  , cJSON_CreateString(rListConfig::Get(ii)->Description.c_str()));
 		cJSON_AddItemToObject(aconf   , JSONSTR_TIME  , cJSON_CreateString(String_FileTime(rListConfig::Get(ii)->Filetime).c_str()));
 		cJSON_AddItemToObject(aconf   , JSONSTR_STATUS, cJSON_CreateNumber(rListConfig::Get(ii)->Status));
-		cJSON_AddItemToObject(aconf   , JSONSTR_HASH  , cJSON_CreateString(rListConfig::Get(ii)->StrHash.c_str()));
+		cJSON_AddItemToObject(aconf   , JSONSTR_HASH  , cJSON_CreateString(rListConfig::Get(ii)->m_strHash.c_str()));
 
 		cJSON_AddItemToArray(list, aconf);
 	}
@@ -782,7 +767,7 @@ string rJSONManager::Packet_Restart (cJSON *root)
 	cJSON     *jrestart = cJSON_GetObjectItem(root, JSONSTR_RESTART);
 	cJSON     *jlocal   = cJSON_GetObjectItem(root, JSONSTR_LOCAL);
 	rActivity *act      = nullptr;
-	USINT      live     = rDataManager::instance().GetLiveStatus();
+	USINT      live     = rDataManager::instance().getLiveStatus();
 	string     conf     = "";
 	// ответ
 	cJSON     *answe    = cJSON_CreateObject();
@@ -843,6 +828,42 @@ string rJSONManager::Packet_Restart (cJSON *root)
 
 	// Выдаем результат
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateBool(0 == result));
+
+	return JSONtoString(answe, true);
+}
+
+
+std::string rJSONManager::packetLoadDump(cJSON* root)
+{
+	cJSON* jload = cJSON_GetObjectItem(root, JSONSTR_LOAD);
+	USINT  live  = rDataManager::instance().getLiveStatus();
+	// ответ
+	cJSON* answe    = cJSON_CreateObject();
+	cJSON* response = cJSON_CreateObject();
+
+	cJSON_AddItemToObject(answe   , JSONSTR_RESPONSE, response);
+	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_IRESTART));
+
+	if (!jload) {
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
+		CreateErrorJSON(response, JSONERR_BADPARAM, "");
+		return JSONtoString(answe, true);
+	}
+
+	int isload = jload->valueint;
+
+	if (live == Live::DUMP_TOTALS) {
+		rDataManager::instance().forceLoadDumpTotals(isload);
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateTrue());
+
+	} else if (live == Live::DUMP_VARS) {
+		rDataManager::instance().forceLoadDumpVars(isload);
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateTrue());
+
+	} else {
+		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
+		CreateErrorJSON(response, JSONERR_NOTLOADDUMP, "");
+	}
 
 	return JSONtoString(answe, true);
 }

@@ -20,6 +20,7 @@
 #include "variable_list.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
+#include "data_manager.h"
 #include <cstring>
 
 
@@ -130,6 +131,10 @@ UDINT rVariableClass::set(rSnapshot& snapshot)
 		void *ptr = var->isExternal() ? var->m_external->m_write : var->m_pointer;
 		std::memcpy(ptr, ssitem->m_data, ssitem->getSizeVar());
 		ssitem->m_status = rSnapshotItem::Status::WRITED;
+
+		if (var->isDumped()) {
+			rDataManager::instance().doSaveVars();
+		}
 
 		if(var->isExternal()) {
 			var->m_external->m_isWrited = true;

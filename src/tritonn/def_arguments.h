@@ -24,4 +24,5 @@ namespace rArg
 	const std::string Terminal = "terminal";
 	const std::string Simulate = "simulate";
 	const std::string Config   = "config";
+	const std::string NoDump   = "no-dump";
 }

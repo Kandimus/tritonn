@@ -72,7 +72,7 @@ UDINT rCinematicViscosity::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".fault", rVariable::Flags::R__, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
+	list.add(m_alias + ".fault", rVariable::Flags::R___, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

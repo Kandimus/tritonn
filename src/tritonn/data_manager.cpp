@@ -2,7 +2,7 @@
 //===
 //=== data_manager.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -36,13 +36,13 @@
 #include "listconf.h"
 #include "def_arguments.h"
 
-
 extern rSafityValue<DINT> gReboot;
 
 
 rDataManager::rDataManager() : rVariableClass(Mutex), m_live(Live::UNDEF)
 {
-	RTTI                 = "rDataManager";
+	RTTI = "rDataManager";
+
 	m_sysVar.m_version.m_major = TRITONN_VERSION_MAJOR;
 	m_sysVar.m_version.m_minor = TRITONN_VERSION_MINOR;
 	m_sysVar.m_version.m_build = TRITONN_VERSION_BUILD;
@@ -60,29 +60,19 @@ rDataManager::~rDataManager()
 {
 }
 
-
 //-------------------------------------------------------------------------------------------------
 //
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//-------------------------------------------------------------------------------------------------
-//
-void rDataManager::SetLiveStatus(USINT status)
+void rDataManager::setLiveStatus(Live status)
 {
 	if(m_live.Get() != Live::HALT) {
+		TRACEW(LOG::DATAMGR, "Set Live Status is %u (%s)",
+			   status, m_sysVar.m_flagsLive.getNameByValue(static_cast<UDINT>(status)).c_str());
 		m_live.Set(status);
 	}
 }
 
 
-USINT rDataManager::GetLiveStatus()
+Live rDataManager::getLiveStatus()
 {
 	return m_live.Get();
 }
@@ -105,7 +95,7 @@ void rDataManager::DoHalt(UDINT reason)
 //
 UDINT rDataManager::Restart(USINT restart, const string &filename)
 {
-	UDINT live = GetLiveStatus();
+	Live status = getLiveStatus();
 
 	switch(restart)
 	{
@@ -132,11 +122,13 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	}
 
 	//
-	switch(live)
+	switch(status)
 	{
 		case Live::STARTING:
 		case Live::RUNNING:
 		case Live::HALT:
+		case Live::DUMP_TOTALS:
+		case Live::DUMP_VARS:
 			rThreadMaster::instance().Finish();
 			return 0;
 
@@ -202,7 +194,7 @@ UDINT rDataManager::LoadConfig()
 	strcpy(m_sysVar.Lang, LANG_RU.c_str());
 
 	// Устанавливаем флаг, что загружаемся
-	SetLiveStatus(Live::STARTING);
+	setLiveStatus(Live::STARTING);
 
 	//TODO Нужно очистить директорию ftp
 
@@ -212,16 +204,15 @@ UDINT rDataManager::LoadConfig()
 	}
 
 	// Если это не cold-start, то загружаем конфигурацию
-	if (Live::STARTING == GetLiveStatus()) {
+	if (Live::STARTING == getLiveStatus()) {
 
 		//TODO проверить на валидность hash
 		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
 
-		if(rDataConfig::instance().LoadFile(conf, m_sysVar, ListSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
+		//TODO тут нужно заменить на вызов XMLFileCheck()
+		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
-
-		//TODO После нужно загрузить данные из EEPROM и сравнить с конфигой
 	}
 
 	//--------------------------------------------
@@ -234,7 +225,7 @@ UDINT rDataManager::LoadConfig()
 	}
 
 	// Собираем переменные от объектов
-	for (auto source : ListSource) {
+	for (auto source : m_listSource) {
 		result = source->generateVars(m_varList);
 		if (result != TRITONN_RESULT_OK) {
 			//TODO Нужно ли выдавать ошибку?
@@ -257,9 +248,10 @@ UDINT rDataManager::LoadConfig()
 
 	//--------------------------------------------
 	//NOTE только в процессе разработки
-	if (Live::STARTING == GetLiveStatus()) {
+	if (getLiveStatus() == Live::STARTING) {
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		saveMarkDown();
+		m_hashCfg = "00112233445566778899aabbccddeeff00112233";
 	}
 
 	//--------------------------------------------
@@ -269,8 +261,8 @@ UDINT rDataManager::LoadConfig()
 	//
 	SetLang(m_sysVar.Lang);
 
-	if (Live::STARTING == GetLiveStatus()) {
-		SetLiveStatus(Live::RUNNING);
+	if (!rSimpleArgs::instance().isSet(rArg::NoDump)) {
+		loadDumps();
 	}
 
 	return result;
@@ -281,8 +273,6 @@ const rConfigInfo *rDataManager::GetConfName() const
 {
 	return &m_sysVar.ConfigInfo;
 }
-
-
 
 
 UDINT rDataManager::SetLang(const string &lang)
@@ -302,6 +292,8 @@ rThreadStatus rDataManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
 
+	m_timerTotal.start(1000);
+
 	while(true)
 	{
 		// Обработка команд нити
@@ -310,7 +302,8 @@ rThreadStatus rDataManager::Proccesing()
 			return thread_status;
 		}
 
-		Lock();
+		//Lock();
+		rLocker lock(rVariableClass::m_mutex); lock.Nop();
 
 		m_sysVar.m_state.EventAlarm = rEventManager::instance().getAlarm();
 		m_sysVar.m_state.Live       = m_live.Get();
@@ -330,15 +323,15 @@ rThreadStatus rDataManager::Proccesing()
 			m_sysVar.SetDateTime.tm_year = 0;
 		}
 
-		if(m_sysVar.m_state.Live == Live::RUNNING)
+		if (m_sysVar.m_state.Live == Live::RUNNING)
 		{
 			// Пердвычисления для всех объектов
-			for (auto item : ListSource) {
+			for (auto item : m_listSource) {
 				item->preCalculate();
 			}
 
 			// Основной расчет всех объектов
-			for (auto item : ListSource) {
+			for (auto item : m_listSource) {
 				item->calculate();
 			}
 
@@ -351,11 +344,22 @@ rThreadStatus rDataManager::Proccesing()
 			for (auto item : ListReport) {
 				item->calculate();
 			}
+
+			if (m_doSaveVars.Get()) {
+				saveDataVariables();
+			}
+
+			if (m_timerTotal.isFinished()) {
+				saveDataTotals();
+				m_timerTotal.restart();
+			}
 		}
+
+//		Unlock();
 
 		rVariableClass::processing();
 		rThreadClass::EndProccesing();
-		Unlock();
+
 	} // while
 }
 
@@ -410,7 +414,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 		result = SimpleFileLoad(FILE_RESTART, text);
 		if (TRITONN_RESULT_OK == result) {
 			if ("cold" == text) {
-				SetLiveStatus(Live::REBOOT_COLD);
+				setLiveStatus(Live::REBOOT_COLD);
 
 				// Загружаем список конфигураций
 				rListConfig::Load();
@@ -420,7 +424,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 			}
 			if ("debug" == text) {
 				//TODO Доделать
-				SetLiveStatus(Live::REBOOT_COLD);
+				setLiveStatus(Live::REBOOT_COLD);
 
 				// Загружаем список конфигураций
 				rListConfig::Load();
@@ -450,4 +454,9 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+void rDataManager::doSaveVars()
+{
+	m_doSaveVars.Set(1);
 }

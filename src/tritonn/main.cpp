@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
 			.setSwitch(rArg::ForceRun , true)
 			.setSwitch(rArg::Terminal , false)
 			.setSwitch(rArg::Simulate , true)
+			.setSwitch(rArg::NoDump   , true)
 			.setOption(rArg::Log      , "FFFFFFFF")
 			.setOption(rArg::Config   , "test.xml");
 #else
@@ -64,6 +65,7 @@ int main(int argc, char* argv[])
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
+			.addSwitch(rArg::NoDump   , 'd')
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::Config   , 'c', "test_sikn.xml");
 

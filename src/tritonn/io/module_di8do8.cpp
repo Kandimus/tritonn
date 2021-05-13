@@ -22,7 +22,7 @@
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
-rModuleDI8DO8::rModuleDI8DO8()
+rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::DI8DO8;
 	m_comment = "Module with 8 discrete input and 8 discrete output";
@@ -41,7 +41,7 @@ rModuleDI8DO8::rModuleDI8DO8()
 	}
 }
 
-rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8)
+rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8)
 {
 	m_channelDI.clear();
 	m_channelDO.clear();

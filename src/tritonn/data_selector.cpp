@@ -227,27 +227,27 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".Select"    , TYPE_INT  , rVariable::Flags::___, &m_select.Value, U_DIMLESS, ACCESS_SELECT, "Выбор коммуцируемого входа");
-	list.add(m_alias + ".inputcount", TYPE_UINT , rVariable::Flags::R__, &CountInputs   , U_DIMLESS, 0            , "Количество подключенных входов");
-	list.add(m_alias + ".Setup"     , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".Mode"      , TYPE_UINT , rVariable::Flags::___, &m_mode.Value  , U_DIMLESS, ACCESS_SELECT, COMMENT::MODE + m_flagsMode.getInfo(true));
+	list.add(m_alias + ".Select"    , rVariable::Flags::___D, &m_select.Value, U_DIMLESS, ACCESS_SELECT, "Выбор коммуцируемого входа");
+	list.add(m_alias + ".inputcount", rVariable::Flags::R___, &CountInputs   , U_DIMLESS, 0            , "Количество подключенных входов");
+	list.add(m_alias + ".Setup"     , rVariable::Flags::RS__, &m_setup.Value , U_DIMLESS, ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".Mode"      , rVariable::Flags::___D, &m_mode.Value  , U_DIMLESS, ACCESS_SELECT, COMMENT::MODE + m_flagsMode.getInfo(true));
 
-	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault       , U_DIMLESS, 0            , COMMENT::FAULT);
+	list.add(m_alias + ".fault"     , rVariable::Flags::R___, &m_fault       , U_DIMLESS, 0            , COMMENT::FAULT);
 
 	// Мультиселектор
 	if (m_setup.Value & Setup::MULTI) {
-		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R__, &CountGroups , U_DIMLESS, 0, "Количество групп");
+		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0, "Количество групп");
 
 		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			alias_unit   = String_format("%s.%s.keypad.unit" , m_alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", m_alias.c_str(), NameInput[grp].c_str());
 
-			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[grp].getPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
-			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
+			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R___,  KpUnit[grp].getPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
+			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___D, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
 		}
 	} else {
-		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R__,  KpUnit[0].getPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
-		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
+		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R___,  KpUnit[0].getPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
+		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___D, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;

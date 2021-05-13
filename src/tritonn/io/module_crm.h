@@ -44,7 +44,7 @@ public:
 
 	const UDINT CHANNEL_DI_COUNT = 4;
 
-	rModuleCRM();
+	rModuleCRM(UDINT id);
 	rModuleCRM(const rModuleCRM* crm);
 	virtual ~rModuleCRM();
 

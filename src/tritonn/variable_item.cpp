@@ -17,6 +17,7 @@
 #include "variable_item.h"
 #include <algorithm>
 #include <string.h>
+#include "xml_util.h"
 
 
 rVariable::rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment)
@@ -57,7 +58,7 @@ rVariable::~rVariable()
 	m_external = nullptr;
 }
 
-std::string rVariable::saveToCSV()
+std::string rVariable::saveToCSV() const
 {
 	if (isHide()) {
 		return "";
@@ -66,3 +67,64 @@ std::string rVariable::saveToCSV()
 	return String_format("%s;%s;%#06x;%08X;%#010x;\n", m_name.c_str(), NAME_TYPE[m_type].c_str(), m_flags, m_access, m_hash);
 }
 
+std::string rVariable::valueToXml() const
+{
+	return "<" + m_name + ">" + valueToString() + "</" + m_name + ">";
+}
+
+
+std::string rVariable::valueToString() const
+{
+	void *ptr = (isExternal()) ? m_external->m_read : m_pointer;
+
+	switch(getType()) {
+		case TYPE_USINT: return String_format("%hhu", *(USINT *)ptr); break;
+		case TYPE_SINT : return String_format("%hhi", *(SINT  *)ptr); break;
+		case TYPE_UINT : return String_format("%hu" , *(UINT  *)ptr); break;
+		case TYPE_INT  : return String_format("%hi" , *(INT   *)ptr); break;
+		case TYPE_UDINT: return String_format("%u"  , *(UDINT *)ptr); break;
+		case TYPE_DINT : return String_format("%i"  , *(DINT  *)ptr); break;
+		case TYPE_REAL : return String_format("%#g" , *(REAL  *)ptr); break;
+		case TYPE_LREAL: return String_format("%#g" , *(LREAL *)ptr); break;
+		case TYPE_STRID: return String_format("%u"  , *(UDINT *)ptr); break;
+		default: return "";
+	}
+}
+
+void rVariable::stringToValue(const std::string& strvalue) const
+{
+	switch(getType()) {
+		case TYPE_USINT: { USINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_SINT : { SINT  value = std::stoi (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_UINT : { UINT  value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_INT  : { INT   value = std::stoi (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_UDINT: { UDINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_DINT : { DINT  value = std::stoi (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_REAL : { REAL  value = std::stof (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_LREAL: { LREAL value = std::stod (strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		case TYPE_STRID: { UDINT value = std::stoul(strvalue); memcpy(m_pointer, &value, sizeof(value)); return; }
+		default: return;
+	}
+}
+
+void rVariable::valueFromXml(tinyxml2::XMLElement* root)
+{
+	if (!root) {
+		return;
+	}
+
+	auto xml_item = root->FirstChildElement(m_name.c_str());
+
+	if (!xml_item) {
+		return;
+	}
+
+	UDINT       err       = 0;
+	std::string textvalue = XmlUtils::getTextString(xml_item, "", err);
+
+	if (err) {
+		return;
+	}
+
+	stringToValue(textvalue);
+}

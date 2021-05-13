@@ -55,8 +55,6 @@ USINT *rJSONClient::Recv(USINT *read_buff, UDINT read_size)
 		Size   = read_size;
 
 		memcpy(Buff, read_buff, Size);
-
-		TRACEP(LOG::JSON, (const char *)Buff);
 	}
 	else
 	{
@@ -81,6 +79,9 @@ USINT *rJSONClient::Recv(USINT *read_buff, UDINT read_size)
 		Packet[pos + 1] = 0;
 
 		delete[] Buff;
+
+		TRACEI(LOG::JSON, "receive '%s', size %u", Packet, Size);
+
 
 		Size = 0;
 		Buff = nullptr;

@@ -112,7 +112,7 @@ const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
 const UDINT  MAX_CONFIG_NAME           = 128;
 const UDINT  MAX_CFGVER_SIZE           = 17;
-const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH;
+const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH * 2;
 
 const UDINT  MAX_UNITS_COUNT           = 512;
 
@@ -130,10 +130,12 @@ const LREAL  COMPARE_REAL_PREC         = 1.0E-7;
 // rDataManager
 enum Live : USINT
 {
-	UNDEF       = 0,
-	STARTING    = 1,
-	REBOOT_COLD = 3,
-	RUNNING     = 4,
+	UNDEF = 0,
+	STARTING,
+	REBOOT_COLD,
+	DUMP_TOTALS,
+	DUMP_VARS,
+	RUNNING,
 	HALT        = 0xFF,
 };
 
@@ -149,7 +151,7 @@ const UDINT  HALT_REASON_HARDWARE      = 0x00030000;
 const UDINT  HALT_REASON_REPORT        = 0x00040000;
 const UDINT  HALT_REASON_OPC           = 0x00050000;
 const UDINT  HALT_REASON_RUNTIME       = 0x00060000;
-
+const UDINT  HALT_REASON_DUMP          = 0x00070000;
 
 //THREADMASTER_FLAGS
 const UDINT  TMF_NONE                  = 0x00000000;
@@ -241,6 +243,7 @@ const std::string DIR_CONF             = DIR_HOME + "conf/";
 const std::string DIR_LOG              = DIR_HOME + "log/";
 const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
+const std::string DIR_DUMP             = DIR_HOME + "dump/";
 const std::string DIR_EVENT            = DIR_WWW  + "application/core/events/";
 const std::string DIR_REPORT           = DIR_FTP  + "reports/";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
@@ -255,6 +258,8 @@ const std::string FILE_WWW_PRECISION   = DIR_WWW  + "application/core/precision.
 const std::string DIR_WWW_LANG         = DIR_WWW  + "application/language/";
 const std::string FILE_WWW_LANG        = "custom_lang.php";
 const std::string FILE_WWW_EVENT       = "event_lang.php";
+const std::string FILE_DUMP_VARIABLES  = DIR_DUMP + "variables.xml";
+const std::string FILE_DUMP_TOTALS     = DIR_DUMP + "totals.xml";
 #endif
 
 
@@ -322,6 +327,7 @@ enum JSON_ERROR
 	JSONERR_TOKEN_FAULT,        // Данный токен не найден
 	JSONERR_NOTCOLDSTART,       // Режим не COLDSTART
 	JSONERR_CONFISEMPTY,        // Конфигурация не указана
+	JSONERR_NOTLOADDUMP,
 };
 
 
@@ -343,6 +349,7 @@ enum rTritonn_Error
 	FILE_RESULT_EDIR,                       //  39 Ошибка считывания директории
 	FILE_RESULT_CANTDELETE    = 40,         //  40 Ошибка операции удаления файла или директории
 	FILE_RESULT_EFILE,                      //  41 Прочие ошибки файла (сбой функции stat)
+	FILE_RESULT_CANTREMOVE,                 //  42
 
 	DATACFGERR_STRUCT         = 100,        // 100
 	DATACFGERR_NOTFOUND_HARDWARE,           //

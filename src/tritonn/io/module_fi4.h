@@ -34,7 +34,7 @@ public:
 
 	const UDINT CHANNEL_COUNT = 4;
 
-	rModuleFI4();
+	rModuleFI4(UDINT id);
 	rModuleFI4(const rModuleFI4* fi4);
 	virtual ~rModuleFI4();
 

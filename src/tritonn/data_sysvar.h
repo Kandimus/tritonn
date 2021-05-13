@@ -18,6 +18,7 @@
 #include "def.h"
 #include "structures.h"
 #include <map>
+#include "bits_array.h"
 
 class rVariableList;
 class rGeneratorMD;
@@ -44,6 +45,8 @@ public:
 	char          Lang[MAX_LANG_SIZE];
 
 	std::map<std::string, UDINT> m_max;
+
+	rBitsArray    m_flagsLive;
 
 	//TODO IP
 };

@@ -19,6 +19,10 @@
 #include "def.h"
 #include <string>
 
+namespace tinyxml2 {
+	class XMLElement;
+}
+
 class rVariableClass;
 
 //-------------------------------------------------------------------------------------------------
@@ -36,16 +40,25 @@ public:
 		HIDE      = 0x0004, // Переменная не будет отображатся в ОРС-сервере
 		MUTABLE   = 0x0008, // Переменная может быть как RO, так и RW
 		EXTERNAL  = 0x4000, //
+		DUMP      = 0x8000,
 //		EXTWRITED = 0x8000, //
 
-		___ = NONE,
-		R__ = READONLY,
-		_S_ = SUWRITE,
-		RS_ = READONLY | SUWRITE,
-		__H = HIDE,
-		R_H = READONLY | HIDE,
-		_SH = SUWRITE | HIDE,
-		RSH = READONLY | SUWRITE | HIDE,
+		____ = NONE,
+		R___ = READONLY,
+		_S__ = SUWRITE,
+		RS__ = READONLY | SUWRITE,
+		__H_ = HIDE,
+		R_H_ = READONLY | HIDE,
+		_SH_ = SUWRITE | HIDE,
+		RSH_ = READONLY | SUWRITE | HIDE,
+		___D = DUMP,
+		R__D = READONLY | DUMP,
+		_S_D = SUWRITE | DUMP,
+		RS_D = READONLY | SUWRITE | DUMP,
+		__HD = HIDE | DUMP,
+		R_HD = READONLY | HIDE | DUMP,
+		_SHD = SUWRITE | HIDE | DUMP,
+		RSHD = READONLY | SUWRITE | HIDE | DUMP,
 	};
 
 	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment = "");
@@ -63,8 +76,12 @@ public:
 	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
 	bool    isMutable()  const { return m_flags & Flags::MUTABLE;  }
 	bool    isExternal() const { return m_flags & Flags::EXTERNAL; }
+	bool    isDumped()   const { return m_flags & Flags::DUMP;     }
 
-	std::string saveToCSV();
+	std::string saveToCSV() const;
+	std::string valueToXml() const;
+	std::string valueToString() const;
+	void        valueFromXml(tinyxml2::XMLElement* root);
 
 	bool operator < (const rVariable* right) { return this->m_hash < right->m_hash; }
 
@@ -79,8 +96,7 @@ protected:
 
 	rVariable(rVariable *var);
 
-	bool    getBuffer(void* buffer) const;
-	bool    setBuffer(void* buffer) const;
+	void stringToValue(const std::string& value) const;
 
 private:
 	rVariable(rVariable& var);

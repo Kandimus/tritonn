@@ -19,6 +19,8 @@
 		<str id="-536805356">Ошибка загрузки конфигурационного файла (код ошибки $1, строка $2)</str>
 		<!-- EID_SYSTEM_FILEIOERROR -->
 		<str id="-536805355">Ошибка файлового ввода-вывода (код ошибки $1)</str>
+		<!-- EID_SYSTEM_DUMPERROR -->
+		<str id="-536805354">Ошибка загрузки файла дампа (код ошибки $1)</str>
 		<!-- EID_SYSTEM_RESTART_WARM -->
 		<str id="-1610547170">Команда на перезагрузку в режим WARM</str>
 		<!-- EID_SYSTEM_RESTART_COLD -->
@@ -590,5 +592,80 @@
 		<str id="538181746">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
 		<!-- EID_MASWTR_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
 		<str id="-535560077">$2 ($3). Не действительное значение.</str>
+
+		<!-- EID_VOLWTR_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538247268">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_VOLWTR_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538247269">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_VOLWTR_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538247270">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_VOLWTR_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538247271">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_VOLWTR_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538247272">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
+		<!-- EID_VOLWTR_NEW_SETUP - $1 ID, $2 Descr -->
+		<str id="538247273">$2. Изменены настройки.</str>
+		<!-- EID_VOLWTR_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535494546">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_VOLWTR_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609236369">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_VOLWTR_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535494544">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_VOLWTR_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609236367">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_VOLWTR_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<str id="538247282">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
+		<!-- EID_VOLWTR_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
+		<str id="-535494541">$2 ($3). Не действительное значение.</str>
+
+		<!-- EID_CINVISC_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538312804">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_CINVISC_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538312805">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_CINVISC_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538312806">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_CINVISC_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538312807">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_CINVISC_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538312808">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
+		<!-- EID_CINVISC_NEW_SETUP - $1 ID, $2 Descr -->
+		<str id="538312809">$2. Изменены настройки.</str>
+		<!-- EID_CINVISC_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535429010">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_CINVISC_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609170833">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_CINVISC_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535429008">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_CINVISC_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609170831">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_CINVISC_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<str id="538312818">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
+		<!-- EID_CINVISC_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
+		<str id="-535429005">$2 ($3). Не действительное значение.</str>
+
+		<!-- EID_DYNVISC_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538378340">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_DYNVISC_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538378341">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_DYNVISC_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538378342">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_DYNVISC_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538378343">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
+		<!-- EID_DYNVISC_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="538378344">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
+		<!-- EID_DYNVISC_NEW_SETUP - $1 ID, $2 Descr -->
+		<str id="538378345">$2. Изменены настройки.</str>
+		<!-- EID_DYNVISC_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535363474">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_DYNVISC_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609105297">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_DYNVISC_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535363472">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_DYNVISC_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609105295">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!-- EID_DYNVISC_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<str id="538378354">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
+		<!-- EID_DYNVISC_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
+		<str id="-535363469">$2 ($3). Не действительное значение.</str>
 	</lang>
 </strings>

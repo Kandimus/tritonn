@@ -22,5 +22,6 @@
 using std::string;
 
 
-extern UDINT XMLFileCheck(const string &filename, tinyxml2::XMLDocument &doc);
+extern UDINT XMLFileCheck(const std::string&filename, tinyxml2::XMLDocument &doc, std::string& strhash);
+extern UDINT XMLDumpFile(const std::string&filename, tinyxml2::XMLDocument &doc, std::string& strhash);
 

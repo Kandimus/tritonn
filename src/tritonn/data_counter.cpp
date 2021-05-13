@@ -167,10 +167,10 @@ UDINT rCounter::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".count", TYPE_UINT , rVariable::Flags::R_H, &m_count      , U_DIMLESS, 0        , "Счетчик импульсов");
-	list.add(m_alias + ".setup", TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value, U_DIMLESS, ACCESS_SA, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".count", rVariable::Flags::R_H_, &m_count      , U_DIMLESS, 0        , "Счетчик импульсов");
+	list.add(m_alias + ".setup", rVariable::Flags::RS_D, &m_setup.Value, U_DIMLESS, ACCESS_SA, COMMENT::SETUP + m_flagsSetup.getInfo());
 
-	list.add(m_alias + ".fault", TYPE_UDINT, rVariable::Flags::R__, &m_fault      , U_DIMLESS, 0        , COMMENT::FAULT);
+	list.add(m_alias + ".fault", rVariable::Flags::R___, &m_fault      , U_DIMLESS, 0        , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

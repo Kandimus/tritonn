@@ -28,7 +28,7 @@ struct rItemConfig
 {
 	string Filename;
 	string Description;
-	string StrHash;
+	string m_strHash;
 	UDINT  Status;
 	time_t Filetime;
 };

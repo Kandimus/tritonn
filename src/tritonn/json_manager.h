@@ -42,7 +42,7 @@ public:
 class rJSONManager: public rTCPClass
 {
 public:
-	virtual ~rJSONManager();
+	virtual ~rJSONManager() = default;
 
 // Singleton
 private:
@@ -61,27 +61,28 @@ protected:
 	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 
 protected:
-	vector<rActivity> Activity;
+	std::vector<rActivity> Activity;
 
-	rActivity *GetActivity(DINT token);
+	rActivity* GetActivity(DINT token);
 	UDINT      DeleteActivity(DINT token);
 
-	string GetErrorJSON   (JSON_ERROR err, const string &errmsg);
-	void   CreateErrorJSON(cJSON *root, JSON_ERROR err, const string &errmsg);
-	string JSONtoString   (cJSON *root, int deleteobj);
-	string ParsingJSON    (const char *text);
+	std::string GetErrorJSON   (JSON_ERROR err, const string &errmsg);
+	void        CreateErrorJSON(cJSON *root, JSON_ERROR err, const string &errmsg);
+	std::string JSONtoString   (cJSON *root, int deleteobj);
+	std::string ParsingJSON    (const char *text);
 
 
-	string Packet_REQ     (cJSON *root);
-	string Packet_DataGet (cJSON *root);
-	string Packet_DataSet (cJSON *root);
-	string Packet_Login   (cJSON *root);
-	string Packet_Logout  (cJSON *root);
-	string Packet_Check   (cJSON *root);
-	string Packet_Status  (cJSON *root);
-	string Packet_Conf    (cJSON *root);
-	string Packet_ListConf(cJSON *root);
-	string Packet_Restart (cJSON *root);
+	std::string Packet_REQ     (cJSON* root);
+	std::string Packet_DataGet (cJSON* root);
+	std::string Packet_DataSet (cJSON* root);
+	std::string Packet_Login   (cJSON* root);
+	std::string Packet_Logout  (cJSON* root);
+	std::string Packet_Check   (cJSON* root);
+	std::string Packet_Status  (cJSON* root);
+	std::string Packet_Conf    (cJSON* root);
+	std::string Packet_ListConf(cJSON* root);
+	std::string Packet_Restart (cJSON* root);
+	std::string packetLoadDump (cJSON* root);
 };
 
 

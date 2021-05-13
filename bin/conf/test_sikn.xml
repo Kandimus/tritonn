@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
+<tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="00112233445566778899aabbccddeeff00112233"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module ver="1.0" name="ai6_1" type="AI6">
@@ -15,12 +15,22 @@
 		</module>
 		<module type="crm" name="crm_1">
 		</module>
-		<module name="ai6_2" type="AI6">
+		<module type="ai6" name="ai6_2" >
 			<channel number="0" setup="AVERAGE" />
 		</module>
 	</hardware>
 	<config>
 		<settings>
+			<ethernet name="eth0">
+				<ip>192.168.1.100</ip>
+				<mask>255.255.255.0</mask>
+				<gateway></gateway>
+			</ethernet>
+			<ethernet name="eth1">
+				<ip>192.168.1.101</ip>
+				<mask>255.255.255.0</mask>
+				<gateway></gateway>
+			</ethernet>
 			<contracthour>0</contracthour>
 			<eventstorage>3</eventstorage>
 		</settings>

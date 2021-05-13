@@ -19,6 +19,10 @@
 #include "def.h"
 #include "event/event.h"
 
+namespace tinyxml2 {
+	class XMLElement;
+}
+
 class rObjUnit;
 
 struct rBaseTotal
@@ -39,17 +43,22 @@ public:
 
 	void Calculate(const rObjUnit& unit);
 
+	std::string toXml(const std::string& name) const;
+	bool        fromXml(tinyxml2::XMLElement* root, const std::string& name);
+
 	static LREAL Sub(LREAL sub1, LREAL sub2);
 	static void  clear(rBaseTotal &total);
 
 protected:
 	void checkMax();
+	std::string toXmlBase(const char* name, const rBaseTotal& total) const;
+	bool        fromXmlBase(tinyxml2::XMLElement* root, rBaseTotal& total);
 
 public:
-	rBaseTotal Past;    // Нарастающие на прошлом скане
-	rBaseTotal Raw;     // Сырые текущие нарастающие (обрезанные до 5 знаков)
-	rBaseTotal Inc;     // Инкремент нарастающих на текущем скане (обрезанные до 5 знаков)
-	rBaseTotal Present; // Текущие нарастающие
+	rBaseTotal m_past;    // Нарастающие на прошлом скане
+	rBaseTotal m_raw;     // Сырые текущие нарастающие (обрезанные до 5 знаков)
+	rBaseTotal m_inc;     // Инкремент нарастающих на текущем скане (обрезанные до 5 знаков)
+	rBaseTotal m_present; // Текущие нарастающие
 
 protected:
 	rEvent m_eventMass;
