@@ -112,7 +112,7 @@ const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
 const UDINT  MAX_CONFIG_NAME           = 128;
 const UDINT  MAX_CFGVER_SIZE           = 17;
-const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH;
+const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH * 2;
 
 const UDINT  MAX_UNITS_COUNT           = 512;
 

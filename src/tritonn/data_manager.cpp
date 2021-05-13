@@ -250,7 +250,7 @@ UDINT rDataManager::LoadConfig()
 	if (getLiveStatus() == Live::STARTING) {
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		saveMarkDown();
-		m_hashCfg = "1234567890";
+		m_hashCfg = "00112233445566778899aabbccddeeff00112230";
 	}
 
 	//--------------------------------------------
