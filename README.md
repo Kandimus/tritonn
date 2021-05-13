@@ -50,5 +50,9 @@ Simulate IO modules
 
 Don't load dump files
 
+>--config <file>
+
+Force load config file <file>
+
 ## 3thparty libs ##
     sudo apt install libncurses5-dev
