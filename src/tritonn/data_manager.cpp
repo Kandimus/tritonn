@@ -2,7 +2,7 @@
 //===
 //=== data_manager.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -65,7 +65,8 @@ rDataManager::~rDataManager()
 void rDataManager::setLiveStatus(Live status)
 {
 	if(m_live.Get() != Live::HALT) {
-		TRACEW(LOG::DATAMGR, "Set Live Status is %u", status);
+		TRACEW(LOG::DATAMGR, "Set Live Status is %u (%s)",
+			   status, m_sysVar.m_flagsLive.getNameByValue(static_cast<UDINT>(status)).c_str());
 		m_live.Set(status);
 	}
 }
@@ -250,7 +251,7 @@ UDINT rDataManager::LoadConfig()
 	if (getLiveStatus() == Live::STARTING) {
 		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 		saveMarkDown();
-		m_hashCfg = "00112233445566778899aabbccddeeff00112230";
+		m_hashCfg = "00112233445566778899aabbccddeeff00112233";
 	}
 
 	//--------------------------------------------

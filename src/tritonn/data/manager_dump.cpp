@@ -230,7 +230,7 @@ void rDataManager::forceLoadDumpVars(bool forceload)
 		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'. Dump file was delete.", FILE_DUMP_VARIABLES.c_str());
 	}
 
-	setLiveStatus(Live::STARTING);
+	setLiveStatus(Live::RUNNING);
 }
 
 void rDataManager::forceLoadDumpTotals(bool forceload)

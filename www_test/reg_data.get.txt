@@ -1,1 +1,1 @@
-﻿{"request":{"command":"data.get","ids":["io.globaltemp.mode", "io.globaltemp.present.value"]}}
+{"request":{"command":"data.get","ids":["io.globaltemp.mode", "io.globaltemp.present.value"]}}

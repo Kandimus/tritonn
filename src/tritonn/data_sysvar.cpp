@@ -17,7 +17,6 @@
 #include "data_sysvar.h"
 #include "variable_item.h"
 #include "variable_list.h"
-#include "bits_array.h"
 #include "comment_defines.h"
 #include "generator_md.h"
 
@@ -25,16 +24,14 @@
 //
 UDINT rSystemVariable::initVariables(rVariableList& list)
 {
-	rBitsArray flagsLive;
-
-	flagsLive
-			.add("", static_cast<USINT>(Live::UNDEF)      , "Не определенный статус")
-			.add("", static_cast<USINT>(Live::STARTING)   , "Система загружается")
-			.add("", static_cast<USINT>(Live::REBOOT_COLD), "Система в режиме COLD-START")
-			.add("", static_cast<USINT>(Live::DUMP_TOTALS), "Система в режиме загрузки нарастающих")
-			.add("", static_cast<USINT>(Live::DUMP_VARS)  , "Система в режиме загрузки уставок")
-			.add("", static_cast<USINT>(Live::RUNNING)    , "Система работает")
-			.add("", static_cast<USINT>(Live::HALT)       , "Система в режиме HALT");
+	m_flagsLive
+			.add("UNDEF"     , static_cast<USINT>(Live::UNDEF)      , "Не определенный статус")
+			.add("STARTING"  , static_cast<USINT>(Live::STARTING)   , "Система загружается")
+			.add("COLDSTART" , static_cast<USINT>(Live::REBOOT_COLD), "Система в режиме COLD-START")
+			.add("DUMPTOTALS", static_cast<USINT>(Live::DUMP_TOTALS), "Система в режиме загрузки нарастающих")
+			.add("DUMPVARS"  , static_cast<USINT>(Live::DUMP_VARS)  , "Система в режиме загрузки уставок")
+			.add("RUNNING"   , static_cast<USINT>(Live::RUNNING)    , "Система работает")
+			.add("HALT"      , static_cast<USINT>(Live::HALT)       , "Система в режиме HALT");
 
 	list.add("system.version.major"      , TYPE_USINT, rVariable::Flags::RS__, &m_version.m_major     , U_DIMLESS, ACCESS_SA, "Версия ПО");
 	list.add("system.version.minor"      , TYPE_USINT, rVariable::Flags::RS__, &m_version.m_minor     , U_DIMLESS, ACCESS_SA, "Подверсия ПО");
@@ -46,7 +43,7 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 	list.add("system.metrology.crc"      , TYPE_UDINT, rVariable::Flags::RS__, &m_metrologyVer.m_crc  , U_DIMLESS, ACCESS_SA, "Контрольная сумма метрологически значимой части ПО");
 
 	list.add("system.state.alarm"        , TYPE_UDINT, rVariable::Flags::RS__, &m_state.EventAlarm    , U_DIMLESS, ACCESS_SA, "Количество не квитированных аварий");
-	list.add("system.state.live"         , TYPE_USINT, rVariable::Flags::RS__, &m_state.Live          , U_DIMLESS, ACCESS_SA, COMMENT::STATUS + flagsLive.getInfo(true));
+	list.add("system.state.live"         , TYPE_USINT, rVariable::Flags::RS__, &m_state.Live          , U_DIMLESS, ACCESS_SA, COMMENT::STATUS + m_flagsLive.getInfo(true));
 	list.add("system.state.rebootreason" , TYPE_USINT, rVariable::Flags::RS__, &m_state.StartReason   , U_DIMLESS, ACCESS_SA, "Причина перезагрузки");
 	list.add("system.state.simulate"     , TYPE_USINT, rVariable::Flags::R___, &m_state.m_isSimulate  , U_DIMLESS, 0        , "Флаг симуляции системы");
 

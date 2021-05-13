@@ -363,7 +363,7 @@ string rJSONManager::Packet_REQ(cJSON *root)
 	}
 	else if(!strcmp(jcmd->valuestring, JSONSTR_ILOADDUMP))
 	{
-		return packetRestart(root);
+		return packetLoadDump(root);
 	}
 
 	return GetErrorJSON(JSONERR_UNKNOWMETHOD, "unknow command");
@@ -833,7 +833,7 @@ string rJSONManager::Packet_Restart (cJSON *root)
 }
 
 
-std::string rJSONManager::packetRestart(cJSON* root)
+std::string rJSONManager::packetLoadDump(cJSON* root)
 {
 	cJSON* jload = cJSON_GetObjectItem(root, JSONSTR_LOAD);
 	USINT  live  = rDataManager::instance().getLiveStatus();

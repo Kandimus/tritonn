@@ -82,7 +82,7 @@ protected:
 	std::string Packet_Conf    (cJSON* root);
 	std::string Packet_ListConf(cJSON* root);
 	std::string Packet_Restart (cJSON* root);
-	std::string packetRestart  (cJSON* root);
+	std::string packetLoadDump (cJSON* root);
 };
 
 
