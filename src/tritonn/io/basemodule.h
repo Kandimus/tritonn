@@ -36,10 +36,11 @@ public:
 	enum class Type : UINT
 	{
 		UNDEF  = 0,     //
-		AI6    = 1,     //
-		DI8DO8 = 2,
-		FI4    = 3,
-		CRM    = 4,
+		CPU    = 1,
+		AI6    = 2,     //
+		DI8DO8 = 3,
+		FI4    = 4,
+		CRM    = 5,
 	};
 
 	rIOBaseModule(UDINT id);
