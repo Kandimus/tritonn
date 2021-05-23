@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
 
 	//----------------------------------------------------------------------------------------------
 	// JSON
-	rJSONManager::Instance().Run(500);
+	rJSONManager::Instance().Run(100);
 	rJSONManager::Instance().StartServer("0.0.0.0", LanPort::PORT_JSON);
 
 	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");

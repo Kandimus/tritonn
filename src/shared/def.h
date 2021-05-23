@@ -105,7 +105,7 @@ const UDINT  MAX_PROVE                 = 8;
 const UDINT  MAX_AVERAGE               = 32;
 const UDINT  MAX_MASSWATER             = 16;
 const UDINT  MAX_VOLWATER              = 16;
-const UDINT  MAX_CINVISC               = 8;
+const UDINT  MAX_KINVISC               = 8;
 const UDINT  MAX_DYNVISC               = 8;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
@@ -395,7 +395,7 @@ enum rTritonn_Error
 	DATACFGERR_MAX_AVERAGE,                 //
 	DATACFGERR_MAX_MASSWATER,               // 142
 	DATACFGERR_MAX_VOLWATER,                //
-	DATACFGERR_MAX_CINVISC,                 // 144
+	DATACFGERR_MAX_KINVISC,                 // 144
 	DATACFGERR_MAX_DYNVISC,                 //
 	DATACFGERR_MAX_RESERV5________,         // 146
 	DATACFGERR_LIMIT,                       //

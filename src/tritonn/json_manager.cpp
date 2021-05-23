@@ -190,8 +190,7 @@ UDINT rJSONManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 	}
 
    // Посылку считали не полностью
-	if(JSONCLNT_RECV_ERROR == data)
-	{
+	if (JSONCLNT_RECV_ERROR == data) {
 		return 1;
 	}
 

@@ -201,7 +201,7 @@ void rSelector::generateIO()
 				std::string f_name = String_format("%s.input_%i.fault", NameInput[grp].c_str(), ii + 1);
 
 				initLink(rLink::Setup::INPUT                       , ValueIn[ii][grp], ValueIn[ii][grp].m_unit, SID::SEL_GRP1_IN1  + grp * MAX_INPUTS + ii, i_name, rLink::SHADOW_NONE);
-				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_discrete             , SID::SEL_GRP1_FLT1 + grp * MAX_INPUTS + ii, f_name, i_name            );
+				initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][grp], U_DIMLESS              , SID::SEL_GRP1_FLT1 + grp * MAX_INPUTS + ii, f_name, i_name            );
 			}
 		}
 	} else {
@@ -212,7 +212,7 @@ void rSelector::generateIO()
 			string f_name = String_format("input_%i.fault", ii + 1);
 
 			initLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].m_unit, SID::INPUT_1 + ii, i_name, rLink::SHADOW_NONE);
-			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_discrete           , SID::FAULT_1 + ii, f_name, i_name            );
+			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS            , SID::FAULT_1 + ii, f_name, i_name            );
 		}
 	}
 }
@@ -487,7 +487,7 @@ UDINT rSelector::generateMarkDown(rGeneratorMD& md)
 		}
 		mdi.addXml("</" + std::string(XmlName::INPUTS) + ">");
 
-		mdi.addXml("<" + std::string(XmlName::FAULTS) + ">");
+		mdi.addXml("<" + std::string(XmlName::FAULTS) + ">" + rGeneratorMD::rItem::XML_OPTIONAL);
 		for (auto ii = 0; ii < MAX_INPUTS; ++ii) {
 			mdi.addXml("\t<" + std::string(XmlName::GROUP) + ">");
 

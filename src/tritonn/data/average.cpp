@@ -39,15 +39,15 @@ rAverage::rAverage(const rStation* owner) : rSource(owner)
 				.add("NOCHECKFAULT", static_cast<UINT>(Setup::NOCHECKFAULT), "При усреднении не проверять флаг достоверности");
 	}
 
-	initLink(rLink::Setup::OUTPUT, m_outValue  , U_any     , SID::OUTPUT , XmlName::OUTPUT , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_inValue[0], U_any     , SID::INPUT_1, XmlName::INPUT_1, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_inValue[1], U_any     , SID::INPUT_2, XmlName::INPUT_2, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_inValue[2], U_any     , SID::INPUT_3, XmlName::INPUT_3, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_inValue[3], U_any     , SID::INPUT_4, XmlName::INPUT_4, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_inFault[0], U_discrete, SID::FAULT_1, XmlName::FAULT_1, XmlName::INPUT_1);
-	initLink(rLink::Setup::INPUT , m_inFault[1], U_discrete, SID::FAULT_2, XmlName::FAULT_2, XmlName::INPUT_2);
-	initLink(rLink::Setup::INPUT , m_inFault[2], U_discrete, SID::FAULT_3, XmlName::FAULT_3, XmlName::INPUT_3);
-	initLink(rLink::Setup::INPUT , m_inFault[3], U_discrete, SID::FAULT_4, XmlName::FAULT_4, XmlName::INPUT_4);
+	initLink(rLink::Setup::OUTPUT, m_outValue  , U_any    , SID::OUTPUT , XmlName::OUTPUT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_inValue[0], U_any    , SID::INPUT_1, XmlName::INPUT_1, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_inValue[1], U_any    , SID::INPUT_2, XmlName::INPUT_2, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_inValue[2], U_any    , SID::INPUT_3, XmlName::INPUT_3, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_inValue[3], U_any    , SID::INPUT_4, XmlName::INPUT_4, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_inFault[0], U_DIMLESS, SID::FAULT_1, XmlName::FAULT_1, XmlName::INPUT_1);
+	initLink(rLink::Setup::INPUT , m_inFault[1], U_DIMLESS, SID::FAULT_2, XmlName::FAULT_2, XmlName::INPUT_2);
+	initLink(rLink::Setup::INPUT , m_inFault[2], U_DIMLESS, SID::FAULT_3, XmlName::FAULT_3, XmlName::INPUT_3);
+	initLink(rLink::Setup::INPUT , m_inFault[3], U_DIMLESS, SID::FAULT_4, XmlName::FAULT_4, XmlName::INPUT_4);
 }
 
 

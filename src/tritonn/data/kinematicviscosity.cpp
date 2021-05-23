@@ -9,7 +9,7 @@
 //===
 //=================================================================================================
 
-#include "cinematicviscosity.h"
+#include "kinematicviscosity.h"
 #include <limits>
 #include "../event/eid.h"
 #include "../event/manager.h"
@@ -24,9 +24,9 @@
 #include "../comment_defines.h"
 
 
-rCinematicViscosity::rCinematicViscosity(const rStation* owner) : rSource(owner)
+rKinematicViscosity::rKinematicViscosity(const rStation* owner) : rSource(owner)
 {
-	initLink(rLink::Setup::OUTPUT, m_cinVisc, U_sSt  , SID::CINVISC, XmlName::CINVISC, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_kinVisc, U_sSt  , SID::RESULT , XmlName::RESULT , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_dynVisc, U_sP   , SID::DYNVISC, XmlName::DYNVISC, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_density, U_kg_m3, SID::DENSITY, XmlName::DENSITY, rLink::SHADOW_NONE);
 }
@@ -34,31 +34,31 @@ rCinematicViscosity::rCinematicViscosity(const rStation* owner) : rSource(owner)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCinematicViscosity::initLimitEvent(rLink& link)
+UDINT rKinematicViscosity::initLimitEvent(rLink& link)
 {
-	link.m_limit.EventChangeAMin  = reinitEvent(EID_CINVISC_NEW_AMIN)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeWMin  = reinitEvent(EID_CINVISC_NEW_WMIN)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeWMax  = reinitEvent(EID_CINVISC_NEW_WMAX)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeAMax  = reinitEvent(EID_CINVISC_NEW_AMAX)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeHyst  = reinitEvent(EID_CINVISC_NEW_HYST)  << link.m_descr << link.m_unit;
-	link.m_limit.EventChangeSetup = reinitEvent(EID_CINVISC_NEW_SETUP) << link.m_descr << link.m_unit;
-	link.m_limit.EventAMin        = reinitEvent(EID_CINVISC_AMIN)      << link.m_descr << link.m_unit;
-	link.m_limit.EventWMin        = reinitEvent(EID_CINVISC_WMIN)      << link.m_descr << link.m_unit;
-	link.m_limit.EventWMax        = reinitEvent(EID_CINVISC_WMAX)      << link.m_descr << link.m_unit;
-	link.m_limit.EventAMax        = reinitEvent(EID_CINVISC_AMAX)      << link.m_descr << link.m_unit;
-	link.m_limit.EventNan         = reinitEvent(EID_CINVISC_NAN)       << link.m_descr << link.m_unit;
-	link.m_limit.EventNormal      = reinitEvent(EID_CINVISC_NORMAL)    << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMin  = reinitEvent(EID_KINVISC_NEW_AMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMin  = reinitEvent(EID_KINVISC_NEW_WMIN)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeWMax  = reinitEvent(EID_KINVISC_NEW_WMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeAMax  = reinitEvent(EID_KINVISC_NEW_AMAX)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeHyst  = reinitEvent(EID_KINVISC_NEW_HYST)  << link.m_descr << link.m_unit;
+	link.m_limit.EventChangeSetup = reinitEvent(EID_KINVISC_NEW_SETUP) << link.m_descr << link.m_unit;
+	link.m_limit.EventAMin        = reinitEvent(EID_KINVISC_AMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMin        = reinitEvent(EID_KINVISC_WMIN)      << link.m_descr << link.m_unit;
+	link.m_limit.EventWMax        = reinitEvent(EID_KINVISC_WMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventAMax        = reinitEvent(EID_KINVISC_AMAX)      << link.m_descr << link.m_unit;
+	link.m_limit.EventNan         = reinitEvent(EID_KINVISC_NAN)       << link.m_descr << link.m_unit;
+	link.m_limit.EventNormal      = reinitEvent(EID_KINVISC_NORMAL)    << link.m_descr << link.m_unit;
 
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rCinematicViscosity::calculate()
+UDINT rKinematicViscosity::calculate()
 {
 	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
 	}
 
-	m_cinVisc.m_value = m_dynVisc.m_value * m_density.m_value / 1000;
+	m_kinVisc.m_value = m_dynVisc.m_value * m_density.m_value / 1000;
 
 	//----------------------------------------------------------------------------------------------
 	// Обрабатываем Limits для выходных значений
@@ -68,7 +68,7 @@ UDINT rCinematicViscosity::calculate()
 }
 
 
-UDINT rCinematicViscosity::generateVars(rVariableList& list)
+UDINT rKinematicViscosity::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
@@ -79,7 +79,7 @@ UDINT rCinematicViscosity::generateVars(rVariableList& list)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rCinematicViscosity::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
+UDINT rKinematicViscosity::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix)
 {
 	if (rSource::loadFromXML(element, err, prefix) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -105,10 +105,10 @@ UDINT rCinematicViscosity::loadFromXML(tinyxml2::XMLElement* element, rError& er
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rCinematicViscosity::generateMarkDown(rGeneratorMD& md)
+UDINT rKinematicViscosity::generateMarkDown(rGeneratorMD& md)
 {
 	m_density.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
-	m_cinVisc.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
+	m_kinVisc.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_dynVisc.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 
 	md.add(this, true, rGeneratorMD::Type::CALCULATE);

@@ -32,7 +32,7 @@ rVolWater::rVolWater(const rStation* owner) : rSource(owner)
 				.add("NOWATER", static_cast<UINT>(Setup::NOWATER), "При расчетах не учитывать значение плотности воды.");
 	}
 
-	initLink(rLink::Setup::OUTPUT, m_volWater   , U_perc_v, SID::VOLWATER   , XmlName::VOLWATER , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_volWater   , U_perc_v, SID::RESULT     , XmlName::RESULT   , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_massWater  , U_perc_m, SID::MASSWATER  , XmlName::MASSWATER, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_density    , U_kg_m3 , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT , m_temperature, U_C     , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
@@ -86,10 +86,10 @@ UDINT rVolWater::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".setup"        , rVariable::Flags::R__D, &m_setup       , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".water.density", rVariable::Flags::R___, &m_waterDensity, U_kg_m3  , 0, "Вычисленное значение плотности воды");
+	list.add(m_alias + ".setup"       , rVariable::Flags::R__D, &m_setup       , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".densitywater", rVariable::Flags::R___, &m_waterDensity, U_kg_m3  , 0, "Вычисленное значение плотности воды");
 
-	list.add(m_alias + ".fault"        , rVariable::Flags::R___, &m_fault       , U_DIMLESS, 0, COMMENT::FAULT);
+	list.add(m_alias + ".fault"       , rVariable::Flags::R___, &m_fault       , U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }
@@ -143,6 +143,7 @@ UDINT rVolWater::loadFromXML(tinyxml2::XMLElement* element, rError& err, const s
 
 UDINT rVolWater::generateMarkDown(rGeneratorMD& md)
 {
+	m_temperature.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_density.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_volWater.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_massWater.m_limit.m_setup.Init(LIMIT_SETUP_ALL);

@@ -25,8 +25,8 @@
 				<unit>16</unit>
 				<keypad>10</keypad>
 				<scale>
-					<min>0</min>
-					<max>150</max>
+					<low>0</low>
+					<high>150</high>
 				</scale>
 				<limits>
 					<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -39,12 +39,12 @@
 				</limits>
 			</ai>
 			<ai name="ai00" mode="PHIS" setup="NOICE | KEYPAD" description="4001">
-				<io_link module="0" channel="0"/>
+				<io_link module="1" channel="0"/>
 				<unit>16</unit>
 				<keypad>12.5</keypad>
 				<scale>
-					<min>-10</min>
-					<max>100</max>
+					<low>-10</low>
+					<high>100</high>
 				</scale>
 				<limits>
 					<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -62,12 +62,12 @@
 				</limits>
 			</ai>
 			<ai name="ai01" mode="PHIS" setup="NOICE | LASTGOOD" description="4002">
-				<io_link module="0" channel="1"/>
+				<io_link module="1" channel="1"/>
 				<unit>16</unit>
 				<keypad>12.5</keypad>
 				<scale>
-					<min>-10</min>
-					<max>100</max>
+					<low>-10</low>
+					<high>100</high>
 				</scale>
 				<limits>
 					<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -85,11 +85,11 @@
 				</limits>
 			</ai>
 			<di name="di00" mode="PHIS" setup="KEYPAD | SUCCESS0 | WARNING1" description="4003">
-				<io_link module="1" channel="0"/>
+				<io_link module="2" channel="0"/>
 				<keypad>0</keypad>
 			</di>
 			<di name="di01" mode="PHIS" setup="KEYPAD | SUCCESS1 | ALARM0" description="4004">
-				<io_link module="1" channel="1"/>
+				<io_link module="2" channel="1"/>
 				<keypad>0</keypad>
 			</di>
 			<di name="di_virt" mode="PHIS" setup="" description="4005">
@@ -97,7 +97,7 @@
 			</di>
 			<counter name="fi_virt" setup="" description="4000" />
 			<counter name="fi00" setup="" description="4000" >
-				<io_link module="2" channel="0"/>
+				<io_link module="3" channel="0"/>
 			</counter>
 		</io>
 		<stations>
@@ -132,8 +132,8 @@
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -149,8 +149,8 @@
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>6.3</max>
+									<low>0</low>
+									<high>6.3</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -163,7 +163,7 @@
 								</limits>
 							</ai>
 							<counter name="counter" setup="" description="4005">
-								<io_link module="2" channel="1" />
+								<io_link module="3" channel="1" />
 							</counter>
 						</io>
 						<calculate>
@@ -253,8 +253,8 @@
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -270,8 +270,8 @@
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>6.3</max>
+									<low>0</low>
+									<high>6.3</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -284,7 +284,7 @@
 								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4010">
-								<io_link module="2" channel="2" />
+								<io_link module="3" channel="2" />
 							</counter>
 						</io>
 						<calculate>
@@ -327,8 +327,8 @@
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -344,8 +344,8 @@
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -361,8 +361,8 @@
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>2.0</max>
+									<low>0</low>
+									<high>2.0</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI">
@@ -378,8 +378,8 @@
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>2.0</max>
+									<low>0</low>
+									<high>2.0</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI">
@@ -395,8 +395,8 @@
 								<unit>64</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>100</max>
+									<low>0</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI">
@@ -412,8 +412,8 @@
 								<unit>32</unit>
 								<keypad>0.1</keypad>
 								<scale>
-									<min>0</min>
-									<max>6.3</max>
+									<low>0</low>
+									<high>6.3</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -426,10 +426,10 @@
 								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4019">
-								<io_link module="2" channel="3" />
+								<io_link module="3" channel="3" />
 							</counter>
 							<counter name="period1" setup="" description="4020">
-								<io_link module="3" channel="0" />
+								<io_link module="4" channel="0" />
 							</counter>
 							<counter name="Period2" setup="" description="4021">
 							</counter>
@@ -444,10 +444,10 @@
 					</stream>
 				</streams>
 				<calculate>
-					<cinviscosity name="cinvisc" description="">
+					<kinviscosity name="kinvisc" description="">
 						<dynviscosity><link alias="sikn1.bik.io.visc"/></dynviscosity>
 						<density><link alias="var.testdens"/></density>
-					</cinviscosity>
+					</kinviscosity>
 					<volwater name="volwater" description="4000" setup="">
 						<masswater><link alias="sikn1.obj.masswater:masswater"/></masswater>
 						<density><link alias="var.testdens"/></density>
@@ -634,24 +634,24 @@
 		<reportsystem>
 			<datasets>
 				<dataset name="std_report">
-					<total name="Line1" alias="sikn1.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
+					<fwa name="Line1" alias="sikn1.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
 						<item name="item_1"><link alias="sikn1.line1.io.temp:present"/></item> <!-- Это линки -->
 						<item name="item_2"><link alias="sikn1.Line1.io.pres:present"/></item>
 						<item name="item_3"><link alias="sikn1.Line1:density"/></item>
 						<item name="item_4"><link alias="sikn1.Line1.io.temp:present"/></item>
-					</total> <!-- fwa -->
-					<total name="Line2" alias="sikn1.Line2">
+					</fwa> <!-- fwa -->
+					<fwa name="Line2" alias="sikn1.Line2">
 						<item name="item_1"><link alias="sikn1.Line2.io.temp:present"/></item>
 						<item name="item_2"><link alias="sikn1.Line2.io.pres:present"/></item>
 						<item name="item_3"><link alias="sikn1.Line2:density"/></item>
 						<item name="item_4"><link alias="sikn1.Line2.io.temp:present"/></item>
-					</total>
-					<total name="SIKN123" alias="sikn1">
+					</fwa>
+					<fwa name="SIKN123" alias="sikn1">
 						<item name="item_1"><link alias="sikn1:temperature"/></item>
 						<item name="item_2"><link alias="sikn1:pressure"/></item>
 						<item name="item_3"><link alias="sikn1:density"/></item>
 						<item name="item_4"><link alias="sikn1.obj.StnWater:output"/></item>
-					</total>
+					</fwa>
 					<snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
 						<item name="ss_1"><link alias="sikn1.line1.io.counter:frequency"/></item>
 					</snapshots>
@@ -774,8 +774,8 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable convert="float">io.ai00.physical.value</variable>
 				<variable convert="float">io.ai00.current.value</variable>
 				<variable convert="float">io.ai00.keypad</variable>
-				<variable                >io.ai00.scales.min</variable>
-				<variable                >io.ai00.scales.max</variable>
+				<variable                >io.ai00.scales.low</variable>
+				<variable                >io.ai00.scales.high</variable>
 				<variable                >io.ai00.status</variable>
 				<variable                >io.ai00.mode</variable>
 			</datablock>

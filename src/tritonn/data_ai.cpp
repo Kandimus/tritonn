@@ -336,8 +336,8 @@ UDINT rAI::generateVars(rVariableList& list)
 
 	// Variables
 	list.add(m_alias + ".keypad"    ,             rVariable::Flags::___D, &m_keypad.Value   , m_present.m_unit, ACCESS_KEYPAD, COMMENT::KEYPAD);
-	list.add(m_alias + ".scales.min",             rVariable::Flags::___D, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
-	list.add(m_alias + ".scales.max",             rVariable::Flags::___D, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
+	list.add(m_alias + ".scales.low",             rVariable::Flags::___D, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
+	list.add(m_alias + ".scales.high",            rVariable::Flags::___D, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
 	list.add(m_alias + ".setup"     , TYPE_UINT , rVariable::Flags::RS__, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(m_alias + ".mode"      , TYPE_UINT , rVariable::Flags::___D, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
 	list.add(m_alias + ".status"    , TYPE_UINT , rVariable::Flags::R___, &m_status         , U_DIMLESS       , 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
@@ -383,8 +383,8 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
 
 	m_keypad.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD) , 0.0, fault));
-	m_scale.Min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MIN), 0.0, fault));
-	m_scale.Max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::MAX), 0.0, fault));
+	m_scale.Min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::LOW), 0.0, fault));
+	m_scale.Max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::HIGH), 0.0, fault));
 
 	STRID Unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, fault);
 

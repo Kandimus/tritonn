@@ -118,7 +118,7 @@ public:
 	rFlowFactor m_curFactor;
 	rFlowFactor m_setFactor;
 	LREAL       m_curKF;
-	UDINT       m_acceptKF;
+	USINT       m_acceptKF;
 	rTotal      m_total;
 
 private:

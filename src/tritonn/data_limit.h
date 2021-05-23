@@ -37,6 +37,8 @@ public:
 		LO   = 0x0004,     // Выдавать сообщение WMIN
 		HI   = 0x0008,     // Выдавать сообщение WMAX
 		HIHI = 0x0010,     // Выдавать сообщение AMAX
+
+		OPTIONAL = 0x8000,
 	};
 
 	enum class Status : UINT

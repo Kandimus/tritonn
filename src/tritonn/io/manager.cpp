@@ -27,6 +27,8 @@
 #include "../xml_util.h"
 #include "../error.h"
 #include "defines.h"
+
+#include "module_cpu.h"
 #include "module_ai6.h"
 #include "module_di8do8.h"
 #include "module_fi4.h"
@@ -36,6 +38,8 @@
 rIOManager::rIOManager() : rVariableClass(Mutex)
 {
 	RTTI = "rIOManager";
+
+	m_modules.push_back(new rModuleCPU(UDINT(0)));
 }
 
 
@@ -115,7 +119,6 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 	return TRITONN_RESULT_OK;
 }
 
-
 rIOBaseModule* rIOManager::addModule(const std::string& type)
 {
 	auto sysvar = rDataManager::instance().getSysVar();
@@ -144,4 +147,10 @@ rIOBaseModule* rIOManager::addModule(const std::string& type)
 	m_modules.push_back(module);
 
 	return module;
+}
+
+bool rIOManager::checkListOfModules() const
+{
+	//TODO
+	return true;
 }
