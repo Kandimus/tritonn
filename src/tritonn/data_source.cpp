@@ -471,7 +471,7 @@ std::string rSource::getXmlInput() const
 		for (auto link : m_inputs) {
 			result += "\t<" + link->m_ioName + ">" + rGeneratorMD::rItem::XML_LINK + "</" + link->m_ioName + ">";
 
-			if (link->m_shadow.size()) {
+			if (link->m_shadow.size() || (link->m_limit.m_setup.Value & rLimit::Setup::OPTIONAL)) {
 				result += "<!-- Optional -->";
 			}
 

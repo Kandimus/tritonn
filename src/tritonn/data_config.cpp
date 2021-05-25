@@ -46,7 +46,7 @@
 #include "data/average.h"
 #include "data/masswater.h"
 #include "data/volwater.h"
-#include "data/cinematicviscosity.h"
+#include "data/kinematicviscosity.h"
 #include "interface/modbustcpslave_manager.h"
 #include "interface/opcua_manager.h"
 #include "structures.h"
@@ -368,7 +368,7 @@ UDINT rDataConfig::loadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		if (XmlName::AVERAGE     == name) { if (SysVar->m_max[name] >= MAX_AVERAGE    ) return m_error.set(DATACFGERR_MAX_AVERAGE  , 0); source = dynamic_cast<rSource*>(new rAverage(owner));            }
 		if (XmlName::MASSWATER   == name) { if (SysVar->m_max[name] >= MAX_MASSWATER  ) return m_error.set(DATACFGERR_MAX_MASSWATER, 0); source = dynamic_cast<rSource*>(new rMassWater(owner));          }
 		if (XmlName::VOLWATER    == name) { if (SysVar->m_max[name] >= MAX_VOLWATER   ) return m_error.set(DATACFGERR_MAX_VOLWATER , 0); source = dynamic_cast<rSource*>(new rVolWater(owner));           }
-		if (XmlName::CINVISC     == name) { if (SysVar->m_max[name] >= MAX_CINVISC    ) return m_error.set(DATACFGERR_MAX_CINVISC  , 0); source = dynamic_cast<rSource*>(new rCinematicViscosity(owner)); }
+		if (XmlName::KINVISC     == name) { if (SysVar->m_max[name] >= MAX_KINVISC    ) return m_error.set(DATACFGERR_MAX_KINVISC  , 0); source = dynamic_cast<rSource*>(new rKinematicViscosity(owner)); }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);

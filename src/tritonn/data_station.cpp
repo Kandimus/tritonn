@@ -282,9 +282,9 @@ const rObjUnit& rStation::getUnit() const
 
 UDINT rStation::generateMarkDown(rGeneratorMD& md)
 {
-	m_temp.m_limit.m_setup.Init        (LIMIT_SETUP_ALL);
-	m_pres.m_limit.m_setup.Init        (LIMIT_SETUP_ALL);
-	m_dens.m_limit.m_setup.Init        (LIMIT_SETUP_ALL);
+	m_temp.m_limit.m_setup.Init        (LIMIT_SETUP_ALL | rLimit::Setup::OPTIONAL);
+	m_pres.m_limit.m_setup.Init        (LIMIT_SETUP_ALL | rLimit::Setup::OPTIONAL);
+	m_dens.m_limit.m_setup.Init        (LIMIT_SETUP_ALL | rLimit::Setup::OPTIONAL);
 	m_flowMass.m_limit.m_setup.Init    (LIMIT_SETUP_ALL);
 	m_flowVolume.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
 	m_flowVolume15.m_limit.m_setup.Init(LIMIT_SETUP_ALL);

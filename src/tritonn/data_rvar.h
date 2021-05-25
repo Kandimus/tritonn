@@ -36,7 +36,7 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const override { return "rvar"; }
+	virtual const char* RTTI() const override { return "variable"; }
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
 	virtual UDINT generateVars(rVariableList& list) override;

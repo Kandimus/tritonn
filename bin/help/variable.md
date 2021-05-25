@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
-# rvar
-> 0.19.73.343f7010
+# variable
+> 0.19.94.7405d6dc
 ## XML
 ````xml
-<rvar name="valid object name" description="string index" setup="text value | text value | ... | text value" >
+<variable name="valid object name" description="string index" setup="text value | text value | ... | text value" >
 	<value><link alias="object's output"/></value>
 	<limits><!-- Optional -->
 		<limit name="value" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
@@ -17,7 +17,7 @@
 	</limits>
 	<value>0</value>
 	<unit>0<unit/>
-</rvar>
+</variable>
 ````
 
 #### setup

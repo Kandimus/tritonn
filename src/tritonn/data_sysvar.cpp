@@ -60,7 +60,7 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 	list.add("system.datetime.set.day"   , TYPE_INT  , rVariable::Flags::____, &SetDateTime.tm_mday   , U_DIMLESS, ACCESS_SYSTEM, COMMENT::TIME_SET + COMMENT::DAY);
 	list.add("system.datetime.set.month" , TYPE_INT  , rVariable::Flags::____, &SetDateTime.tm_mon    , U_DIMLESS, ACCESS_SYSTEM, COMMENT::TIME_SET + COMMENT::MONTH);
 	list.add("system.datetime.set.year"  , TYPE_INT  , rVariable::Flags::____, &SetDateTime.tm_year   , U_DIMLESS, ACCESS_SYSTEM, COMMENT::TIME_SET + COMMENT::YEAR);
-	list.add("system.datetime.set.accept", TYPE_INT  , rVariable::Flags::____, &SetDateTimeAccept     , U_DIMLESS, ACCESS_SYSTEM, "Команда установить время:<br/>0 - нет действия<br/>1 - применить установленное время");
+	list.add("system.datetime.set.accept",             rVariable::Flags::____, &SetDateTimeAccept     , U_DIMLESS, ACCESS_SYSTEM, "Команда установить время:<br/>0 - нет действия<br/>1 - применить установленное время");
 
 	return TRITONN_RESULT_OK;
 }

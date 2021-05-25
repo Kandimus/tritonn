@@ -221,36 +221,36 @@ UDINT rStream::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".setup"          ,             rVariable::Flags::RS__, &m_setup.Value             , U_DIMLESS       , ACCESS_SA     , COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".flowmeter"      , TYPE_USINT, rVariable::Flags::R___, &m_flowmeter               , U_DIMLESS       , 0             , "Тип расходомера:<br/>" + m_flagsFlowmeter.getInfo(true));
-	list.add(m_alias + ".maintenance"    ,             rVariable::Flags::___D, &m_maintenance             , U_DIMLESS       , ACCESS_MAINTENANCE, "Статус учета:<br/>0 - в учете<br/>1 - не в учете");
-	list.add(m_alias + ".linearization"  ,             rVariable::Flags::___D, &m_linearization           , U_DIMLESS       , ACCESS_FACTORS, "Тип коэффициентов:<br/>0 - единый К-фактор<br/>1 - кусочно-линейная интерполяция");
-	list.add(strtot  + "present.Volume"  ,             rVariable::Flags::R___, &m_total.m_present.Volume    , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
-	list.add(strtot  + "present.Volume15",             rVariable::Flags::R___, &m_total.m_present.Volume15  , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
-	list.add(strtot  + "present.Volume20",             rVariable::Flags::R___, &m_total.m_present.Volume20  , unit.getVolume(), 0             , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
-	list.add(strtot  + "present.Mass"    ,             rVariable::Flags::R___, &m_total.m_present.Mass      , unit.getMass()  , 0             , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
-	list.add(strtot  + "present.impulse" ,             rVariable::Flags::R___, &m_total.m_present.Count     , U_imp           , 0             , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
-	list.add(strtot  + "Inc.Volume"      ,             rVariable::Flags::RSH_, &m_total.m_inc.Volume        , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
-	list.add(strtot  + "Inc.Volume15"    ,             rVariable::Flags::RSH_, &m_total.m_inc.Volume15      , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
-	list.add(strtot  + "Inc.Volume20"    ,             rVariable::Flags::RSH_, &m_total.m_inc.Volume20      , unit.getVolume(), ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
-	list.add(strtot  + "Inc.Mass"        ,             rVariable::Flags::RSH_, &m_total.m_inc.Mass          , unit.getMass()  , ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::MASS);
-	list.add(strtot  + "Inc.inpulse"     ,             rVariable::Flags::RSH_, &m_total.m_inc.Count         , U_imp           , ACCESS_SA     , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
-	list.add(strtot  + "raw.Volume"      ,             rVariable::Flags::RSH_, &m_total.m_raw.Volume        , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
-	list.add(strtot  + "raw.Volume15"    ,             rVariable::Flags::RSH_, &m_total.m_raw.Volume15      , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
-	list.add(strtot  + "raw.Volume20"    ,             rVariable::Flags::RSH_, &m_total.m_raw.Volume20      , unit.getVolume(), 0             , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
-	list.add(strtot  + "raw.Mass"        ,             rVariable::Flags::RSH_, &m_total.m_raw.Mass          , unit.getMass()  , 0             , COMMENT::TOTAL_RAW     + COMMENT::MASS);
-	list.add(strtot  + "raw.impulse"     ,             rVariable::Flags::RSH_, &m_total.m_raw.Count         , U_imp           , 0             , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
-	list.add(strtot  + "past.Volume"     ,             rVariable::Flags::RSH_, &m_total.m_past.Volume       , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
-	list.add(strtot  + "past.Volume15"   ,             rVariable::Flags::RSH_, &m_total.m_past.Volume15     , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
-	list.add(strtot  + "past.Volume20"   ,             rVariable::Flags::RSH_, &m_total.m_past.Volume20     , unit.getVolume(), 0             , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
-	list.add(strtot  + "past.Mass"       ,             rVariable::Flags::RSH_, &m_total.m_past.Mass         , unit.getMass()  , 0             , COMMENT::TOTAL_PAST    + COMMENT::MASS);
-	list.add(strtot  + "past.impulse"    ,             rVariable::Flags::RSH_, &m_total.m_past.Count        , U_imp           , 0             , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
-	list.add(m_alias + ".presentkf"      ,             rVariable::Flags::R___, &m_curKF                   , getUnitKF()     , 0             , "Вычисленный К-фактор");
-	list.add(strfac  + "kf"              ,             rVariable::Flags::R__D, &m_curFactor.KeypadKF.Value, getUnitKF()     , 0             , COMMENT::FACTORS     + COMMENT::KFACTOR);
-	list.add(strfac  + "mf"              ,             rVariable::Flags::R__D, &m_curFactor.KeypadMF.Value, U_DIMLESS       , 0             , COMMENT::FACTORS     + COMMENT::MFACTOR);
-	list.add(strfac  + "set.kf"          ,             rVariable::Flags::____, &m_setFactor.KeypadKF.Value, getUnitKF()     , ACCESS_FACTORS, COMMENT::FACTORS_SET + COMMENT::KFACTOR);
-	list.add(strfac  + "set.mf"          ,             rVariable::Flags::____, &m_setFactor.KeypadMF.Value, U_DIMLESS       , ACCESS_FACTORS, COMMENT::FACTORS_SET + COMMENT::MFACTOR);
-	list.add(strfac  + "set.accept"      ,             rVariable::Flags::____, &m_acceptKF                , U_DIMLESS       , ACCESS_FACTORS, COMMENT::FACTOR_ACC);
+	list.add(m_alias + ".setup"          , rVariable::Flags::RS__, &m_setup.Value                        , U_DIMLESS       , ACCESS_SA         , COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".flowmeter"      , rVariable::Flags::R___, reinterpret_cast<USINT*>(&m_flowmeter), U_DIMLESS       , 0                 , "Тип расходомера:<br/>" + m_flagsFlowmeter.getInfo(true));
+	list.add(m_alias + ".maintenance"    , rVariable::Flags::___D, &m_maintenance                        , U_DIMLESS       , ACCESS_MAINTENANCE, "Статус учета:<br/>0 - в учете<br/>1 - не в учете");
+	list.add(m_alias + ".linearization"  , rVariable::Flags::___D, &m_linearization                      , U_DIMLESS       , ACCESS_FACTORS    , "Тип коэффициентов:<br/>0 - единый К-фактор<br/>1 - кусочно-линейная интерполяция");
+	list.add(strtot  + "present.Volume"  , rVariable::Flags::R___, &m_total.m_present.Volume             , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
+	list.add(strtot  + "present.Volume15", rVariable::Flags::R___, &m_total.m_present.Volume15           , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
+	list.add(strtot  + "present.Volume20", rVariable::Flags::R___, &m_total.m_present.Volume20           , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
+	list.add(strtot  + "present.Mass"    , rVariable::Flags::R___, &m_total.m_present.Mass               , unit.getMass()  , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
+	list.add(strtot  + "present.impulse" , rVariable::Flags::R___, &m_total.m_present.Count              , U_imp           , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
+	list.add(strtot  + "Inc.Volume"      , rVariable::Flags::RSH_, &m_total.m_inc.Volume                 , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
+	list.add(strtot  + "Inc.Volume15"    , rVariable::Flags::RSH_, &m_total.m_inc.Volume15               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
+	list.add(strtot  + "Inc.Volume20"    , rVariable::Flags::RSH_, &m_total.m_inc.Volume20               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
+	list.add(strtot  + "Inc.Mass"        , rVariable::Flags::RSH_, &m_total.m_inc.Mass                   , unit.getMass()  , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::MASS);
+	list.add(strtot  + "Inc.inpulse"     , rVariable::Flags::RSH_, &m_total.m_inc.Count                  , U_imp           , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "raw.Volume"      , rVariable::Flags::RSH_, &m_total.m_raw.Volume                 , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
+	list.add(strtot  + "raw.Volume15"    , rVariable::Flags::RSH_, &m_total.m_raw.Volume15               , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
+	list.add(strtot  + "raw.Volume20"    , rVariable::Flags::RSH_, &m_total.m_raw.Volume20               , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
+	list.add(strtot  + "raw.Mass"        , rVariable::Flags::RSH_, &m_total.m_raw.Mass                   , unit.getMass()  , 0                 , COMMENT::TOTAL_RAW     + COMMENT::MASS);
+	list.add(strtot  + "raw.impulse"     , rVariable::Flags::RSH_, &m_total.m_raw.Count                  , U_imp           , 0                 , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "past.Volume"     , rVariable::Flags::RSH_, &m_total.m_past.Volume                , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
+	list.add(strtot  + "past.Volume15"   , rVariable::Flags::RSH_, &m_total.m_past.Volume15              , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
+	list.add(strtot  + "past.Volume20"   , rVariable::Flags::RSH_, &m_total.m_past.Volume20              , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
+	list.add(strtot  + "past.Mass"       , rVariable::Flags::RSH_, &m_total.m_past.Mass                  , unit.getMass()  , 0                 , COMMENT::TOTAL_PAST    + COMMENT::MASS);
+	list.add(strtot  + "past.impulse"    , rVariable::Flags::RSH_, &m_total.m_past.Count                 , U_imp           , 0                 , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
+	list.add(m_alias + ".presentkf"      , rVariable::Flags::R___, &m_curKF                              , getUnitKF()     , 0                 , "Вычисленный К-фактор");
+	list.add(strfac  + "kf"              , rVariable::Flags::R__D, &m_curFactor.KeypadKF.Value           , getUnitKF()     , 0                 , COMMENT::FACTORS     + COMMENT::KFACTOR);
+	list.add(strfac  + "mf"              , rVariable::Flags::R__D, &m_curFactor.KeypadMF.Value           , U_DIMLESS       , 0                 , COMMENT::FACTORS     + COMMENT::MFACTOR);
+	list.add(strfac  + "set.kf"          , rVariable::Flags::____, &m_setFactor.KeypadKF.Value           , getUnitKF()     , ACCESS_FACTORS    , COMMENT::FACTORS_SET + COMMENT::KFACTOR);
+	list.add(strfac  + "set.mf"          , rVariable::Flags::____, &m_setFactor.KeypadMF.Value           , U_DIMLESS       , ACCESS_FACTORS    , COMMENT::FACTORS_SET + COMMENT::MFACTOR);
+	list.add(strfac  + "set.accept"      , rVariable::Flags::____, &m_acceptKF                           , U_DIMLESS       , ACCESS_FACTORS    , COMMENT::FACTOR_ACC);
 
 
 	for (UDINT ii = 0; ii < m_curFactor.m_point.size(); ++ii) {

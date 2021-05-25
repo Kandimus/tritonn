@@ -427,7 +427,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	// Перебираем станции и линии в dataset
 	// Заполняем только объект Present
-	XML_FOR(total_xml, dataset, XmlName::TOTALS) {
+	XML_FOR(total_xml, dataset, XmlName::FWA) {
 		auto tot = new rReport::rTotal();
 
 		m_present.m_averageItems.push_back(tot);
@@ -806,7 +806,7 @@ UDINT rReport::generateMarkDown(rGeneratorMD& md)
 	remark += "## XML Dataset\n````xml\n";
 	remark += "<" + std::string(XmlName::DATASETS) + ">\n";
 	remark += "\t<" + std::string(XmlName::DATASET) + " name=\"valid name of dataset\">\n";
-	remark += "\t\t<" + std::string(XmlName::TOTALS) + " name=\"valid name\" alias=\"alias of calculate object contain totals\">\n";
+	remark += "\t\t<" + std::string(XmlName::FWA) + " name=\"valid name\" alias=\"alias of calculate object contain totals\">\n";
 	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";
 	remark += "\t\t\t\t" + rGeneratorMD::rItem::XML_LINK + "\n";
 	remark += "\t\t\t</" + std::string(XmlName::ITEM) + ">\n";
@@ -814,11 +814,11 @@ UDINT rReport::generateMarkDown(rGeneratorMD& md)
 	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";
 	remark += "\t\t\t\t" + rGeneratorMD::rItem::XML_LINK + "\n";
 	remark += "\t\t\t</" + std::string(XmlName::ITEM) + ">\n";
-	remark += "\t\t</" + std::string(XmlName::TOTALS) + ">\n";
+	remark += "\t\t</" + std::string(XmlName::FWA) + ">\n";
 	remark += "\t\t...\n";
-	remark += "\t\t<" + std::string(XmlName::TOTALS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
+	remark += "\t\t<" + std::string(XmlName::FWA) + "> " + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
 	remark += "\t\t\t...\n";
-	remark += "\t\t</" + std::string(XmlName::TOTALS) + ">\n";
+	remark += "\t\t</" + std::string(XmlName::FWA) + ">\n";
 
 	remark += "\t\t<" + std::string(XmlName::SNAPSHOTS) + "> " + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
 	remark += "\t\t\t<" + std::string(XmlName::ITEM) + " name=\"valid name\">\n";

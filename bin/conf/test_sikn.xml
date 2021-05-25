@@ -39,8 +39,8 @@
 				<unit>16</unit>
 				<keypad>12.5</keypad>
 				<scale>
-					<min>-10</min>
-					<max>100</max>
+					<low>-10</low>
+					<high>100</high>
 				</scale>
 				<limits>
 					<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -82,12 +82,12 @@
 						</factors>
 						<io>
 							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4003">
-								<io_link module="0" channel="0"/>
+								<io_link module="1" channel="0"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -100,12 +100,12 @@
 								</limits>
 							</ai>
 							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
-								<io_link module="0" channel="1"/>
+								<io_link module="1" channel="1"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>6.3</max>
+									<low>0</low>
+									<high>6.3</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -118,7 +118,7 @@
 								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4005">
-								<io_link module="2" channel="0"/>
+								<io_link module="3" channel="0"/>
 							</counter>
 						</io>
 						<calculate>
@@ -163,12 +163,12 @@
 						</factors>
 						<io>
 							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4008">
-								<io_link module="0" channel="2"/>
+								<io_link module="1" channel="2"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -181,12 +181,12 @@
 								</limits>
 							</ai>
 							<ai name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
-								<io_link module="0" channel="3"/>
+								<io_link module="1" channel="3"/>
 									<unit>32</unit>
 									<keypad>0.5</keypad>
 									<scale>
-										<min>0</min>
-										<max>6.3</max>
+										<low>0</low>
+										<high>6.3</high>
 									</scale>
 									<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -239,12 +239,12 @@
 						</factors>
 						<io>
 							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
-								<io_link module="0" channel="4"/>
+								<io_link module="1" channel="4"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -257,12 +257,12 @@
 								</limits>
 							</ai>
 							<ai      name="Temp2"   mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
-								<io_link module="0" channel="5"/>
+								<io_link module="1" channel="5"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
 								<scale>
-									<min>-10</min>
-									<max>100</max>
+									<low>-10</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -279,8 +279,8 @@
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>2.0</max>
+									<low>0</low>
+									<high>2.0</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI">
@@ -297,8 +297,8 @@
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>2.0</max>
+									<low>0</low>
+									<high>2.0</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI">
@@ -315,8 +315,8 @@
 								<unit>64</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>100</max>
+									<low>0</low>
+									<high>100</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI">
@@ -333,8 +333,8 @@
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
-									<min>0</min>
-									<max>6.3</max>
+									<low>0</low>
+									<high>6.3</high>
 								</scale>
 								<limits>
 									<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -370,8 +370,8 @@
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
-							<min>-10</min>
-							<max>100</max>
+							<low>-10</low>
+							<high>100</high>
 						</scale>
 						<limits>
 							<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -387,8 +387,8 @@
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
-							<min>-10</min>
-							<max>100</max>
+							<low>-10</low>
+							<high>100</high>
 						</scale>
 						<limits>
 							<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -401,12 +401,12 @@
 						</limits>
 					</ai>
 					<ai name="pres_tpu" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
-						<io_link module="4" channel="1"/>
+						<io_link module="5" channel="1"/>
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
-							<min>-10</min>
-							<max>100</max>
+							<low>-10</low>
+							<high>100</high>
 						</scale>
 						<limits>
 							<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -419,28 +419,28 @@
 						</limits>
 					</ai>
 					<di name="valve_opened" mode="PHIS" setup="" description="4003">
-						<io_link module="1" channel="0"/>
+						<io_link module="2" channel="0"/>
 						<keypad>0</keypad>
 					</di>
 					<di name="valve_closed" mode="PHIS" setup="" description="4003">
-						<io_link module="1" channel="0"/>
+						<io_link module="2" channel="0"/>
 						<keypad>0</keypad>
 					</di>
 					<do name="valve_open" mode="PHIS" setup="" description="4003">
-						<io_link module="1" channel="8"/>
+						<io_link module="2" channel="8"/>
 					</do>
 					<do name="valve_close" mode="PHIS" setup="" description="4003">
-						<io_link module="1" channel="8"/>
+						<io_link module="2" channel="8"/>
 						<value>1</value>
 					</do>
 				</io>
 				<calculate>
-					<cinviscosity name="cinvisc" description="">
+					<kinviscosity name="kinvisc" description="">
 						<dynviscosity><link alias="sikn_123.bik.io.visc"/></dynviscosity>
 						<density><link alias="sikn_123.obj.stndenstemp:dens"/></density>
-					</cinviscosity>
+					</kinviscosity>
 					<prove name="prove" setup="STABILIZATION | BOUNCE" description="">
-						<io_link module="3" />
+						<io_link module="4" />
 						<temperature><link alias="sikn_123.obj.avr_temp_tpu" /></temperature>
 						<pressure><link alias="sikn_123.io.pres_tpu" /></pressure>
 						<density><link alias="sikn_123.obj.stndenstemp:dens" /></density>
@@ -688,8 +688,8 @@
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
-							<min>-10</min>
-							<max>100</max>
+							<low>-10</low>
+							<high>100</high>
 						</scale>
 						<limits>
 							<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -706,8 +706,8 @@
 						<unit>33</unit>
 						<keypad>0.5</keypad>
 						<scale>
-							<min>0</min>
-							<max>4000</max>
+							<low>0</low>
+							<high>4000</high>
 						</scale>
 						<limits>
 							<limit name="present" setup="HIHI | HI | LO | LOLO">
@@ -812,24 +812,24 @@
 		<reportsystem>
 			<datasets>
 				<dataset name="std_report">
-					<totals name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
+					<fwa name="Line1" alias="SIKN123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
 						<item name="item_1"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
 						<item name="item_2"><link alias="SIKN_123.Line1.io.pres:present"/></item>
 						<item name="item_3"><link alias="SIKN_123.Line1:density"/></item>
 						<item name="item_4"><link alias="SIKN_123.Line1.io.temp:present"/></item>
-					</totals> <!-- fwa -->
-					<totals name="Line2" alias="SIKN123.Line2">
+					</fwa>
+					<fwa name="Line2" alias="SIKN123.Line2">
 						<item name="item_1"><link alias="SIKN_123.Line2.io.temp:present"/></item>
 						<item name="item_2"><link alias="SIKN_123.Line2.io.pres:present"/></item>
 						<item name="item_3"><link alias="SIKN_123.Line2:density"/></item>
 						<item name="item_4"><link alias="SIKN_123.Line2.io.temp:present"/></item>
-					</totals>
-					<totals name="SIKN123" alias="SIKN123">
+					</fwa>
+					<fwa name="SIKN123" alias="SIKN123">
 						<item name="item_1"><link alias="SIKN_123:temperature"/></item>
 						<item name="item_2"><link alias="SIKN_123:pressure"/></item>
 						<item name="item_3"><link alias="SIKN_123:density"/></item>
 						<item name="item_4"><link alias="SIKN_123.obj.StnWater:output"/></item>
-					</totals>
+					</fwa>
 					<snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
 						<item name="ss_1"><link alias="sikn_321.io.counter:frequency"/></item>
 					</snapshots>
@@ -955,8 +955,8 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable convert="float">io.globaltemp.physical.value</variable>
 				<variable convert="float">io.globaltemp.current.value</variable>
 				<variable convert="float">io.globaltemp.keypad</variable>
-				<variable                >io.globaltemp.scales.min</variable>
-				<variable                >io.globaltemp.scales.max</variable>
+				<variable                >io.globaltemp.scales.low</variable>
+				<variable                >io.globaltemp.scales.high</variable>
 				<variable                >io.globaltemp.status</variable>
 				<variable                >io.globaltemp.mode</variable>
 			</datablock>

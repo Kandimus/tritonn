@@ -191,7 +191,7 @@ public:
 	// Для партионных
 	rCmpUSINT      m_command;      // Команда управления партией
 	Status         m_status;       // Статус партии
-	UINT           ArchiveAccept;  // Флаг для загрузки отчета
+	USINT          ArchiveAccept;  // Флаг для загрузки отчета
 	rReportTime    ArchiveTime;    // Время для загрузки отчета в переменную Archive
 
 	rDataset m_present;        //

@@ -313,6 +313,7 @@ rThreadStatus rDataManager::Proccesing()
 		// set current time and date
 		if (m_sysVar.SetDateTimeAccept) {
 			setCurrentTime(m_sysVar.SetDateTime);
+			//TODO Кидать мессагу о изменении времени
 
 			m_sysVar.SetDateTimeAccept   = 0;
 			m_sysVar.SetDateTime.tm_sec  = 0;

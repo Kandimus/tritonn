@@ -34,7 +34,7 @@
 #include "average.h"
 #include "masswater.h"
 #include "volwater.h"
-#include "cinematicviscosity.h"
+#include "kinematicviscosity.h"
 #include "../io/manager.h"
 #include "../io/module_ai6.h"
 #include "../io/module_crm.h"
@@ -70,7 +70,7 @@ UDINT rDataManager::saveMarkDown()
 	rRVar        rvar;
 	rMassWater   mw;
 	rVolWater    vw;
-	rCinematicViscosity cv;
+	rKinematicViscosity kv;
 	rSelector    sel;
 	rSelector    msel;
 	rStation     stn;
@@ -88,7 +88,7 @@ UDINT rDataManager::saveMarkDown()
 	ds.generateMarkDown(md);
 	mw.generateMarkDown(md);
 	vw.generateMarkDown(md);
-	cv.generateMarkDown(md);
+	kv.generateMarkDown(md);
 	sel.generateMarkDown(md);
 	msel.generateMarkDown(md);
 	str.generateMarkDown(md);
@@ -151,6 +151,9 @@ void rDataManager::generateMarkDown(rGeneratorMD& md)
 	text += "\t\t<" + std::string(XmlName::STATIONS) + ">\n";
 	text += "\t\t\t<!-- list of stations -->\n";
 	text += "\t\t</" + std::string(XmlName::STATIONS) + ">\n";
+	text += "\t\t<" + std::string(XmlName::CALC) + ">\n";
+	text += "\t\t\t<!-- list of global calculations -->\n";
+	text += "\t\t</" + std::string(XmlName::CALC) + ">\n";
 	text += "\t\t<" + std::string(XmlName::VARIABLES) + ">\n";
 	text += "\t\t\t<!-- list of variables -->\n";
 	text += "\t\t</" + std::string(XmlName::VARIABLES) + ">\n";

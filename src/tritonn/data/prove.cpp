@@ -816,6 +816,7 @@ UDINT rProve::generateVars(rVariableList& list)
 	list.add(m_alias + ".timer.volume"             ,             rVariable::Flags::___D, &m_tVolume       , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от первого детектора до второго");
 	list.add(m_alias + ".timer.valve"              ,             rVariable::Flags::___D, &m_tValve        , U_msec   , ACCESS_PROVE, "Значение таймера поворота корзины");
 	list.add(m_alias + ".timer.bounce"             ,             rVariable::Flags::___D, &m_tBounce       , U_msec   , ACCESS_PROVE, "Значение таймера анти-дребезга");
+	list.add(m_alias + ".timer.abort"              ,             rVariable::Flags::___D, &m_tAbort        , U_msec   , ACCESS_PROVE, "Значение таймера продолжительности состояние ПРЕРВАТЬ");
 	list.add(m_alias + ".result.prove.frequency"   ,             rVariable::Flags::R___, &m_prvFreq       , U_Hz     , 0           , "Средневзвешанное значение частоты во время процедуры");
 	list.add(m_alias + ".result.prove.temperature" ,             rVariable::Flags::R___, &m_prvTemp       , U_C      , 0           , "Средневзвешанное значение температуры ПУ во время процедуры");
 	list.add(m_alias + ".result.prove.pressure"    ,             rVariable::Flags::R___, &m_prvPres       , U_MPa    , 0           , "Средневзвешанное значение давления ПУ во время процедуры");
@@ -893,7 +894,7 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 		UDINT fault;
 
 		m_tStart  = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::START)     , m_tStart , fault);
-		m_tStab   = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::STABILISE) , m_tStab  , fault);
+		m_tStab   = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::STABILIZE) , m_tStab  , fault);
 		m_tD1     = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::DETECTOR_1), m_tD1    , fault);
 		m_tD2     = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::DETECTOR_2), m_tD2    , fault);
 		m_tVolume = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::VOLUME)    , m_tVolume, fault);
@@ -902,7 +903,7 @@ UDINT rProve::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std:
 		m_tBounce = XmlUtils::getTextUDINT(xml_timers->FirstChildElement(XmlName::BOUNCE)    , m_tBounce, fault);
 	}
 
-	auto xml_stab = element->FirstChildElement(XmlName::STABILISE);
+	auto xml_stab = element->FirstChildElement(XmlName::STABILIZE);
 
 	if (xml_stab) {
 		UDINT fault;
@@ -946,21 +947,21 @@ UDINT rProve::generateMarkDown(rGeneratorMD& md)
 			.addLink(XmlName::CLOSED, false, "\t")
 			.addXml(String_format("</%s>", XmlName::VALVE))
 			.addXml(String_format("<%s>", XmlName::TIMERS), true)
-			.addXml(XmlName::START     , m_tStart , false, "\t")
-			.addXml(XmlName::STABILISE , m_tStab  , false, "\t")
-			.addXml(XmlName::DETECTOR_1, m_tD1    , false, "\t")
-			.addXml(XmlName::DETECTOR_2, m_tD2    , false, "\t")
-			.addXml(XmlName::VOLUME    , m_tVolume, false, "\t")
-			.addXml(XmlName::VALVE     , m_tValve , false, "\t")
-			.addXml(XmlName::ABORT     , m_tAbort , false, "\t")
-			.addXml(XmlName::BOUNCE    , m_tBounce, false, "\t")
+				.addXml(XmlName::START     , m_tStart , false, "\t")
+				.addXml(XmlName::STABILIZE , m_tStab  , false, "\t")
+				.addXml(XmlName::DETECTOR_1, m_tD1    , false, "\t")
+				.addXml(XmlName::DETECTOR_2, m_tD2    , false, "\t")
+				.addXml(XmlName::VOLUME    , m_tVolume, false, "\t")
+				.addXml(XmlName::VALVE     , m_tValve , false, "\t")
+				.addXml(XmlName::ABORT     , m_tAbort , false, "\t")
+				.addXml(XmlName::BOUNCE    , m_tBounce, false, "\t")
 			.addXml(String_format("</%s>", XmlName::TIMERS), false)
-			.addXml(String_format("<%s>", XmlName::STABILISE), true)
-			.addXml(XmlName::TEMP   , m_maxStabTemp, false, "\t")
-			.addXml(XmlName::PRES   , m_maxStabPres, false, "\t")
-			.addXml(XmlName::DENSITY, m_maxStabDens, false, "\t")
-			.addXml(XmlName::FREQ   , m_maxStabFreq, false, "\t")
-			.addXml(String_format("</%s>", XmlName::STABILISE), false)
+			.addXml(String_format("<%s>", XmlName::STABILIZE), true)
+				.addXml(XmlName::TEMP   , m_maxStabTemp, false, "\t")
+				.addXml(XmlName::PRES   , m_maxStabPres, false, "\t")
+				.addXml(XmlName::DENSITY, m_maxStabDens, false, "\t")
+				.addXml(XmlName::FREQ   , m_maxStabFreq, false, "\t")
+			.addXml(String_format("</%s>", XmlName::STABILIZE), false)
 			;
 
 	return TRITONN_RESULT_OK;

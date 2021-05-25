@@ -17,15 +17,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rCinematicViscosity : public rSource
+class rKinematicViscosity : public rSource
 {
 public:
-	rCinematicViscosity(const rStation* owner = nullptr);
-	virtual ~rCinematicViscosity() = default;
+	rKinematicViscosity(const rStation* owner = nullptr);
+	virtual ~rKinematicViscosity() = default;
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char *RTTI() const override { return "cinviscosity"; }
+	virtual const char *RTTI() const override { return "kinviscosity"; }
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
 	virtual UDINT generateVars(rVariableList& list) override;
@@ -40,7 +40,7 @@ public:
 	rLink m_density;
 
 	// Outputs
-	rLink m_cinVisc;         // Текущее физическое значение
+	rLink m_kinVisc;         // Текущее физическое значение
 };
 
 

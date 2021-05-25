@@ -256,12 +256,12 @@ UDINT rDO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 
 UDINT rDO::generateMarkDown(rGeneratorMD& md)
 {
-	m_present.m_limit.m_setup.Init(rLimit::Setup::OFF);
+	m_present.m_limit.m_setup.Init(rLimit::Setup::OFF | rLimit::Setup::OPTIONAL);
 
 	md.add(this, true, rGeneratorMD::Type::IOCHANNEL_OPT)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
 			.addProperty(XmlName::MODE , &m_flagsMode, true)
-			.addXml(XmlName::VALUE, m_present.m_value);
+			.addXml(XmlName::VALUE, m_present.m_value, true);
 
 	return TRITONN_RESULT_OK;
 }

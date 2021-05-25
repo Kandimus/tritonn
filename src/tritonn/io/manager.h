@@ -47,6 +47,8 @@ public:
 	rIOBaseModule*  getModule(USINT module);
 	std::string getModuleAlias(USINT module) const;
 
+	bool checkListOfModules() const;
+
 protected:
 	virtual rThreadStatus Proccesing();
 

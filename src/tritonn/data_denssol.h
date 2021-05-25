@@ -76,7 +76,7 @@ public:
 	rDensSolCoef m_curCoef;               // Используемые коэф-ты
 	USINT        m_accept = 0;            // Команда на принятие коэф-тов
 	rCmpLREAL    m_calibrT;               // Температура калибровки
-	rCmpUINT     m_setup;                   // Настройка плотномера
+	rCmpUINT     m_setup;                 // Настройка плотномера
 	LREAL        m_k0;
 	LREAL        m_k1;
 	LREAL        m_k2;

@@ -185,7 +185,7 @@ std::string rLimit::getXML(const std::string& name, const std::string& prefix) c
 {
 	std::string result = "";
 
-	if (m_setup.Value != Setup::OFF) {
+	if (!(m_setup.Value & Setup::OFF)) {
 		result += prefix + String_format("<%s name=\"%s\" setup=\"%s\">%s\n",
 								 XmlName::LIMIT,
 								 name.c_str(),
