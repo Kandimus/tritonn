@@ -803,6 +803,20 @@
 				<value>33.33</value>
 				<unit>512</unit>
 			</variable>
+			<variable name="var4link" setup="" description="0">
+				<input><link  alias="var.var2"/></input>
+				<limits>
+					<limit name="value" setup="hihi | hi | lo | lolo">
+						<hihi>50</hihi>
+						<hi>10</hi>
+						<lo>0</lo>
+						<lolo>-10</lolo>
+						<hysteresis>1</hysteresis>
+					</limit>
+				</limits>
+				<value>33.33</value>
+				<unit>512</unit>
+			</variable>
 		</variables>
 		<!---
 

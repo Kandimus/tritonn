@@ -32,7 +32,9 @@ rRVar::rRVar() : rSource(), m_setup(0)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("CONST", static_cast<UINT>(Setup::CONST), "Установить как константу");
+				.add("CONST", static_cast<UINT>(Setup::CONST), "Установить как константу")
+				.add("LINK" , static_cast<UINT>(Setup::LINK ), "Запретить изменение переменной. Значение будет получено со входа");
+				;
 	}
 
 	initLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE,
@@ -113,7 +115,7 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	}
 
 	// Если переменная константа, то снимаем флаг записи
-	if(m_setup & Setup::CONST) {
+	if(m_setup & Setup::CONST || !(m_setup & Setup::LINK)) {
 		m_value.m_setup &= ~rLink::Setup::WRITABLE;
 	}
 
@@ -129,7 +131,8 @@ UDINT rRVar::generateMarkDown(rGeneratorMD& md)
 	md.add(this, true, rGeneratorMD::Type::CALCULATE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
 			.addXml(XmlName::VALUE, m_value.m_value)
-			.addXml(XmlName::UNIT , static_cast<UDINT>(m_value.m_unit));
+			.addXml(XmlName::UNIT , static_cast<UDINT>(m_value.m_unit))
+			.addRemark("Если установлен флаг LINK, то в переменную value запись будет не возможна.");
 
 	return TRITONN_RESULT_OK;
 }
