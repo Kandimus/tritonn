@@ -248,11 +248,13 @@ UDINT rDataManager::LoadConfig()
 
 	//--------------------------------------------
 	//NOTE только в процессе разработки
-	if (getLiveStatus() == Live::STARTING) {
-		m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
-		saveMarkDown();
-		m_hashCfg = "00112233445566778899aabbccddeeff00112233";
+	if (getLiveStatus() != Live::STARTING) {
+		return result;
 	}
+
+	m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
+	saveMarkDown();
+	m_hashCfg = "00112233445566778899aabbccddeeff00112233";
 
 	//--------------------------------------------
 	//TODO Нужно из rTextManager и rEventManager извлеч список языков, и сформировать единый список внутри rDataManager
@@ -263,6 +265,8 @@ UDINT rDataManager::LoadConfig()
 
 	if (!rSimpleArgs::instance().isSet(rArg::NoDump)) {
 		loadDumps();
+	} else {
+		setLiveStatus(Live::RUNNING);
 	}
 
 	return result;
@@ -351,7 +355,9 @@ rThreadStatus rDataManager::Proccesing()
 			}
 
 			if (m_timerTotal.isFinished()) {
+				#ifndef TRITONN_TEST
 				saveDataTotals();
+				#endif
 				m_timerTotal.restart();
 			}
 		}
@@ -459,5 +465,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 
 void rDataManager::doSaveVars()
 {
+	#ifndef TRITONN_TEST
 	m_doSaveVars.Set(1);
+	#endif
 }
