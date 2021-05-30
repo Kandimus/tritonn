@@ -449,7 +449,7 @@
 						<density><link alias="var.testdens"/></density>
 					</kinviscosity>
 					<volwater name="volwater" description="4000" setup="">
-						<masswater><link alias="sikn1.obj.masswater:masswater"/></masswater>
+						<masswater><link alias="sikn1.obj.masswater:result"/></masswater>
 						<density><link alias="var.testdens"/></density>
 						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
 					</volwater>
@@ -606,11 +606,11 @@
 		-->
 		<variables>
 			<variable name="var1const" setup="CONST" description="0">
-				<value>11.11</value>
+				<default>11.11</default>
 				<unit>0</unit>
 			</variable>
 			<variable name="var2" setup="" description="0">
-				<value>22.22</value>
+				<default>22.22</default>
 				<unit>16</unit>
 			</variable>
 			<variable name="var3lim" setup="" description="0">
@@ -623,14 +623,22 @@
 						<hysteresis>1</hysteresis>
 					</limit>
 				</limits>
-				<value>33.33</value>
+				<default>33.33</default>
 				<unit>512</unit>
 			</variable>
 			<variable name="testdens" setup="" description="0">
-				<value>880.0</value>
+				<default>880.0</default>
+				<unit>48</unit>
+			</variable>
+			<variable name="linkvar2" setup="LINK" description="0">
+				<value><link alias="var.var2"/></value>
+				<default>880.0</default>
 				<unit>48</unit>
 			</variable>
 		</variables>
+		<!---
+		ОТЧЕТЫ
+		-->
 		<reportsystem>
 			<datasets>
 				<dataset name="std_report">

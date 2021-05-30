@@ -23,24 +23,24 @@ TEST_CASE("testing masswater and volwater.", "[MassWater]")
 
 		ss.clear();
 		ss.add("var.testdens.value");
-		ss.add("sikn1.obj.masswater.masswater.value");
-		ss.add("sikn1.obj.volwater.volwater.value");
-		ss.add("sikn1.obj.masswater.water.density");
-		ss.add("sikn1.obj.volwater.water.density");
+		ss.add("sikn1.obj.masswater.result.value");
+		ss.add("sikn1.obj.volwater.result.value");
+		ss.add("sikn1.obj.masswater.densitywater");
+		ss.add("sikn1.obj.volwater.densitywater");
 		ss.get();
 
 		LREAL epsilon = Catch::Epsilon::instance().setDouble(0.0001);
 
 		REQUIRE(ss("var.testdens.value"));
-		REQUIRE(ss("sikn1.obj.masswater.masswater.value"));
-		REQUIRE(ss("sikn1.obj.volwater.volwater.value"));
-		REQUIRE(ss("sikn1.obj.masswater.water.density"));
-		REQUIRE(ss("sikn1.obj.volwater.water.density"));
+		REQUIRE(ss("sikn1.obj.masswater.result.value"));
+		REQUIRE(ss("sikn1.obj.volwater.result.value"));
+		REQUIRE(ss("sikn1.obj.masswater.densitywater"));
+		REQUIRE(ss("sikn1.obj.volwater.densitywater"));
 		CHECK  (ss("var.testdens.value")->getValueLREAL() == 880.0);
-		CHECK  (ss("sikn1.obj.masswater.masswater.value")->getValueLREAL() == 0.2270433954);
-		CHECK  (ss("sikn1.obj.volwater.volwater.value")->getValueLREAL() == 0.2);
-		CHECK  (ss("sikn1.obj.masswater.water.density")->getValueLREAL() == 998.991);
-		CHECK  (ss("sikn1.obj.volwater.water.density" )->getValueLREAL() == 998.991);
+		CHECK  (ss("sikn1.obj.masswater.result.value")->getValueLREAL() == 0.2270433954);
+		CHECK  (ss("sikn1.obj.volwater.result.value")->getValueLREAL() == 0.2);
+		CHECK  (ss("sikn1.obj.masswater.densitywater")->getValueLREAL() == 998.991);
+		CHECK  (ss("sikn1.obj.volwater.densitywater" )->getValueLREAL() == 998.991);
 
 		Catch::Epsilon::instance().setDouble(epsilon);
 	}

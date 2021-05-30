@@ -783,11 +783,11 @@
 		-->
 		<variables>
 			<variable name="var1const" setup="CONST" description="0">
-				<value>11.11</value>
+				<default>11.11</default>
 				<unit>0</unit>
 			</variable>
 			<variable name="var2" setup="" description="0">
-				<value>22.22</value>
+				<default>22.22</default>
 				<unit>16</unit>
 			</variable>
 			<variable name="var3lim" setup="" description="0">
@@ -800,7 +800,21 @@
 						<hysteresis>1</hysteresis>
 					</limit>
 				</limits>
-				<value>33.33</value>
+				<default>33.33</default>
+				<unit>512</unit>
+			</variable>
+			<variable name="var4link" setup="" description="0">
+				<value><link alias="var.var2"/></value>
+				<limits>
+					<limit name="value" setup="hihi | hi | lo | lolo">
+						<hihi>50</hihi>
+						<hi>10</hi>
+						<lo>0</lo>
+						<lolo>-10</lolo>
+						<hysteresis>1</hysteresis>
+					</limit>
+				</limits>
+				<default>33.33</default>
 				<unit>512</unit>
 			</variable>
 		</variables>

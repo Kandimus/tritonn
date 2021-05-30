@@ -21,17 +21,17 @@ TEST_CASE("testing cinematic and dynamic viscosity.", "[CinVisc]")
 
 		ss.clear();
 		ss.add("var.testdens.value");
-		ss.add("sikn1.obj.cinvisc.cinviscosity.value");
+		ss.add("sikn1.obj.kinvisc.result.value");
 //		ss.add("sikn1.obj.dynvisc.dynviscosity.value");
 		ss.get();
 
 		LREAL epsilon = Catch::Epsilon::instance().setDouble(0.0001);
 
 		REQUIRE(ss("var.testdens.value"));
-		REQUIRE(ss("sikn1.obj.cinvisc.cinviscosity.value"));
+		REQUIRE(ss("sikn1.obj.kinvisc.result.value"));
 //		REQUIRE(ss("sikn1.obj.dynvisc.dynviscosity.value"));
 		CHECK  (ss("var.testdens.value")->getValueLREAL() == 880.0);
-		CHECK  (ss("sikn1.obj.cinvisc.cinviscosity.value")->getValueLREAL() == 528.0);
+		CHECK  (ss("sikn1.obj.kinvisc.result.value")->getValueLREAL() == 528.0);
 //		CHECK  (ss("sikn1.obj.dynvisc.dynviscosity.value")->getValueLREAL() == 600);
 
 		Catch::Epsilon::instance().setDouble(epsilon);

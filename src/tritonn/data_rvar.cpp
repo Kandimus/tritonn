@@ -17,6 +17,7 @@
 #include "tinyxml2.h"
 #include "text_id.h"
 #include "data_manager.h"
+#include "data_config.h"
 #include "error.h"
 #include "variable_item.h"
 #include "variable_list.h"
@@ -32,7 +33,9 @@ rRVar::rRVar() : rSource(), m_setup(0)
 {
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
-				.add("CONST", static_cast<UINT>(Setup::CONST), "Установить как константу");
+				.add("CONST", static_cast<UINT>(Setup::CONST), "Установить как константу")
+				.add("LINK" , static_cast<UINT>(Setup::LINK ), "Запретить изменение переменной. Значение будет получено со входа");
+				;
 	}
 
 	initLink(rLink::Setup::INOUTPUT | rLink::Setup::NONAME | rLink::Setup::WRITABLE,
@@ -96,25 +99,53 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 		return err.getError();
 	}
 
-	tinyxml2::XMLElement* xml_value = element->FirstChildElement(XmlName::VALUE);
-	tinyxml2::XMLElement* xml_unit  = element->FirstChildElement(XmlName::UNIT);
-
-	if(!xml_value || !xml_unit) {
-		return err.set(DATACFGERR_VAR, element->GetLineNum(), "fault value or unit");
-	}
-
 	UDINT fault = 0;
-	m_setup         = m_flagsSetup.getValue(strSetup, fault);
-	m_value.m_value = XmlUtils::getTextLREAL(xml_value, 0.0  , fault);
-	m_value.m_unit  = XmlUtils::getTextUDINT(xml_unit , U_any, fault);
+	m_setup = m_flagsSetup.getValue(strSetup, fault);
 
 	if (fault) {
-		return err.set(DATACFGERR_VAR, element->GetLineNum(), "");
+		return err.set(DATACFGERR_VAR_SETUP, element->GetLineNum(), "setup fault");
 	}
 
-	// Если переменная константа, то снимаем флаг записи
-	if(m_setup & Setup::CONST) {
-		m_value.m_setup &= ~rLink::Setup::WRITABLE;
+	auto xml_default = element->FirstChildElement(XmlName::DEFAULT);
+	auto xml_unit    = element->FirstChildElement(XmlName::UNIT);
+	auto xml_value   = element->FirstChildElement(XmlName::VALUE);
+
+	// unit
+	if (!xml_unit) {
+		return err.set(DATACFGERR_VAR_UNIT, element->GetLineNum(), "missing unit");
+	}
+
+	m_value.m_unit = XmlUtils::getTextUDINT(xml_unit, U_any, fault);
+	if (fault) {
+		return err.set(DATACFGERR_VAR_UNIT, element->GetLineNum(), "fault unit");
+	}
+
+	// link
+	if (m_setup & Setup::LINK) {
+		if(!xml_value) {
+			return err.set(DATACFGERR_VAR_LINK, element->GetLineNum(), "fault link");
+		}
+
+		if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_value->FirstChildElement(XmlName::LINK), m_value)) {
+			return err.getError();
+		}
+
+	// default
+	} else {
+		if (!xml_default) {
+			return err.set(DATACFGERR_VAR_DEFAULT, element->GetLineNum(), "fault defautl value");
+		}
+
+		m_value.m_value = XmlUtils::getTextLREAL(xml_default, 0.0, fault);
+
+		if (fault) {
+			return err.set(DATACFGERR_VAR_DEFAULT, element->GetLineNum(), "fault default value");
+		}
+
+		if (m_setup & Setup::CONST) {
+			m_value.m_setup &= ~rLink::Setup::WRITABLE;
+		}
+		m_value.m_setup |=  rLink::Setup::DISABLE;
 	}
 
 	reinitLimitEvents();
@@ -128,8 +159,9 @@ UDINT rRVar::generateMarkDown(rGeneratorMD& md)
 
 	md.add(this, true, rGeneratorMD::Type::CALCULATE)
 			.addProperty(XmlName::SETUP, &m_flagsSetup)
-			.addXml(XmlName::VALUE, m_value.m_value)
-			.addXml(XmlName::UNIT , static_cast<UDINT>(m_value.m_unit));
+			.addXml(XmlName::DEFAULT, m_value.m_value)
+			.addXml(XmlName::UNIT   , static_cast<UDINT>(m_value.m_unit))
+			.addRemark("Если установлен флаг LINK, то в переменную value запись будет не возможна.");
 
 	return TRITONN_RESULT_OK;
 }

@@ -2,7 +2,7 @@
 //===
 //=== data_rvar.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -29,6 +29,7 @@ public:
 	enum Setup : UINT
 	{
 		CONST = 0x0001,
+		LINK  = 0x0002,
 	};
 
 	rRVar();
