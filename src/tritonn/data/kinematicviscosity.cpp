@@ -16,7 +16,6 @@
 #include "../text_id.h"
 #include "../data_config.h"
 #include "../data_manager.h"
-#include "../densitywater.h"
 #include "../error.h"
 #include "../variable_list.h"
 #include "../xml_util.h"
@@ -89,13 +88,13 @@ UDINT rKinematicViscosity::loadFromXML(tinyxml2::XMLElement* element, rError& er
 	auto xml_density = element->FirstChildElement(XmlName::DENSITY);
 
 	if (!xml_dynvisc) {
-		return err.set(DATACFGERR_CINVISC_NODYNVISC, element->GetLineNum(), "");
+		return err.set(DATACFGERR_KINVISC_NODYNVISC, element->GetLineNum(), "");
 	}
 
 	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_dynvisc->FirstChildElement(XmlName::LINK), m_dynVisc)) return err.getError();
 
 	if (!xml_density) {
-		return err.set(DATACFGERR_CINVISC_NODENSITY, element->GetLineNum(), "");
+		return err.set(DATACFGERR_KINVISC_NODENSITY, element->GetLineNum(), "");
 	}
 
 	if(TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_density->FirstChildElement(XmlName::LINK), m_density)) return err.getError();

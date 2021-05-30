@@ -448,16 +448,20 @@
 						<dynviscosity><link alias="sikn1.bik.io.visc"/></dynviscosity>
 						<density><link alias="var.testdens"/></density>
 					</kinviscosity>
-					<volwater name="volwater" description="4000" setup="">
-						<masswater><link alias="sikn1.obj.masswater:result"/></masswater>
+					<dynviscosity name="dynvisc" description="">
+						<kinviscosity><link alias="sikn1.obj.kinvisc:result"/></kinviscosity>
 						<density><link alias="var.testdens"/></density>
-						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
-					</volwater>
+					</dynviscosity>
 					<masswater name="masswater" description="4000" setup="">
 						<volwater><link alias="sikn1.bik.io.water1"/></volwater>
 						<density><link alias="var.testdens"/></density>
 						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
 					</masswater>
+					<volwater name="volwater" description="4000" setup="">
+						<masswater><link alias="sikn1.obj.masswater:result"/></masswater>
+						<density><link alias="var.testdens"/></density>
+						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
+					</volwater>
 					<average name="avr_temp" description="0">
 						<inputs>
 							<input><link alias="sikn1.bik.io.temp1"/></input>
