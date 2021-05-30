@@ -35,6 +35,7 @@
 #include "masswater.h"
 #include "volwater.h"
 #include "kinematicviscosity.h"
+#include "dynamicviscosity.h"
 #include "../io/manager.h"
 #include "../io/module_ai6.h"
 #include "../io/module_crm.h"
@@ -71,6 +72,7 @@ UDINT rDataManager::saveMarkDown()
 	rMassWater   mw;
 	rVolWater    vw;
 	rKinematicViscosity kv;
+	rDynamicViscosity   dv;
 	rSelector    sel;
 	rSelector    msel;
 	rStation     stn;
@@ -89,6 +91,7 @@ UDINT rDataManager::saveMarkDown()
 	mw.generateMarkDown(md);
 	vw.generateMarkDown(md);
 	kv.generateMarkDown(md);
+	dv.generateMarkDown(md);
 	sel.generateMarkDown(md);
 	msel.generateMarkDown(md);
 	str.generateMarkDown(md);
