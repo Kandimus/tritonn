@@ -110,6 +110,7 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 	auto xml_unit    = element->FirstChildElement(XmlName::UNIT);
 	auto xml_value   = element->FirstChildElement(XmlName::VALUE);
 
+	// unit
 	if (!xml_unit) {
 		return err.set(DATACFGERR_VAR_UNIT, element->GetLineNum(), "missing unit");
 	}
@@ -119,7 +120,18 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 		return err.set(DATACFGERR_VAR_UNIT, element->GetLineNum(), "fault unit");
 	}
 
-	if (!(m_setup & Setup::LINK)) {
+	// link
+	if (m_setup & Setup::LINK) {
+		if(!xml_value) {
+			return err.set(DATACFGERR_VAR_LINK, element->GetLineNum(), "fault link");
+		}
+
+		if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_value->FirstChildElement(XmlName::LINK), m_value)) {
+			return err.getError();
+		}
+
+	// default
+	} else {
 		if (!xml_default) {
 			return err.set(DATACFGERR_VAR_DEFAULT, element->GetLineNum(), "fault defautl value");
 		}
@@ -130,20 +142,10 @@ UDINT rRVar::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::
 			return err.set(DATACFGERR_VAR_DEFAULT, element->GetLineNum(), "fault default value");
 		}
 
-		m_value.m_setup &= ~rLink::Setup::WRITABLE;
-
-	} else {
-		if(!xml_value) {
-			return err.set(DATACFGERR_VAR_LINK, element->GetLineNum(), "fault link");
-		}
-
-		if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(xml_value->FirstChildElement(XmlName::LINK), m_value)) {
-			return err.getError();
-		}
-
 		if (m_setup & Setup::CONST) {
 			m_value.m_setup &= ~rLink::Setup::WRITABLE;
 		}
+		m_value.m_setup |=  rLink::Setup::DISABLE;
 	}
 
 	reinitLimitEvents();

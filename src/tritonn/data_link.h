@@ -34,6 +34,7 @@ public:
 		WRITABLE = 0x0010,
 		VARNAME  = 0x0020,
 		MUSTVIRT = 0x0040,
+		DISABLE  = 0x0080,
 		INOUTPUT = INPUT | OUTPUT,
 	};
 

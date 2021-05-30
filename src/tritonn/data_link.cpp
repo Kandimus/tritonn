@@ -98,6 +98,11 @@ UDINT rLink::calculate()
 		return 1;
 	}
 
+	if (m_setup & Setup::DISABLE) {
+printf("DISABLE\n");
+		return TRITONN_RESULT_OK;
+	}
+
 	// Получаем значение линка
 	m_value = m_source->getValue(m_param, m_unit, err);
 
