@@ -73,7 +73,7 @@ rDO::rDO(const rStation* owner) : rSource(owner)
 	m_status  = Status::UNDEF;
 
 	initLink(rLink::Setup::INOUTPUT | rLink::Setup::WRITABLE,
-			 m_present , U_discrete, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+			 m_present , U_DIMLESS, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 }
 
 

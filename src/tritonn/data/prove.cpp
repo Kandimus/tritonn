@@ -116,14 +116,14 @@ rProve::rProve(const rStation* owner)
 	}
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::INPUT , m_temp      , U_C       , SID::TEMPERATURE    , XmlName::TEMP      , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_pres      , U_MPa     , SID::PRESSURE       , XmlName::PRES      , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_dens      , U_kg_m3   , SID::DENSITY        , XmlName::DENSITY   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_opened    , U_discrete, SID::PROVER_OPENED  , XmlName::OPENED    , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_closed    , U_discrete, SID::PROVER_CLOSED  , XmlName::CLOSED    , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_open      , U_discrete, SID::PROVER_OPEN    , XmlName::OPEN      , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_close     , U_discrete, SID::PROVER_CLOSE   , XmlName::CLOSE     , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_inProgress, U_discrete, SID::PROVER_PROGRESS, XmlName::INPROGRESS, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_temp      , U_C      , SID::TEMPERATURE    , XmlName::TEMP      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_pres      , U_MPa    , SID::PRESSURE       , XmlName::PRES      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_dens      , U_kg_m3  , SID::DENSITY        , XmlName::DENSITY   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_opened    , U_DIMLESS, SID::PROVER_OPENED  , XmlName::OPENED    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_closed    , U_DIMLESS, SID::PROVER_CLOSED  , XmlName::CLOSED    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_open      , U_DIMLESS, SID::PROVER_OPEN    , XmlName::OPEN      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_close     , U_DIMLESS, SID::PROVER_CLOSE   , XmlName::CLOSE     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_inProgress, U_DIMLESS, SID::PROVER_PROGRESS, XmlName::INPROGRESS, rLink::SHADOW_NONE);
 }
 
 
