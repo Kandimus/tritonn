@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # selector
-> 0.19.73.343f7010
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <selector name="valid object name" description="string index" setup="text value | text value | ... | text value" mode="text value" select="-1" >
@@ -38,13 +38,13 @@
 Input | Unit | Unit ID | Limits | Shadow | Comment
 :-- |:--:|:--:|:--:|:--:|:--
 input_1 |  | 0 | OFF |  | входное значение 1
-input_1.fault |  | 522 | OFF | input_1 | флаг ошибки входа 1
+input_1.fault |  | 512 | OFF | input_1 | флаг ошибки входа 1
 input_2 |  | 0 | OFF |  | входное значение 2
-input_2.fault |  | 522 | OFF | input_2 | флаг ошибки входа 2
+input_2.fault |  | 512 | OFF | input_2 | флаг ошибки входа 2
 input_3 |  | 0 | OFF |  | входное значение 3
-input_3.fault |  | 522 | OFF | input_3 | флаг ошибки входа 3
+input_3.fault |  | 512 | OFF | input_3 | флаг ошибки входа 3
 input_4 |  | 0 | OFF |  | входное значение 4
-input_4.fault |  | 522 | OFF | input_4 | флаг ошибки входа 4
+input_4.fault |  | 512 | OFF | input_4 | флаг ошибки входа 4
 
 ## Outputs
 Output | Unit | Unit ID | Limits | Comment
@@ -56,16 +56,16 @@ Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
 input_1.value | LREAL |  | 0 | Yes |   | входное значение 1. Текущее значение
 input_1.unit | STRID |  | 512 | Yes |   | входное значение 1. Единицы измерения
-input_1.fault | LREAL |  | 522 | Yes |   | флаг ошибки входа 1
+input_1.fault | LREAL |  | 512 | Yes |   | флаг ошибки входа 1
 input_2.value | LREAL |  | 0 | Yes |   | входное значение 2. Текущее значение
 input_2.unit | STRID |  | 512 | Yes |   | входное значение 2. Единицы измерения
-input_2.fault | LREAL |  | 522 | Yes |   | флаг ошибки входа 2
+input_2.fault | LREAL |  | 512 | Yes |   | флаг ошибки входа 2
 input_3.value | LREAL |  | 0 | Yes |   | входное значение 3. Текущее значение
 input_3.unit | STRID |  | 512 | Yes |   | входное значение 3. Единицы измерения
-input_3.fault | LREAL |  | 522 | Yes |   | флаг ошибки входа 3
+input_3.fault | LREAL |  | 512 | Yes |   | флаг ошибки входа 3
 input_4.value | LREAL |  | 0 | Yes |   | входное значение 4. Текущее значение
 input_4.unit | STRID |  | 512 | Yes |   | входное значение 4. Единицы измерения
-input_4.fault | LREAL |  | 522 | Yes |   | флаг ошибки входа 4
+input_4.fault | LREAL |  | 512 | Yes |   | флаг ошибки входа 4
 output.value | LREAL |  | 0 | Yes |   | выходное значение. Текущее значение
 output.unit | STRID |  | 512 | Yes |   | выходное значение. Единицы измерения
 select | INT |  | 512 |  | 0x00004000 | Выбор коммуцируемого входа

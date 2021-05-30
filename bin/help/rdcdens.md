@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # rdcdens
-> 0.19.73.343f7010
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <rdcdens name="valid object name" description="string index" >

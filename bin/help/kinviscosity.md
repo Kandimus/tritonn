@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # kinviscosity
-> 0.19.94.7405d6dc
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <kinviscosity name="valid object name" description="string index" >

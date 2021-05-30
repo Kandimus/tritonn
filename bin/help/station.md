@@ -1,13 +1,13 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # station
-> 0.19.73.343f7010
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <station name="valid object name" description="string index" product="text value" >
-	<temperature><link alias="object's output"/></temperature>
-	<pressure><link alias="object's output"/></pressure>
-	<density><link alias="object's output"/></density>
+	<temperature><link alias="object's output"/></temperature><!-- Optional -->
+	<pressure><link alias="object's output"/></pressure><!-- Optional -->
+	<density><link alias="object's output"/></density><!-- Optional -->
 	<limits><!-- Optional -->
 		<limit name="temperature" setup="LOLO|LO|HI|HIHI"><!-- Optional -->
 			<lolo>0</lolo>

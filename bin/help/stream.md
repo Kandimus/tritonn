@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # stream
-> 0.19.73.343f7010
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <stream name="valid object name" description="string index" setup="text value | text value | ... | text value" flowmeter="text value" linearization="0" maintenance="1" >
@@ -315,7 +315,7 @@ factors.kf | LREAL | имп/м³ | 176 | Yes |   | Коффициенты. К-ф
 factors.mf | LREAL |  | 512 | Yes |   | Коффициенты. М-фактор
 factors.set.kf | LREAL | имп/м³ | 176 |  | 0x00001000 | Введенные коффициенты. К-фактор
 factors.set.mf | LREAL |  | 512 |  | 0x00001000 | Введенные коффициенты. М-фактор
-factors.set.accept | UDINT |  | 512 |  | 0x00001000 | Команда:<br/> 0 - нет действия<br/>1 - применить введенные коффициенты
+factors.set.accept | USINT |  | 512 |  | 0x00001000 | Команда:<br/> 0 - нет действия<br/>1 - применить введенные коффициенты
 factors.point_1.kf | LREAL | имп/м³ | 176 | Yes |   | Коффициенты. Точка 1. К-фактор[^maxpoint]
 factors.set.point_1.kf | LREAL | имп/м³ | 176 |  | 0x00001000 | Введенные коффициенты. Точка 1. К-фактор[^maxpoint]
 factors.point_1.hz | LREAL | Гц | 192 | Yes |   | Коффициенты. Точка 1. Частота[^maxpoint]

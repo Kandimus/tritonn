@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # config
-> 0.19.73.343f7010
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <tritonn cfgver="configurator's version" kernel="kernel's version" development="text" name="text" hash="config's hash">
@@ -18,6 +18,9 @@
 		<stations>
 			<!-- list of stations -->
 		</stations>
+		<calculate>
+			<!-- list of global calculations -->
+		</calculate>
 		<variables>
 			<!-- list of variables -->
 		</variables>

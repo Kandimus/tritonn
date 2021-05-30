@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # report
-> 0.19.73.343f7010
+> 0.19.97.8ca0ef06
 ## XML
 ````xml
 <report name="valid object name" description="string index" type="text value" >
@@ -19,7 +19,7 @@
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
 type | UINT |  | 512 | Yes |   | Тип отчета:<br/>0: Переодический отчет<br/>1: Партионный отчет<br/>
-archive.load.accept | UINT |  | 512 |  | 0x00000002 | Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет
+archive.load.accept | USINT |  | 512 |  | 0x00000002 | Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет
 archive.load.sec | USINT |  | 512 |  | 0x00000002 | Секунды
 archive.load.min | USINT |  | 512 |  | 0x00000002 | Минуты
 archive.load.hour | USINT |  | 512 |  | 0x00000002 | Часы
@@ -125,7 +125,7 @@ archive.snapshot.#report_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значен
 ````xml
 <datasets>
 	<dataset name="valid name of dataset">
-		<totals name="valid name" alias="alias of calculate object contain totals">
+		<fwa name="valid name" alias="alias of calculate object contain totals">
 			<item name="valid name">
 				<link alias="object's output"/>
 			</item>
@@ -133,11 +133,11 @@ archive.snapshot.#report_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значен
 			<item name="valid name">
 				<link alias="object's output"/>
 			</item>
-		</totals>
+		</fwa>
 		...
-		<totals> <!-- Optional -->
+		<fwa> <!-- Optional -->
 			...
-		</totals>
+		</fwa>
 		<snapshots> <!-- Optional -->
 			<item name="valid name">
 				<link alias="object's output"/>
