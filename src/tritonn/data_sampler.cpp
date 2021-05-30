@@ -79,19 +79,19 @@ rSampler::rSampler(const rStation* owner) : rSource(owner)
 	}
 
 	std::string name = "can_a.";
-	initLink(rLink::Setup::INPUT , m_can[0].m_overflow, U_discrete, SID::CANFILLED0, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_can[0].m_fault   , U_discrete, SID::CANFAULT0 , name + XmlName::FAULT    , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_can[0].m_weight  , U_g       , SID::CANMASS0  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[0].m_overflow, U_DIMLESS, SID::CANFILLED0, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[0].m_fault   , U_DIMLESS, SID::CANFAULT0 , name + XmlName::FAULT    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[0].m_weight  , U_g      , SID::CANMASS0  , name + XmlName::MASS     , rLink::SHADOW_NONE);
 
 	name = "can_b.";
-	initLink(rLink::Setup::INPUT , m_can[1].m_overflow, U_discrete, SID::CANFILLED1, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_can[1].m_fault   , U_discrete, SID::CANFAULT1 , name + XmlName::FAULT    , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_can[1].m_weight  , U_g       , SID::CANMASS1  , name + XmlName::MASS     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[1].m_overflow, U_DIMLESS, SID::CANFILLED1, name + XmlName::OVERFLOW_, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[1].m_fault   , U_DIMLESS, SID::CANFAULT1 , name + XmlName::FAULT    , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_can[1].m_weight  , U_g      , SID::CANMASS1  , name + XmlName::MASS     , rLink::SHADOW_NONE);
 
-	initLink(rLink::Setup::INPUT , m_ioStart , U_discrete, SID::CANIOSTART, XmlName::IOSTART  , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::INPUT , m_ioStop  , U_discrete, SID::CANIOSTOP , XmlName::IOSTOP   , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_grab    , U_discrete, SID::GRAB      , XmlName::GRAB     , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_selected, U_discrete, SID::CANSELECT , XmlName::SELECTED , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_ioStart , U_DIMLESS, SID::CANIOSTART, XmlName::IOSTART  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT , m_ioStop  , U_DIMLESS, SID::CANIOSTOP , XmlName::IOSTOP   , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_grab    , U_DIMLESS, SID::GRAB      , XmlName::GRAB     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_selected, U_DIMLESS, SID::CANSELECT , XmlName::SELECTED , rLink::SHADOW_NONE);
 
 	// Нарастающие подцепим в chack()
 }

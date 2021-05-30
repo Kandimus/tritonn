@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # stream
-> 0.19.97.8ca0ef06
+> 0.19.101.f59bd028
 ## XML
 ````xml
 <stream name="valid object name" description="string index" setup="text value | text value | ... | text value" flowmeter="text value" linearization="0" maintenance="1" >

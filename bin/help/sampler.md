@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # sampler
-> 0.19.97.8ca0ef06
+> 0.19.101.f59bd028
 ## XML
 ````xml
 <sampler name="valid object name" description="string index" method="text value | text value | ... | text value" setup="text value | text value | ... | text value" >
@@ -43,43 +43,43 @@
 ## Inputs
 Input | Unit | Unit ID | Limits | Shadow | Comment
 :-- |:--:|:--:|:--:|:--:|:--
-can_a.overflow |  | 522 | OFF |  | Емкость А. Флаг переполнения
-can_a.fault |  | 522 | OFF |  | Емкость А. Флаг ошибки
+can_a.overflow |  | 512 | OFF |  | Емкость А. Флаг переполнения
+can_a.fault |  | 512 | OFF |  | Емкость А. Флаг ошибки
 can_a.mass | г | 98 | OFF |  | Емкость А. Масса
-can_b.overflow |  | 522 | OFF |  | Емкость Б. Флаг переполнения
-can_b.fault |  | 522 | OFF |  | Емкость Б. Флаг ошибки
+can_b.overflow |  | 512 | OFF |  | Емкость Б. Флаг переполнения
+can_b.fault |  | 512 | OFF |  | Емкость Б. Флаг ошибки
 can_b.mass | г | 98 | OFF |  | Емкость Б. Масса
-io_start |  | 522 | OFF |  | Команда запуск обора дозы
-io_stop |  | 522 | OFF |  | Команда прекращение обора дозы
+io_start |  | 512 | OFF |  | Команда запуск обора дозы
+io_stop |  | 512 | OFF |  | Команда прекращение обора дозы
 
 ## Outputs
 Output | Unit | Unit ID | Limits | Comment
 :-- |:--:|:--:|:--:|:--
-grab |  | 522 | OFF | Сигнал отбора
-selected |  | 522 | OFF | Текущая емкость
+grab |  | 512 | OFF | Сигнал отбора
+selected |  | 512 | OFF | Текущая емкость
 
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
-can_a.overflow.value | LREAL |  | 522 | Yes |   | Емкость А. Флаг переполнения. Текущее значение
+can_a.overflow.value | LREAL |  | 512 | Yes |   | Емкость А. Флаг переполнения. Текущее значение
 can_a.overflow.unit | STRID |  | 512 | Yes |   | Емкость А. Флаг переполнения. Единицы измерения
-can_a.fault.value | LREAL |  | 522 | Yes |   | Емкость А. Флаг ошибки. Текущее значение
+can_a.fault.value | LREAL |  | 512 | Yes |   | Емкость А. Флаг ошибки. Текущее значение
 can_a.fault.unit | STRID |  | 512 | Yes |   | Емкость А. Флаг ошибки. Единицы измерения
 can_a.mass.value | LREAL | г | 98 | Yes |   | Емкость А. Масса. Текущее значение
 can_a.mass.unit | STRID |  | 512 | Yes |   | Емкость А. Масса. Единицы измерения
-can_b.overflow.value | LREAL |  | 522 | Yes |   | Емкость Б. Флаг переполнения. Текущее значение
+can_b.overflow.value | LREAL |  | 512 | Yes |   | Емкость Б. Флаг переполнения. Текущее значение
 can_b.overflow.unit | STRID |  | 512 | Yes |   | Емкость Б. Флаг переполнения. Единицы измерения
-can_b.fault.value | LREAL |  | 522 | Yes |   | Емкость Б. Флаг ошибки. Текущее значение
+can_b.fault.value | LREAL |  | 512 | Yes |   | Емкость Б. Флаг ошибки. Текущее значение
 can_b.fault.unit | STRID |  | 512 | Yes |   | Емкость Б. Флаг ошибки. Единицы измерения
 can_b.mass.value | LREAL | г | 98 | Yes |   | Емкость Б. Масса. Текущее значение
 can_b.mass.unit | STRID |  | 512 | Yes |   | Емкость Б. Масса. Единицы измерения
-io_start.value | LREAL |  | 522 | Yes |   | Команда запуск обора дозы. Текущее значение
+io_start.value | LREAL |  | 512 | Yes |   | Команда запуск обора дозы. Текущее значение
 io_start.unit | STRID |  | 512 | Yes |   | Команда запуск обора дозы. Единицы измерения
-io_stop.value | LREAL |  | 522 | Yes |   | Команда прекращение обора дозы. Текущее значение
+io_stop.value | LREAL |  | 512 | Yes |   | Команда прекращение обора дозы. Текущее значение
 io_stop.unit | STRID |  | 512 | Yes |   | Команда прекращение обора дозы. Единицы измерения
-grab.value | LREAL |  | 522 | Yes |   | Сигнал отбора. Текущее значение
+grab.value | LREAL |  | 512 | Yes |   | Сигнал отбора. Текущее значение
 grab.unit | STRID |  | 512 | Yes |   | Сигнал отбора. Единицы измерения
-selected.value | LREAL |  | 522 | Yes |   | Текущая емкость. Текущее значение
+selected.value | LREAL |  | 512 | Yes |   | Текущая емкость. Текущее значение
 selected.unit | STRID |  | 512 | Yes |   | Текущая емкость. Единицы измерения
 method | UINT |  | 512 |  | 0x00000080 | Метод:<br/>0: Отбор проб по времени<br/>1: Отбор проб по данным массового расхода<br/>2: Отбор проб по данным объемного расхода<br/>
 setup | UINT |  | 512 |  | 0x00000100 | Настройка:<br/>0x0001: Отключить объект<br/>0x0002: При аварии перейти на резервный пробоотборник<br/>0x0004: При заполнении переходить на резервный пробоотборник<br/>0x0008: Используется только один бак пробоотборника<br/>0x0010: Использовать две емкости пробоотборника<br/>0x0020: При заполнении переходить на другую емкость пробоотборника<br/>

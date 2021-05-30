@@ -74,8 +74,8 @@ rDI::rDI(const rStation* owner) : rSource(owner), m_keypadValue(0), m_setup(0)
 	m_status  = Status::UNDEF;
 
 	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT,
-								   m_present , U_discrete, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
-	initLink(rLink::Setup::OUTPUT, m_physical, U_discrete, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
+								   m_present , U_DIMLESS, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT, m_physical, U_DIMLESS, SID::PHYSICAL, XmlName::PHYSICAL, rLink::SHADOW_NONE);
 }
 
 
