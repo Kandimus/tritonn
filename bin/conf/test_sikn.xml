@@ -54,7 +54,7 @@
 			</ai>
 		</io>
 		<stations>
-			<station name="SIKN_123" product="PETROLEUM" description="4001">
+			<station name="SIKN_123" product="PETROLEUM" description="4100">
 				<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
 				<units>
 					<volume>112</volume>
@@ -64,7 +64,7 @@
 					<density>48</density>
 				</units>
 				<streams>
-					<stream name="Line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4002">
+					<stream name="Line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4200">
 						<impulse><link alias="SIKN_123.Line1.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
 						<pressure><link alias="SIKN_123.Line1.IO.Pres"/></pressure>
@@ -81,7 +81,7 @@
 							</points>
 						</factors>
 						<io>
-							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4003">
+							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4201">
 								<io_link module="1" channel="0"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -99,7 +99,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4004">
+							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4202">
 								<io_link module="1" channel="1"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
@@ -117,12 +117,12 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="" description="4005">
+							<counter name="Counter" setup="" description="4203">
 								<io_link module="3" channel="0"/>
 							</counter>
 						</io>
 						<calculate>
-							<reduceddens name="StnDens" description="4006">
+							<reduceddens name="StnDens" description="4204">
 								<temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
 								<pressure>   <link alias="SIKN_123.Line1.IO.Pres"/></pressure>
 								<density15>  <link alias="SIKN_123.Obj.StnDensTemp:dens15"/></density15>
@@ -145,7 +145,7 @@
 							</limit>
 						</limits>
 					</stream>
-					<stream name="Line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
+					<stream name="Line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4300">
 						<impulse>    <link alias="SIKN_123.Line2.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_123.Line2.IO.Temp"/>   </temperature>
 						<pressure>   <link alias="SIKN_123.Line2.IO.Pres"/>   </pressure>
@@ -162,7 +162,7 @@
 							</points>
 						</factors>
 						<io>
-							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4008">
+							<ai name="Temp"    mode="PHIS" setup="NOICE | LASTGOOD" description="4301">
 								<io_link module="1" channel="2"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -180,7 +180,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
+							<ai name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4302">
 								<io_link module="1" channel="3"/>
 									<unit>32</unit>
 									<keypad>0.5</keypad>
@@ -198,12 +198,12 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="" description="4010">
+							<counter name="Counter" setup="" description="4303">
 								<_io_link module="1" channel="1"/>
 							</counter>
 						</io>
 						<calculate>
-							<reduceddens name="StnDens" description="4011">
+							<reduceddens name="StnDens" description="4304">
 								<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
 								<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
 								<density15>  <link alias="SIKN_123.Obj.StnDensTemp:dens15"/></density15>
@@ -226,7 +226,7 @@
 							</limit>
 						</limits>
 					</stream>
-					<stream name="BIK"   flowmeter="TURBINE"  linearization="0" maintenance="1" description="4012">
+					<stream name="BIK"   flowmeter="TURBINE"  linearization="0" maintenance="1" description="4400">
 						<impulse>    <link alias="SIKN_123.BIK.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_123.Obj.StnDensTemp:temp"/></temperature>
 						<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
@@ -238,7 +238,7 @@
 							<keypad_kf>36000</keypad_kf>
 						</factors>
 						<io>
-							<ai      name="Temp1"   mode="PHIS" setup="NOICE | LASTGOOD" description="4013">
+							<ai name="temp1" mode="PHIS" setup="NOICE | LASTGOOD" description="4401">
 								<io_link module="1" channel="4"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -256,7 +256,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Temp2"   mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
+							<ai name="temp2" mode="PHIS" setup="NOICE | LASTGOOD" description="4402">
 								<io_link module="1" channel="5"/>
 								<unit>16</unit>
 								<keypad>12.5</keypad>
@@ -274,7 +274,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Water1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4015">
+							<ai name="water1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4403">
 								<_io_link module="3" channel="0"/>
 								<unit>520</unit>
 								<keypad>0.5</keypad>
@@ -292,7 +292,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai      name="Water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
+							<ai name="water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4404">
 								<_io_link module="3" channel="1"/>
 								<unit>520</unit>
 								<keypad>0.5</keypad>
@@ -310,7 +310,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="visc" mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
+							<ai name="visc" mode="PHIS" setup="NOICE | LASTGOOD" description="4405">
 								<_io_link module="3" channel="2"/>
 								<unit>64</unit>
 								<keypad>0.5</keypad>
@@ -328,7 +328,7 @@
 									</limit>
 								</limits>
 							</ai>
-							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4018">
+							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4406">
 								<_io_link module="3" channel="3"/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
@@ -346,13 +346,13 @@
 									</limit>
 								</limits>
 							</ai>
-							<counter name="Counter" setup="" description="4019">
+							<counter name="Counter" setup="" description="4407">
 								<_io_link module="1" channel="2"/>
 							</counter>
-							<counter name="Period1" setup="" description="4020"> <!-- Виртуальный, для тестов -->
+							<counter name="Period1" setup="" description="4408"> <!-- Виртуальный, для тестов -->
 								<_io_link module="2" channel="0"/>
 							</counter>
-							<counter name="Period2" setup="" description="4021">
+							<counter name="Period2" setup="" description="4409">
 								<_io_link module="2" channel="1"/>
 							</counter>
 						</io>
@@ -366,7 +366,7 @@
 					</stream>
 				</streams>
 				<io>
-					<ai name="temp_tpu_in" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+					<ai name="temp_tpu_in" mode="PHIS" setup="NOICE | LASTGOOD" description="4101">
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
@@ -383,7 +383,7 @@
 							</limit>
 						</limits>
 					</ai>
-					<ai name="temp_tpu_out" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+					<ai name="temp_tpu_out" mode="PHIS" setup="NOICE | LASTGOOD" description="4102">
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
@@ -400,7 +400,7 @@
 							</limit>
 						</limits>
 					</ai>
-					<ai name="pres_tpu" mode="PHIS" setup="NOICE | LASTGOOD" description="4000">
+					<ai name="pres_tpu" mode="PHIS" setup="NOICE | LASTGOOD" description="4103">
 						<io_link module="5" channel="1"/>
 						<unit>16</unit>
 						<keypad>12.5</keypad>
@@ -418,28 +418,28 @@
 							</limit>
 						</limits>
 					</ai>
-					<di name="valve_opened" mode="PHIS" setup="" description="4003">
+					<di name="valve_opened" mode="PHIS" setup="" description="4104">
 						<io_link module="2" channel="0"/>
 						<keypad>0</keypad>
 					</di>
-					<di name="valve_closed" mode="PHIS" setup="" description="4003">
+					<di name="valve_closed" mode="PHIS" setup="" description="4105">
 						<io_link module="2" channel="0"/>
 						<keypad>0</keypad>
 					</di>
-					<do name="valve_open" mode="PHIS" setup="" description="4003">
+					<do name="valve_open" mode="PHIS" setup="" description="4106">
 						<io_link module="2" channel="8"/>
 					</do>
-					<do name="valve_close" mode="PHIS" setup="" description="4003">
+					<do name="valve_close" mode="PHIS" setup="" description="4107">
 						<io_link module="2" channel="8"/>
 						<value>1</value>
 					</do>
 				</io>
 				<calculate>
-					<kinviscosity name="kinvisc" description="">
+					<kinviscosity name="kinvisc" description="4110">
 						<dynviscosity><link alias="sikn_123.bik.io.visc"/></dynviscosity>
 						<density><link alias="sikn_123.obj.stndenstemp:dens"/></density>
 					</kinviscosity>
-					<prove name="prove" setup="STABILIZATION | BOUNCE" description="">
+					<prove name="prove" setup="STABILIZATION | BOUNCE" description="4111">
 						<io_link module="4" />
 						<temperature><link alias="sikn_123.obj.avr_temp_tpu" /></temperature>
 						<pressure><link alias="sikn_123.io.pres_tpu" /></pressure>
@@ -451,13 +451,13 @@
 							<closed><link alias="sikn_123.io.valve_closed" /></closed>
 						</valve>
 					</prove>
-					<average name="avr_temp_tpu" setup="NOAVRFAULT" description="4000">
+					<average name="avr_temp_tpu" setup="NOAVRFAULT" description="4112">
 						<inputs>
 							<input><link alias="sikn_123.io.temp_tpu_in:present" /></input>
 							<input><link alias="sikn_123.io.temp_tpu_out:present" /></input>
 						</inputs>
 					</average>
-					<densitometer  name="Dens1" description="4022">
+					<densitometer  name="Dens1" description="4113">
 						<period>     <link alias="sikn_123.bik.io.period1:period"/></period>
 						<temperature><link alias="SIKN_123.BIK.IO.Temp1"/></temperature>
 						<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
@@ -483,7 +483,7 @@
 							</limit>
 						</limits>
 					</densitometer>
-					<densitometer name="Dens2" description="4023">
+					<densitometer name="Dens2" description="4114">
 						<period>     <link alias="SIKN_123.BIK.IO.Period2:period"/></period>
 						<temperature><link alias="SIKN_123.BIK.IO.Temp2"/></temperature>
 						<pressure>   <link alias="SIKN_123.BIK.IO.Pres"/></pressure>
@@ -509,7 +509,7 @@
 							</limit>
 						</limits>
 					</densitometer>
-					<multiselector name="StnDensTemp" setup="" mode="NEXT" select="0" description="4024">
+					<multiselector name="StnDensTemp" setup="" mode="NEXT" select="0" description="4115">
 						<names>
 							<name>Dens</name>
 							<name>Dens15</name>
@@ -581,7 +581,7 @@
 							</keypad>
 						</keypads>
 					</multiselector>
-					<selector      name="StnWater"    setup="NOEVENT" mode="NEXT" select="0" description="4025">
+					<selector      name="StnWater"    setup="NOEVENT" mode="NEXT" select="0" description="4116">
 						<inputs>
 							<link alias="SIKN_123.BIK.IO.Water1"/>
 							<link alias="SIKN_123.BIK.IO.Water2"/>
@@ -591,13 +591,13 @@
 							<value>0</value>
 						</keypad>
 					</selector>
-					<masswater name="masswater" setup="" description="4021">
+					<masswater name="masswater" setup="" description="4117">
 						<volwater><link alias="sikn_123.obj.stnwater:output"/></volwater>
 						<density><link alias="sikn_123.obj.stndenstemp:dens"/></density>
 						<temperature><link alias="sikn_123.obj.stndenstemp:temp"/></temperature>
 					</masswater>
 
-					<sampler name="Sampler1" method="PERIOD" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
+					<sampler name="Sampler1" method="PERIOD" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4118">
 						<totals>sikn_123</totals>
 						<!--io_start><link alias=""/></io_start>
 						<io_stop> <link alias=""/></io_stop-->
@@ -618,7 +618,7 @@
 							<volume>3850</volume>
 						</can_b>
 					</sampler>
-					<sampler name="Sampler2" method="VOLUME" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4027">
+					<sampler name="Sampler2" method="VOLUME" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4119">
 						<totals>sikn_123</totals>
 						<!--io_start><link alias=""/></io_start>
 						<io_stop> <link alias=""/></io_stop-->
@@ -644,7 +644,7 @@
 			<!---
 			Вторая станция
 			-->
-			<station name="SIKN_321" product="LUBRICANT" description="4028">
+			<station name="SIKN_321" product="LUBRICANT" description="4500">
 				<units>
 					<volume>112</volume>
 					<mass>96</mass>
@@ -653,7 +653,7 @@
 					<density>48</density>
 				</units>
 				<streams>
-					<stream name="Line" flowmeter="TURBINE" linearization="1" maintenance="0" description="4029">
+					<stream name="Line" flowmeter="TURBINE" linearization="1" maintenance="0" description="4600">
 						<impulse>    <link alias="SIKN_321.IO.Counter:impulse"/></impulse>
 						<temperature><link alias="SIKN_321.IO.Temp"/>           </temperature>
 						<pressure>   <link alias="SIKN_321.IO.Pres"/>           </pressure>
@@ -683,7 +683,7 @@
 					</stream>
 				</streams>
 				<io>
-					<ai name="temp" mode="PHIS" setup="NOICE | LASTGOOD" description="4030">
+					<ai name="temp" mode="PHIS" setup="NOICE | LASTGOOD" description="4501">
 						<_io_link module="3" channel="3"/>
 						<unit>16</unit>
 						<keypad>12.5</keypad>
@@ -701,7 +701,7 @@
 							</limit>
 						</limits>
 					</ai>
-					<ai name="Pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4031">
+					<ai name="Pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4502">
 						<_io_link module="3" channel="4"/>
 						<unit>33</unit>
 						<keypad>0.5</keypad>
@@ -719,15 +719,15 @@
 							</limit>
 						</limits>
 					</ai>
-					<counter name="counter" setup="" description="4032">
+					<counter name="counter" setup="" description="4503">
 						<_io_link module="1" channel="3"/>
 					</counter>
-					<counter name="Period" setup="" description="4033">
+					<counter name="Period" setup="" description="4504">
 						<_io_link module="2" channel="2"/>
 					</counter>
 				</io>
 				<calculate>
-					<densitometer name="Dens" description="4034">
+					<densitometer name="Dens" description="4505">
 						<period>     <link alias="SIKN_321.IO.Period:period"/></period>
 						<temperature><link alias="SIKN_321.IO.Temp"/></temperature>
 						<pressure>   <link alias="SIKN_321.IO.Pres"/></pressure>
@@ -753,7 +753,7 @@
 							</limit>
 						</limits>
 					</densitometer>
-					<sampler name="Sampler" method="PERIOD" setup="SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
+					<sampler name="Sampler" method="PERIOD" setup="SINGLECAN | DUALCAN | AUTOSWITCH" description="4506">
 						<totals>sikn_321</totals>
 						<!--io_start><link alias=""/></io_start>
 						<io_stop> <link alias=""/></io_stop-->
@@ -782,15 +782,15 @@
 
 		-->
 		<variables>
-			<variable name="var1const" setup="CONST" description="0">
+			<variable name="var1const" setup="CONST" description="4700">
 				<default>11.11</default>
 				<unit>0</unit>
 			</variable>
-			<variable name="var2" setup="" description="0">
+			<variable name="var2" setup="" description="4701">
 				<default>22.22</default>
 				<unit>16</unit>
 			</variable>
-			<variable name="var3lim" setup="" description="0">
+			<variable name="var3lim" setup="" description="4702">
 				<limits>
 					<limit name="value" setup="hihi | hi | lo | lolo">
 						<hihi>50</hihi>
@@ -803,7 +803,7 @@
 				<default>33.33</default>
 				<unit>512</unit>
 			</variable>
-			<variable name="var4link" setup="" description="0">
+			<variable name="var4link" setup="" description="4703">
 				<value><link alias="var.var2"/></value>
 				<limits>
 					<limit name="value" setup="hihi | hi | lo | lolo">
@@ -850,12 +850,12 @@
 				</dataset>
 			</datasets>
 			<reports>
-				<report name="rep_2h" type="PERIODIC" description="4100">
+				<report name="rep_2h" type="PERIODIC" description="4800">
 					<period>5MIN</period>
 					<storage>31</storage>
 					<dataset>std_report</dataset>
 				</report>
-				<report name="batch" type="BATCH" description="4101">
+				<report name="batch" type="BATCH" description="4801">
 					<storage>366</storage>
 					<dataset>std_report</dataset>
 				</report>
@@ -868,43 +868,59 @@
 		</precision>
 		<strings>
 			<lang value="ru">
-				<str id="4000">Температура на линии 1 СИКН 1</str>
-				<str id="4001">СИКН 1</str>
-				<str id="4002">СИКН 1. Линия 1</str>
-				<str id="4003">Температура на линии 1 СИКН 1</str>
-				<str id="4004">Давление на линии 1 СИКН 1</str>
-				<str id="4005">Счетчик 1 СИКН 1</str>
-				<str id="4006">Приведение плотности на линии 1 СИКН 1</str>
-				<str id="4007">СИКН 1. Линия 2</str>
-				<str id="4008">Температура на линии 2 СИКН 1</str>
-				<str id="4009">Давление на линии 2 СИКН 1</str>
-				<str id="4010">Счетчик 2 СИКН 1</str>
-				<str id="4011">Приведение плотности на линии 2 СИКН 1</str>
-				<str id="4012">СИКН 1. БИК</str>
-				<str id="4013">Температура 1 в БИК СИКН 1</str>
-				<str id="4014">Температура 2 в БИК СИКН 1</str>
-				<str id="4015">Объемая доля воды 1 в БИК СИКН 1</str>
-				<str id="4016">Объемая доля воды 2 в БИК СИКН 1</str>
-				<str id="4017">Вязкость в БИК СИКН 1</str>
-				<str id="4018">Давление в БИК СИКН 1</str>
-				<str id="4019">Счетчик БИК СИКН 1</str>
-				<str id="4020">Период плотномера 1 СИКН 1</str>
-				<str id="4021">Период плотномера 2 СИКН 1</str>
-				<str id="4022">Плотномер 1 СИКН 1</str>
-				<str id="4023">Плотномер 2 СИКН 1</str>
-				<str id="4026">Пробоотборник 1 СИКН 1</str>
-				<str id="4027">Пробоотборник 2 СИКН 1</str>
-				<str id="4029">СИКН 2. Линия</str>
-				<str id="4030">Температура на линии СИКН 2</str>
-				<str id="4031">Давление на линии СИКН 2</str>
-				<str id="4032">Счетчик СИКН 2</str>
-				<str id="4033">Период плотномера СИКН 2</str>
-				<str id="4034">Плотномер СИКН 2</str>
-				<str id="4035">Пробоотборник 1 СИКН 2</str>
-				<str id="4036">Пробоотборник 2 СИКН 2</str>
-				<str id="4100">Периодический отчет</str>
-				<str id="4101">Партийный отчет</str>
-				<str id="5000">Тестовая строка пользователя.</str>
+			<str id="4000">Температура глобальная</str>
+			<str id="4100">СИКН 1</str>
+			<str id="4101">СИКН 1. Температура входа ТПУ</str>
+			<str id="4102">СИКН 1. Температура выхода ТПУ</str>
+			<str id="4103">СИКН 1. Давление ТПУ</str>
+			<str id="4104">СИКН 1. ТПУ. 4-ходовой кран открыт</str>
+			<str id="4105">СИКН 1. ТПУ. 4-ходовой кран закрыт</str>
+			<str id="4106">СИКН 1. ТПУ. Открыть 4-ходовой кран</str>
+			<str id="4107">СИКН 1. ТПУ. Закрыть 4-ходовой кран</str>
+			<str id="4110">СИКН 1. Вязкость кинематическая</str>
+			<str id="4111">СИКН 1. Поверка по ТПУ</str>
+			<str id="4112">СИКН 1. Температура ТПУ</str>
+			<str id="4113">СИКН 1. Плотномер 1</str>
+			<str id="4114">СИКН 1. Плотномер 2</str>
+			<str id="4115">СИКН 1. Выбор плотномера</str>
+			<str id="4116">СИКН 1. Объемная обводенность</str>
+			<str id="4117">СИКН 1. Массовая обводненность</str>
+			<str id="4118">СИКН 1. Пробоотборник 1</str>
+			<str id="4119">СИКН 1. Пробоотборник 2</str>
+			<str id="4200">СИКН 1. Линия 1</str>
+			<str id="4201">СИКН 1. Температура линии 1</str>
+			<str id="4202">СИКН 1. Давление линии 1</str>
+			<str id="4203">СИКН 1. Расходомер линии 1</str>
+			<str id="4204">СИКН 1. Плотность линии 1</str>
+			<str id="4300">СИКН 1. Линия 2</str>
+			<str id="4301">СИКН 1. Температура линии 2</str>
+			<str id="4302">СИКН 1. Давление линии 2</str>
+			<str id="4303">СИКН 1. Расходомер линии 2</str>
+			<str id="4304">СИКН 1. Плотность линии 1</str>
+			<str id="4400">СИКН 1. БИК</str>
+			<str id="4401">СИКН 1. Температура 1 линии БИК</str>
+			<str id="4402">СИКН 1. Температура 2 линии БИК</str>
+			<str id="4403">СИКН 1. Обводненность 1 линии БИК</str>
+			<str id="4404">СИКН 1. Обводненность 2 линии БИК</str>
+			<str id="4405">СИКН 1. Вязкость линии БИК</str>
+			<str id="4406">СИКН 1. Давление линии БИК</str>
+			<str id="4407">СИКН 1. Расходомер линии БИК</str>
+			<str id="4408">СИКН 1. Период плотномера 1</str>
+			<str id="4409">СИКН 1. Период плотномера 2</str>
+			<str id="4500">СИКН 2</str>
+			<str id="4500">СИКН 2. Температура</str>
+			<str id="4502">СИКН 2. Давление</str>
+			<str id="4503">СИКН 2. Расходомер</str>
+			<str id="4504">СИКН 2. Период плотномера</str>
+			<str id="4505">СИКН 2. Плотномер</str>
+			<str id="4506">СИКН 2. Пробоотборник</str>
+			<str id="4600">СИКН 2. Линия 1</str>
+			<str id="4700">Константная переменная</str>
+			<str id="4701">Простая переменная</str>
+			<str id="4702">Полная переменная</str>
+			<str id="4703">Линкованная переменная</str>
+			<str id="4800">Двухчасовой отчет</str>
+			<str id="4801">Переодический отчет</str>
 			</lang>
 		</strings>
 <!--
