@@ -277,7 +277,10 @@ std::string rGeneratorMD::rItem::save()
 	} else {
 		result += "<" + m_name + " name=\"valid object name\" ";
 	}
-	result += std::string(XmlName::DESC) + "=\"string index\" ";
+
+	if (!isInterface()) {
+		result += std::string(XmlName::DESC) + "=\"string index\" ";
+	}
 
 	for (auto& prop : m_properties) {
 		switch (prop.m_type) {
