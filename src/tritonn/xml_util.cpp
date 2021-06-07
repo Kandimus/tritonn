@@ -44,9 +44,15 @@ USINT getAttributeUSINT (tinyxml2::XMLElement *element, const std::string &name,
 
 //-------------------------------------------------------------------------------------------------
 //
-std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const string &def)
+std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const string &def, Flags flags)
 {
-	return (element->Attribute(name.c_str()) ) ? element->Attribute(name.c_str())  : def;
+	std::string result = (element->Attribute(name.c_str()) ) ? element->Attribute(name.c_str())  : def;
+
+	if (flags & Flags::TOLOWER) {
+		return String_tolower(result);
+	}
+
+	return result;
 }
 
 

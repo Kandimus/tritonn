@@ -432,9 +432,10 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 		m_present.m_averageItems.push_back(tot);
 
-		tot->m_source = nullptr;
-		tot->m_name   = XmlUtils::getAttributeString(total_xml, XmlName::NAME , "");
-		tot->m_alias  = XmlUtils::getAttributeString(total_xml, XmlName::ALIAS, "");
+		tot->m_source  = nullptr;
+		tot->m_name    = XmlUtils::getAttributeString(total_xml, XmlName::NAME , "", XmlUtils::Flags::TOLOWER);
+		tot->m_alias   = XmlUtils::getAttributeString(total_xml, XmlName::ALIAS, "", XmlUtils::Flags::TOLOWER);
+		tot->m_lineNum = total_xml->GetLineNum();
 
 		if (tot->m_name.empty() || tot->m_alias.empty()) {
 			return err.set(DATACFGERR_REPORT, total_xml->GetLineNum(), "undefined name");

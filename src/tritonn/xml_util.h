@@ -24,11 +24,19 @@
 
 namespace XmlUtils
 {
+
+enum Flags
+{
+	NONE = 0,
+	TOLOWER = 1,
+};
+
+
 USINT       getAttributeUSINT (tinyxml2::XMLElement *element, const std::string &name, const USINT def);
 INT         getAttributeINT   (tinyxml2::XMLElement *element, const std::string &name, const INT   def);
 DINT        getAttributeDINT  (tinyxml2::XMLElement *element, const std::string &name, const DINT  def);
 UDINT       getAttributeUDINT (tinyxml2::XMLElement *element, const std::string &name, const UDINT def);
-std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const std::string &def);
+std::string getAttributeString(tinyxml2::XMLElement *element, const std::string &name, const std::string &def, Flags flags = Flags::NONE);
 
 std::string getTextString(tinyxml2::XMLElement *element, const std::string& def, UDINT &err);
 LREAL       getTextLREAL (tinyxml2::XMLElement *element, LREAL def, UDINT &err);

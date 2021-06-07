@@ -132,6 +132,8 @@ public:
 		STRID      m_unitMass;             // Ед. измерения массы
 		STRID      m_unitVolume;           // Ед. измерения объема
 
+		UDINT      m_lineNum = 0;
+
 		std::vector<rReport::rItem*> m_items; // Список переменных для средневзвешивания
 
 		void print(tinyxml2::XMLPrinter& printer);

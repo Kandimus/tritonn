@@ -97,6 +97,8 @@ int main(int argc, char* argv[])
 	TRACEI(LOG::MAIN, " ");
 	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
 	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
+	TRACEI(LOG::MAIN, "argumets:");
+	TRACEI(LOG::MAIN, "\tNoDump : %s", rSimpleArgs::instance().isSet(rArg::NoDump) ? "true" : "false");
 	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 	rLogManager::instance().Run(16);
 

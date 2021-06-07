@@ -98,7 +98,7 @@ private:
 	rSystemVariable          m_sysVar;     // Системные переменные
 	std::vector<rSource*>    m_listSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
 	std::vector<rInterface*> ListInterface;
-	std::vector<rReport*>    ListReport; // Список отчетов
+	std::vector<rReport*>    m_listReport; // Список отчетов
 	std::vector<string>      ListLang;
 
 	std::string m_hashCfg;

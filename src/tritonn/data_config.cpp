@@ -102,7 +102,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	FileName      = filename;
 	SysVar        = &sysvar;
 	ListSource    = &listsrc;
-	ListReport    = &listrpt;
+	m_listReport  = &listrpt;
 	ListInterface = &listiface;
 
 	m_error.clear();
@@ -152,7 +152,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	}
 
 	// Находим нарастающие для отчетов
-	if (TRITONN_RESULT_OK != ResolveReports()) {
+	if (TRITONN_RESULT_OK != resolveReports()) {
 		return m_error.getError();
 	}
 
@@ -286,7 +286,7 @@ UDINT rDataConfig::LoadConfig(tinyxml2::XMLElement* root)
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != LoadReport(config)) {
+	if (TRITONN_RESULT_OK != loadReport(config)) {
 		return m_error.getError();
 	}
 
@@ -504,7 +504,7 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDataConfig::LoadReport(tinyxml2::XMLElement* root)
+UDINT rDataConfig::loadReport(tinyxml2::XMLElement* root)
 {
 	tinyxml2::XMLElement* reportsystem = root->FirstChildElement(XmlName::REPORTSYSTEM);
 
@@ -522,8 +522,11 @@ UDINT rDataConfig::LoadReport(tinyxml2::XMLElement* root)
 		rReport* rpt = new rReport();
 
 		if (TRITONN_RESULT_OK != rpt->loadFromXML(report_xml, m_error, "")) {
+			delete rpt;
 			return m_error.getError();
 		}
+
+		m_listReport->push_back(rpt);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -872,9 +875,9 @@ UDINT rDataConfig::ResolveLinks(void)
 }
 
 
-UDINT rDataConfig::ResolveReports(void)
+UDINT rDataConfig::resolveReports(void)
 {
-	for (auto reports: *ListReport) {
+	for (auto reports: *m_listReport) {
 		rReport::rDataset *rpt = &reports->m_present;
 
 		for (auto tot: rpt->m_averageItems) {
@@ -892,7 +895,7 @@ UDINT rDataConfig::ResolveReports(void)
 			}
 
 			if (!tot->m_source) {
-				return m_error.set(DATACFGERR_RESOLVETOTAL, reports->m_lineNum, tot->m_name); //TODO добавить номер линии
+				return m_error.set(DATACFGERR_RESOLVETOTAL, tot->m_lineNum, tot->m_name); //TODO добавить номер линии
 			}
 		}
 	}
