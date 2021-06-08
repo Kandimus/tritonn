@@ -33,6 +33,8 @@ public:
 	void  generateMarkDown(rGeneratorMD& md);
 	UDINT initVariables(rVariableList& list);
 
+	void  initFlags();
+
 public:
 	rVersion      m_version;
 	rMetrologyVer m_metrologyVer;

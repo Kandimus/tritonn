@@ -68,7 +68,8 @@ public:
 	void  forceLoadDumpVars(bool forceload);
 	void  forceLoadDumpTotals(bool forceload);
 
-	UDINT StartInterfaces();
+	UDINT startInterfaces();
+	void  startReports();
 
 	rSystemVariable* getSysVar() { return &m_sysVar; }
 
@@ -98,7 +99,7 @@ private:
 	rSystemVariable          m_sysVar;     // Системные переменные
 	std::vector<rSource*>    m_listSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
 	std::vector<rInterface*> ListInterface;
-	std::vector<rReport*>    ListReport; // Список отчетов
+	std::vector<rReport*>    m_listReport; // Список отчетов
 	std::vector<string>      ListLang;
 
 	std::string m_hashCfg;

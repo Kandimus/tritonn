@@ -52,6 +52,8 @@ rDataManager::rDataManager() : rVariableClass(Mutex), m_live(Live::UNDEF)
 	m_sysVar.m_metrologyVer.m_minor = 0;
 	m_sysVar.m_metrologyVer.m_crc   = 0x11223344;
 
+	m_sysVar.initFlags();
+
 	m_live.Set(Live::RUNNING);
 	Halt.Set(false);
 }
@@ -210,7 +212,7 @@ UDINT rDataManager::LoadConfig()
 		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
 
 		//TODO тут нужно заменить на вызов XMLFileCheck()
-		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, ListReport) != TRITONN_RESULT_OK) {
+		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, m_listReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
 	}
@@ -266,6 +268,7 @@ UDINT rDataManager::LoadConfig()
 	if (!rSimpleArgs::instance().isSet(rArg::NoDump)) {
 		loadDumps();
 	} else {
+		TRACEI(LOG::DATAMGR, "NoDump is set!");
 		setLiveStatus(Live::RUNNING);
 	}
 
@@ -341,12 +344,12 @@ rThreadStatus rDataManager::Proccesing()
 			}
 
 			// Пердвычисления для отчетов
-			for (auto item : ListReport) {
+			for (auto item : m_listReport) {
 				item->preCalculate();
 			}
 
 			// Основной расчет отчетов
-			for (auto item : ListReport) {
+			for (auto item : m_listReport) {
 				item->calculate();
 			}
 
@@ -387,7 +390,7 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 }
 
 
-UDINT rDataManager::StartInterfaces()
+UDINT rDataManager::startInterfaces()
 {
 	rError err;
 
@@ -407,6 +410,14 @@ UDINT rDataManager::StartInterfaces()
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+
+void rDataManager::startReports()
+{
+	for (auto item : m_listReport) {
+		item->run();
+	}
 }
 
 

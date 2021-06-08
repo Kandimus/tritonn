@@ -79,7 +79,7 @@ protected:
 	rSystemVariable*      SysVar;
 	std::vector<rSource*>    *ListSource;
 	std::vector<rInterface*> *ListInterface;
-	std::vector<rReport*>    *ListReport;
+	std::vector<rReport*>*    m_listReport;
 	std::vector<rLink*>       ListLink; //TODO Нужно ли это оставлять тут, или перенести в rDataManager?
 	std::vector<rLinkTotal>   m_listTotals;
 
@@ -90,7 +90,7 @@ protected:
 	UDINT loadStream    (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
 	UDINT loadIO        (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
 	UDINT loadCalc      (tinyxml2::XMLElement* root, cJSON* jroot, rStation* owner, const std::string& prefix);
-	UDINT LoadReport    (tinyxml2::XMLElement* root);
+	UDINT loadReport    (tinyxml2::XMLElement* root);
 	UDINT LoadCustom    (tinyxml2::XMLElement* root);
 	UDINT LoadVariable  (tinyxml2::XMLElement* root);
 	UDINT LoadUsers     (tinyxml2::XMLElement* root, cJSON* jroot);
@@ -103,7 +103,7 @@ protected:
 	UDINT checkMaxCount();
 	UDINT checkSource(void);
 	UDINT ResolveLinks(void);
-	UDINT ResolveReports(void);
+	UDINT resolveReports(void);
 
 	void  saveWeb();
 

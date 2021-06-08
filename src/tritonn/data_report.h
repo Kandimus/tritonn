@@ -36,7 +36,7 @@ struct rReportTime
 	Time64_T   _UNIX;
 	struct tm  _TM;
 
-	void  SetCurTime();
+	void  setCurTime();
 	void  generateVars(const std::string &prefix, rVariable::Flags flags, UDINT access, rVariableList& list);
 	void  Print(tinyxml2::XMLPrinter& printer, const char *name);
 };
@@ -98,9 +98,6 @@ public:
 		MIN_15    = 14,
 	};
 
-	rReport();
-	virtual ~rReport() = default;
-
 	struct rItem
 	{
 		rItem() = default;
@@ -132,6 +129,8 @@ public:
 		STRID      m_unitMass;             // Ед. измерения массы
 		STRID      m_unitVolume;           // Ед. измерения объема
 
+		UDINT      m_lineNum = 0;
+
 		std::vector<rReport::rItem*> m_items; // Список переменных для средневзвешивания
 
 		void print(tinyxml2::XMLPrinter& printer);
@@ -148,7 +147,7 @@ public:
 		Mark m_mark;    // Статус отчета
 
 		// Время
-		rReportTime StartTime;
+		rReportTime m_timeStart;
 		rReportTime FinalTime;
 
 		std::vector<rReport::rTotal*> m_averageItems;
@@ -160,11 +159,15 @@ public:
 		void  generateVars(const std::string &prefix, rVariableList& list);
 	};
 
+	rReport();
+	virtual ~rReport() = default;
+
+	void run();
 	bool isPeriodic() const { return m_type == Type::PERIODIC; }
 
 protected:
-	UDINT Store();
-	UDINT Start();
+	void  store();
+	void  start(bool isFirstStart = false);
 	UDINT SaveToXML(UDINT present = false);
 	UDINT GetUNIXPeriod();
 	UDINT CheckFinishPeriodic();
@@ -205,6 +208,8 @@ public:
 	static rBitsArray m_flagsMark;
 
 private:
+	rReportTime m_curTime;
+
 	static rBitsArray m_flagsType;
 	static rBitsArray m_flagsPeriod;
 	static rBitsArray m_flagsStatus;
