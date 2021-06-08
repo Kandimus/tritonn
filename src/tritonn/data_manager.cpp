@@ -52,6 +52,8 @@ rDataManager::rDataManager() : rVariableClass(Mutex), m_live(Live::UNDEF)
 	m_sysVar.m_metrologyVer.m_minor = 0;
 	m_sysVar.m_metrologyVer.m_crc   = 0x11223344;
 
+	m_sysVar.initFlags();
+
 	m_live.Set(Live::RUNNING);
 	Halt.Set(false);
 }
@@ -388,7 +390,7 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 }
 
 
-UDINT rDataManager::StartInterfaces()
+UDINT rDataManager::startInterfaces()
 {
 	rError err;
 
@@ -408,6 +410,14 @@ UDINT rDataManager::StartInterfaces()
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+
+void rDataManager::startReports()
+{
+	for (auto item : m_listReport) {
+		item->run();
+	}
 }
 
 

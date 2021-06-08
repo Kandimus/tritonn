@@ -68,7 +68,8 @@ public:
 	void  forceLoadDumpVars(bool forceload);
 	void  forceLoadDumpTotals(bool forceload);
 
-	UDINT StartInterfaces();
+	UDINT startInterfaces();
+	void  startReports();
 
 	rSystemVariable* getSysVar() { return &m_sysVar; }
 

@@ -20,9 +20,8 @@
 #include "comment_defines.h"
 #include "generator_md.h"
 
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rSystemVariable::initVariables(rVariableList& list)
+
+void rSystemVariable::initFlags()
 {
 	m_flagsLive
 			.add("UNDEF"     , static_cast<USINT>(Live::UNDEF)      , "Не определенный статус")
@@ -32,7 +31,12 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 			.add("DUMPVARS"  , static_cast<USINT>(Live::DUMP_VARS)  , "Система в режиме загрузки уставок")
 			.add("RUNNING"   , static_cast<USINT>(Live::RUNNING)    , "Система работает")
 			.add("HALT"      , static_cast<USINT>(Live::HALT)       , "Система в режиме HALT");
+}
 
+//-------------------------------------------------------------------------------------------------
+//
+UDINT rSystemVariable::initVariables(rVariableList& list)
+{
 	list.add("system.version.major"      , TYPE_USINT, rVariable::Flags::RS__, &m_version.m_major     , U_DIMLESS, ACCESS_SA, "Версия ПО");
 	list.add("system.version.minor"      , TYPE_USINT, rVariable::Flags::RS__, &m_version.m_minor     , U_DIMLESS, ACCESS_SA, "Подверсия ПО");
 	list.add("system.version.build"      , TYPE_UINT , rVariable::Flags::RS__, &m_version.m_build     , U_DIMLESS, ACCESS_SA, "Номер сборки");

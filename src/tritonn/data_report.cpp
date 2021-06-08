@@ -36,7 +36,7 @@ rBitsArray rReport::m_flagsStatus;
 rBitsArray rReport::m_flagsMark;
 rBitsArray rReport::m_flagsCommand;
 
-void rReportTime::SetCurTime()
+void rReportTime::setCurTime()
 {
 	getCurrentTime(_UNIX, &_TM);
 }
@@ -198,6 +198,11 @@ UDINT rReport::initLimitEvent(rLink& /*link*/)
 	return TRITONN_RESULT_OK;
 }
 
+void rReport::run()
+{
+	start(true);
+}
+
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -207,33 +212,35 @@ UDINT rReport::calculate()
 		return 0;
 	}
 
+	m_curTime.setCurTime();
+
 	// Обработка периодических отчетов
 	if (m_type == Type::PERIODIC) {
 		if (m_status == Status::RUNNING) {
 			// Проверка на завершение отчета
 			if (CheckFinishPeriodic()) {
-				Store();
-				Start();
+				store();
+				start();
 			}
 
 		// Проверка на незавершенный отчет при WarmStart
 		} else if (m_status == Status::IDLE) {
-			if (m_present.StartTime._UNIX) {
-				Time64_T curtime = timegm64(NULL);
+			if (m_present.m_timeStart._UNIX) { //NOTE Для чего эта проверка?????
 
 				// Если время отчета уже вышло, то сохраняем его с меткой "недействительный"
-				if(curtime - m_present.StartTime._UNIX >= GetUNIXPeriod())
-				{
+				if (m_curTime._UNIX - m_present.m_timeStart._UNIX >= GetUNIXPeriod()) {
 					m_present.m_mark = rReport::Mark::ILLEGAL;
-					Store();
-					Start();
+					store();
+					start();
+					m_present.m_mark = rReport::Mark::INCOMPLETE;
+
+				} else {
+					// Если время еще не вышло, то сохраняем с меткой "неполный"
+					m_status         = Status::RUNNING;
 					m_present.m_mark = rReport::Mark::INCOMPLETE;
 				}
-				// Если время еще не вышло, то сохраняем с меткой "неполный"
-				else
-				{
-					m_present.m_mark = rReport::Mark::INCOMPLETE;
-				}
+			} else {
+				start(true);
 			}
 		}
 	}
@@ -290,8 +297,8 @@ void rReport::rDataset::generateVars(const string &prefix, rVariableList& list)
 
 	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS__, &m_mark, U_DIMLESS, ACCESS_SA, COMMENT::STATUS + rReport::m_flagsMark.getInfo(true));
 
-	StartTime.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS__, ACCESS_SA, list);
-	FinalTime.generateVars(prefix + "datetime.end."  , rVariable::Flags::RS__, ACCESS_SA, list);
+	m_timeStart.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS__, ACCESS_SA, list);
+	FinalTime.generateVars  (prefix + "datetime.end."  , rVariable::Flags::RS__, ACCESS_SA, list);
 
 	// Формируем переменые
 	for (auto tot :  m_averageItems) {
@@ -355,21 +362,25 @@ UDINT rReport::generateVars(rVariableList& list)
 // Поиск требуемого dataset в дереве конфигурации
 tinyxml2::XMLElement *rReport::GetDataSetElement(tinyxml2::XMLElement *element, const char *dsname)
 {
-	tinyxml2::XMLNode *reports = element->Parent();
-	tinyxml2::XMLNode *repsys  = nullptr;
-	tinyxml2::XMLElement *datasets = nullptr;
+	auto reports = element->Parent();
 
-	if(nullptr == reports) return nullptr;
+	if (nullptr == reports) {
+		return nullptr;
+	}
 
-	repsys = reports->Parent();
+	auto repsys = reports->Parent();
 
-	if(nullptr == repsys) return nullptr;
+	if (nullptr == repsys) {
+		return nullptr;
+	}
 
-	datasets = repsys->FirstChildElement(XmlName::DATASETS);
+	auto datasets = repsys->FirstChildElement(XmlName::DATASETS);
 
-	if(nullptr == datasets) return nullptr;
+	if (nullptr == datasets) {
+		return nullptr;
+	}
 
-	for(tinyxml2::XMLElement *ds = datasets->FirstChildElement(XmlName::DATASET); ds != nullptr; ds = ds->NextSiblingElement(XmlName::DATASET))
+	for (tinyxml2::XMLElement *ds = datasets->FirstChildElement(XmlName::DATASET); ds != nullptr; ds = ds->NextSiblingElement(XmlName::DATASET))
 	{
 		if(!strcmp(ds->Attribute(XmlName::NAME), dsname)) return ds;
 	}
@@ -491,16 +502,16 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-UDINT rReport::Store()
+void rReport::store()
 {
-	m_present.FinalTime.SetCurTime();
+	m_present.FinalTime.setCurTime();
 
-	m_completed.m_mark    = m_present.m_mark;
-	m_completed.StartTime = m_present.StartTime;
-	m_completed.FinalTime = m_present.FinalTime;
+	m_completed.m_mark      = m_present.m_mark;
+	m_completed.m_timeStart = m_present.m_timeStart;
+	m_completed.FinalTime   = m_present.FinalTime;
+	m_status                = Status::COMPLETED;
 //	TimeStartUNIX       = 0;
 //	TimeFinishUNIX      = 0;
-	m_status            = Status::COMPLETED;
 
 	for (UDINT ii = 0; ii < m_present.m_averageItems.size(); ++ii) {
 		auto p_total = m_present.m_averageItems[ii];
@@ -512,8 +523,7 @@ UDINT rReport::Store()
 		::rTotal::clear(p_total->m_startTotal);
 		::rTotal::clear(p_total->m_finalTotal);
 
-		for(UDINT jj = 0; jj < p_total->m_items.size(); ++jj)
-		{
+		for (UDINT jj = 0; jj < p_total->m_items.size(); ++jj) {
 			auto p_itm = p_total->m_items[ii];
 			auto c_itm = c_total->m_items[ii];
 
@@ -522,8 +532,7 @@ UDINT rReport::Store()
 		}
 	}
 
-	for(UDINT ii = 0; ii < m_present.m_snapshotItems.size(); ++ii)
-	{
+	for (UDINT ii = 0; ii < m_present.m_snapshotItems.size(); ++ii) {
 		auto p_itm = m_present.m_snapshotItems[ii];
 		auto c_itm = m_completed.m_snapshotItems[ii];
 
@@ -535,23 +544,19 @@ UDINT rReport::Store()
 
 	// Формируем XML дерево отчета
 	SaveToXML();
-
-	return 0;
 }
 
 
-UDINT rReport::Start()
+void rReport::start(bool isFirstStart)
 {
-	m_present.StartTime.SetCurTime();
-	m_present.m_mark = Mark::INPROGRESS;
+	m_present.m_timeStart.setCurTime();
+	m_present.m_mark = isFirstStart ? Mark::INCOMPLETE :  Mark::VALIDATE;
 	m_status         = Status::RUNNING;
 
 	for (auto item : m_present.m_averageItems) {
 		item->m_startTotal = item->m_source->m_present;
 		item->m_finalTotal = item->m_source->m_present;
 	}
-
-	return 0;
 }
 
 
@@ -652,7 +657,7 @@ void rReport::rDataset::print(tinyxml2::XMLPrinter& printer)
 	printer.CloseElement();
 
 	printer.OpenElement("time");
-	StartTime.Print(printer, "start");
+	m_timeStart.Print(printer, "start");
 	FinalTime.Print(printer, "final");
 	printer.CloseElement();
 
@@ -694,12 +699,12 @@ UDINT rReport::SaveToXML(UDINT present)
 
 	if(present) {
 		m_present.print(printer);
-		reptime = m_present.StartTime;
+		reptime = m_present.m_timeStart;
 	}
 	else
 	{
 		m_completed.print(printer);
-		reptime = m_completed.StartTime;
+		reptime = m_completed.m_timeStart;
 	}
 
 	printer.CloseElement(); // report
@@ -710,7 +715,7 @@ UDINT rReport::SaveToXML(UDINT present)
 	UDINT   result  = SimpleFileSave(filename, printer.CStr());
 
 	if (result != TRITONN_RESULT_OK) {
-		rEventManager::instance().add(reinitEvent(EID_REPORT_GENERATED) << result);
+		rEventManager::instance().add(reinitEvent(EID_REPORT_CANTSAVE) << result);
 		return 0;
 	}
 
@@ -720,6 +725,8 @@ UDINT rReport::SaveToXML(UDINT present)
 
 UDINT rReport::GetUNIXPeriod()
 {
+	auto ts = &m_present.m_timeStart;
+
 	switch(m_period)
 	{
 		case Period::HOUR     : return 3600;
@@ -732,11 +739,11 @@ UDINT rReport::GetUNIXPeriod()
 		case Period::DAYLY    : return 3600  * 24;
 		case Period::WEEKLY   : return 86400 * 7;
 		case Period::BIWEEKLY : return 86400 * 14;
-		case Period::MONTHLY  : return 86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon);
-		case Period::QUARTERLY: return 86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon) +
-									   86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon + 1) +
-									   86400 * DayInMonthShift(m_present.StartTime._TM.tm_year, m_present.StartTime._TM.tm_mon + 2);
-		case Period::ANNUAL   : return 86400 * (365 + IsLeapYear(m_present.StartTime._TM.tm_year));
+		case Period::MONTHLY  : return 86400 * DayInMonthShift(ts->_TM.tm_year, ts->_TM.tm_mon);
+		case Period::QUARTERLY: return 86400 * DayInMonthShift(ts->_TM.tm_year, ts->_TM.tm_mon) +
+									   86400 * DayInMonthShift(ts->_TM.tm_year, ts->_TM.tm_mon + 1) +
+									   86400 * DayInMonthShift(ts->_TM.tm_year, ts->_TM.tm_mon + 2);
+		case Period::ANNUAL   : return 86400 * (IsLeapYear    (ts->_TM.tm_year) + 365);
 		case Period::MIN_5    : return 60 * 5;
 		case Period::MIN_15   : return 60 * 15;
 		default: return 0xFFFFFFFF;
@@ -747,35 +754,32 @@ UDINT rReport::GetUNIXPeriod()
 // Проверка на завершение переодического отчета
 UDINT rReport::CheckFinishPeriodic()
 {
-	Time64_T  curtime = timegm64(NULL);
-	struct tm curtm;
+	auto curtm = &m_curTime._TM;
 	UDINT     result = 0;
 
 	//TODO проверяем не чаще чем раз в минуту
 	//if(curtime & 0x04 != 0) continue;
 
-	gmtime64_r(&curtime, &curtm);
-
 	switch (m_period)
 	{
-		case Period::HOUR     : result = (PastTM.tm_hour != curtm.tm_hour); break;
-		case Period::HOUR_2   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  2 == 0); break;
-		case Period::HOUR_3   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  3 == 0); break;
-		case Period::HOUR_4   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  4 == 0); break;
-		case Period::HOUR_6   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  6 == 0); break;
-		case Period::HOUR_8   : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour %  8 == 0); break;
-		case Period::HOUR_12  : result = (PastTM.tm_hour != curtm.tm_hour) && (curtm.tm_hour % 12 == 0); break;
-		case Period::DAYLY    : result = (PastTM.tm_mday != curtm.tm_mday); break;
-		case Period::WEEKLY   : result = (PastTM.tm_wday != curtm.tm_wday) && (curtm.tm_wday      == 1); break;
-		case Period::BIWEEKLY : result = (PastTM.tm_wday != curtm.tm_wday) && (curtm.tm_wday      == 1) && ((WeekNumber(curtm) - 1) % 2 == 0); break;
-		case Period::MONTHLY  : result = (PastTM.tm_mon  != curtm.tm_mon ); break;
-		case Period::QUARTERLY: result = (PastTM.tm_mon  != curtm.tm_mon ) && ((curtm.tm_mon - 1) % 3 == 0); break;
-		case Period::ANNUAL   : result = (PastTM.tm_year != curtm.tm_year); break;
-		case Period::MIN_5    : result = (PastTM.tm_min  != curtm.tm_min ) && (curtm.tm_min  %  5 == 0); break;
-		case Period::MIN_15   : result = (PastTM.tm_min  != curtm.tm_min ) && (curtm.tm_min  % 15 == 0); break;
+		case Period::HOUR     : result = (PastTM.tm_hour != curtm->tm_hour); break;
+		case Period::HOUR_2   : result = (PastTM.tm_hour != curtm->tm_hour) && (curtm->tm_hour %  2 == 0); break;
+		case Period::HOUR_3   : result = (PastTM.tm_hour != curtm->tm_hour) && (curtm->tm_hour %  3 == 0); break;
+		case Period::HOUR_4   : result = (PastTM.tm_hour != curtm->tm_hour) && (curtm->tm_hour %  4 == 0); break;
+		case Period::HOUR_6   : result = (PastTM.tm_hour != curtm->tm_hour) && (curtm->tm_hour %  6 == 0); break;
+		case Period::HOUR_8   : result = (PastTM.tm_hour != curtm->tm_hour) && (curtm->tm_hour %  8 == 0); break;
+		case Period::HOUR_12  : result = (PastTM.tm_hour != curtm->tm_hour) && (curtm->tm_hour % 12 == 0); break;
+		case Period::DAYLY    : result = (PastTM.tm_mday != curtm->tm_mday); break;
+		case Period::WEEKLY   : result = (PastTM.tm_wday != curtm->tm_wday) && (curtm->tm_wday      == 1); break;
+		case Period::BIWEEKLY : result = (PastTM.tm_wday != curtm->tm_wday) && (curtm->tm_wday      == 1) && ((WeekNumber(*curtm) - 1) % 2 == 0); break;
+		case Period::MONTHLY  : result = (PastTM.tm_mon  != curtm->tm_mon ); break;
+		case Period::QUARTERLY: result = (PastTM.tm_mon  != curtm->tm_mon ) && ((curtm->tm_mon - 1) % 3 == 0); break;
+		case Period::ANNUAL   : result = (PastTM.tm_year != curtm->tm_year); break;
+		case Period::MIN_5    : result = (PastTM.tm_min  != curtm->tm_min ) && (curtm->tm_min  %  5 == 0); break;
+		case Period::MIN_15   : result = (PastTM.tm_min  != curtm->tm_min ) && (curtm->tm_min  % 15 == 0); break;
 	}
 
-	PastTM = curtm;
+	PastTM = *curtm;
 
 	return result;
 }

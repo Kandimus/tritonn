@@ -161,7 +161,9 @@ int main(int argc, char* argv[])
 	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");
 
 	//
-	rDataManager::instance().StartInterfaces();
+	rDataManager::instance().startInterfaces();
+	rDataManager::instance().startReports();
+
 
 	//
 	// Событие о запуске
