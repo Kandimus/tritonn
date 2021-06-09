@@ -58,18 +58,16 @@ std::string getAttributeString(tinyxml2::XMLElement *element, const std::string 
 
 //-------------------------------------------------------------------------------------------------
 //
-std::string getTextString(tinyxml2::XMLElement *element, const std::string &def, UDINT &err)
+std::string getTextString(tinyxml2::XMLElement* element, const std::string& def, UDINT& err)
 {
 	std::string result = def;
 
-	if(nullptr == element)
-	{
+	if (!element) {
 		err = 1;
 		return result;
 	}
 
-	if(nullptr == element->GetText())
-	{
+	if (!element->GetText()) {
 		err = 1;
 		return result;
 	}
@@ -107,8 +105,7 @@ UDINT getTextUDINT(tinyxml2::XMLElement *element, UDINT def, UDINT &err)
 {
 	UDINT result = def;
 
-	if(nullptr == element)
-	{
+	if (!element) {
 		err = 1;
 		return result;
 	}
@@ -127,7 +124,7 @@ UDINT getTextUDINT(tinyxml2::XMLElement *element, UDINT def, UDINT &err)
 //
 UINT getTextUINT(tinyxml2::XMLElement *element, UINT def, UDINT &err)
 {
-	USINT result = def;
+	UINT  result = def;
 	UDINT value  = getTextUDINT(element, (UDINT)def, err);
 
 	if(err) return result;

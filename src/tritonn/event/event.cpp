@@ -82,7 +82,7 @@ rEvent& rEvent::reinit(UDINT eid)
 
 
 //-------------------------------------------------------------------------------------------------
-void* rEvent::getParamByID(UDINT ID, UDINT& type) const
+void* rEvent::getParamByID(UDINT ID, TYPE& type) const
 {
 	UDINT pos   = 0;
 	UDINT curid = 0;
@@ -91,15 +91,15 @@ void* rEvent::getParamByID(UDINT ID, UDINT& type) const
 	{
 		if(ID == curid)
 		{
-			type = m_data[pos];
+			type = static_cast<TYPE>(m_data[pos]);
 			return (void *)(m_data + pos + 1);
 		}
 		
-		pos += 1 + EPT_SIZE[m_data[pos]];
+		pos += 1 + getTypeSize(static_cast<TYPE>(m_data[pos]));
 		++curid;
 	}
 	
-	type = TYPE_UNDEF;
+	type = TYPE::UNDEF;
 	return nullptr;
 }
 

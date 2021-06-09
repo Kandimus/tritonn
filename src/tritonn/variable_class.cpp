@@ -186,7 +186,7 @@ UDINT rVariableClass::writeExt(rVariableList& extvarlist)
 			continue;
 		}
 
-		std::memcpy(localvar->m_external->m_read, extvar->m_pointer, EPT_SIZE[extvar->getType()]);
+		std::memcpy(localvar->m_external->m_read, extvar->m_pointer, getTypeSize(extvar->getType()));
 	}
 
 	return TRITONN_RESULT_OK;
@@ -219,7 +219,7 @@ UDINT rVariableClass::readExt(rVariableList& extvarlist)
 			continue;
 		}
 
-		memcpy(extvar->m_pointer, localvar->m_external->m_write, EPT_SIZE[extvar->getType()]);
+		memcpy(extvar->m_pointer, localvar->m_external->m_write, getTypeSize(extvar->getType()));
 		localvar->m_external->m_isWrited = false;
 	}
 

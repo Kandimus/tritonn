@@ -435,15 +435,15 @@ const UA_DataType *rOPCUAManager::GetTypeUA(const rVariable *var)
 
 	switch(var->getType())
 	{
-		case TYPE_SINT:  return &UA_TYPES[UA_TYPES_SBYTE];
-		case TYPE_USINT: return &UA_TYPES[UA_TYPES_BYTE];
-		case TYPE_INT:   return &UA_TYPES[UA_TYPES_INT16];
-		case TYPE_UINT:  return &UA_TYPES[UA_TYPES_UINT16];
-		case TYPE_DINT:  return &UA_TYPES[UA_TYPES_INT32];
-		case TYPE_UDINT: return &UA_TYPES[UA_TYPES_UINT32];
-		case TYPE_REAL:  return &UA_TYPES[UA_TYPES_FLOAT];
-		case TYPE_LREAL: return &UA_TYPES[UA_TYPES_DOUBLE];
-		case TYPE_STRID: return &UA_TYPES[UA_TYPES_UINT32];
+		case TYPE::SINT:  return &UA_TYPES[UA_TYPES_SBYTE];
+		case TYPE::USINT: return &UA_TYPES[UA_TYPES_BYTE];
+		case TYPE::INT:   return &UA_TYPES[UA_TYPES_INT16];
+		case TYPE::UINT:  return &UA_TYPES[UA_TYPES_UINT16];
+		case TYPE::DINT:  return &UA_TYPES[UA_TYPES_INT32];
+		case TYPE::UDINT: return &UA_TYPES[UA_TYPES_UINT32];
+		case TYPE::REAL:  return &UA_TYPES[UA_TYPES_FLOAT];
+		case TYPE::LREAL: return &UA_TYPES[UA_TYPES_DOUBLE];
+		case TYPE::STRID: return &UA_TYPES[UA_TYPES_UINT32];
 
 		default: return nullptr;
 	}

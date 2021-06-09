@@ -154,9 +154,9 @@ std::string rBitsArray::getInfo(bool isnumbers) const
 
 		} else {
 			switch(item.m_type) {
-				case TYPE_UDINT: result += String_format("0x%08x", item.m_value); break;
-				case TYPE_UINT : result += String_format("0x%04x", item.m_value); break;
-				case TYPE_USINT: result += String_format("0x%02x", item.m_value); break;
+				case TYPE::UDINT: result += String_format("0x%08x", item.m_value); break;
+				case TYPE::UINT : result += String_format("0x%04x", item.m_value); break;
+				case TYPE::USINT: result += String_format("0x%02x", item.m_value); break;
 
 				default: result += String_format("unknow type %i", item.m_value); break;
 			}

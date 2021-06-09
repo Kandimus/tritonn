@@ -331,19 +331,19 @@ rSnapshotItem *rModbusTCPSlaveManager::FindSnapshotItem(UINT addr)
 }
 
 
-UDINT rModbusTCPSlaveManager::TypeCountReg(TT_TYPE type)
+UDINT rModbusTCPSlaveManager::TypeCountReg(TYPE type)
 {
 	switch(type)
 	{
-		case TYPE_SINT : return 1;
-		case TYPE_USINT: return 1;
-		case TYPE_INT  : return 1;
-		case TYPE_UINT : return 1;
-		case TYPE_DINT : return 2;
-		case TYPE_UDINT: return 2;
-		case TYPE_REAL : return 2;
-		case TYPE_LREAL: return 4;
-		case TYPE_STRID: return 2;
+		case TYPE::SINT : return 1;
+		case TYPE::USINT: return 1;
+		case TYPE::INT  : return 1;
+		case TYPE::UINT : return 1;
+		case TYPE::DINT : return 2;
+		case TYPE::UDINT: return 2;
+		case TYPE::REAL : return 2;
+		case TYPE::LREAL: return 4;
+		case TYPE::STRID: return 2;
 
 		default: return 0xFFFF;
 	}
@@ -358,7 +358,7 @@ rThreadClass *rModbusTCPSlaveManager::getThreadClass()
 
 UDINT rModbusTCPSlaveManager::startServer()
 {
-	UDINT result = rTCPClass::StartServer("", 0);
+	UDINT result = rTCPClass::startServer("", 0);
 
 	rTCPClass::Run(300);
 
@@ -377,28 +377,41 @@ UDINT rModbusTCPSlaveManager::checkVars(rError& err)
 		return err.getError();
 	}
 
-	for(auto& tlink : TempLink) {
+	for(auto tlink : m_tempLink) {
 		rModbusLink link;
+		TYPE type = TYPE::UNDEF;
 
-		if (!m_snapshot.add(tlink.VarName)) {
-			return err.set(DATACFGERR_INTERFACES_NF_VAR, tlink.LineNum, tlink.VarName);
+		if (tlink->VarName.size()) {
+
+			if (!m_snapshot.add(tlink->VarName)) {
+				clearTempList();
+				return err.set(DATACFGERR_INTERFACES_NF_VAR, tlink->LineNum, tlink->VarName);
+			}
+
+			if (tlink->Address) {
+				address = tlink->Address;
+			}
+
+			link.Address = address;
+			link.m_item  = m_snapshot.last();
+			type         = link.m_item->getVariable()->getType();
+
+			ModbusLink.push_back(link);
+
+		} else {
+			type = tlink->m_type;
 		}
 
-		if (tlink.Address) {
-			address = tlink.Address;
-		}
-
-		link.Address = address;
-		link.m_item  = m_snapshot.last();
-		address     += TypeCountReg(link.m_item->getVariable()->getType());
+		address += TypeCountReg(type);
 
 		// check block start + count > 65535
 		if (address > 0x0000FFFF) {
-			return err.set(DATACFGERR_INTERFACES_ADDR_OVERFLOW, tlink.LineNum, tlink.VarName);
+			clearTempList();
+			return err.set(DATACFGERR_INTERFACES_ADDR_OVERFLOW, tlink->LineNum, tlink->VarName);
 		}
-
-		ModbusLink.push_back(link);
 	}
+
+	clearTempList();
 
 	return TRITONN_RESULT_OK;
 }
@@ -412,22 +425,18 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 	string filetext = "";
 	UDINT  result   = TRITONN_RESULT_OK;
 
-	if(TRITONN_RESULT_OK != (result = SimpleFileLoad(FILE_MODBUS, filetext)))
-	{
+	if (TRITONN_RESULT_OK != (result = SimpleFileLoad(FILE_MODBUS, filetext))) {
 		return err.set(result, 0, "");
 	}
 
 	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLElement* xml_modbus;
 
-	if(tinyxml2::XML_SUCCESS != doc.Parse(filetext.c_str()))
-	{
+	if (tinyxml2::XML_SUCCESS != doc.Parse(filetext.c_str())) {
 		return err.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
 	}
 
-	xml_modbus = doc.FirstChildElement("modbus");
-	if(!xml_modbus)
-	{
+	auto xml_modbus = doc.FirstChildElement(XmlName::MODBUS);
+	if (!xml_modbus) {
 		return TRITONN_RESULT_OK;
 	}
 
@@ -462,8 +471,14 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 		return err.getError();
 	}
 
-	UDINT       port  = XmlUtils::getAttributeUDINT (xml_root, XmlName::PORT    , m_port);
-	std::string ip    = "0.0.0.0";
+	auto xml_host = xml_root->FirstChildElement(XmlName::HOST);
+	if (xml_host) {
+		UDINT       fault = false;
+		UDINT       port  = XmlUtils::getTextUINT  (xml_host->FirstChildElement(XmlName::PORT), m_hostPort, fault);
+		std::string ip    = XmlUtils::getTextString(xml_host->FirstChildElement(XmlName::IP)  , "0.0.0.0" , fault);
+
+		setServerIP(ip, port);
+	}
 
 	m_alias   = "comms.modbus." + m_alias;
 	Name      = XmlUtils::getAttributeString(xml_root, XmlName::NAME     , "");
@@ -507,14 +522,14 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 		UDINT address   = XmlUtils::getAttributeUDINT(xml_item, XmlName::BEGIN, 0xFFFFFFFF);
 		auto  blockname = XmlUtils::getTextString    (xml_item, "", fault);
 
+		if (fault) {
+			return err.set(DATACFGERR_INTERFACES_BAD_BLOCK, xml_item->GetLineNum(), "fault blockname");
+		}
+
 		if (address < 400000 || address > 465535) {
-			return err.set(DATACFGERR_INTERFACES_BAD_ADDR, xml_item->GetLineNum(), "");
+			return err.set(DATACFGERR_INTERFACES_BAD_ADDR, xml_item->GetLineNum(), "Invalide address " + String_format("%u", address));
 		}
 		address -= 400000;
-
-		if (fault) {
-			return err.set(DATACFGERR_INTERFACES_BAD_BLOCK, xml_item->GetLineNum(), "");
-		}
 
 		auto xml_block = rDataBlock::Find(xml_root, blockname);
 
@@ -523,24 +538,40 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 		}
 
 		//
-		XML_FOR (xml_var, xml_block, XmlName::VARIABLE) {
-			rTempLink tlink;
+		XML_FOR_ALL(xml_var, xml_block) {
+			auto name  = String_tolower(xml_var->Name());
+			auto tlink = new rTempLink();
 
-			fault         = 0;
-			tlink.Address = address;
-			tlink.VarName = XmlUtils::getTextString(xml_var, "", fault);
-			tlink.LineNum = xml_var->GetLineNum();
+			fault = 0;
+			tlink->Address = address;
+			tlink->LineNum = xml_var->GetLineNum();
+			tlink->m_type  = TYPE::UNDEF;
 			address       = 0;
 
-			if (fault) {
-				return err.set(DATACFGERR_INTERFACES_BAD_VAR, xml_var->GetLineNum(), "");
+			if (name == XmlName::VARIABLE) {
+				tlink->VarName = XmlUtils::getTextString(xml_var, "", fault);
+
+				if (fault) {
+					clearTempList();
+					return err.set(DATACFGERR_INTERFACES_BAD_VAR, xml_var->GetLineNum(), "");
+				}
+
+			} else if (name == XmlName::WHITESPACE) {
+				tlink->VarName = "";
+				tlink->m_type  = getTypeByName(XmlUtils::getAttributeString(xml_var, XmlName::NATIVE, "", XmlUtils::Flags::TOLOWER));
+
+				if (tlink->m_type == TYPE::UNDEF) {
+					clearTempList();
+					return err.set(DATACFGERR_INTERFACES_BAD_WS, xml_var->GetLineNum(), "incorrect native type");
+				}
+			} else {
+				clearTempList();
+				return err.set(DATACFGERR_INTERFACES_UNKNOW_VAR, xml_var->GetLineNum(), name);
 			}
 
-			TempLink.push_back(tlink);
+			m_tempLink.push_back(tlink);
 		}
 	}
-
-	SetServerIP(ip, port);
 
 	return TRITONN_RESULT_OK;
 }
@@ -548,11 +579,11 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 
 UDINT rModbusTCPSlaveManager::generateVars(rVariableClass* parent)
 {
-	m_varList.add(m_alias + ".status" , TYPE_UINT , rVariable::Flags::R___, &Live       , U_DIMLESS, 0, "Статус");
-	m_varList.add(m_alias + ".tx"     , TYPE_UDINT, rVariable::Flags::R___, &Tx         , U_DIMLESS, 0, "Байт передано");
-	m_varList.add(m_alias + ".rx"     , TYPE_UDINT, rVariable::Flags::R___, &Rx         , U_DIMLESS, 0, "Байт считано");
-	m_varList.add(m_alias + ".errorrx", TYPE_USINT, rVariable::Flags::R___, &RxError    , U_DIMLESS, 0, "Количество ошибок");
-	m_varList.add(m_alias + ".clients", TYPE_USINT, rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0, "Количество подключенных клиентов");
+	m_varList.add(m_alias + ".status" , rVariable::Flags::R___, &Live       , U_DIMLESS, 0, "Статус");
+	m_varList.add(m_alias + ".tx"     , rVariable::Flags::R___, &Tx         , U_DIMLESS, 0, "Байт передано");
+	m_varList.add(m_alias + ".rx"     , rVariable::Flags::R___, &Rx         , U_DIMLESS, 0, "Байт считано");
+	m_varList.add(m_alias + ".errorrx", rVariable::Flags::R___, &RxError    , U_DIMLESS, 0, "Количество ошибок");
+	m_varList.add(m_alias + ".clients", rVariable::Flags::R___, &ClientCount, U_DIMLESS, 0, "Количество подключенных клиентов");
 
 	if (parent) {
 		rVariableClass::linkToExternal(parent);
@@ -565,10 +596,13 @@ UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 {
 	md.add(this)
 			.addProperty(XmlName::ID       , static_cast<UDINT>(SlaveID))
-			.addProperty(XmlName::PORT     , m_port)
 			.addProperty(XmlName::COUNT_ERR, static_cast<UDINT>(MaxError))
 			.addProperty(XmlName::SECURITY , Security)
 			.addProperty(XmlName::MAXCLIENT, MaxClient)
+			.addXml("<" + std::string(XmlName::HOST) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
+			.addXml(XmlName::IP  , "ip address xx.xx.xx.xx", true, "\t")
+			.addXml(XmlName::PORT, "port ", true, "\t")
+			.addXml("</" + std::string(XmlName::HOST) + ">")
 			.addXml("<" + std::string(XmlName::WHITELIST) + "> " + rGeneratorMD::rItem::XML_OPTIONAL)
 			.addXml(XmlName::IP, "ip address xx.xx.xx.xx", false, "\t")
 			.addXml("\t...")
@@ -580,9 +614,9 @@ UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 			.addXml(XmlName::DWORD, static_cast<UDINT>(m_swap.DWord), false, "\t")
 			.addXml("</" + std::string(XmlName::SWAP) + ">")
 			.addXml("<" + std::string(XmlName::ADDRESSMAP) + ">")
-			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK, XmlName::ADDRESSBLOCK))
+			.addXml(String_format("\t<%s begin=\"start address\" lock=\"0\">datablock name</%s>", XmlName::ADDRESSBLOCK, XmlName::ADDRESSBLOCK))
 			.addXml("\t...")
-			.addXml(String_format("\t<%s begin=\"start address\">datablock name</%s>", XmlName::ADDRESSBLOCK, XmlName::ADDRESSBLOCK))
+			.addXml(String_format("\t<%s begin=\"start address\" lock=\"0\">datablock name</%s>", XmlName::ADDRESSBLOCK, XmlName::ADDRESSBLOCK))
 			.addXml("</" + std::string(XmlName::ADDRESSMAP) + ">");
 
 	return TRITONN_RESULT_OK;
@@ -591,4 +625,13 @@ UDINT rModbusTCPSlaveManager::generateMarkDown(rGeneratorMD& md)
 std::string rModbusTCPSlaveManager::getAdditionalXml() const
 {
 	return rDataBlock::getXml();
+}
+
+void rModbusTCPSlaveManager::clearTempList()
+{
+	for (auto item : m_tempLink) {
+		delete item;
+	}
+
+	m_tempLink.clear();
 }

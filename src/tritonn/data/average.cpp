@@ -110,7 +110,7 @@ UDINT rAverage::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".setup", TYPE_LREAL, rVariable::Flags::___D, &m_setup, U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo(true));
+	list.add(m_alias + ".setup", TYPE::UINT, rVariable::Flags::___D, &m_setup, U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo(true));
 
 //	list.add(m_alias + ".fault"     , TYPE_UDINT, rVariable::Flags::R__, &m_fault          , U_DIMLESS       , 0, COMMENT::FAULT);
 

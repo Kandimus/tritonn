@@ -973,18 +973,18 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable>system.version.hash</variable>
 			</datablock>
 			<datablock name="globaltemp">
-				<variable convert="float">io.globaltemp.present.value</variable>
-				<whitespace size="2"/>
+				<variable convert="real">io.globaltemp.present.value</variable>
+				<whitespace native="real"/>
 				<variable                >io.globaltemp.present.unit</variable>
-				<variable convert="float">io.globaltemp.present.hihi</variable>
-				<variable convert="float">io.globaltemp.present.hi</variable>
-				<variable convert="float">io.globaltemp.present.lo</variable>
-				<variable convert="float">io.globaltemp.present.lolo</variable>
-				<variable convert="float">io.globaltemp.present.hysteresis</variable>
+				<variable convert="real">io.globaltemp.present.hihi</variable>
+				<variable convert="real">io.globaltemp.present.hi</variable>
+				<variable convert="real">io.globaltemp.present.lo</variable>
+				<variable convert="real">io.globaltemp.present.lolo</variable>
+				<variable convert="real">io.globaltemp.present.hysteresis</variable>
 				<variable                >io.globaltemp.present.status</variable>
-				<variable convert="float">io.globaltemp.physical.value</variable>
-				<variable convert="float">io.globaltemp.current.value</variable>
-				<variable convert="float">io.globaltemp.keypad</variable>
+				<variable convert="real">io.globaltemp.physical.value</variable>
+				<variable convert="real">io.globaltemp.current.value</variable>
+				<variable convert="real">io.globaltemp.keypad</variable>
 				<variable                >io.globaltemp.scales.low</variable>
 				<variable                >io.globaltemp.scales.high</variable>
 				<variable                >io.globaltemp.status</variable>
@@ -996,7 +996,11 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 			</datablock>
 		</datablocks>
 		<modbus>
-			<slavetcp name="slave1" id="1" port="1502" count_error="3" security="0" maxclient="0">
+			<slavetcp name="slave1" id="1" count_error="3" security="0" maxclient="0">
+				<host>
+					<ip>127.0.0.1</ip>
+					<port>1502</port>
+				</host>
 				<whitelist>
 					<ip>127.0.0.1</ip>
 					<ip>192.168.15.1</ip>
@@ -1013,7 +1017,14 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 					<addressblock begin="400300">slave1_info</addressblock>
 				</addressmap>
 			</slavetcp>
-			<slavertu name="slave2" id="1" modulenum="0" port="2" boudreate="9600" bit="1" parity="0" counterror="3" security="0" maxclient="0">
+			<slavertu name="slave2" id="1" port="2" counterror="3" security="0">
+				<port>
+					<device module="1">2</device>
+					<boudrate>9600</boudrate>
+					<databit>8</databit>
+					<stopbit>1</stopbit>
+					<parity>0</parity>
+				</port>
 				<swap>
 					<byte>1</byte>
 					<word>1</word>

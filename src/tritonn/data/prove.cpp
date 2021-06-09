@@ -804,11 +804,11 @@ UDINT rProve::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
-	list.add(m_alias + ".command"                  , TYPE_UINT , rVariable::Flags::____, &m_command       , U_DIMLESS, ACCESS_PROVE, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
-	list.add(m_alias + ".setup"                    , TYPE_UINT , rVariable::Flags::___D, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".state"                    , TYPE_UINT , rVariable::Flags::R___, &m_state         , U_DIMLESS, 0           , COMMENT::STATUS + m_flagsState.getInfo(true));
-	list.add(m_alias + ".stream_no"                , TYPE_UINT , rVariable::Flags::___D, &m_lineNum       , U_DIMLESS, 0           , "Номер ПР для поверки");
-	list.add(m_alias + ".direction"                , TYPE_UINT , rVariable::Flags::R___, &m_way           , U_DIMLESS, 0           , "Проход шара:<br/>" + m_flagsWay.getInfo(true));
+	list.add(m_alias + ".command"                  , TYPE::UINT, rVariable::Flags::____, &m_command       , U_DIMLESS, ACCESS_PROVE, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+	list.add(m_alias + ".setup"                    ,             rVariable::Flags::___D, &m_setup.Value   , U_DIMLESS, ACCESS_PROVE, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".state"                    , TYPE::UINT, rVariable::Flags::R___, &m_state         , U_DIMLESS, 0           , COMMENT::STATUS + m_flagsState.getInfo(true));
+	list.add(m_alias + ".stream_no"                ,             rVariable::Flags::___D, &m_lineNum       , U_DIMLESS, 0           , "Номер ПР для поверки");
+	list.add(m_alias + ".direction"                , TYPE::UINT, rVariable::Flags::R___, &m_way           , U_DIMLESS, 0           , "Проход шара:<br/>" + m_flagsWay.getInfo(true));
 	list.add(m_alias + ".timer.start"              ,             rVariable::Flags::___D, &m_tStart        , U_msec   , ACCESS_PROVE, "Значение таймера выбора требуемого ПР");
 	list.add(m_alias + ".timer.stabilization"      ,             rVariable::Flags::___D, &m_tStab         , U_msec   , ACCESS_PROVE, "Значение таймера стабилизации");
 	list.add(m_alias + ".timer.detector1"          ,             rVariable::Flags::___D, &m_tD1           , U_msec   , ACCESS_PROVE, "Максимальное время прохода шара от корзины до первого детектора");

@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 
 	// Терминал
 	rTermManager::Instance().Run(500);
-	rTermManager::Instance().StartServer("0.0.0.0", LanPort::PORT_TERM);
+	rTermManager::Instance().startServer("0.0.0.0", LanPort::PORT_TERM);
 
 	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "config");
 
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// JSON
 	rJSONManager::Instance().Run(100);
-	rJSONManager::Instance().StartServer("0.0.0.0", LanPort::PORT_JSON);
+	rJSONManager::Instance().startServer("0.0.0.0", LanPort::PORT_JSON);
 
 	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");
 

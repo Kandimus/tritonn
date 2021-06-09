@@ -35,7 +35,7 @@ rVariableList::~rVariableList()
 	m_list.clear();
 }
 
-void rVariableList::add(const std::string& name, TT_TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access, const std::string& comment)
+void rVariableList::add(const std::string& name, TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access, const std::string& comment)
 {
 	const rVariable* var = find(name);
 
@@ -49,47 +49,47 @@ void rVariableList::add(const std::string& name, TT_TYPE type, rVariable::Flags 
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags,  SINT* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_SINT, flags, pointer, unit, access, comment);
+	add(name, TYPE::SINT, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags, USINT* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_USINT, flags, pointer, unit, access, comment);
+	add(name, TYPE::USINT, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags,   INT* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_INT, flags, pointer, unit, access, comment);
+	add(name, TYPE::INT, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags,  UINT* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_UINT, flags, pointer, unit, access, comment);
+	add(name, TYPE::UINT, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags,  DINT* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_DINT, flags, pointer, unit, access, comment);
+	add(name, TYPE::DINT, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags, UDINT* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_UDINT, flags, pointer, unit, access, comment);
+	add(name, TYPE::UDINT, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags,  REAL* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_REAL, flags, pointer, unit, access, comment);
+	add(name, TYPE::REAL, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags, LREAL* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_LREAL, flags, pointer, unit, access, comment);
+	add(name, TYPE::LREAL, flags, pointer, unit, access, comment);
 }
 
 void rVariableList::add(const std::string& name, rVariable::Flags flags, STRID* pointer, STRID unit, UDINT access, const std::string& comment)
 {
-	add(name, TYPE_STRID, flags, pointer, unit, access, comment);
+	add(name, TYPE::STRID, flags, pointer, unit, access, comment);
 }
 
 //
@@ -164,7 +164,7 @@ std::string rVariableList::getMarkDown() const
 		rTextManager::instance().get(item->getUnit(), strunit);
 
 		result += name + (item->isMutable() ? "[^mutable]" : "") + " | ";
-		result += NAME_TYPE[item->getType()] + " | ";
+		result += getTypeName(item->getType()) + " | ";
 		result += strunit + " | " + String_format("%u", static_cast<UDINT>(item->getUnit())) + " | ";
 		result += std::string(item->isReadonly() ? "Yes" : "") + " | ";
 		result += (item->getAccess() ? String_format("0x%08x", item->getAccess()) : std::string(" ")) + " | ";

@@ -16,7 +16,7 @@
 #include "datetime.h"
 #include "container.h"
 
-#define EVENT_ADDDATA(x, y)       {if(m_size + EPT_SIZE[x] + 1 >= DATA_SIZE) return 1; m_data[m_size++] = x; *(y *)(m_data + m_size) = val; m_size += EPT_SIZE[x]; return 0; }
+#define EVENT_ADDDATA(x, y)       {if(m_size + getTypeSize(x) + 1 >= DATA_SIZE) return 1; m_data[m_size++] = static_cast<unsigned char>(x); *(y *)(m_data + m_size) = val; m_size += getTypeSize(x); return 0; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -55,20 +55,20 @@ struct rEvent
 	UDINT   getMagic()  const { return  m_magic; }
 	const rDateTime& getTime() const { return  m_timestamp; }
 	
-	void* getParamByID(UDINT ID, UDINT &type) const;
+	void* getParamByID(UDINT ID, TYPE& type) const;
 	std::string toString() const;
 	const void* getRaw() const { return &m_magic; }
 
 	// Функции для добавления параметров события, в случае переполнения буффера возвращают 1, в случае успеха - 0
-	UDINT addSINT (SINT  val) { EVENT_ADDDATA(TYPE_SINT ,  SINT); }
-	UDINT addUSINT(USINT val) { EVENT_ADDDATA(TYPE_USINT, USINT); }
-	UDINT addINT  (INT   val) { EVENT_ADDDATA(TYPE_INT  ,   INT); }
-	UDINT addUINT (UINT  val) { EVENT_ADDDATA(TYPE_UINT ,  UINT); }
-	UDINT addDINT (DINT  val) { EVENT_ADDDATA(TYPE_DINT ,  DINT); }
-	UDINT addUDINT(UDINT val) { EVENT_ADDDATA(TYPE_UDINT, UDINT); }
-	UDINT addREAL (REAL  val) { EVENT_ADDDATA(TYPE_REAL ,  REAL); }
-	UDINT addLREAL(LREAL val) { EVENT_ADDDATA(TYPE_LREAL, LREAL); }
-	UDINT addSTR  (STRID val) { EVENT_ADDDATA(TYPE_STRID, UDINT); }
+	UDINT addSINT (SINT  val) { EVENT_ADDDATA(TYPE::SINT ,  SINT); }
+	UDINT addUSINT(USINT val) { EVENT_ADDDATA(TYPE::USINT, USINT); }
+	UDINT addINT  (INT   val) { EVENT_ADDDATA(TYPE::INT  ,   INT); }
+	UDINT addUINT (UINT  val) { EVENT_ADDDATA(TYPE::UINT ,  UINT); }
+	UDINT addDINT (DINT  val) { EVENT_ADDDATA(TYPE::DINT ,  DINT); }
+	UDINT addUDINT(UDINT val) { EVENT_ADDDATA(TYPE::UDINT, UDINT); }
+	UDINT addREAL (REAL  val) { EVENT_ADDDATA(TYPE::REAL ,  REAL); }
+	UDINT addLREAL(LREAL val) { EVENT_ADDDATA(TYPE::LREAL, LREAL); }
+	UDINT addSTR  (STRID val) { EVENT_ADDDATA(TYPE::STRID, UDINT); }
 
 	rEvent& operator << (const SINT  &val) { addSINT (val); return *this; }
 	rEvent& operator << (const USINT &val) { addUSINT(val); return *this; }

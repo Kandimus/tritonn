@@ -200,26 +200,26 @@ UDINT rStation::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Внутренние переменные
-	list.add(m_alias + ".Product"       , TYPE_USINT, rVariable::Flags::RS__, &m_product               , U_DIMLESS         , ACCESS_SA, "Тип продукта:<br/>" + m_flagsProduct.getInfo(true));
+	list.add(m_alias + ".Product"       , TYPE::USINT, rVariable::Flags::RS__, &m_product               , U_DIMLESS         , ACCESS_SA, "Тип продукта:<br/>" + m_flagsProduct.getInfo(true));
 //	list.add(m_alias + ".Setup"         , TYPE_UINT , rVariable::Flags::RS_, &m_setup.Value           , U_DIMLESS         , ACCESS_SA, );
-	list.add(prefix + "present.volume"  , TYPE_LREAL, rVariable::Flags::R___, &m_total.m_present.Volume  , m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
-	list.add(prefix + "present.volume15", TYPE_LREAL, rVariable::Flags::R___, &m_total.m_present.Volume15, m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
-	list.add(prefix + "present.volume20", TYPE_LREAL, rVariable::Flags::R___, &m_total.m_present.Volume20, m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
-	list.add(prefix + "present.mass"    , TYPE_LREAL, rVariable::Flags::R___, &m_total.m_present.Mass    , m_unit.getMass()  , 0        , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
-	list.add(prefix + "inc.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_inc.Volume      , m_unit.getVolume(), ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::VOLUME);
-	list.add(prefix + "inc.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_inc.Volume15    , m_unit.getVolume(), ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
-	list.add(prefix + "inc.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_inc.Volume20    , m_unit.getVolume(), ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
-	list.add(prefix + "inc.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_inc.Mass        , m_unit.getMass()  , ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::MASS);
-	list.add(prefix + "raw.volume"      , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_raw.Volume      , m_unit.getVolume(), 0        , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
-	list.add(prefix + "raw.volume15"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_raw.Volume15    , m_unit.getVolume(), 0        , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
-	list.add(prefix + "raw.volume20"    , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_raw.Volume20    , m_unit.getVolume(), 0        , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
-	list.add(prefix + "raw.mass"        , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_raw.Mass        , m_unit.getMass()  , 0        , COMMENT::TOTAL_RAW     + COMMENT::MASS);
-	list.add(prefix + "past.volume"     , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_past.Volume     , m_unit.getVolume(), 0        , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
-	list.add(prefix + "past.volume15"   , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_past.Volume15   , m_unit.getVolume(), 0        , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
-	list.add(prefix + "past.volume20"   , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_past.Volume20   , m_unit.getVolume(), 0        , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
-	list.add(prefix + "past.mass"       , TYPE_LREAL, rVariable::Flags::RSH_, &m_total.m_past.Mass       , m_unit.getMass()  , 0        , COMMENT::TOTAL_PAST    + COMMENT::MASS);
+	list.add(prefix + "present.volume"  ,              rVariable::Flags::R___, &m_total.m_present.Volume  , m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
+	list.add(prefix + "present.volume15",              rVariable::Flags::R___, &m_total.m_present.Volume15, m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
+	list.add(prefix + "present.volume20",              rVariable::Flags::R___, &m_total.m_present.Volume20, m_unit.getVolume(), 0        , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
+	list.add(prefix + "present.mass"    ,              rVariable::Flags::R___, &m_total.m_present.Mass    , m_unit.getMass()  , 0        , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
+	list.add(prefix + "inc.volume"      ,              rVariable::Flags::RSH_, &m_total.m_inc.Volume      , m_unit.getVolume(), ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::VOLUME);
+	list.add(prefix + "inc.volume15"    ,              rVariable::Flags::RSH_, &m_total.m_inc.Volume15    , m_unit.getVolume(), ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
+	list.add(prefix + "inc.volume20"    ,              rVariable::Flags::RSH_, &m_total.m_inc.Volume20    , m_unit.getVolume(), ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
+	list.add(prefix + "inc.mass"        ,              rVariable::Flags::RSH_, &m_total.m_inc.Mass        , m_unit.getMass()  , ACCESS_SA, COMMENT::TOTAL_INC     + COMMENT::MASS);
+	list.add(prefix + "raw.volume"      ,              rVariable::Flags::RSH_, &m_total.m_raw.Volume      , m_unit.getVolume(), 0        , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
+	list.add(prefix + "raw.volume15"    ,              rVariable::Flags::RSH_, &m_total.m_raw.Volume15    , m_unit.getVolume(), 0        , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
+	list.add(prefix + "raw.volume20"    ,              rVariable::Flags::RSH_, &m_total.m_raw.Volume20    , m_unit.getVolume(), 0        , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
+	list.add(prefix + "raw.mass"        ,              rVariable::Flags::RSH_, &m_total.m_raw.Mass        , m_unit.getMass()  , 0        , COMMENT::TOTAL_RAW     + COMMENT::MASS);
+	list.add(prefix + "past.volume"     ,              rVariable::Flags::RSH_, &m_total.m_past.Volume     , m_unit.getVolume(), 0        , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
+	list.add(prefix + "past.volume15"   ,              rVariable::Flags::RSH_, &m_total.m_past.Volume15   , m_unit.getVolume(), 0        , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
+	list.add(prefix + "past.volume20"   ,              rVariable::Flags::RSH_, &m_total.m_past.Volume20   , m_unit.getVolume(), 0        , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
+	list.add(prefix + "past.mass"       ,              rVariable::Flags::RSH_, &m_total.m_past.Mass       , m_unit.getMass()  , 0        , COMMENT::TOTAL_PAST    + COMMENT::MASS);
 
-	list.add(m_alias + ".fault"         , TYPE_UDINT, rVariable::Flags::R___, &m_fault                 , U_DIMLESS         , 0        , COMMENT::FAULT);
+	list.add(m_alias + ".fault"         ,              rVariable::Flags::R___, &m_fault                 , U_DIMLESS         , 0        , COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

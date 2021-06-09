@@ -55,10 +55,10 @@ UDINT rIODIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE_UINT , rVariable::Flags::RS__, &m_setup , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "value"  ,             rVariable::Flags::R___, &m_value , U_DIMLESS, 0, COMMENT::VALUE);
-	list.add(p + "state"  ,             rVariable::Flags::R___, &m_state , U_DIMLESS, 0, COMMENT::STATUS + "Нет данных");
-	list.add(p + "bounce" ,             rVariable::Flags::___D, &m_bounce, U_msec   , 0, "Значение таймера антидребезга");
+	list.add(p + "setup"  , TYPE::UINT , rVariable::Flags::RS__, &m_setup , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "value"  ,              rVariable::Flags::R___, &m_value , U_DIMLESS, 0, COMMENT::VALUE);
+	list.add(p + "state"  ,              rVariable::Flags::R___, &m_state , U_DIMLESS, 0, COMMENT::STATUS + "Нет данных");
+	list.add(p + "bounce" ,              rVariable::Flags::___D, &m_bounce, U_msec   , 0, "Значение таймера антидребезга");
 
 	if (issimulate) {
 		list.add(p + "simulate.value", rVariable::Flags::____, &m_simValue, U_DIMLESS, 0, "Значение симулированного значения");

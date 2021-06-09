@@ -31,15 +31,15 @@
 								try { \
 									switch (var->getType()) \
 									{ \
-										case TYPE_USINT: *(USINT *)m_data = static_cast<USINT>(val); return; \
-										case TYPE_SINT : *(SINT  *)m_data = static_cast< SINT>(val); return; \
-										case TYPE_UINT : *(UINT  *)m_data = static_cast< UINT>(val); return; \
-										case TYPE_INT  : *(INT   *)m_data = static_cast<  INT>(val); return; \
-										case TYPE_UDINT: *(UDINT *)m_data = static_cast<UDINT>(val); return; \
-										case TYPE_DINT : *(DINT  *)m_data = static_cast< DINT>(val); return; \
-										case TYPE_REAL : *(REAL  *)m_data = static_cast< REAL>(val); return; \
-										case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>(val); return; \
-										case TYPE_STRID: *(STRID *)m_data = STRID(static_cast<UDINT>(val)); return; \
+										case TYPE::USINT: *(USINT *)m_data = static_cast<USINT>(val); return; \
+										case TYPE::SINT : *(SINT  *)m_data = static_cast< SINT>(val); return; \
+										case TYPE::UINT : *(UINT  *)m_data = static_cast< UINT>(val); return; \
+										case TYPE::INT  : *(INT   *)m_data = static_cast<  INT>(val); return; \
+										case TYPE::UDINT: *(UDINT *)m_data = static_cast<UDINT>(val); return; \
+										case TYPE::DINT : *(DINT  *)m_data = static_cast< DINT>(val); return; \
+										case TYPE::REAL : *(REAL  *)m_data = static_cast< REAL>(val); return; \
+										case TYPE::LREAL: *(LREAL *)m_data = static_cast<LREAL>(val); return; \
+										case TYPE::STRID: *(STRID *)m_data = STRID(static_cast<UDINT>(val)); return; \
 										default: m_status = Status::ERROR; clearData(); return; \
 									} \
 								} catch(...) { \
@@ -52,15 +52,15 @@
 								if ((m_status != Status::ASSIGNED && m_status != Status::WRITED) || nullptr == m_var) return x(0); \
 								try { \
 									switch (m_var->getType()) { \
-										case TYPE_USINT: return x(*(USINT *)m_data); \
-										case TYPE_SINT : return x(*(SINT  *)m_data); \
-										case TYPE_UINT : return x(*(UINT  *)m_data); \
-										case TYPE_INT  : return x(*(INT   *)m_data); \
-										case TYPE_UDINT: return x(*(UDINT *)m_data); \
-										case TYPE_DINT : return x(*(DINT  *)m_data); \
-										case TYPE_REAL : return static_cast<x>(*(REAL  *)m_data); \
-										case TYPE_LREAL: return static_cast<x>(*(LREAL *)m_data); \
-										case TYPE_STRID: return x(*(STRID *)m_data); \
+										case TYPE::USINT: return x(*(USINT *)m_data); \
+										case TYPE::SINT : return x(*(SINT  *)m_data); \
+										case TYPE::UINT : return x(*(UINT  *)m_data); \
+										case TYPE::INT  : return x(*(INT   *)m_data); \
+										case TYPE::UDINT: return x(*(UDINT *)m_data); \
+										case TYPE::DINT : return x(*(DINT  *)m_data); \
+										case TYPE::REAL : return static_cast<x>(*(REAL  *)m_data); \
+										case TYPE::LREAL: return static_cast<x>(*(LREAL *)m_data); \
+										case TYPE::STRID: return x(*(STRID *)m_data); \
 										default: m_status = Status::ERROR; return static_cast<x>(0); \
 									} \
 								} catch(...) { \
@@ -111,15 +111,15 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, const string &val)
 					switch (m_var->getType())
 					{
 						//TODO наверно нужно сделать это через memcpy
-						case TYPE_USINT: *(USINT *)m_data = static_cast<USINT>( number); break;
-						case TYPE_SINT : *(SINT  *)m_data = static_cast< SINT>(*ptrnum); break;
-						case TYPE_UINT : *(UINT  *)m_data = static_cast< UINT>( number); break;
-						case TYPE_INT  : *(INT   *)m_data = static_cast<  INT>(*ptrnum); break;
-						case TYPE_UDINT: *(UDINT *)m_data =                     number ; break;
-						case TYPE_DINT : *(DINT  *)m_data =                    *ptrnum ; break;
-						case TYPE_REAL : *(REAL  *)m_data = static_cast< REAL>( number); break;
-						case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>( number); break;
-						case TYPE_STRID: *(STRID *)m_data = static_cast<STRID>( number); break;
+						case TYPE::USINT: *(USINT *)m_data = static_cast<USINT>( number); break;
+						case TYPE::SINT : *(SINT  *)m_data = static_cast< SINT>(*ptrnum); break;
+						case TYPE::UINT : *(UINT  *)m_data = static_cast< UINT>( number); break;
+						case TYPE::INT  : *(INT   *)m_data = static_cast<  INT>(*ptrnum); break;
+						case TYPE::UDINT: *(UDINT *)m_data =                     number ; break;
+						case TYPE::DINT : *(DINT  *)m_data =                    *ptrnum ; break;
+						case TYPE::REAL : *(REAL  *)m_data = static_cast< REAL>( number); break;
+						case TYPE::LREAL: *(LREAL *)m_data = static_cast<LREAL>( number); break;
+						case TYPE::STRID: *(STRID *)m_data = static_cast<STRID>( number); break;
 						default:
 							m_status = Status::ERROR;
 							clearData();
@@ -132,15 +132,15 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, const string &val)
 
 		switch (m_var->getType())
 		{
-			case TYPE_USINT: *(USINT *)m_data = static_cast<USINT>(std::stoul(val.c_str())); break;
-			case TYPE_SINT : *(SINT  *)m_data = static_cast< SINT>(std::stol (val.c_str())); break;
-			case TYPE_UINT : *(UINT  *)m_data = static_cast< UINT>(std::stoul(val.c_str())); break;
-			case TYPE_INT  : *(INT   *)m_data = static_cast<  INT>(std::stol (val.c_str())); break;
-			case TYPE_UDINT: *(UDINT *)m_data = static_cast<UDINT>(std::stoul(val.c_str())); break;
-			case TYPE_DINT : *(DINT  *)m_data = static_cast< DINT>(std::stol (val.c_str())); break;
-			case TYPE_REAL : *(REAL  *)m_data = static_cast< REAL>(std::stof (val.c_str())); break;
-			case TYPE_LREAL: *(LREAL *)m_data = static_cast<LREAL>(std::stod (val.c_str())); break;
-			case TYPE_STRID: *(STRID *)m_data = static_cast<STRID>(std::stoul(val.c_str())); break;
+			case TYPE::USINT: *(USINT *)m_data = static_cast<USINT>(std::stoul(val.c_str())); break;
+			case TYPE::SINT : *(SINT  *)m_data = static_cast< SINT>(std::stol (val.c_str())); break;
+			case TYPE::UINT : *(UINT  *)m_data = static_cast< UINT>(std::stoul(val.c_str())); break;
+			case TYPE::INT  : *(INT   *)m_data = static_cast<  INT>(std::stol (val.c_str())); break;
+			case TYPE::UDINT: *(UDINT *)m_data = static_cast<UDINT>(std::stoul(val.c_str())); break;
+			case TYPE::DINT : *(DINT  *)m_data = static_cast< DINT>(std::stol (val.c_str())); break;
+			case TYPE::REAL : *(REAL  *)m_data = static_cast< REAL>(std::stof (val.c_str())); break;
+			case TYPE::LREAL: *(LREAL *)m_data = static_cast<LREAL>(std::stod (val.c_str())); break;
+			case TYPE::STRID: *(STRID *)m_data = static_cast<STRID>(std::stoul(val.c_str())); break;
 			default:
 				m_status = Status::ERROR;
 				clearData();
@@ -164,7 +164,7 @@ rSnapshotItem::rSnapshotItem(const rVariable* var, void *buf)
 	m_var    = var;
 	m_status = Status::TOWRITE;
 
-	memcpy(m_data, buf, EPT_SIZE[m_var->getType()]);
+	memcpy(m_data, buf, getTypeSize(m_var->getType()));
 }
 
 
@@ -242,7 +242,7 @@ void rSnapshotItem::clearData()
 
 UDINT rSnapshotItem::getSizeVar() const
 {
-	return (m_var) ? EPT_SIZE[m_var->getType()] : 0;
+	return (m_var) ? getTypeSize(m_var->getType()) : 0;
 }
 
 

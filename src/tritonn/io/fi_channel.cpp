@@ -138,7 +138,7 @@ UDINT rIOFIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"   , TYPE_UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "setup"   , TYPE::UINT, rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(p + "count"   ,             rVariable::Flags::R___, &m_value  , U_DIMLESS , 0, "Количество накопленных импульсов");
 	list.add(p + "frequecy",             rVariable::Flags::R___, &m_freq   , U_Hz      , 0, "Частота");
 	list.add(p + "state"   ,             rVariable::Flags::R___, &m_state  , U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");

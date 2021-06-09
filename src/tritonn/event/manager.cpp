@@ -246,7 +246,7 @@ std::string rEventManager::parseParameter(const rEvent& event, const char* str, 
 	UDINT   number = 0;
 	UDINT   prec   = 0xFFFFFFFF;
 	UDINT   exp    = 0;
-	UDINT   type   = 0;
+	TYPE    type   = TYPE::UNDEF;
 	void   *data   = nullptr;
 
 	offset += parseNumber(str, number, prec, exp);
@@ -258,16 +258,16 @@ std::string rEventManager::parseParameter(const rEvent& event, const char* str, 
 	}
 
 	// Если точность не была указана, то ищем предшествующие единицы измерений
-	if (prec == 0xFFFFFFFF && (type == TYPE_LREAL || type == TYPE_REAL)) {
+	if (prec == 0xFFFFFFFF && (type == TYPE::LREAL || type == TYPE::REAL)) {
 		prec = rPrecision::DEFAUILT;
 
 		// Получаем значение точности из предыдущей ед.измерения
 		for (DINT jj = number - 2; jj >= 0; --jj) {
-			UDINT  sidtype = 0;
+			TYPE   sidtype = TYPE::UNDEF;
 			UDINT* sid     = (UDINT *)event.getParamByID(jj, sidtype);
 
 			// Нашли ед.измерения
-			if (sidtype == TYPE_STRID && *sid < MAX_UNITS_COUNT) {
+			if (sidtype == TYPE::STRID && *sid < MAX_UNITS_COUNT) {
 				prec = rPrecision::instance().get(*sid);
 				break;
 			}
@@ -277,19 +277,19 @@ std::string rEventManager::parseParameter(const rEvent& event, const char* str, 
 	// форматируем результат
 	switch(type)
 	{
-		case TYPE_UNDEF:
+		case TYPE::UNDEF:
 			TRACEP(LOG::EVENTMGR, "Event eid %i, param %i: undefine type", event.getEID(), number);
 			return "<undefine type>";
 
-		case TYPE_SINT : return String_format("%hhi", *( SINT *)data);
-		case TYPE_USINT: return String_format("%hhu", *(USINT *)data);
-		case TYPE_INT  : return String_format("%hi" , *(  INT *)data);
-		case TYPE_UINT : return String_format("%hu" , *( UINT *)data);
-		case TYPE_DINT : return String_format("%i"  , *( DINT *)data);
-		case TYPE_UDINT: return String_format("%u"  , *(UDINT *)data);
-		case TYPE_REAL : return String_format(floatformat[exp].c_str(), prec, *( REAL *)data);
-		case TYPE_LREAL: return String_format(floatformat[exp].c_str(), prec, *(LREAL *)data);
-		case TYPE_STRID:
+		case TYPE::SINT : return String_format("%hhi", *( SINT *)data);
+		case TYPE::USINT: return String_format("%hhu", *(USINT *)data);
+		case TYPE::INT  : return String_format("%hi" , *(  INT *)data);
+		case TYPE::UINT : return String_format("%hu" , *( UINT *)data);
+		case TYPE::DINT : return String_format("%i"  , *( DINT *)data);
+		case TYPE::UDINT: return String_format("%u"  , *(UDINT *)data);
+		case TYPE::REAL : return String_format(floatformat[exp].c_str(), prec, *( REAL *)data);
+		case TYPE::LREAL: return String_format(floatformat[exp].c_str(), prec, *(LREAL *)data);
+		case TYPE::STRID:
 		{
 			const std::string* str = rTextManager::instance().getPtr(*(UDINT *)data);
 			return (str == nullptr) ? String_format("<unknow sid %u>", *(UDINT *)data) : *str;
@@ -449,7 +449,7 @@ void rEventManager::save(const rEvent& event)
 
 UDINT rEventManager::startServer()
 {
-	return rTCPClass::StartServer("0.0.0.0", LanPort::PORT_EVENT);
+	return rTCPClass::startServer("0.0.0.0", LanPort::PORT_EVENT);
 }
 
 void rEventManager::setStorage(UDINT days)

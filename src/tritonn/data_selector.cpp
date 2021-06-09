@@ -236,18 +236,18 @@ UDINT rSelector::generateVars(rVariableList& list)
 
 	// Мультиселектор
 	if (m_setup.Value & Setup::MULTI) {
-		list.add(m_alias + ".selectorcount", TYPE_UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0, "Количество групп");
+		list.add(m_alias + ".selectorcount", TYPE::UINT, rVariable::Flags::R___, &CountGroups , U_DIMLESS, 0, "Количество групп");
 
 		for (UDINT grp = 0; grp < CountGroups; ++grp) {
 			alias_unit   = String_format("%s.%s.keypad.unit" , m_alias.c_str(), NameInput[grp].c_str());
 			alias_keypad = String_format("%s.%s.keypad.value", m_alias.c_str(), NameInput[grp].c_str());
 
-			list.add(alias_unit  , TYPE_UDINT, rVariable::Flags::R___,  KpUnit[grp].getPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
-			list.add(alias_keypad, TYPE_LREAL, rVariable::Flags::___D, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
+			list.add(alias_unit  , TYPE::STRID, rVariable::Flags::R___,  KpUnit[grp].getPtr(), U_DIMLESS  , 0            , String_format("Группа %u. ", grp) + COMMENT::KEYPAD + ". Единицы измерения");
+			list.add(alias_keypad, TYPE::LREAL, rVariable::Flags::___D, &Keypad[grp]         , KpUnit[grp], ACCESS_KEYPAD, String_format("Группа %u. ", grp) + COMMENT::KEYPAD);
 		}
 	} else {
-		list.add(m_alias + ".keypad.unit" , TYPE_UDINT, rVariable::Flags::R___,  KpUnit[0].getPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
-		list.add(m_alias + ".Keypad.value", TYPE_LREAL, rVariable::Flags::___D, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
+		list.add(m_alias + ".keypad.unit" , TYPE::STRID, rVariable::Flags::R___,  KpUnit[0].getPtr(), U_DIMLESS, 0            , COMMENT::KEYPAD + ". Единицы измерения");
+		list.add(m_alias + ".Keypad.value", TYPE::LREAL, rVariable::Flags::___D, &Keypad[0]         , KpUnit[0], ACCESS_KEYPAD, COMMENT::KEYPAD);
 	}
 
 	return TRITONN_RESULT_OK;
