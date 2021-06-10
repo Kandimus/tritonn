@@ -26,8 +26,9 @@ class rModbusTCPSlaveClient;
 
 struct rModbusLink
 {
-	rSnapshotItem* m_item;
-	UINT           Address;
+	rSnapshotItem* m_item    = nullptr;
+	UINT           m_address = 0;
+	TYPE           m_convert = TYPE::UNDEF;
 };
 
 

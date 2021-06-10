@@ -71,6 +71,7 @@ const char CAN2[]          = "can_b";
 const char CHANNEL[]       = "channel";
 const char CLOSE[]         = "close";
 const char CLOSED[]        = "closed";
+const char CONVERT[]       = "convert";
 const char COMMS[]         = "comms";
 const char CONFIG[]        = "config";
 const char COUNT[]         = "count";

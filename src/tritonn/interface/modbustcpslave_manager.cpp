@@ -48,6 +48,8 @@ rModbusTCPSlaveManager::rModbusTCPSlaveManager()
 
 rModbusTCPSlaveManager::~rModbusTCPSlaveManager()
 {
+	clearTempList();
+
 	if (Modbus) {
 		delete[] Modbus;
 		Modbus = nullptr;
@@ -73,18 +75,78 @@ rThreadStatus rModbusTCPSlaveManager::Proccesing()
 		{
 			rLocker lock(Mutex); lock.Nop();
 
-			// TODO Нужно разобрать Snapshot и выложить его в Modbus
-			for(UDINT ii = 0; ii < ModbusLink.size(); ++ii)
-			{
-				rModbusLink *link = &ModbusLink[ii];
+			for(auto& link : ModbusLink) {
 
-				if(!link->m_item->isAssigned()) {
+				if(!link.m_item->isAssigned()) {
 					continue;
 				}
 
-				Modbus[link->Address] = 0;
-				link->m_item->getBuffer(&Modbus[link->Address]);
-				SwapBuffer(&Modbus[link->Address], link->m_item->getSizeVar());
+				TYPE type = link.m_item->getVariable()->getType();
+
+				Modbus[link.m_address] = 0;
+
+				if (link.m_convert == TYPE::UNDEF) {
+					link.m_item->getBuffer(&Modbus[link.m_address]);
+
+				} else {
+					switch(link.m_convert) {
+						case TYPE::USINT: {
+							auto val = link.m_item->getValueUSINT();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::SINT: {
+							auto val = link.m_item->getValueSINT();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::UINT: {
+							auto val = link.m_item->getValueUINT();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::INT: {
+							auto val = link.m_item->getValueINT();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::STRID:
+						case TYPE::UDINT: {
+							auto val = link.m_item->getValueUDINT();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::DINT: {
+							auto val = link.m_item->getValueDINT();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::REAL: {
+							auto val = link.m_item->getValueREAL();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						case TYPE::LREAL: {
+							auto val = link.m_item->getValueLREAL();
+							memcpy(&Modbus[link.m_address], &val, sizeof(val));
+							break;
+						}
+
+						default:
+							break;
+					}
+
+					type = link.m_convert;
+				}
+
+				SwapBuffer(&Modbus[link.m_address], getTypeSize(type));
 			}
 
 			rVariableClass::processing();
@@ -104,15 +166,13 @@ rClientTCP *rModbusTCPSlaveManager::NewClient(SOCKET socket, sockaddr_in *addr)
 
 UDINT rModbusTCPSlaveManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 {
-	rModbusTCPSlaveClient *mbclient = (rModbusTCPSlaveClient *)client;
-	USINT       *data    = mbclient->Recv(buff, size);
-	UDINT        result  = 0;
+	auto   mbclient = dynamic_cast<rModbusTCPSlaveClient*>(client);
+	USINT* data    = mbclient->Recv(buff, size);
+	UDINT  result  = 0;
 
-	while(data == MODBUSTCP_RECV_SUCCESS)
-	{
+	while (data == MODBUSTCP_RECV_SUCCESS) {
 		// Проверка на корректный UnitID
-		if(mbclient->Buff[0] == SlaveID || SlaveID == 0)
-		{
+		if (mbclient->Buff[0] == SlaveID || SlaveID == 0) {
 			// Разбираем команду
 			switch(mbclient->Buff[1])
 			{
@@ -324,7 +384,9 @@ void rModbusTCPSlaveManager::SwapBuffer(void *value, UDINT size)
 rSnapshotItem *rModbusTCPSlaveManager::FindSnapshotItem(UINT addr)
 {
 	for(auto& item : ModbusLink) {
-		if(item.Address == addr) return item.m_item;
+		if (item.m_address == addr) {
+			return item.m_item;
+		}
 	}
 
 	return nullptr;
@@ -392,9 +454,10 @@ UDINT rModbusTCPSlaveManager::checkVars(rError& err)
 				address = tlink->Address;
 			}
 
-			link.Address = address;
-			link.m_item  = m_snapshot.last();
-			type         = link.m_item->getVariable()->getType();
+			link.m_address = address;
+			link.m_item    = m_snapshot.last();
+			link.m_convert = tlink->m_type;
+			type           = link.m_item->getVariable()->getType();
 
 			ModbusLink.push_back(link);
 
@@ -447,11 +510,11 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 
 		m_snapshot.add(alias);
 
-		link.Address = XmlUtils::getAttributeUDINT(xml_item, XmlName::ADDR, 0xFFFF); //TODO заменить на константу
-		link.m_item  = m_snapshot.last();
+		link.m_address = XmlUtils::getAttributeUDINT(xml_item, XmlName::ADDR, 0xFFFF); //TODO заменить на константу
+		link.m_item    = m_snapshot.last();
 
-		if (link.Address > 100) {
-			return err.set(DATACFGERR_INTERFACES_NF_STD_VAR, xml_item->GetLineNum(), String_format("incorrect address %u", link.Address));
+		if (link.m_address > 100) {
+			return err.set(DATACFGERR_INTERFACES_NF_STD_VAR, xml_item->GetLineNum(), String_format("incorrect address %u", link.m_address));
 		}
 
 		if (!link.m_item->getVariable()) {
@@ -554,6 +617,17 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 				if (fault) {
 					clearTempList();
 					return err.set(DATACFGERR_INTERFACES_BAD_VAR, xml_var->GetLineNum(), "");
+				}
+
+				std::string convert_type = XmlUtils::getAttributeString(xml_var, XmlName::CONVERT, "", XmlUtils::Flags::TOLOWER);
+
+				if (convert_type.size()) {
+					tlink->m_type = getTypeByName(convert_type);
+
+					if (tlink->m_type == TYPE::UNDEF) {
+						clearTempList();
+						return err.set(DATACFGERR_INTERFACES_BAD_COVERT, xml_var->GetLineNum(), "incorrect convert type '" + convert_type + "'");
+					}
 				}
 
 			} else if (name == XmlName::WHITESPACE) {
