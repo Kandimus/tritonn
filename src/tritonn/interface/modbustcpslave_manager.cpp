@@ -557,12 +557,13 @@ UDINT rModbusTCPSlaveManager::loadFromXML(tinyxml2::XMLElement* xml_root, rError
 				}
 
 			} else if (name == XmlName::WHITESPACE) {
+				std::string strtype = XmlUtils::getAttributeString(xml_var, XmlName::NATIVE, "", XmlUtils::Flags::TOLOWER);
 				tlink->VarName = "";
-				tlink->m_type  = getTypeByName(XmlUtils::getAttributeString(xml_var, XmlName::NATIVE, "", XmlUtils::Flags::TOLOWER));
+				tlink->m_type  = getTypeByName(strtype);
 
 				if (tlink->m_type == TYPE::UNDEF) {
 					clearTempList();
-					return err.set(DATACFGERR_INTERFACES_BAD_WS, xml_var->GetLineNum(), "incorrect native type");
+					return err.set(DATACFGERR_INTERFACES_BAD_WS, xml_var->GetLineNum(), "incorrect native type '" + strtype + "'");
 				}
 			} else {
 				clearTempList();
