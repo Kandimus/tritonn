@@ -129,6 +129,15 @@ std::string String_tolower(const std::string &str)
 	return result;
 }
 
+std::string String_toupper(const std::string &str)
+{
+	std::string result = str;
+
+	std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c){ return std::toupper(c); } );
+
+	return result;
+}
+
 
 //
 bool String_equali(const std::string &str1, const std::string &str2)

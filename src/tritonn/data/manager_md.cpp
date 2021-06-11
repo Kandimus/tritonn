@@ -44,6 +44,7 @@
 #include "../interface/modbustcpslave_manager.h"
 #include "../interface/opcua_manager.h"
 #include "../users.h"
+#include "stringex.h"
 
 
 UDINT rDataManager::saveMarkDown()
@@ -124,6 +125,7 @@ UDINT rDataManager::saveMarkDown()
 	prpt.m_type = rReport::Type::PERIODIC;
 	brpt.m_type = rReport::Type::BATCH;
 
+	generateTypes(md);
 	generateMarkDown(md);
 	prpt.generateMarkDown(md);
 	brpt.generateMarkDown(md);
@@ -183,4 +185,23 @@ void rDataManager::generateMarkDown(rGeneratorMD& md)
 
 	md.add("config").addRemark(text);
 
+}
+
+void rDataManager::generateTypes(rGeneratorMD& md)
+{
+	std::string text = "";
+
+	text += "Тип | Описание\n";
+	text += ":---: | :---\n";
+	text += String_format("%s | Беззнаковый целый тип размером 8 бит |\n"  , String_toupper(getTypeName(TYPE::USINT)).c_str());
+	text += String_format("%s | Знаковый целый тип размером 8 бит |\n"     , String_toupper(getTypeName(TYPE::SINT )).c_str());
+	text += String_format("%s | Беззнаковый целый тип размером 16 бит |\n" , String_toupper(getTypeName(TYPE::UINT )).c_str());
+	text += String_format("%s | Знаковый целый тип размером 16 бит |\n"    , String_toupper(getTypeName(TYPE::INT  )).c_str());
+	text += String_format("%s | Беззнаковый целый тип размером 32 бита |\n", String_toupper(getTypeName(TYPE::UDINT)).c_str());
+	text += String_format("%s | Знаковый целый тип размером 32 бита |\n"   , String_toupper(getTypeName(TYPE::DINT )).c_str());
+	text += String_format("%s | Вещественный тип размером 32 бита |\n"     , String_toupper(getTypeName(TYPE::REAL )).c_str());
+	text += String_format("%s | Вещественный тип размером 64 бита |\n"     , String_toupper(getTypeName(TYPE::LREAL)).c_str());
+	text += String_format("%s | Индекс строки размером 32 бита |\n"        , String_toupper(getTypeName(TYPE::STRID)).c_str());
+
+	md.add("types").addRemark(text);
 }

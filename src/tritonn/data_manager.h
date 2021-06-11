@@ -58,7 +58,6 @@ public:
 	// Конфигурация
 	UDINT LoadConfig();
 	UDINT saveMarkDown();
-	void  generateMarkDown(rGeneratorMD& md);
 	const rConfigInfo *GetConfName() const;
 
 	// Работа с языками
@@ -90,6 +89,9 @@ protected:
 	UDINT checkDataTotals();
 	void  loadDataVariables();
 	void  loadDataTotals();
+
+	void  generateMarkDown(rGeneratorMD& md);
+	void  generateTypes(rGeneratorMD& md);
 
 private:
 	rSafityValue<Live>  m_live;     // Текущий статус жизни процесса

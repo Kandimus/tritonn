@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # report
-> 0.19.113.c1cf3620
+> 0.19.118.da2b0fb8
 ## XML
 ````xml
 <report name="valid object name" description="string index" type="text value" >
@@ -18,90 +18,90 @@
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
-type | UINT |  | 512 | Yes |   | Тип отчета:<br/>0: Переодический отчет<br/>1: Партионный отчет<br/>
-archive.load.accept | USINT |  | 512 |  | 0x00000002 | Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет
-archive.load.sec | USINT |  | 512 |  | 0x00000002 | Секунды
-archive.load.min | USINT |  | 512 |  | 0x00000002 | Минуты
-archive.load.hour | USINT |  | 512 |  | 0x00000002 | Часы
-archive.load.day | USINT |  | 512 |  | 0x00000002 | День
-archive.load.month | USINT |  | 512 |  | 0x00000002 | Месяц
-archive.load.year | UINT |  | 512 |  | 0x00000002 | Год
-period | UINT |  | 512 |  |   | Период отчета:<br/>0: Часовой отчет<br/>1: Двухчасовой отчет<br/>2: Трехчасовой отчет<br/>3: Четырехчасовой отчет<br/>4: Шестичасовой отчет<br/>5: Восьмичасовой отчет<br/>6: Двенадцатичасовой отчет<br/>7: Суточный отчет<br/>8: Недельный отчет<br/>9: Двухнедельный отчет<br/>10: Месячный отчет<br/>11: Квартальный отчет<br/>12: Годовой отчет<br/>13: Пятиминутный отчет (только для тестирования)<br/>14: Пятнадцатиминутный отчет (только для тестирования)<br/>
-present.status | UINT |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Статус неопределен<br/>1: Недействительный<br/>2: Неполный<br/>3: Действительный<br/>4: В работе<br/>
-present.datetime.begin.sec | USINT |  | 512 | Yes | 0x80000000 | Секунды
-present.datetime.begin.min | USINT |  | 512 | Yes | 0x80000000 | Минуты
-present.datetime.begin.hour | USINT |  | 512 | Yes | 0x80000000 | Часы
-present.datetime.begin.day | USINT |  | 512 | Yes | 0x80000000 | День
-present.datetime.begin.month | USINT |  | 512 | Yes | 0x80000000 | Месяц
-present.datetime.begin.year | UINT |  | 512 | Yes | 0x80000000 | Год
-present.datetime.end.sec | USINT |  | 512 | Yes | 0x80000000 | Секунды
-present.datetime.end.min | USINT |  | 512 | Yes | 0x80000000 | Минуты
-present.datetime.end.hour | USINT |  | 512 | Yes | 0x80000000 | Часы
-present.datetime.end.day | USINT |  | 512 | Yes | 0x80000000 | День
-present.datetime.end.month | USINT |  | 512 | Yes | 0x80000000 | Месяц
-present.datetime.end.year | UINT |  | 512 | Yes | 0x80000000 | Год
-present.#report_total_1.total.begin.mass | LREAL |  | 0 | Yes | 0x80000000 | Начало. Масса
-present.#report_total_1.total.begin.volume | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем
-present.#report_total_1.total.begin.volume15 | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем при 15 гр.С
-present.#report_total_1.total.begin.volume20 | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем при 20 гр.С
-present.#report_total_1.total.end.mass | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Масса
-present.#report_total_1.total.end.volume | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем
-present.#report_total_1.total.end.volume15 | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем при 15 гр.С
-present.#report_total_1.total.end.volume20 | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем при 20 гр.С
-present.#report_total_1.#report_avr_item_1 | LREAL |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
-present.#report_total_1.#report_avr_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
-present.snapshot.#report_item_1 | LREAL |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
-present.snapshot.#report_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
-completed.status | UINT |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Статус неопределен<br/>1: Недействительный<br/>2: Неполный<br/>3: Действительный<br/>4: В работе<br/>
-completed.datetime.begin.sec | USINT |  | 512 | Yes | 0x80000000 | Секунды
-completed.datetime.begin.min | USINT |  | 512 | Yes | 0x80000000 | Минуты
-completed.datetime.begin.hour | USINT |  | 512 | Yes | 0x80000000 | Часы
-completed.datetime.begin.day | USINT |  | 512 | Yes | 0x80000000 | День
-completed.datetime.begin.month | USINT |  | 512 | Yes | 0x80000000 | Месяц
-completed.datetime.begin.year | UINT |  | 512 | Yes | 0x80000000 | Год
-completed.datetime.end.sec | USINT |  | 512 | Yes | 0x80000000 | Секунды
-completed.datetime.end.min | USINT |  | 512 | Yes | 0x80000000 | Минуты
-completed.datetime.end.hour | USINT |  | 512 | Yes | 0x80000000 | Часы
-completed.datetime.end.day | USINT |  | 512 | Yes | 0x80000000 | День
-completed.datetime.end.month | USINT |  | 512 | Yes | 0x80000000 | Месяц
-completed.datetime.end.year | UINT |  | 512 | Yes | 0x80000000 | Год
-completed.#report_total_1.total.begin.mass | LREAL |  | 0 | Yes | 0x80000000 | Начало. Масса
-completed.#report_total_1.total.begin.volume | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем
-completed.#report_total_1.total.begin.volume15 | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем при 15 гр.С
-completed.#report_total_1.total.begin.volume20 | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем при 20 гр.С
-completed.#report_total_1.total.end.mass | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Масса
-completed.#report_total_1.total.end.volume | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем
-completed.#report_total_1.total.end.volume15 | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем при 15 гр.С
-completed.#report_total_1.total.end.volume20 | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем при 20 гр.С
-completed.#report_total_1.#report_avr_item_1 | LREAL |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
-completed.#report_total_1.#report_avr_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
-completed.snapshot.#report_item_1 | LREAL |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
-completed.snapshot.#report_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
-archive.status | UINT |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Статус неопределен<br/>1: Недействительный<br/>2: Неполный<br/>3: Действительный<br/>4: В работе<br/>
-archive.datetime.begin.sec | USINT |  | 512 | Yes | 0x80000000 | Секунды
-archive.datetime.begin.min | USINT |  | 512 | Yes | 0x80000000 | Минуты
-archive.datetime.begin.hour | USINT |  | 512 | Yes | 0x80000000 | Часы
-archive.datetime.begin.day | USINT |  | 512 | Yes | 0x80000000 | День
-archive.datetime.begin.month | USINT |  | 512 | Yes | 0x80000000 | Месяц
-archive.datetime.begin.year | UINT |  | 512 | Yes | 0x80000000 | Год
-archive.datetime.end.sec | USINT |  | 512 | Yes | 0x80000000 | Секунды
-archive.datetime.end.min | USINT |  | 512 | Yes | 0x80000000 | Минуты
-archive.datetime.end.hour | USINT |  | 512 | Yes | 0x80000000 | Часы
-archive.datetime.end.day | USINT |  | 512 | Yes | 0x80000000 | День
-archive.datetime.end.month | USINT |  | 512 | Yes | 0x80000000 | Месяц
-archive.datetime.end.year | UINT |  | 512 | Yes | 0x80000000 | Год
-archive.#report_total_1.total.begin.mass | LREAL |  | 0 | Yes | 0x80000000 | Начало. Масса
-archive.#report_total_1.total.begin.volume | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем
-archive.#report_total_1.total.begin.volume15 | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем при 15 гр.С
-archive.#report_total_1.total.begin.volume20 | LREAL |  | 0 | Yes | 0x80000000 | Начало. Объем при 20 гр.С
-archive.#report_total_1.total.end.mass | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Масса
-archive.#report_total_1.total.end.volume | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем
-archive.#report_total_1.total.end.volume15 | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем при 15 гр.С
-archive.#report_total_1.total.end.volume20 | LREAL |  | 0 | Yes | 0x80000000 | Окончание. Объем при 20 гр.С
-archive.#report_total_1.#report_avr_item_1 | LREAL |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
-archive.#report_total_1.#report_avr_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
-archive.snapshot.#report_item_1 | LREAL |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
-archive.snapshot.#report_item_2 | LREAL |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
+type | uint |  | 512 | Yes |   | Тип отчета:<br/>0: Переодический отчет<br/>1: Партионный отчет<br/>
+archive.load.accept | usint |  | 512 |  | 0x00000002 | Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет
+archive.load.sec | usint |  | 512 |  | 0x00000002 | Секунды
+archive.load.min | usint |  | 512 |  | 0x00000002 | Минуты
+archive.load.hour | usint |  | 512 |  | 0x00000002 | Часы
+archive.load.day | usint |  | 512 |  | 0x00000002 | День
+archive.load.month | usint |  | 512 |  | 0x00000002 | Месяц
+archive.load.year | uint |  | 512 |  | 0x00000002 | Год
+period | uint |  | 512 |  |   | Период отчета:<br/>0: Часовой отчет<br/>1: Двухчасовой отчет<br/>2: Трехчасовой отчет<br/>3: Четырехчасовой отчет<br/>4: Шестичасовой отчет<br/>5: Восьмичасовой отчет<br/>6: Двенадцатичасовой отчет<br/>7: Суточный отчет<br/>8: Недельный отчет<br/>9: Двухнедельный отчет<br/>10: Месячный отчет<br/>11: Квартальный отчет<br/>12: Годовой отчет<br/>13: Пятиминутный отчет (только для тестирования)<br/>14: Пятнадцатиминутный отчет (только для тестирования)<br/>
+present.status | uint |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Статус неопределен<br/>1: Недействительный<br/>2: Неполный<br/>3: Действительный<br/>4: В работе<br/>
+present.datetime.begin.sec | usint |  | 512 | Yes | 0x80000000 | Секунды
+present.datetime.begin.min | usint |  | 512 | Yes | 0x80000000 | Минуты
+present.datetime.begin.hour | usint |  | 512 | Yes | 0x80000000 | Часы
+present.datetime.begin.day | usint |  | 512 | Yes | 0x80000000 | День
+present.datetime.begin.month | usint |  | 512 | Yes | 0x80000000 | Месяц
+present.datetime.begin.year | uint |  | 512 | Yes | 0x80000000 | Год
+present.datetime.end.sec | usint |  | 512 | Yes | 0x80000000 | Секунды
+present.datetime.end.min | usint |  | 512 | Yes | 0x80000000 | Минуты
+present.datetime.end.hour | usint |  | 512 | Yes | 0x80000000 | Часы
+present.datetime.end.day | usint |  | 512 | Yes | 0x80000000 | День
+present.datetime.end.month | usint |  | 512 | Yes | 0x80000000 | Месяц
+present.datetime.end.year | uint |  | 512 | Yes | 0x80000000 | Год
+present.#report_total_1.total.begin.mass | lreal |  | 0 | Yes | 0x80000000 | Начало. Масса
+present.#report_total_1.total.begin.volume | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем
+present.#report_total_1.total.begin.volume15 | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем при 15 гр.С
+present.#report_total_1.total.begin.volume20 | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем при 20 гр.С
+present.#report_total_1.total.end.mass | lreal |  | 0 | Yes | 0x80000000 | Окончание. Масса
+present.#report_total_1.total.end.volume | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем
+present.#report_total_1.total.end.volume15 | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем при 15 гр.С
+present.#report_total_1.total.end.volume20 | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем при 20 гр.С
+present.#report_total_1.#report_avr_item_1 | lreal |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
+present.#report_total_1.#report_avr_item_2 | lreal |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
+present.snapshot.#report_item_1 | lreal |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
+present.snapshot.#report_item_2 | lreal |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
+completed.status | uint |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Статус неопределен<br/>1: Недействительный<br/>2: Неполный<br/>3: Действительный<br/>4: В работе<br/>
+completed.datetime.begin.sec | usint |  | 512 | Yes | 0x80000000 | Секунды
+completed.datetime.begin.min | usint |  | 512 | Yes | 0x80000000 | Минуты
+completed.datetime.begin.hour | usint |  | 512 | Yes | 0x80000000 | Часы
+completed.datetime.begin.day | usint |  | 512 | Yes | 0x80000000 | День
+completed.datetime.begin.month | usint |  | 512 | Yes | 0x80000000 | Месяц
+completed.datetime.begin.year | uint |  | 512 | Yes | 0x80000000 | Год
+completed.datetime.end.sec | usint |  | 512 | Yes | 0x80000000 | Секунды
+completed.datetime.end.min | usint |  | 512 | Yes | 0x80000000 | Минуты
+completed.datetime.end.hour | usint |  | 512 | Yes | 0x80000000 | Часы
+completed.datetime.end.day | usint |  | 512 | Yes | 0x80000000 | День
+completed.datetime.end.month | usint |  | 512 | Yes | 0x80000000 | Месяц
+completed.datetime.end.year | uint |  | 512 | Yes | 0x80000000 | Год
+completed.#report_total_1.total.begin.mass | lreal |  | 0 | Yes | 0x80000000 | Начало. Масса
+completed.#report_total_1.total.begin.volume | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем
+completed.#report_total_1.total.begin.volume15 | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем при 15 гр.С
+completed.#report_total_1.total.begin.volume20 | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем при 20 гр.С
+completed.#report_total_1.total.end.mass | lreal |  | 0 | Yes | 0x80000000 | Окончание. Масса
+completed.#report_total_1.total.end.volume | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем
+completed.#report_total_1.total.end.volume15 | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем при 15 гр.С
+completed.#report_total_1.total.end.volume20 | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем при 20 гр.С
+completed.#report_total_1.#report_avr_item_1 | lreal |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
+completed.#report_total_1.#report_avr_item_2 | lreal |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
+completed.snapshot.#report_item_1 | lreal |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
+completed.snapshot.#report_item_2 | lreal |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
+archive.status | uint |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Статус неопределен<br/>1: Недействительный<br/>2: Неполный<br/>3: Действительный<br/>4: В работе<br/>
+archive.datetime.begin.sec | usint |  | 512 | Yes | 0x80000000 | Секунды
+archive.datetime.begin.min | usint |  | 512 | Yes | 0x80000000 | Минуты
+archive.datetime.begin.hour | usint |  | 512 | Yes | 0x80000000 | Часы
+archive.datetime.begin.day | usint |  | 512 | Yes | 0x80000000 | День
+archive.datetime.begin.month | usint |  | 512 | Yes | 0x80000000 | Месяц
+archive.datetime.begin.year | uint |  | 512 | Yes | 0x80000000 | Год
+archive.datetime.end.sec | usint |  | 512 | Yes | 0x80000000 | Секунды
+archive.datetime.end.min | usint |  | 512 | Yes | 0x80000000 | Минуты
+archive.datetime.end.hour | usint |  | 512 | Yes | 0x80000000 | Часы
+archive.datetime.end.day | usint |  | 512 | Yes | 0x80000000 | День
+archive.datetime.end.month | usint |  | 512 | Yes | 0x80000000 | Месяц
+archive.datetime.end.year | uint |  | 512 | Yes | 0x80000000 | Год
+archive.#report_total_1.total.begin.mass | lreal |  | 0 | Yes | 0x80000000 | Начало. Масса
+archive.#report_total_1.total.begin.volume | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем
+archive.#report_total_1.total.begin.volume15 | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем при 15 гр.С
+archive.#report_total_1.total.begin.volume20 | lreal |  | 0 | Yes | 0x80000000 | Начало. Объем при 20 гр.С
+archive.#report_total_1.total.end.mass | lreal |  | 0 | Yes | 0x80000000 | Окончание. Масса
+archive.#report_total_1.total.end.volume | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем
+archive.#report_total_1.total.end.volume15 | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем при 15 гр.С
+archive.#report_total_1.total.end.volume20 | lreal |  | 0 | Yes | 0x80000000 | Окончание. Объем при 20 гр.С
+archive.#report_total_1.#report_avr_item_1 | lreal |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
+archive.#report_total_1.#report_avr_item_2 | lreal |  | 0 | Yes | 0x80000000 | Значение устредняемого параметра
+archive.snapshot.#report_item_1 | lreal |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
+archive.snapshot.#report_item_2 | lreal |  | 0 | Yes | 0x80000000 | Значение не устредняемого параметра
 
 
 
