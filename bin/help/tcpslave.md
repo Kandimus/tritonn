@@ -1,10 +1,14 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
-# modbustcpslave
-> 0.19.108.53954df2
+# tcpslave
+> 0.19.113.c1cf3620
 ## XML
 ````xml
-<modbustcpslave name="valid object name" id="0" port="502" count_error="3" security="0" maxclient="8" >
+<tcpslave name="valid object name" id="0" count_error="3" security="0" maxclient="8" >
+	<host> <!-- Optional -->
+		<ip>ip address xx.xx.xx.xx<ip/> <!-- Optional -->
+		<port>port <port/> <!-- Optional -->
+	</host>
 	<whitelist> <!-- Optional -->
 		<ip>ip address xx.xx.xx.xx<ip/>
 		...
@@ -16,25 +20,25 @@
 		<dword>0<dword/>
 	</swap>
 	<addressmap>
-		<addressblock begin="start address">datablock name</addressblock>
+		<addressblock begin="start address" lock="0">datablock name</addressblock>
 		...
-		<addressblock begin="start address">datablock name</addressblock>
+		<addressblock begin="start address" lock="0">datablock name</addressblock>
 	</addressmap>
-</modbustcpslave>
+</tcpslave>
 ````
 ## DataBlocks
 ````xml
 <datablocks>
 	<datablock name="datablock name">
 		<variable>variable alias</variable>
-		<variable>variable alias</variable>
+		<variable convert="datatype">variable alias</variable> <!-- convert is optional -->
 		...
 		<variable>variable alias</variable>
 	</datablock>
 	...
 	<datablock name="datablock name">
 		<variable>variable alias</variable>
-		<variable>variable alias</variable>
+		<variable convert="datatype">variable alias</variable> <!-- convert is optional -->
 		...
 		<variable>variable alias</variable>
 	</datablock>

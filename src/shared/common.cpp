@@ -77,19 +77,19 @@ LREAL Round(LREAL val,  USINT prec)
 
 
 
-string String_ConvertByType(USINT type, void *val)
+string String_ConvertByType(TYPE type, void *val)
 {
 	switch(type)
 	{
-		case TYPE_USINT: return String_format("%hhu", *(USINT *)val); break;
-		case TYPE_SINT : return String_format("%hhi", *(SINT  *)val); break;
-		case TYPE_UINT : return String_format("%hu" , *(UINT  *)val); break;
-		case TYPE_INT  : return String_format("%hi" , *(INT   *)val); break;
-		case TYPE_UDINT: return String_format("%u"  , *(UDINT *)val); break;
-		case TYPE_DINT : return String_format("%i"  , *(DINT  *)val); break;
-		case TYPE_REAL : return String_format("%#g" , *(REAL  *)val); break;
-		case TYPE_LREAL: return String_format("%#g" , *(LREAL *)val); break;
-		case TYPE_STRID: return String_format("%u"  , *(UDINT *)(STRID *)val); break;
+		case TYPE::USINT: return String_format("%hhu", *(USINT *)val); break;
+		case TYPE::SINT : return String_format("%hhi", *(SINT  *)val); break;
+		case TYPE::UINT : return String_format("%hu" , *(UINT  *)val); break;
+		case TYPE::INT  : return String_format("%hi" , *(INT   *)val); break;
+		case TYPE::UDINT: return String_format("%u"  , *(UDINT *)val); break;
+		case TYPE::DINT : return String_format("%i"  , *(DINT  *)val); break;
+		case TYPE::REAL : return String_format("%#g" , *(REAL  *)val); break;
+		case TYPE::LREAL: return String_format("%#g" , *(LREAL *)val); break;
+		case TYPE::STRID: return String_format("%u"  , *(UDINT *)(STRID *)val); break;
 		default: return "";
 	}
 }

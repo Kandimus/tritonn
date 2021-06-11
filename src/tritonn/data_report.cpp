@@ -45,12 +45,12 @@ void rReportTime::setCurTime()
 //
 void rReportTime::generateVars(const string &prefix, rVariable::Flags flags, UDINT access, rVariableList& list)
 {
-	list.add(prefix + "sec"   , TYPE_USINT, flags, &_TM.tm_sec , U_DIMLESS, access, COMMENT::SECONDS);
-	list.add(prefix + "min"   , TYPE_USINT, flags, &_TM.tm_min , U_DIMLESS, access, COMMENT::MINUTES);
-	list.add(prefix + "hour"  , TYPE_USINT, flags, &_TM.tm_hour, U_DIMLESS, access, COMMENT::HOURS);
-	list.add(prefix + "day"   , TYPE_USINT, flags, &_TM.tm_mday, U_DIMLESS, access, COMMENT::DAY);
-	list.add(prefix + "month" , TYPE_USINT, flags, &_TM.tm_mon , U_DIMLESS, access, COMMENT::MONTH);
-	list.add(prefix + "year"  , TYPE_UINT , flags, &_TM.tm_year, U_DIMLESS, access, COMMENT::YEAR);
+	list.add(prefix + "sec"   , TYPE::USINT, flags, &_TM.tm_sec , U_DIMLESS, access, COMMENT::SECONDS);
+	list.add(prefix + "min"   , TYPE::USINT, flags, &_TM.tm_min , U_DIMLESS, access, COMMENT::MINUTES);
+	list.add(prefix + "hour"  , TYPE::USINT, flags, &_TM.tm_hour, U_DIMLESS, access, COMMENT::HOURS);
+	list.add(prefix + "day"   , TYPE::USINT, flags, &_TM.tm_mday, U_DIMLESS, access, COMMENT::DAY);
+	list.add(prefix + "month" , TYPE::USINT, flags, &_TM.tm_mon , U_DIMLESS, access, COMMENT::MONTH);
+	list.add(prefix + "year"  , TYPE::UINT , flags, &_TM.tm_year, U_DIMLESS, access, COMMENT::YEAR);
 }
 
 
@@ -295,7 +295,7 @@ void rReport::rDataset::generateVars(const string &prefix, rVariableList& list)
 {
 	string name = "";
 
-	list.add(prefix + "status", TYPE_UINT, rVariable::Flags::RS__, &m_mark, U_DIMLESS, ACCESS_SA, COMMENT::STATUS + rReport::m_flagsMark.getInfo(true));
+	list.add(prefix + "status", TYPE::UINT, rVariable::Flags::RS__, &m_mark, U_DIMLESS, ACCESS_SA, COMMENT::STATUS + rReport::m_flagsMark.getInfo(true));
 
 	m_timeStart.generateVars(prefix + "datetime.begin.", rVariable::Flags::RS__, ACCESS_SA, list);
 	FinalTime.generateVars  (prefix + "datetime.end."  , rVariable::Flags::RS__, ACCESS_SA, list);
@@ -338,16 +338,16 @@ UDINT rReport::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Общие переменные для всех типов отчетов
-	list.add(name + "type"               , TYPE_UINT, rVariable::Flags::R___, &m_type       , U_DIMLESS, 0, "Тип отчета:<br/>" + m_flagsType.getInfo(true));
-	list.add(name + "archive.load.accept",            rVariable::Flags::____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT, "Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет");
+	list.add(name + "type"               , TYPE::UINT, rVariable::Flags::R___, &m_type       , U_DIMLESS, 0, "Тип отчета:<br/>" + m_flagsType.getInfo(true));
+	list.add(name + "archive.load.accept",             rVariable::Flags::____, &ArchiveAccept, U_DIMLESS, ACCESS_REPORT, "Команда загрузки архивного отчета:<br/>0 - нет действия<br/>1 - загрузить отчет");
 
 	ArchiveTime.generateVars(name + "archive.load.", rVariable::Flags::____, ACCESS_REPORT, list);
 
 	if (m_type == Type::PERIODIC) {
-		list.add(name + "period", TYPE_UINT, rVariable::Flags::____, &m_period, U_DIMLESS, 0, "Период отчета:<br/>" + m_flagsPeriod.getInfo(true));
+		list.add(name + "period", TYPE::UINT, rVariable::Flags::____, &m_period, U_DIMLESS, 0, "Период отчета:<br/>" + m_flagsPeriod.getInfo(true));
 	} else {
-		list.add(name + "command", TYPE_USINT, rVariable::Flags::____, &m_command.Value, U_DIMLESS, ACCESS_BATCH, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
-		list.add(name + "status" , TYPE_UINT , rVariable::Flags::R___, &m_status       , U_DIMLESS, 0           , COMMENT::STATUS  + m_flagsStatus.getInfo(true));
+		list.add(name + "command",             rVariable::Flags::____, &m_command.Value, U_DIMLESS, ACCESS_BATCH, COMMENT::COMMAND + m_flagsCommand.getInfo(true));
+		list.add(name + "status" , TYPE::UINT, rVariable::Flags::R___, &m_status       , U_DIMLESS, 0           , COMMENT::STATUS  + m_flagsStatus.getInfo(true));
 	}
 
 	m_present.generateVars  (name + "present."  , list);

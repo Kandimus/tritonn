@@ -55,14 +55,14 @@ std::string rDataBlock::getXml()
 	result += String_format("<%s>\n", XmlName::DATABLOCKS);
 	result += String_format("\t<%s name=\"datablock name\">\n", XmlName::DATABLOCK);
 	result += String_format("\t\t<%s>variable alias</%s>\n", XmlName::VARIABLE, XmlName::VARIABLE);
-	result += String_format("\t\t<%s>variable alias</%s>\n", XmlName::VARIABLE, XmlName::VARIABLE);
+	result += String_format("\t\t<%s convert=\"datatype\">variable alias</%s> <!-- convert is optional -->\n", XmlName::VARIABLE, XmlName::VARIABLE);
 	result += "\t\t...\n";
 	result += String_format("\t\t<%s>variable alias</%s>\n", XmlName::VARIABLE, XmlName::VARIABLE);
 	result += String_format("\t</%s>\n", XmlName::DATABLOCK);
 	result += "\t...\n";
 	result += String_format("\t<%s name=\"datablock name\">\n", XmlName::DATABLOCK);
 	result += String_format("\t\t<%s>variable alias</%s>\n", XmlName::VARIABLE, XmlName::VARIABLE);
-	result += String_format("\t\t<%s>variable alias</%s>\n", XmlName::VARIABLE, XmlName::VARIABLE);
+	result += String_format("\t\t<%s convert=\"datatype\">variable alias</%s> <!-- convert is optional -->\n", XmlName::VARIABLE, XmlName::VARIABLE);
 	result += "\t\t...\n";
 	result += String_format("\t\t<%s>variable alias</%s>\n", XmlName::VARIABLE, XmlName::VARIABLE);
 	result += String_format("\t</%s>\n", XmlName::DATABLOCK);

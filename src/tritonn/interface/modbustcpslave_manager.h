@@ -26,16 +26,18 @@ class rModbusTCPSlaveClient;
 
 struct rModbusLink
 {
-	rSnapshotItem *m_item;
-	UINT           Address;
+	rSnapshotItem* m_item    = nullptr;
+	UINT           m_address = 0;
+	TYPE           m_convert = TYPE::UNDEF;
 };
 
 
 struct rTempLink
 {
-	string VarName;
-	UDINT  Address;
-	UDINT  LineNum;
+	std::string VarName;
+	UDINT       Address;
+	UDINT       LineNum;
+	TYPE        m_type;
 };
 
 
@@ -63,7 +65,7 @@ protected:
 
 // Наследование от rInterface
 public:
-	virtual const char*   getRTTI() override { return "modbustcpslave"; }
+	virtual const char*   getRTTI() override { return "tcpslave"; }
 	virtual UDINT         loadFromXML(tinyxml2::XMLElement* xml_root, rError& err) override;
 	virtual UDINT         generateMarkDown(rGeneratorMD& md) override;
 	virtual std::string   getAdditionalXml() const override;
@@ -71,6 +73,22 @@ public:
 	virtual UDINT         checkVars(rError& err) override;
 	virtual UDINT         startServer() override;
 	virtual rThreadClass* getThreadClass() override;
+
+protected:
+	void Func_0x03 (rModbusTCPSlaveClient *client);
+	void Func_0x06 (rModbusTCPSlaveClient *client);
+	void Func_0x10 (rModbusTCPSlaveClient *client);
+	void Func_Error(rModbusTCPSlaveClient *client, USINT err);
+
+	void SwapBuffer(void *value, UDINT size);
+
+	rSnapshotItem *FindSnapshotItem(UINT addr);
+
+	UDINT TypeCountReg(TYPE type);
+
+	UDINT LoadStandartModbus(rError& err);
+
+	void  clearTempList();
 
 protected:
 	rSnapshot   m_snapshot;
@@ -88,24 +106,9 @@ protected:
 	rModbusSwap m_swap;
 
 	vector<rModbusLink> ModbusLink;
-	vector<rTempLink>   TempLink;
+	vector<rTempLink*>  m_tempLink;
 
 public:
-
-
-protected:
-	void Func_0x03 (rModbusTCPSlaveClient *client);
-	void Func_0x06 (rModbusTCPSlaveClient *client);
-	void Func_0x10 (rModbusTCPSlaveClient *client);
-	void Func_Error(rModbusTCPSlaveClient *client, USINT err);
-
-	void SwapBuffer(void *value, UDINT size);
-
-	rSnapshotItem *FindSnapshotItem(UINT addr);
-
-	UDINT TypeCountReg(TT_TYPE type);
-
-	UDINT LoadStandartModbus(rError& err);
 };
 
 

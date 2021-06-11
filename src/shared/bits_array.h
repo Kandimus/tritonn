@@ -27,16 +27,16 @@ public:
 		std::string m_name     = "error";
 		UDINT       m_value    = 0;
 		std::string m_comment  = "";
-		USINT       m_type     = TYPE_UINT;
+		TYPE        m_type     = TYPE::UINT;
 
 		rBitFlag(const std::string& name, UDINT value, const std::string& comment)
-			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE_UDINT) {}
+			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE::UDINT) {}
 
 		rBitFlag(const std::string& name, UINT value, const std::string& comment)
-			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE_UINT) {}
+			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE::UINT) {}
 
 		rBitFlag(const std::string& name, USINT value, const std::string& comment)
-			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE_USINT) {}
+			: m_name(name), m_value(value), m_comment(comment), m_type(TYPE::USINT) {}
 
 	};
 

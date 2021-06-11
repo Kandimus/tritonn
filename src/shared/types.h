@@ -1,25 +1,22 @@
 //=================================================================================================
 //===
-//=== threadclass.cpp
+//=== types.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
 //===
 //=================================================================================================
-//===
-//=== Описание базовых типов
-//===
-//=================================================================================================
 
 #pragma once
+
+#include <string>
 
 class rStringID;
 
 typedef unsigned char        USINT;
 typedef unsigned short       UINT;
-//typedef uint32_t             UDINT;
 typedef unsigned int         UDINT;
 typedef          char        SINT;
 typedef          short       INT;
@@ -27,8 +24,29 @@ typedef          int         DINT;
 typedef rStringID            STRID;
 typedef float                REAL;
 typedef double               LREAL;
-typedef const char *         CCHPTR;
+typedef const char*          CCHPTR;
 typedef struct tm            STM;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Типы используемых данных
+enum class TYPE : USINT
+{
+	UNDEF = 0,
+	SINT,
+	USINT,
+	INT,
+	UINT,
+	DINT,
+	UDINT,
+	REAL,
+	LREAL,
+	STRID,
+	_END
+};
+
+extern UDINT       getTypeSize(TYPE type);
+extern std::string getTypeName(TYPE type);
+extern TYPE        getTypeByName(const std::string& str);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

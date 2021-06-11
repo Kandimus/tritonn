@@ -23,14 +23,14 @@
 #include "log_manager.h"
 
 
-rTCPClass::rTCPClass(const string &ip, UINT port, UDINT maxclient) : rThreadClass()
+rTCPClass::rTCPClass(const std::string& ip, UINT port, UDINT maxclient) : rThreadClass()
 {
 	RTTI        = "rTCPClass";
 	LogMask    |= LOG::TCPSERV;
 	Socket      = SOCKET_ERROR;
 	MaxClient   = maxclient;
-	strIP       = ip;
-	m_port      = port;
+	m_hostIP    = ip;
+	m_hostPort  = port;
 	Select_sec  = MAX_SELECT_SEC;
 	Select_usec = MAX_SELECT_USEC;
 }
@@ -42,40 +42,36 @@ rTCPClass::~rTCPClass()
 }
 
 
-void  rTCPClass::SetServerIP(const string &ip, UINT port)
+void  rTCPClass::setServerIP(const std::string& ip, UINT port)
 {
-	strIP  = ip;
-	m_port = port;
+	if(ip.size()) m_hostIP   = ip;
+	if(port)      m_hostPort = port;
 }
 
-
-
-UDINT rTCPClass::StartServer(const string &ip, UINT port)
+UDINT rTCPClass::startServer(const std::string& ip, UINT port)
 {
 	Lock();
 
-	if(ip.size()) strIP  = ip;
-	if(port)      m_port = port;
+	if(ip.size()) m_hostIP   = ip;
+	if(port)      m_hostPort = port;
 
 	ServAddr.sin_family      = AF_INET;
-	ServAddr.sin_port        = htons(m_port);
-	ServAddr.sin_addr.s_addr = inet_addr(strIP.c_str());
+	ServAddr.sin_port        = htons(m_hostPort);
+	ServAddr.sin_addr.s_addr = inet_addr(m_hostIP.c_str());
 
 	Started = false;
 	Socket  = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if(Socket == SOCKET_ERROR)
-	{
+	if (Socket == SOCKET_ERROR) 	{
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при создании сокета на '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
+		TRACEA(LogMask, "Ошибка при создании сокета на '%s:%i'. Ошибка %i", m_hostIP.c_str(), m_hostPort, errno);
 
 		Unlock();
 		return 1;
 	}
 
-	if(setsockopt(Socket, SOL_SOCKET, SO_SNDBUF, (const char *)&MAX_TCP_SEND_BUFF, sizeof(MAX_TCP_SEND_BUFF)) == SOCKET_ERROR)
-	{
+	if (setsockopt(Socket, SOL_SOCKET, SO_SNDBUF, (const char *)&MAX_TCP_SEND_BUFF, sizeof(MAX_TCP_SEND_BUFF)) == SOCKET_ERROR) {
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
+		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", m_hostIP.c_str(), m_hostPort, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -84,10 +80,9 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 		return 2;
 	}
 
-	if(setsockopt(Socket, SOL_SOCKET, SO_RCVBUF, (const char *)&MAX_TCP_RECV_BUFF, sizeof(MAX_TCP_RECV_BUFF)) == SOCKET_ERROR)
-	{
+	if (setsockopt(Socket, SOL_SOCKET, SO_RCVBUF, (const char *)&MAX_TCP_RECV_BUFF, sizeof(MAX_TCP_RECV_BUFF)) == SOCKET_ERROR) {
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
+		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", m_hostIP.c_str(), m_hostPort, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -98,9 +93,8 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 
 	// выключаем алгоритм Нэйгла
 	int flag = 1;
-	if(setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag)) == SOCKET_ERROR)
-	{
-		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
+	if (setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag)) == SOCKET_ERROR) {
+		TRACEA(LogMask, "Ошибка при установке опций сокета '%s:%i'. Ошибка %i", m_hostIP.c_str(), m_hostPort, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -116,10 +110,9 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 #endif
 
 	// Захватываем сокет
-	if(bind(Socket, (sockaddr *)&ServAddr, sizeof(ServAddr)))
-	{
+	if (bind(Socket, (sockaddr *)&ServAddr, sizeof(ServAddr))) {
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при захвате сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
+		TRACEA(LogMask, "Ошибка при захвате сокета '%s:%i'. Ошибка %i", m_hostIP.c_str(), m_hostPort, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -129,10 +122,9 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 	}
 
 	// get socket to listen
-	if(SOCKET_ERROR == listen(Socket, SOMAXCONN))
-	{
+	if (SOCKET_ERROR == listen(Socket, SOMAXCONN)) {
 		// В конструкторах нельзя использовать события, так как класс еще может не создаться
-		TRACEA(LogMask, "Ошибка при установке прослушки сокета '%s:%i'. Ошибка %i", strIP.c_str(), m_port, errno);
+		TRACEA(LogMask, "Ошибка при установке прослушки сокета '%s:%i'. Ошибка %i", m_hostIP.c_str(), m_hostPort, errno);
 
 		close(Socket);
 		Socket = SOCKET_ERROR;
@@ -143,7 +135,7 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 
 	Started = true;
 
-	TRACEI(LogMask, "Сокет открыт на '%s:%i'.", strIP.c_str(), m_port);
+	TRACEI(LogMask, "Сокет открыт на '%s:%i'.", m_hostIP.c_str(), m_hostPort);
 
 	Unlock();
 	return 0;
@@ -151,15 +143,13 @@ UDINT rTCPClass::StartServer(const string &ip, UINT port)
 
 
 //
-UDINT rTCPClass::CloseServer()
+void rTCPClass::closeServer()
 {
 	Lock();
 
 	Destroy();
 
 	Unlock();
-
-	return 0;
 }
 
 
@@ -168,9 +158,8 @@ UDINT rTCPClass::CloseServer()
 void rTCPClass::Destroy()
 {
 	//
-	for(unsigned int ii = 0; ii < Client.size(); ++ii)
-	{
-		delete Client[ii];
+	for (auto item : Client) {
+		delete item;
 	}
 	Client.clear();
 
@@ -254,7 +243,7 @@ rThreadStatus rTCPClass::Proccesing()
 				shutdown(SockAccept, SHUT_RDWR);
 				close(SockAccept);
 
-				TRACEI(LogMask, "Попытка подсоединения клиента [%i.%i.%i.%i] не входящего в разрешенный список '%s:%i'", ip[0], ip[1], ip[2], ip[3], strIP.c_str(), m_port);
+				TRACEI(LogMask, "Попытка подсоединения клиента [%i.%i.%i.%i] не входящего в разрешенный список '%s:%i'", ip[0], ip[1], ip[2], ip[3], m_hostIP.c_str(), m_hostPort);
 			}
 			else
 			{
@@ -263,7 +252,7 @@ rThreadStatus rTCPClass::Proccesing()
 
 				if(Client.size() > MaxClient)
 				{
-					TRACEI(LogMask, "Достигнут предел количества клиентов на '%s:%i'. Первый клиент отсоединен", strIP.c_str(), m_port);
+					TRACEI(LogMask, "Достигнут предел количества клиентов на '%s:%i'. Первый клиент отсоединен", m_hostIP.c_str(), m_hostPort);
 
 					delete Client[0];
 					Client.erase(Client.begin());
@@ -281,7 +270,7 @@ rThreadStatus rTCPClass::Proccesing()
 					}
 					else
 					{
-						TRACEI(LogMask, "Подсоединение клиента #%i [%i.%i.%i.%i] к [%s:%i/%i]", cid, ip[0], ip[1], ip[2], ip[3], strIP.c_str(), m_port, ServAddr.sin_port);
+						TRACEI(LogMask, "Подсоединение клиента #%i [%i.%i.%i.%i] к [%s:%i/%i]", cid, ip[0], ip[1], ip[2], ip[3], m_hostIP.c_str(), m_hostPort, ServAddr.sin_port);
 					}
 				}
 			}
@@ -289,12 +278,12 @@ rThreadStatus rTCPClass::Proccesing()
 	}
 	else
 	{
-		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", strIP.c_str(), m_port, ServAddr.sin_port);
+		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", m_hostIP.c_str(), m_hostPort, ServAddr.sin_port);
 	}
 
 	if(FD_ISSET(Socket, &exfds))
 	{
-		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", strIP.c_str(), m_port, ServAddr.sin_port);
+		TRACEW(LogMask, "Ошибка обработки клиентов на '%s:%i/%i'.", m_hostIP.c_str(), m_hostPort, ServAddr.sin_port);
 		//break; // ERROR
 	}
 
@@ -306,7 +295,7 @@ rThreadStatus rTCPClass::Proccesing()
 		{
 			if(Client[ii]->Socket != SOCKET_ERROR)
 			{
-				TRACEI(LogMask, "Клиент #%i отключился от '%s:%i/%i'.", ii, strIP.c_str(), m_port, ServAddr.sin_port);
+				TRACEI(LogMask, "Клиент #%i отключился от '%s:%i/%i'.", ii, m_hostIP.c_str(), m_hostPort, ServAddr.sin_port);
 
 				delete Client[ii];
 				Client.erase(Client.begin() + ii);
@@ -320,7 +309,7 @@ rThreadStatus rTCPClass::Proccesing()
 			{
 				if(Client[ii]->Socket != SOCKET_ERROR)
 				{
-					TRACEW(LogMask, "Клиент #%i отсоединен от '%s:%i/%i'.", ii, strIP.c_str(), m_port, ServAddr.sin_port);
+					TRACEW(LogMask, "Клиент #%i отсоединен от '%s:%i/%i'.", ii, m_hostIP.c_str(), m_hostPort, ServAddr.sin_port);
 
 					delete Client[ii];
 					Client.erase(Client.begin() + ii);

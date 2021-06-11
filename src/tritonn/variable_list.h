@@ -32,7 +32,7 @@ public:
 	rVariableList();
 	virtual ~rVariableList();
 
-	void  add(const std::string& name, TT_TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access, const std::string& comment);
+	void  add(const std::string& name, TYPE type, rVariable::Flags flags, void* pointer, STRID unit, UDINT access, const std::string& comment);
 	void  add(const std::string& name, rVariable::Flags flags,  SINT* pointer, STRID unit, UDINT access, const std::string& comment);
 	void  add(const std::string& name, rVariable::Flags flags, USINT* pointer, STRID unit, UDINT access, const std::string& comment);
 	void  add(const std::string& name, rVariable::Flags flags,   INT* pointer, STRID unit, UDINT access, const std::string& comment);

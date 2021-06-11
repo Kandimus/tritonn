@@ -98,7 +98,10 @@ int main(int argc, char* argv[])
 	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
 	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 	TRACEI(LOG::MAIN, "argumets:");
-	TRACEI(LOG::MAIN, "\tNoDump : %s", rSimpleArgs::instance().isSet(rArg::NoDump) ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tForceRun : %s", rSimpleArgs::instance().isSet(rArg::ForceRun) ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tSimulate : %s", rSimpleArgs::instance().isSet(rArg::Simulate) ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tNoDump   : %s", rSimpleArgs::instance().isSet(rArg::NoDump)   ? "true" : "false");
+	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
 	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 	rLogManager::instance().Run(16);
 
@@ -148,7 +151,7 @@ int main(int argc, char* argv[])
 
 	// Терминал
 	rTermManager::Instance().Run(500);
-	rTermManager::Instance().StartServer("0.0.0.0", LanPort::PORT_TERM);
+	rTermManager::Instance().startServer("0.0.0.0", LanPort::PORT_TERM);
 
 	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "config");
 
@@ -156,7 +159,7 @@ int main(int argc, char* argv[])
 	//----------------------------------------------------------------------------------------------
 	// JSON
 	rJSONManager::Instance().Run(100);
-	rJSONManager::Instance().StartServer("0.0.0.0", LanPort::PORT_JSON);
+	rJSONManager::Instance().startServer("0.0.0.0", LanPort::PORT_JSON);
 
 	rThreadMaster::instance().add(&rJSONManager::Instance(), TMF_NONE, "web");
 

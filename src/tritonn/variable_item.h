@@ -61,22 +61,22 @@ public:
 		RSHD = READONLY | SUWRITE | HIDE | DUMP,
 	};
 
-	rVariable(const std::string& name, TT_TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment = "");
+	rVariable(const std::string& name, TYPE type, UINT flags, void* pointer, STRID unit, UDINT access, const std::string& comment = "");
 	virtual ~rVariable();
 
 	const std::string& getName() const { return m_name; }
 	const std::string& getComment() const { return m_comment; }
-	TT_TYPE getType()    const { return m_type;   }
-	UINT    getFlags()   const { return m_flags;  }
-	STRID   getUnit()    const { return m_unit;   }
-	UDINT   getAccess()  const { return m_access; }
-	UDINT   getHash()    const { return m_hash;   }
-	bool    isReadonly() const { return m_flags & Flags::READONLY; }
-	bool    isHide()     const { return m_flags & Flags::HIDE;     }
-	bool    isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
-	bool    isMutable()  const { return m_flags & Flags::MUTABLE;  }
-	bool    isExternal() const { return m_flags & Flags::EXTERNAL; }
-	bool    isDumped()   const { return m_flags & Flags::DUMP;     }
+	TYPE  getType()    const { return m_type;   }
+	UINT  getFlags()   const { return m_flags;  }
+	STRID getUnit()    const { return m_unit;   }
+	UDINT getAccess()  const { return m_access; }
+	UDINT getHash()    const { return m_hash;   }
+	bool  isReadonly() const { return m_flags & Flags::READONLY; }
+	bool  isHide()     const { return m_flags & Flags::HIDE;     }
+	bool  isSUWrite()  const { return m_flags & Flags::SUWRITE;  }
+	bool  isMutable()  const { return m_flags & Flags::MUTABLE;  }
+	bool  isExternal() const { return m_flags & Flags::EXTERNAL; }
+	bool  isDumped()   const { return m_flags & Flags::DUMP;     }
 
 	std::string saveToCSV() const;
 	std::string valueToXml() const;
@@ -104,7 +104,7 @@ private:
 protected:
 	UDINT       m_hash    = 0;
 	std::string m_name    = "";
-	TT_TYPE     m_type    = TYPE_UNDEF;
+	TYPE        m_type    = TYPE::UNDEF;
 	UINT        m_flags   = Flags::NONE;
 	STRID       m_unit    = 0;
 	UDINT       m_access  = 0;

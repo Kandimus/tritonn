@@ -183,10 +183,10 @@ UDINT rLink::generateVars(rVariableList& list)
 	}
 
 	if (m_setup & Setup::SIMPLE) {
-		list.add(name, TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value, m_unit, 0, m_comment);
+		list.add(name, TYPE::LREAL, static_cast<rVariable::Flags>(flags), &m_value, m_unit, 0, m_comment);
 	} else {
-		list.add(name + ".value", TYPE_LREAL, static_cast<rVariable::Flags>(flags), &m_value        , m_unit   , 0, m_comment + ". Текущее значение");
-		list.add(name + ".unit" , TYPE_STRID, rVariable::Flags::R___              ,  m_unit.getPtr(), U_DIMLESS, 0, m_comment + ". Единицы измерения");
+		list.add(name + ".value", TYPE::LREAL, static_cast<rVariable::Flags>(flags), &m_value        , m_unit   , 0, m_comment + ". Текущее значение");
+		list.add(name + ".unit" , TYPE::STRID, rVariable::Flags::R___              ,  m_unit.getPtr(), U_DIMLESS, 0, m_comment + ". Единицы измерения");
 
 		m_limit.generateVars(list, name, m_unit, m_comment);
 	}

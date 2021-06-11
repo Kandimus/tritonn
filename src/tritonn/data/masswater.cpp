@@ -86,10 +86,10 @@ UDINT rMassWater::generateVars(rVariableList& list)
 	rSource::generateVars(list);
 
 	// Variables
-	list.add(m_alias + ".setup"       , TYPE_UINT, rVariable::Flags::R__D, &m_setup       , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(m_alias + ".densitywater",            rVariable::Flags::R___, &m_waterDensity, U_kg_m3  , 0, "Вычисленное значение плотности воды");
+	list.add(m_alias + ".setup"       , TYPE::UINT, rVariable::Flags::R__D, &m_setup       , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(m_alias + ".densitywater",             rVariable::Flags::R___, &m_waterDensity, U_kg_m3  , 0, "Вычисленное значение плотности воды");
 
-	list.add(m_alias + ".fault"       ,            rVariable::Flags::R___, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
+	list.add(m_alias + ".fault"       ,             rVariable::Flags::R___, &m_fault, U_DIMLESS, 0, COMMENT::FAULT);
 
 	return TRITONN_RESULT_OK;
 }

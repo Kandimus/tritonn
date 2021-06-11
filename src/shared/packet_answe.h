@@ -30,7 +30,7 @@ const UDINT AVN_READONLY  = 3;
 struct rAnsweData   // [128]
 {
 	UINT    Status;
-	TT_TYPE Type;
+	TYPE    Type;
 	char    Name[MAX_ANSWE_VAR_LEN];  // [ 64]
 	LREAL   Value;      // [  8]
 };

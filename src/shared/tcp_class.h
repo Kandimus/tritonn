@@ -30,12 +30,12 @@ using std::vector;
 class rTCPClass : public rThreadClass
 {
 public:
-	rTCPClass(const string &ip, UINT port, UDINT maxclient);
+	rTCPClass(const std::string& ip, UINT port, UDINT maxclient);
 	virtual ~rTCPClass();
 
-	UDINT StartServer(const std::string& ip, UINT port);
-	void  SetServerIP(const std::string& ip, UINT port);
-	UDINT CloseServer();
+	UDINT startServer(const std::string& ip, UINT port);
+	void  setServerIP(const std::string& ip, UINT port);
+	void  closeServer();
 
 	virtual UDINT IsStarted() const;
 
@@ -58,12 +58,13 @@ protected:
 	virtual rClientTCP* NewClient(SOCKET socket, sockaddr_in *addr) = 0;
 
 protected:
-	vector<rClientTCP *>  Client;     // Массив клиентов
-	vector<UDINT>         WhiteList;  // Список "белых" адресов, доступных для подключения
+	vector<rClientTCP *>  Client;      // Массив клиентов
+	vector<UDINT>         WhiteList;   // Список "белых" адресов, доступных для подключения
+	vector<UDINT>         m_listHost;  // Список IP для открытия порта
 	UDINT                 Select_sec;  // Время ожидания в функции SELECT
 	UDINT                 Select_usec; // Время ожидания в функции SELECT
-	string                strIP;
-	UDINT                 m_port;
+	std::string           m_hostIP; //
+	UINT                  m_hostPort;
 	UDINT                 MaxClient;  // Максимальное количество подключенных клиентов, если клиентов будет больше, то первый клиент будет отсоединен от сервера
 	
 private:

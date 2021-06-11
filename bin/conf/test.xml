@@ -774,22 +774,22 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 				<variable>system.version.hash</variable>
 			</datablock>
 			<datablock name="globaltemp">
-				<variable convert="float">io.ai00.present.value</variable>
-				<whitespace size="2"/>
-				<variable                >io.ai00.present.unit</variable>
-				<variable convert="float">io.ai00.present.hihi</variable>
-				<variable convert="float">io.ai00.present.hi</variable>
-				<variable convert="float">io.ai00.present.lo</variable>
-				<variable convert="float">io.ai00.present.lolo</variable>
-				<variable convert="float">io.ai00.present.hysteresis</variable>
-				<variable                >io.ai00.present.status</variable>
-				<variable convert="float">io.ai00.physical.value</variable>
-				<variable convert="float">io.ai00.current.value</variable>
-				<variable convert="float">io.ai00.keypad</variable>
-				<variable                >io.ai00.scales.low</variable>
-				<variable                >io.ai00.scales.high</variable>
-				<variable                >io.ai00.status</variable>
-				<variable                >io.ai00.mode</variable>
+				<variable convert="real">io.ai00.present.value</variable>
+				<whitespace native="real"/>
+				<variable               >io.ai00.present.unit</variable>
+				<variable convert="real">io.ai00.present.hihi</variable>
+				<variable convert="real">io.ai00.present.hi</variable>
+				<variable convert="real">io.ai00.present.lo</variable>
+				<variable convert="real">io.ai00.present.lolo</variable>
+				<variable convert="real">io.ai00.present.hysteresis</variable>
+				<variable               >io.ai00.present.status</variable>
+				<variable convert="real">io.ai00.physical.value</variable>
+				<variable convert="real">io.ai00.current.value</variable>
+				<variable convert="real">io.ai00.keypad</variable>
+				<variable               >io.ai00.scales.low</variable>
+				<variable               >io.ai00.scales.high</variable>
+				<variable               >io.ai00.status</variable>
+				<variable               >io.ai00.mode</variable>
 			</datablock>
 			<datablock name="slave1_info">
 				<variable>comms.modbus.slave1.tx</variable>
