@@ -975,20 +975,20 @@ FEE9101DB25E546430F29ECC68849B671F408EF3A48756FEBE16DBBA6048766F1FE6D883FFD29CB3
 			<datablock name="globaltemp">
 				<variable convert="real">io.globaltemp.present.value</variable>
 				<whitespace native="real"/>
-				<variable                >io.globaltemp.present.unit</variable>
+				<variable               >io.globaltemp.present.unit</variable>
 				<variable convert="real">io.globaltemp.present.hihi</variable>
 				<variable convert="real">io.globaltemp.present.hi</variable>
 				<variable convert="real">io.globaltemp.present.lo</variable>
 				<variable convert="real">io.globaltemp.present.lolo</variable>
 				<variable convert="real">io.globaltemp.present.hysteresis</variable>
-				<variable                >io.globaltemp.present.status</variable>
+				<variable               >io.globaltemp.present.status</variable>
 				<variable convert="real">io.globaltemp.physical.value</variable>
 				<variable convert="real">io.globaltemp.current.value</variable>
 				<variable convert="real">io.globaltemp.keypad</variable>
-				<variable                >io.globaltemp.scales.low</variable>
-				<variable                >io.globaltemp.scales.high</variable>
-				<variable                >io.globaltemp.status</variable>
-				<variable                >io.globaltemp.mode</variable>
+				<variable               >io.globaltemp.scales.low</variable>
+				<variable               >io.globaltemp.scales.high</variable>
+				<variable               >io.globaltemp.status</variable>
+				<variable               >io.globaltemp.mode</variable>
 			</datablock>
 			<datablock name="slave1_info">
 				<variable>comms.modbus.slave1.tx</variable>
