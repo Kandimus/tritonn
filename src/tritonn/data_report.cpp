@@ -683,7 +683,7 @@ UDINT rReport::SaveToXML(UDINT present)
 	rReportTime          reptime;
 
 	printer.OpenElement("tritonn");
-	printer.PushAttribute("signature", XMLHASH_SALT);
+	printer.PushAttribute("signature", XMLHASH_SALT.c_str());
 
 	printer.OpenElement("report");
 
