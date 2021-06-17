@@ -177,8 +177,8 @@ const USINT  USER_BLOCKEDMANUAL        = 0x10;        // Пользовател�
 const USINT  USER_BLOCKEDAUTOMAT       = 0x20;        // Пользователь заблокирован после 3-х попыток ввода пароля
 
 //
-const string USER_PWD_SALT             = "getsystem"; // Соль для пароля пользователя
-const string XMLHASH_SALT              = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
+const std::string USER_PWD_SALT        = "getsystem"; // Соль для пароля пользователя
+const std::string XMLHASH_SALT         = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
 
 //-------------------------------------------------------------------------------------------------
 // Биты доступа пользователя

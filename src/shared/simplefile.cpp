@@ -159,6 +159,20 @@ UDINT SimpleFileSave(const std::string& filename, const std::string& text)
 	return SimpleFileSaveExt(filename, text, "wt");
 }
 
+UDINT SimpleFileSaveSignature(const std::string& filename, const std::string& text, const std::string& marker)
+{
+	std::string sig_text = text;
+	DINT pos = sig_text.find(marker);
+
+	if (pos != -1) {
+		//TODO calc hash
+
+
+	}
+
+	return SimpleFileSaveExt(filename, sig_text, "wt");
+}
+
 UDINT SimpleFileAppend(const std::string& filename, const std::string& text)
 {
 	return SimpleFileSaveExt(filename, text, "at");
