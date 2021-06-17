@@ -683,7 +683,7 @@ UDINT rReport::SaveToXML(UDINT present)
 	rReportTime          reptime;
 
 	printer.OpenElement("tritonn");
-	printer.PushAttribute("signature", XMLHASH_SALT.c_str());
+	printer.PushAttribute("signature", XMLREPORT_HASH_SALT.c_str());
 
 	printer.OpenElement("report");
 
@@ -712,7 +712,8 @@ UDINT rReport::SaveToXML(UDINT present)
 
 
 	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), m_alias.c_str(), reptime._UNIX);
-	UDINT   result  = SimpleFileSave(filename, printer.CStr());
+//	UDINT   result  = SimpleFileSave(filename, printer.CStr());
+	UDINT result = simpleFileSaveSignature(filename, printer.CStr(), "signature");
 
 	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().add(reinitEvent(EID_REPORT_CANTSAVE) << result);

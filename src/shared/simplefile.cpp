@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "hash.h"
+#include "stringex.h"
 #include "simplefile.h"
 
 
@@ -159,14 +161,50 @@ UDINT SimpleFileSave(const std::string& filename, const std::string& text)
 	return SimpleFileSaveExt(filename, text, "wt");
 }
 
-UDINT SimpleFileSaveSignature(const std::string& filename, const std::string& text, const std::string& marker)
+UDINT simpleFileSaveSignature(const std::string& filename, const std::string& text, const std::string& marker)
 {
 	std::string sig_text = text;
 	DINT pos = sig_text.find(marker);
 
 	if (pos != -1) {
-		//TODO calc hash
+		USINT hash[MAX_HASH_SIZE];
 
+		GetStrHash(text, hash);
+
+		std::string str_hash = String_FromBuffer(hash, MAX_HASH_SIZE);
+
+printf("~~~~~~~~~~~~~~ %s\n", str_hash.c_str());
+
+		pos += marker.size();
+		while (sig_text[pos] != '=' && pos < sig_text.size()) {
+			++pos;
+		}
+
+		if (pos >= sig_text.size()) {
+			return FILE_RESULT_ENCRYPT_ERROR;
+		}
+
+		while (sig_text[pos] != '\"' && pos < sig_text.size()) {
+			++pos;
+		}
+
+		DINT begin = ++pos;
+
+		if (pos >= sig_text.size()) {
+			return FILE_RESULT_ENCRYPT_ERROR;
+		}
+
+		while (sig_text[pos] != '\"' && pos < sig_text.size()) {
+			++pos;
+		}
+
+		DINT end = pos;
+
+		if (pos >= sig_text.size()) {
+			return FILE_RESULT_ENCRYPT_ERROR;
+		}
+
+printf("~~~~~~~~~~~~~~ %i ... %i\n", begin, end);
 
 	}
 

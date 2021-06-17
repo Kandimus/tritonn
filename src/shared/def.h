@@ -112,7 +112,7 @@ const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
 const UDINT  MAX_CONFIG_NAME           = 128;
 const UDINT  MAX_CFGVER_SIZE           = 17;
-const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH * 2;
+const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH;
 
 const UDINT  MAX_UNITS_COUNT           = 512;
 
@@ -178,7 +178,8 @@ const USINT  USER_BLOCKEDAUTOMAT       = 0x20;        // Пользовател�
 
 //
 const std::string USER_PWD_SALT        = "getsystem"; // Соль для пароля пользователя
-const std::string XMLHASH_SALT         = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
+const std::string XMLCONFIG_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
+const std::string XMLREPORT_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
 
 //-------------------------------------------------------------------------------------------------
 // Биты доступа пользователя
@@ -323,9 +324,10 @@ enum rTritonn_Error
 	FILE_RESULT_ISDIR,                      //  37 Это директория
 	FILE_RESULT_ISEMPTY,                    //  38 Файл пустой
 	FILE_RESULT_EDIR,                       //  39 Ошибка считывания директории
-	FILE_RESULT_CANTDELETE    = 40,         //  40 Ошибка операции удаления файла или директории
+	FILE_RESULT_CANTDELETE,                 //  40 Ошибка операции удаления файла или директории
 	FILE_RESULT_EFILE,                      //  41 Прочие ошибки файла (сбой функции stat)
 	FILE_RESULT_CANTREMOVE,                 //  42
+	FILE_RESULT_ENCRYPT_ERROR,              //  43
 
 	DATACFGERR_STRUCT         = 100,        // 100
 	DATACFGERR_NOTFOUND_HARDWARE,           //

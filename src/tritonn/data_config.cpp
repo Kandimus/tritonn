@@ -62,7 +62,7 @@ rDataConfig::rDataConfig()
 	m_json_obj = cJSON_CreateArray();
 	m_json_usr = cJSON_CreateArray();
 	m_json_hdw = cJSON_CreateArray();
-	XMLRootSecurity = nullptr;
+	m_xmlRootSecurity = nullptr;
 
 	cJSON_AddItemToObject(m_json, XmlName::HARDWARE, m_json_hdw);
 	cJSON_AddItemToObject(m_json, XmlName::VARS    , m_json_var);
@@ -138,7 +138,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != LoadUsers(XMLRootSecurity, m_json_usr)) {
+	if (TRITONN_RESULT_OK != LoadUsers(m_xmlRootSecurity, m_json_usr)) {
 		return m_error.getError();
 	}
 
@@ -206,8 +206,8 @@ UDINT rDataConfig::LoadSecurity(tinyxml2::XMLElement* root, tinyxml2::XMLDocumen
 	}
 
 	// Парсим разкодированный блок пользователей
-	XMLRootSecurity = doc_security.FirstChildElement(XmlName::SECURITY);
-	if (!XMLRootSecurity) {
+	m_xmlRootSecurity = doc_security.FirstChildElement(XmlName::SECURITY);
+	if (!m_xmlRootSecurity) {
 		return m_error.set(DATACFGERR_SECURITY_PARSE, xml_crypt->GetLineNum());
 	}
 
@@ -1021,7 +1021,7 @@ void rDataConfig::saveWeb()
 
 tinyxml2::XMLElement *rDataConfig::GetRootSecurity()
 {
-	return XMLRootSecurity;
+	return m_xmlRootSecurity;
 }
 
 
