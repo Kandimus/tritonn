@@ -35,15 +35,15 @@ int main(int argc, char* argv[])
 		string crypt   = "";
 		string uncrypt = "";
 
-		SimpleFileLoad("./users.xml", text);
+		simpleFileLoad("./users.xml", text);
 
 		EncryptEAS(text, AES_KEY, AES_IV, crypt);
 
-		SimpleFileSave("./users.crypt.txt", crypt);
+		simpleFileSave("./users.crypt.txt", crypt);
 	
 		DecryptEAS(crypt, AES_KEY, AES_IV, uncrypt);
 
-		SimpleFileSave("./users.uncrypt.xml", uncrypt);
+		simpleFileSave("./users.uncrypt.xml", uncrypt);
 	}
 
 	rLogManager::instance().setDir(DIR_LOG);

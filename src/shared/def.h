@@ -113,6 +113,7 @@ const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 const UDINT  MAX_CONFIG_NAME           = 128;
 const UDINT  MAX_CFGVER_SIZE           = 17;
 const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH;
+const UDINT  MAX_STRHASH_SIZE          = MAX_HASH_SIZE * 2;
 
 const UDINT  MAX_UNITS_COUNT           = 512;
 
@@ -327,7 +328,6 @@ enum rTritonn_Error
 	FILE_RESULT_CANTDELETE,                 //  40 Ошибка операции удаления файла или директории
 	FILE_RESULT_EFILE,                      //  41 Прочие ошибки файла (сбой функции stat)
 	FILE_RESULT_CANTREMOVE,                 //  42
-	FILE_RESULT_ENCRYPT_ERROR,              //  43
 
 	DATACFGERR_STRUCT         = 100,        // 100
 	DATACFGERR_NOTFOUND_HARDWARE,           //
@@ -447,17 +447,18 @@ enum rTritonn_Error
 	DATACFGERR_DYNVISC_NOKINVISC,           //
 	DATACFGERR_DYNVISC_NODENSITY,           // 216
 
-	DATACFGERR_LANG_STRUCT = 500,
-	DATACFGERR_LANG_UNKNOW,
-	DATACFGERR_LANG_DUPID,
-	DATACFGERR_LANG_ID,
-	DATACFGERR_LANG_DEFAULT,
+	DATACFGERR_LANG_STRUCT = 500,           // 500
+	DATACFGERR_LANG_UNKNOW,                 //
+	DATACFGERR_LANG_DUPID,                  // 502
+	DATACFGERR_LANG_ID,                     //
+	DATACFGERR_LANG_DEFAULT,                // 504
 
-	DATACFGERR_PREC_ID = 600,
+	DATACFGERR_PREC_ID = 600,               // 600
 
-	XMLFILE_RESULT_NFHASH = 700,
-	XMLFILE_RESULT_BADHASH,
-	XMLFILE_RESULT_NOTEQUAL,
+	XMLFILE_RESULT_NFHASH = 700,            // 700
+	XMLFILE_RESULT_BADHASH,                 //
+	XMLFILE_RESULT_NOTEQUAL,                // 702
+	XMLFILE_RESULT_ENCRYPT_ERROR,           //
 
 	// 1024..1999 OPC UA (open62541)
 	// 2000 tritonn opc ua

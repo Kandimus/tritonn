@@ -90,7 +90,8 @@ UDINT rListConfig::Load()
 		tinyxml2::XMLDocument  doc;
 		tinyxml2::XMLElement  *root;
 
-		item.Status = XMLFileCheck(path, doc, item.m_strHash);
+		//TODO заменить hash на signature
+		item.Status = xmlFileCheck(path, doc, "hash", XMLCONFIG_HASH_SALT);
 
 		//NOTE пока временно оставим, в рабочем режиме нужна проверка только на OK
 		if(TRITONN_RESULT_OK != item.Status && XMLFILE_RESULT_NOTEQUAL != item.Status && XMLFILE_RESULT_BADHASH != item.Status && XMLFILE_RESULT_NFHASH != item.Status)
@@ -100,6 +101,7 @@ UDINT rListConfig::Load()
 
 		root = doc.RootElement();
 
+		//TODO заменить hash на signature
 		item.Description = (root->Attribute("development")) ? root->Attribute("development") : "";
 		item.m_strHash   = (root->Attribute("hash"))        ? root->Attribute("hash")        : "";
 

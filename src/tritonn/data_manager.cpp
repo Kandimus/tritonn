@@ -89,7 +89,7 @@ void rDataManager::DoHalt(UDINT reason)
 
 	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, reason);
 
-	SimpleFileSave(FILE_RESTART, "cold");
+	simpleFileSave(FILE_RESTART, "cold");
 }
 
 
@@ -108,13 +108,13 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 
 		case RESTART_COLD:
 			TRACEI(LOG::DATAMGR, "Command Cold-restart");
-			SimpleFileSave(FILE_RESTART, "cold");
+			simpleFileSave(FILE_RESTART, "cold");
 			rEventManager::instance().addEvent(EID_SYSTEM_RESTART_COLD);
 			break;
 
 		case RESTART_DEBUG:
 			TRACEI(LOG::DATAMGR, "Command Debug-restart");
-			SimpleFileSave(FILE_RESTART, "debug");
+			simpleFileSave(FILE_RESTART, "debug");
 			break;
 
 		default:
@@ -138,7 +138,7 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 			if(filename.size())
 			{
 				TRACEW(LOG::DATAMGR, "Set new conf file: '%s'", filename.c_str());
-				SimpleFileSave(FILE_CONF, filename);
+				simpleFileSave(FILE_CONF, filename);
 			}
 			rThreadMaster::instance().Finish();
 			return 0;
@@ -429,7 +429,7 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	if (!rSimpleArgs::instance().isSet(rArg::ForceRun)) {
 
 		// Проверяем на cold/warm/debug старт
-		result = SimpleFileLoad(FILE_RESTART, text);
+		result = simpleFileLoad(FILE_RESTART, text);
 		if (TRITONN_RESULT_OK == result) {
 			if ("cold" == text) {
 				setLiveStatus(Live::REBOOT_COLD);
@@ -453,14 +453,14 @@ UDINT rDataManager::getConfFile(std::string& conf)
 	}
 
 	// удаляем файл
-	SimpleFileDelete(FILE_RESTART);
+	simpleFileDelete(FILE_RESTART);
 
 	if (rSimpleArgs::instance().isSet(rArg::Config)) {
 		conf = rSimpleArgs::instance().getOption(rArg::Config);
 		return TRITONN_RESULT_OK;
 	}
 
-	result = SimpleFileLoad(FILE_CONF, conf);
+	result = simpleFileLoad(FILE_CONF, conf);
 	if(TRITONN_RESULT_OK != result) {
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
 

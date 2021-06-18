@@ -488,7 +488,7 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 	string filetext = "";
 	UDINT  result   = TRITONN_RESULT_OK;
 
-	if (TRITONN_RESULT_OK != (result = SimpleFileLoad(FILE_MODBUS, filetext))) {
+	if (TRITONN_RESULT_OK != (result = simpleFileLoad(FILE_MODBUS, filetext))) {
 		return err.set(result, 0, "");
 	}
 

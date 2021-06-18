@@ -936,7 +936,7 @@ void rDataConfig::saveWeb()
 
 	const std::string begin_php = "<?php\n";
 	char* str = cJSON_Print(m_json);
-	UDINT result = SimpleFileSave(FILE_WWW_TREE_OBJ, str);
+	UDINT result = simpleFileSave(FILE_WWW_TREE_OBJ, str);
 
 	free(str);
 	if(TRITONN_RESULT_OK != result)
@@ -956,7 +956,7 @@ void rDataConfig::saveWeb()
 		text += String_format("$precision[\"core_%u\"]=%u;\n", ii, rPrecision::instance().get(ii));
 	}
 
-	result = SimpleFileSave(FILE_WWW_PRECISION, text);
+	result = simpleFileSave(FILE_WWW_PRECISION, text);
 	if (TRITONN_RESULT_OK != result) {
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 		TRACEP(LOG::CONFIG, "Can't save precision file");
@@ -985,7 +985,7 @@ void rDataConfig::saveWeb()
 		}
 
 		std::string filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_LANG;
-		result = SimpleFileSave(filename, text);
+		result = simpleFileSave(filename, text);
 		if (TRITONN_RESULT_OK != result) {
 			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 			TRACEP(LOG::CONFIG, "Can't save sid file");
@@ -1001,7 +1001,7 @@ void rDataConfig::saveWeb()
 		}
 
 		filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_EVENT;
-		result = SimpleFileSave(filename, text);
+		result = simpleFileSave(filename, text);
 		if(TRITONN_RESULT_OK != result) {
 			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
 			TRACEP(LOG::CONFIG, "Can't save event file");

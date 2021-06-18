@@ -74,7 +74,7 @@ UDINT rGeneratorMD::save(const std::string& path)
 	}
 
 	for (auto& item : m_items) {
-		result = SimpleFileSave(path + "/" + item.getFilename() + ".md", item.save());
+		result = simpleFileSave(path + "/" + item.getFilename() + ".md", item.save());
 
 		if (result != TRITONN_RESULT_OK) {
 			return result;
@@ -135,7 +135,7 @@ UDINT rGeneratorMD::save_index(const std::string& path)
 
 	text += "</body></html>";
 
-	return SimpleFileSave(path + "/index.html", text);
+	return simpleFileSave(path + "/index.html", text);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -18,12 +18,47 @@
 #include "hash.h"
 #include "simplefile.h"
 
-UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std::string& strhash)
+bool findSignature(DINT pos, const std::string& text, DINT& pos_begin, DINT& pos_end)
 {
-	USINT       fhash[MAX_HASH_SIZE] = {0};
-	USINT       shash[MAX_HASH_SIZE] = {0};
+	pos_begin = -1;
+	pos_end   = -1;
+
+	while (text[pos] != '=' && pos < text.size()) {
+		++pos;
+	}
+
+	if (pos >= text.size()) {
+		return false;
+	}
+
+	while (text[pos] != '\"' && pos < text.size()) {
+		++pos;
+	}
+
+	pos_begin = ++pos;
+
+	if (pos >= text.size()) {
+		return false;
+	}
+
+	while (text[pos] != '\"' && pos < text.size()) {
+		++pos;
+	}
+
+	pos_end = pos;
+
+	if (pos >= text.size()) {
+		return false;
+	}
+
+	return true;
+}
+
+
+UDINT xmlDumpFile(const std::string&filename, tinyxml2::XMLDocument &doc, std::string& strhash)
+{
 	std::string text;
-	UDINT       result = SimpleFileLoad(filename, text);
+	UDINT       result = simpleFileLoad(filename, text);
 
 	strhash.clear();
 
@@ -45,7 +80,37 @@ UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std:
 
 	strhash = root->Attribute("hash");
 
-	if (MAX_HASH_SIZE != strhash.size()) {
+	if (MAX_STRHASH_SIZE != strhash.size()) {
+		return XMLFILE_RESULT_NFHASH;
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT xmlFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, const std::string& signature, const std::string& salt)
+{
+	std::string text;
+	UDINT       result = simpleFileLoad(filename, text);
+
+	if (TRITONN_RESULT_OK != result) {
+		return result;
+	}
+
+	doc.Clear();
+
+	if (tinyxml2::XML_SUCCESS != doc.Parse(text.c_str())) {
+		return doc.ErrorID();
+	}
+
+	auto root = doc.RootElement();
+
+	if (!root->Attribute("hash")) {
+		return XMLFILE_RESULT_NFHASH;
+	}
+
+	std::string strhash = root->Attribute(signature.c_str());
+
+	if (MAX_STRHASH_SIZE != strhash.size()) {
 		return XMLFILE_RESULT_NFHASH;
 	}
 
@@ -55,9 +120,13 @@ UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std:
 	}
 
 	// Заменяем hash на соль
-	for (UDINT ii = 0; ii < MAX_HASH_SIZE; ++ii) {
-		text[pos + ii] = XMLHASH_SALT[ii];
+	//TODO переделать через findSignature
+	for (UDINT ii = 0; ii < MAX_STRHASH_SIZE; ++ii) {
+		text[pos + ii] = salt[ii];
 	}
+
+	USINT fhash[MAX_HASH_SIZE] = {0};
+	USINT shash[MAX_HASH_SIZE] = {0};
 
 	// получаем оба HASH
 	String_ToBuffer(strhash.c_str(), fhash, MAX_HASH_SIZE);
@@ -73,34 +142,29 @@ UDINT XMLFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, std:
 }
 
 
-UDINT XMLDumpFile(const std::string&filename, tinyxml2::XMLDocument &doc, std::string& strhash)
+
+UDINT xmlFileSave(const std::string& filename, const std::string& text, const std::string& marker)
 {
-	std::string text;
-	UDINT       result = SimpleFileLoad(filename, text);
+	DINT        pos      = text.find(marker);
+	std::string sig_text = text;
 
-	strhash.clear();
+	if (pos != -1) {
+		DINT begin = -1;
+		DINT end   = -1;
 
-	if (TRITONN_RESULT_OK != result) {
-		return result;
+		pos += marker.size();
+		if (!findSignature(pos, text, begin, end)) {
+			return XMLFILE_RESULT_ENCRYPT_ERROR;
+		}
+
+		USINT hash[MAX_HASH_SIZE];
+
+		GetStrHash(text, hash);
+
+		std::string str_hash = "-" + String_FromBuffer(hash, MAX_HASH_SIZE) + "-";
+
+		sig_text = text.replace(begin, end - begin, str_hash);
 	}
 
-	doc.Clear();
-
-	if (tinyxml2::XML_SUCCESS != doc.Parse(text.c_str())) {
-		return doc.ErrorID();
-	}
-
-	auto root = doc.RootElement();
-
-	if (!root->Attribute("hash")) {
-		return XMLFILE_RESULT_NFHASH;
-	}
-
-	strhash = root->Attribute("hash");
-
-	if (MAX_HASH_SIZE != strhash.size()) {
-		return XMLFILE_RESULT_NFHASH;
-	}
-
-	return TRITONN_RESULT_OK;
+	return simpleFileSave(filename, sig_text);
 }

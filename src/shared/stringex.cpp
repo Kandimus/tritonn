@@ -226,6 +226,3 @@ std::string String_FromBuffer(const unsigned char *buf, unsigned int bufsize)
 
 	return result;
 }
-
-
-

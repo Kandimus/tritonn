@@ -26,6 +26,7 @@
 #include "error.h"
 #include "variable_list.h"
 #include "simplefile.h"
+#include "xmlfile.h"
 #include "xml_util.h"
 #include "comment_defines.h"
 #include "generator_md.h"
@@ -713,7 +714,7 @@ UDINT rReport::SaveToXML(UDINT present)
 
 	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), m_alias.c_str(), reptime._UNIX);
 //	UDINT   result  = SimpleFileSave(filename, printer.CStr());
-	UDINT result = simpleFileSaveSignature(filename, printer.CStr(), "signature");
+	UDINT result = xmlFileSave(filename, printer.CStr(), "signature");
 
 	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().add(reinitEvent(EID_REPORT_CANTSAVE) << result);

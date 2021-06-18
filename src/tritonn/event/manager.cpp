@@ -443,7 +443,7 @@ void rEventManager::save(const rEvent& event)
 	std::string filename = DIR_EVENT + String_format("%u.event", event.getTime().getSec() / rDateTime::SEC_IN_DAY);
 	std::string text = event.toString() + "\n";
 
-	SimpleFileAppend(filename, text);
+	simpleFileAppend(filename, text);
 }
 
 
