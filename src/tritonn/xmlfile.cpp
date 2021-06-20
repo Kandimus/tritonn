@@ -104,7 +104,7 @@ UDINT xmlFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, cons
 
 	auto root = doc.RootElement();
 
-	if (!root->Attribute("hash")) {
+	if (!root->Attribute(signature.c_str())) {
 		return XMLFILE_RESULT_NFHASH;
 	}
 
@@ -161,9 +161,9 @@ UDINT xmlFileSave(const std::string& filename, const std::string& text, const st
 
 		GetStrHash(text, hash);
 
-		std::string str_hash = "-" + String_FromBuffer(hash, MAX_HASH_SIZE) + "-";
+		std::string str_hash = String_FromBuffer(hash, MAX_HASH_SIZE);
 
-		sig_text = text.replace(begin, end - begin, str_hash);
+		sig_text = sig_text.replace(begin, end - begin, str_hash);
 	}
 
 	return simpleFileSave(filename, sig_text);
