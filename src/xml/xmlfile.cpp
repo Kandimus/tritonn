@@ -114,16 +114,20 @@ UDINT xmlFileCheck(const std::string &filename, tinyxml2::XMLDocument &doc, cons
 		return XMLFILE_RESULT_NFHASH;
 	}
 
-	int pos = text.find(strhash);
+	int pos   = text.find(signature);
+	int begin = -1;
+	int end   = -1;
 	if(pos <= 0) {
 		return XMLFILE_RESULT_BADHASH;
 	}
 
-	// Заменяем hash на соль
-	//TODO переделать через findSignature
-	for (UDINT ii = 0; ii < MAX_STRHASH_SIZE; ++ii) {
-		text[pos + ii] = salt[ii];
+	pos += signature.size();
+	if (!findSignature(pos, text, begin, end)) {
+		return XMLFILE_RESULT_ENCRYPT_ERROR;
 	}
+
+	// Заменяем hash на соль
+	text = text.replace(begin, end - begin, salt);
 
 	USINT fhash[MAX_HASH_SIZE] = {0};
 	USINT shash[MAX_HASH_SIZE] = {0};
@@ -148,6 +152,8 @@ UDINT xmlFileSave(const std::string& filename, const std::string& text, const st
 	DINT        pos      = text.find(marker);
 	std::string sig_text = text;
 
+	simpleFileSave(filename + "_", text);
+
 	if (pos != -1) {
 		DINT begin = -1;
 		DINT end   = -1;
@@ -162,6 +168,8 @@ UDINT xmlFileSave(const std::string& filename, const std::string& text, const st
 		GetStrHash(text, hash);
 
 		std::string str_hash = String_FromBuffer(hash, MAX_HASH_SIZE);
+
+		simpleFileSave(filename + "_sha", str_hash);
 
 		sig_text = sig_text.replace(begin, end - begin, str_hash);
 	}
