@@ -15,9 +15,8 @@
 
 #include "module_ai6.h"
 #include "locker.h"
-#include "tinyxml2.h"
+#include "xml_util.h"
 #include "../error.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 
 rModuleAI6::rModuleAI6(UDINT id) : rIOBaseModule(id)

@@ -15,7 +15,7 @@
 
 #include "interface.h"
 #include "def.h"
-#include "../xml_util.h"
+#include "xml_util.h"
 #include "../data_config.h"
 
 

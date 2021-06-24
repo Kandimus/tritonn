@@ -1,4 +1,4 @@
-project(${PROJECT_NAME_PREFIX}ttce)
+project(${PROJECT_NAME_PREFIX}checkxml)
 
 # Sources
 file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp
@@ -7,14 +7,11 @@ file(GLOB_RECURSE files_h	${PROJECT_SOURCE_DIR}/*.h)
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE TRITONN_TTCE=1)
-
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ttce")
-
-#target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_BINARY_DIR}/src")
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "checkxml")
 
 add_lib(shared)
+add_lib(simpleargs)
 add_lib(xml)
 

@@ -15,7 +15,7 @@
 
 #include "manager.h"
 #include "locker.h"
-#include "tinyxml2.h"
+#include "xml_util.h"
 #include "basechannel.h"
 #include "../data_config.h"
 #include "../data_manager.h"
@@ -24,7 +24,6 @@
 #include "../def_arguments.h"
 #include "../variable_item.h"
 #include "../threadmaster.h"
-#include "../xml_util.h"
 #include "../error.h"
 #include "defines.h"
 

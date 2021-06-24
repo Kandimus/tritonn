@@ -3,8 +3,8 @@
 #include "tritonn_version.h"
 #include "hash.h"
 #include "simpleargs.h"
-#include "tinyxml2.h"
-#include "../tritonn/xmlfile.h"
+#include "xmlfile.h"
+#include "def.h"
 
 int main(int argc, char* argv[])
 {
@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
 	tinyxml2::XMLDocument doc;
 
-	UDINT result = xmlFileCheck(rSimpleArgs::instance().getArgument(0), doc, rSimpleArgs::instance().getOption("signature"), rSimpleArgs::getOption("salt"));
+	UDINT result = xmlFileCheck(rSimpleArgs::instance().getArgument(0), doc, rSimpleArgs::instance().getOption("signature"), rSimpleArgs::instance().getOption("salt"));
 	
 	switch(result) {
 		case TRITONN_RESULT_OK:  printf("Success: hash is correct\n"); break;

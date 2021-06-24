@@ -15,9 +15,8 @@
 
 #include "module_di8do8.h"
 #include "locker.h"
-#include "tinyxml2.h"
+#include "xml_util.h"
 #include "../error.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;

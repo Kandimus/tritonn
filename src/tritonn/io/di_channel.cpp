@@ -19,9 +19,8 @@
 #include "../variable_list.h"
 #include "../units.h"
 #include "tickcount.h"
-#include "tinyxml2.h"
+#include "xml_util.h"
 #include "../error.h"
-#include "../xml_util.h"
 #include "../comment_defines.h"
 
 rBitsArray rIODIChannel::m_flagsSetup;

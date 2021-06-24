@@ -17,7 +17,7 @@
 #include <algorithm>
 #include "basechannel.h"
 #include "bits_array.h"
-#include "../xml_util.h"
+#include "xml_util.h"
 #include "../data_config.h"
 #include "../variable_item.h"
 #include "../variable_list.h"

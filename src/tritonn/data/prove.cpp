@@ -18,7 +18,7 @@
 #include <limits>
 #include <cmath>
 #include <string.h>
-#include "tinyxml2.h"
+#include "xml_util.h"
 #include "../event/eid.h"
 #include "../event/manager.h"
 #include "../text_id.h"
@@ -33,7 +33,6 @@
 #include "../data_snapshot.h"
 #include "../io/manager.h"
 #include "../io/module_crm.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 #include "../comment_defines.h"
 

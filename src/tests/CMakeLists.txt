@@ -15,6 +15,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "test")
 
 # LIBRARIES
 add_lib(shared)
+add_lib(xml)
 add_lib(open62541)
 add_lib(simpleargs)
 
