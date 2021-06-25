@@ -14,8 +14,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tritonn")
 
 # LIBRARIES
 add_lib(shared)
-add_lib(open62541)
+add_lib(xml)
 add_lib(simpleargs)
+add_lib(open62541)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
 

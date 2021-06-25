@@ -18,6 +18,7 @@
 #include "locker.h"
 #include "stringex.h"
 #include "log_manager.h"
+#include "xml_util.h"
 #include "../error.h"
 #include "../data_manager.h"
 #include "../variable_list.h"
@@ -27,7 +28,6 @@
 #include "simplefile.h"
 #include "modbustcpslave_client.h"
 #include "modbus_datablocks.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -488,7 +488,7 @@ UDINT rModbusTCPSlaveManager::LoadStandartModbus(rError& err)
 	string filetext = "";
 	UDINT  result   = TRITONN_RESULT_OK;
 
-	if (TRITONN_RESULT_OK != (result = SimpleFileLoad(FILE_MODBUS, filetext))) {
+	if (TRITONN_RESULT_OK != (result = simpleFileLoad(FILE_MODBUS, filetext))) {
 		return err.set(result, 0, "");
 	}
 

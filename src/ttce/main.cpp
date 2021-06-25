@@ -208,7 +208,7 @@ int main(int argc, const char* argv[])
 		text += String_format("<!-- %s -->\n<str id=\"%i\"></str>\n", item.Name.c_str(), static_cast<DINT>(item.EID));
 	}
 
-	UDINT result = SimpleFileSave("./checkevent.txt", text);
+	UDINT result = simpleFileSave("./checkevent.txt", text);
 	if(TRITONN_RESULT_OK != result) {
 		printf("Cant create file 'checkevent.txt'. result %i!\n", result);
 		return 1;

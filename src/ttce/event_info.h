@@ -2,8 +2,11 @@
 
 #include <vector>
 #include <string>
-#include "tinyxml2.h"
 #include "../tritonn/event/eid.h"
+
+namespace tinyxml2 {
+	class XMLElement;
+}
 
 
 const UDINT PROP_USED = 1;

@@ -11,6 +11,7 @@
 
 #include "volwater.h"
 #include <limits>
+#include "xml_util.h"
 #include "../event/eid.h"
 #include "../event/manager.h"
 #include "../text_id.h"
@@ -19,7 +20,6 @@
 #include "../densitywater.h"
 #include "../error.h"
 #include "../variable_list.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 #include "../comment_defines.h"
 

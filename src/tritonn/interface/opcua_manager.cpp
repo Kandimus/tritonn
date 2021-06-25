@@ -22,12 +22,12 @@
 #include "stringex.h"
 #include "error.h"
 #include "log_manager.h"
+#include "xml_util.h"
 #include "../data_snapshot_item.h"
 #include "../data_manager.h"
 #include "../data_config.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 
 #define ANSI_COLOR_RESET   "\x1b[0m"

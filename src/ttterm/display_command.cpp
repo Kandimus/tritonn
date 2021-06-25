@@ -366,7 +366,7 @@ void rDisplayManager::cmdLoad(vector<string> &args)
 	//  Данную команду нельзя использовать в режиме авто-тестирования
 	if(Auto) return;
 
-	result = SimpleFileLoad(args[1], text);
+	result = simpleFileLoad(args[1], text);
 
 	// Сбрасываем номер исполяемой авто-команды
 	AutoID = 0;

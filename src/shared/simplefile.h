@@ -2,7 +2,7 @@
 //===
 //=== simplefile.h
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -18,9 +18,9 @@
 
 #include "def.h"
 
-extern UDINT SimpleFileCreateDir(const std::string& filename);
-extern UDINT SimpleFileDelete(const std::string& filename);
-extern UDINT SimpleFileLoad(const std::string& filename, std::string& text);
-extern UDINT SimpleFileSave(const std::string& filename, const std::string& text);
-extern UDINT SimpleFileAppend(const std::string& filename, const std::string& text);
-extern UDINT SimpleFileGaranteedSave(const std::string& filename, const std::string& text);
+extern unsigned int simpleFileCreateDir(const std::string& filename);
+extern unsigned int simpleFileDelete(const std::string& filename);
+extern unsigned int simpleFileLoad(const std::string& filename, std::string& text);
+extern unsigned int simpleFileSave(const std::string& filename, const std::string& text);
+extern unsigned int simpleFileAppend(const std::string& filename, const std::string& text);
+extern unsigned int simpleFileGaranteedSave(const std::string& filename, const std::string& text);

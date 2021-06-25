@@ -141,7 +141,7 @@ UDINT rVariableList::saveToCSV(const std::string& path)
 		text += var->saveToCSV();
 	}
 
-	return SimpleFileSave(path + ".variable.csv", text);
+	return simpleFileSave(path + ".variable.csv", text);
 }
 
 

@@ -15,13 +15,13 @@
 
 #include "fi_channel.h"
 #include <math.h>
+#include "xml_util.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
 #include "../units.h"
 #include "tickcount.h"
-#include "tinyxml2.h"
 #include "../error.h"
-#include "../xml_util.h"
+
 #include "../comment_defines.h"
 
 rBitsArray rIOFIChannel::m_flagsSetup;

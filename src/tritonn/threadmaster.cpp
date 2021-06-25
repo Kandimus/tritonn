@@ -242,7 +242,7 @@ UDINT rThreadMaster::saveAllTimerInfo()
 	}
 	m_sysInfo.clear();
 
-	SimpleFileSave(filename, cputext + "\n" + cpumtext + "\n" + memtext + "\n" + memmtext);
+	simpleFileSave(filename, cputext + "\n" + cpumtext + "\n" + memtext + "\n" + memmtext);
 
 
 	for (auto thread : m_threadList) {
@@ -257,7 +257,7 @@ UDINT rThreadMaster::saveAllTimerInfo()
 			delete ti;
 		}
 
-		SimpleFileSave(filename, worktext + "\n" + idletext);
+		simpleFileSave(filename, worktext + "\n" + idletext);
 
 		thread->m_timeInfo.clear();
 	}

@@ -15,9 +15,8 @@
 
 #include "module_crm.h"
 #include "locker.h"
-#include "tinyxml2.h"
+#include "xml_util.h"
 #include "../error.h"
-#include "../xml_util.h"
 #include "../generator_md.h"
 
 rModuleCRM::rModuleCRM(UDINT id) : rIOBaseModule(id)

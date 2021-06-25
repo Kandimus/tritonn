@@ -11,21 +11,21 @@
 
 #include "../data_manager.h"
 #include <string.h>
+#include "xml_util.h"
+#include "xmlfile.h"
 #include "../data_source.h"
 #include "log_manager.h"
 #include "simplefile.h"
 #include "../total.h"
 #include "../variable_item.h"
 #include "../event/manager.h"
-#include "../xml_util.h"
-#include "../xmlfile.h"
 
 UDINT rDumpFile::checkFile(const std::string& filename, const std::string& hash)
 {
 	std::string strhash = "";
 
 	m_filename = filename;
-	m_result   = XMLDumpFile(m_filename, m_xmlDoc, strhash);
+	m_result   = xmlDumpFile(m_filename, m_xmlDoc, strhash);
 
 	if (m_result == FILE_RESULT_NOTFOUND) {
 		m_xmlDoc.Clear();
@@ -65,7 +65,7 @@ UDINT rDataManager::saveDataVariables()
 
 	text += m_dumpVars.m_suffix;
 
-	UDINT result = SimpleFileSave(FILE_DUMP_VARIABLES, text);
+	UDINT result = simpleFileSave(FILE_DUMP_VARIABLES, text);
 
 	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
@@ -104,7 +104,7 @@ void rDataManager::loadDumps()
 		return;
 
 	} else {
-		SimpleFileDelete(m_dumpTotals.getStrFilename());
+		simpleFileDelete(m_dumpTotals.getStrFilename());
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpTotals.getResult());
 
 		DoHalt(HALT_REASON_CONFIGFILE | m_dumpTotals.getResult());
@@ -128,7 +128,7 @@ void rDataManager::loadDumps()
 		return;
 
 	} else {
-		SimpleFileDelete(m_dumpVars.getStrFilename());
+		simpleFileDelete(m_dumpVars.getStrFilename());
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
 
 		DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
@@ -160,7 +160,7 @@ UDINT rDataManager::saveDataTotals()
 
 	text += m_dumpTotals.m_suffix;
 
-	UDINT result = SimpleFileSave(FILE_DUMP_TOTALS, text);
+	UDINT result = simpleFileSave(FILE_DUMP_TOTALS, text);
 
 	if (result != TRITONN_RESULT_OK) {
 		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
@@ -226,7 +226,7 @@ void rDataManager::forceLoadDumpVars(bool forceload)
 		loadDataVariables();
 
 	} else {
-		SimpleFileDelete(m_dumpVars.getStrFilename());
+		simpleFileDelete(m_dumpVars.getStrFilename());
 		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'. Dump file was delete.", FILE_DUMP_VARIABLES.c_str());
 	}
 
@@ -246,7 +246,7 @@ void rDataManager::forceLoadDumpTotals(bool forceload)
 		TRACEW(LOG::DATAMGR, "Force load dump file '%s'.", FILE_DUMP_TOTALS.c_str());
 		loadDataTotals();
 	} else {
-		SimpleFileDelete(m_dumpTotals.getStrFilename());
+		simpleFileDelete(m_dumpTotals.getStrFilename());
 		TRACEI(LOG::DATAMGR, "Cancel force load dump file '%s'. Dump file was delete.", FILE_DUMP_TOTALS.c_str());
 	}
 

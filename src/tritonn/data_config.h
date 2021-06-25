@@ -75,7 +75,7 @@ protected:
 	cJSON* m_json_usr = nullptr;
 	cJSON* m_json_hdw = nullptr;
 
-	tinyxml2::XMLElement* XMLRootSecurity;
+	tinyxml2::XMLElement* m_xmlRootSecurity;
 	rSystemVariable*      SysVar;
 	std::vector<rSource*>    *ListSource;
 	std::vector<rInterface*> *ListInterface;

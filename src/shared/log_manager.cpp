@@ -168,7 +168,7 @@ std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, con
 	fulltext += String_format("] %08x %s\n", mask, text.c_str());
 
 	if (m_save.Get()) {
-		SimpleFileAppend(filename, fulltext);
+		simpleFileAppend(filename, fulltext);
 	}
 
 	return fulltext;
