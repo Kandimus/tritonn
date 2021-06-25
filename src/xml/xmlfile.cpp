@@ -152,8 +152,7 @@ UDINT xmlFileSave(const std::string& filename, const std::string& text, const st
 	DINT        pos      = text.find(marker);
 	std::string sig_text = text;
 
-	simpleFileSave(filename + "_", text);
-
+//	simpleFileSave(filename + "_", text);
 	if (pos != -1) {
 		DINT begin = -1;
 		DINT end   = -1;
@@ -169,8 +168,7 @@ UDINT xmlFileSave(const std::string& filename, const std::string& text, const st
 
 		std::string str_hash = String_FromBuffer(hash, MAX_HASH_SIZE);
 
-		simpleFileSave(filename + "_sha", str_hash);
-
+//		simpleFileSave(filename + "_sha", str_hash);
 		sig_text = sig_text.replace(begin, end - begin, str_hash);
 	}
 

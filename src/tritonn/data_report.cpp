@@ -684,7 +684,7 @@ UDINT rReport::SaveToXML(UDINT present)
 	rReportTime          reptime;
 
 	printer.OpenElement("tritonn");
-	printer.PushAttribute("signature", "1");//XMLREPORT_HASH_SALT.c_str());
+	printer.PushAttribute("signature", XMLREPORT_HASH_SALT.c_str());
 
 	printer.OpenElement("report");
 
@@ -720,9 +720,6 @@ UDINT rReport::SaveToXML(UDINT present)
 		rEventManager::instance().add(reinitEvent(EID_REPORT_CANTSAVE) << result);
 		return 0;
 	}
-
-
-
 
 	return 1;
 }
