@@ -261,8 +261,7 @@ void rUser::generateMarkDown(rGeneratorMD& md)
 	text += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	text += "<" + std::string(XmlName::SECURITY) + ">\n";
 	text += "\t<" + std::string(XmlName::CONFIG) + ">\n";
-	text += "\t\t<" + std::string(XmlName::LOGIN) + ">user name</" + std::string(XmlName::LOGIN) + ">\n";
-	text += "\t\t<" + std::string(XmlName::PASSWORD) + ">SHA-1 hash password</" + std::string(XmlName::PASSWORD) + ">\n";
+	text += "\t\t<" + std::string(XmlName::PASSWORD) + ">open password</" + std::string(XmlName::PASSWORD) + ">\n";
 	text += "\t</" + std::string(XmlName::CONFIG) + ">\n";
 	text += "\t<" + std::string(XmlName::USERS) + ">\n";
 	text += "\t\t<" + std::string(XmlName::USER) + " name=\"user name\">\n";
