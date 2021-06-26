@@ -9,6 +9,7 @@ add_subdirectory(ttce)
 add_subdirectory(ttterm)
 add_subdirectory(testevent)
 add_subdirectory(checkxml)
+add_subdirectory(ttutil)
 
 if(TRITONN_TESTS)
 	add_subdirectory(tests)

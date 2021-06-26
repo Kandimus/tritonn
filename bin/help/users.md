@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # users
-> 0.19.118.da2b0fb8
+> 0.19.130.2f0e6b68
 ## XML
 ````xml
 <security>
@@ -18,8 +18,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <security>
 	<config>
-		<login>user name</login>
-		<password>SHA-1 hash password</password>
+		<password>open password</password>
 	</config>
 	<users>
 		<user name="user name">

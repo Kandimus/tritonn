@@ -92,7 +92,6 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLDocument doc_security;
-	tinyxml2::XMLElement* root = nullptr;
 	std::string fullname      = DIR_CONF + filename;
 	std::string info_devel    = "";
 	std::string info_hash     = "";
@@ -121,7 +120,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 		return m_error.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
 	}
 
-	root = doc.FirstChildElement(XmlName::TRITONN);
+	auto root = doc.FirstChildElement(XmlName::TRITONN);
 	if (!root) {
 		return m_error.set(DATACFGERR_STRUCT, 0, "Is not tritonn-conf file");
 	}
@@ -186,16 +185,19 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 UDINT rDataConfig::LoadSecurity(tinyxml2::XMLElement* root, tinyxml2::XMLDocument& doc_security)
 {
 	tinyxml2::XMLElement* xml_crypt = root->FirstChildElement(XmlName::SECURITY);
-	std::string aes_text = "";
-	std::string xml_src  = "";
 
 	if (!xml_crypt) {
 		return m_error.set(DATACFGERR_SECURITY_NF, root->GetLineNum());
 	}
 
 	// Дешифруем блок пользователей
-	aes_text = xml_crypt->GetText();
-	aes_text = String_deletewhite(aes_text);
+	UDINT       fault    = false;
+	std::string aes_text = String_deletewhite(XmlUtils::getTextString(xml_crypt, "", fault));
+	std::string xml_src  = "";
+
+	if (fault || aes_text.empty()) {
+		return m_error.set(DATACFGERR_SECURITY_DESCRYPT, xml_crypt->GetLineNum(), "Security is empty");
+	}
 
 	if (DecryptEAS(aes_text, AES_KEY, AES_IV, xml_src)) {
 		return m_error.set(DATACFGERR_SECURITY_DESCRYPT, xml_crypt->GetLineNum());

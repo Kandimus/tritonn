@@ -38,6 +38,10 @@ int main(int argc, const char* argv[])
 		return 1;
 	}
 
+	if (!rSimpleArgs::instance().isSet(REPORT) && !rSimpleArgs::instance().isSet(CONFIG)) {
+		return 0;
+	}
+
 	if (rSimpleArgs::instance().isSet(REPORT)) {
 		salt = XMLREPORT_HASH_SALT;
 	}
