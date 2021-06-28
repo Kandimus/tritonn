@@ -37,8 +37,6 @@
 rIOManager::rIOManager() : rVariableClass(Mutex)
 {
 	RTTI = "rIOManager";
-
-	m_modules.push_back(new rModuleCPU(UDINT(0)));
 }
 
 
@@ -118,29 +116,46 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 	return TRITONN_RESULT_OK;
 }
 
-rIOBaseModule* rIOManager::addModule(const std::string& type)
+rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT lineno)
 {
 	auto sysvar = rDataManager::instance().getSysVar();
 	rIOBaseModule* module = nullptr;
 
-	if (type == rModuleAI6::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleAI6(sysvar->m_max[rModuleAI6::getRTTI()]));
-		++sysvar->m_max[rModuleAI6::getRTTI()];
+	if (type == rModuleCPU::getRTTI()) {
+		if (m_modules.size()) {
+			err.set(DATACFGERR_HARDWARE_CPU_FAULT, lineno, "cpu must be the first module");
+			return nullptr;
+		}
 
-	} else if (type == rModuleDI8DO8::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(sysvar->m_max[rModuleDI8DO8::getRTTI()]));
-		++sysvar->m_max[rModuleDI8DO8::getRTTI()];
-
-	} else if (type == rModuleFI4::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(sysvar->m_max[rModuleFI4::getRTTI()]));
-		++sysvar->m_max[rModuleFI4::getRTTI()];
-
-	} else if (type == rModuleCRM::getRTTI()) {
-		module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(sysvar->m_max[rModuleCRM::getRTTI()]));
-		++sysvar->m_max[rModuleCRM::getRTTI()];
+		module = dynamic_cast<rIOBaseModule*>(new rModuleCPU(sysvar->m_max[rModuleCPU::getRTTI()]));
+		++sysvar->m_max[rModuleCPU::getRTTI()];
 
 	} else {
-		return nullptr;
+		if (!m_modules.size()) {
+			err.set(DATACFGERR_HARDWARE_CPU_NF, lineno, "cpu must be the first module");
+			return nullptr;
+		}
+
+		if (type == rModuleAI6::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6(sysvar->m_max[rModuleAI6::getRTTI()]));
+			++sysvar->m_max[rModuleAI6::getRTTI()];
+
+		} else if (type == rModuleDI8DO8::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(sysvar->m_max[rModuleDI8DO8::getRTTI()]));
+			++sysvar->m_max[rModuleDI8DO8::getRTTI()];
+
+		} else if (type == rModuleFI4::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(sysvar->m_max[rModuleFI4::getRTTI()]));
+			++sysvar->m_max[rModuleFI4::getRTTI()];
+
+		} else if (type == rModuleCRM::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(sysvar->m_max[rModuleCRM::getRTTI()]));
+			++sysvar->m_max[rModuleCRM::getRTTI()];
+
+		} else {
+			err.set(DATACFGERR_UNKNOWN_MODULE, lineno, "");
+			return nullptr;
+		}
 	}
 
 	m_modules.push_back(module);

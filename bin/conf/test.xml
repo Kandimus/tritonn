@@ -2,6 +2,7 @@
 <tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
+		<module name="cpu" type="cpu" />
 		<module type="AI6" name="ai6_1" ver="1.0">
 			<channel number="0" setup=""/>
 			<channel number="1" setup="AVERAGE"/>

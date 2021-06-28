@@ -24,7 +24,9 @@
 #include "simplefile.h"
 #include "stringex.h"
 #include "users.h"
+#include "xml_util.h"
 #include "hash.h"
+#include "text_id.h"
 #include "threadmaster.h"
 #include "io/manager.h"
 #include "io/defines.h"
@@ -51,7 +53,6 @@
 #include "interface/modbustcpslave_manager.h"
 #include "interface/opcua_manager.h"
 #include "structures.h"
-#include "xml_util.h"
 
 
 rDataConfig::rDataConfig()
@@ -227,18 +228,19 @@ UDINT rDataConfig::loadHardware(tinyxml2::XMLElement* root)
 		return m_error.set(DATACFGERR_NOTFOUND_HARDWARE, root->GetLineNum());
 	}
 
+	UDINT module_pos = 0;
 	XML_FOR(module_xml, hardware_xml, XmlName::MODULE) {
-		std::string    type   = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
+		std::string type = XmlUtils::getAttributeString(module_xml, XmlName::TYPE, "");
 
 		if (type == "") {
-			return m_error.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
+			return m_error.set(DATACFGERR_HARDWARE_MODULE_IS_EMPTY, module_xml->GetLineNum());
 		}
 
 		type = String_tolower(type);
 
-		rIOBaseModule* module = rIOManager::instance().addModule(type);
+		auto module = rIOManager::instance().addModule(type, m_error, module_xml->GetLineNum());
 		if (!module) {
-			return m_error.set(DATACFGERR_UNKNOWN_MODULE, module_xml->GetLineNum());
+			return m_error.getError();
 		}
 
 		if (module->loadFromXML(module_xml, m_error) != TRITONN_RESULT_OK) {
@@ -247,9 +249,10 @@ UDINT rDataConfig::loadHardware(tinyxml2::XMLElement* root)
 
 		cJSON *jsrc = cJSON_CreateObject();
 		cJSON *jitm = cJSON_CreateObject();
-		cJSON_AddItemToObject(jsrc, XmlName::ALIAS , cJSON_CreateString((IO::HARWARE_PREFIX + module->getName()).c_str()));
-		cJSON_AddItemToObject(jsrc, XmlName::MODULE, cJSON_CreateString(module->getModuleType().c_str()));
-		cJSON_AddItemToObject(jsrc, XmlName::DESC  , cJSON_CreateNumber(module->getDescr()));
+		cJSON_AddItemToObject(jsrc, XmlName::ALIAS   , cJSON_CreateString((IO::HARWARE_PREFIX + module->getName()).c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::MODULE  , cJSON_CreateString(module->getModuleType().c_str()));
+		cJSON_AddItemToObject(jsrc, XmlName::POSITION, cJSON_CreateNumber(module_pos++));
+		cJSON_AddItemToObject(jsrc, XmlName::DESC    , cJSON_CreateNumber(SID::HARWARE_UNKNOW + static_cast<UINT>(module->getType())));
 		cJSON_AddItemToObject(jitm, module->getModuleType().c_str(), jsrc);
 		cJSON_AddItemToArray(m_json_hdw, jitm);
 	}

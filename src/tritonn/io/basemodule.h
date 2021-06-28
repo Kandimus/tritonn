@@ -33,6 +33,7 @@ class XMLElement;
 class rIOBaseModule
 {
 public:
+	//NOTE при добавлении типа модуля, добавить описание в таблицу SID
 	enum class Type : UINT
 	{
 		UNDEF  = 0,     //
@@ -57,9 +58,11 @@ public:
 	virtual UDINT generateMarkDown(rGeneratorMD& md);
 	virtual rIOBaseChannel* getChannel(USINT channel) = 0;
 	virtual rIOBaseModule*  getModulePtr() = 0;
-	virtual std::string getAlias() const;
-	virtual std::string getName() const;
-	virtual STRID       getDescr() const;
+	virtual std::string getAlias() const { return m_alias; }
+	virtual std::string getName()  const { return m_name;  }
+	virtual STRID       getDescr() const { return m_descr; }
+	virtual UDINT       getID()    const { return m_ID;    }
+	virtual Type        getType()  const { return m_type;  }
 
 /*
 	Type  getType()         { return m_type; }

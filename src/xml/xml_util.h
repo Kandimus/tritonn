@@ -201,6 +201,7 @@ const char PHYSICAL[]      = "physical";
 const char POINT[]         = "point";
 const char POINTS[]        = "points";
 const char PORT[]          = "port";
+const char POSITION[]      = "position";
 const char PRECISION[]     = "precision";
 const char PRESENT[]       = "present";
 const char PRES[]          = "pressure";

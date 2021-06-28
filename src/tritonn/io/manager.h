@@ -52,7 +52,7 @@ public:
 protected:
 	virtual rThreadStatus Proccesing();
 
-	rIOBaseModule* addModule(const std::string& type);
+	rIOBaseModule* addModule(const std::string& type, rError& err, UDINT lineno);
 
 private:
 	std::vector<rIOBaseModule*> m_modules; //
