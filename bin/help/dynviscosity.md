@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # dynviscosity
-> 0.19.130.2f0e6b68
+> 0.19.132.77cddc06
 ## XML
 ````xml
 <dynviscosity name="valid object name" description="string index" >
