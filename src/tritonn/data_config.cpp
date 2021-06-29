@@ -902,6 +902,10 @@ UDINT rDataConfig::resolveReports(void)
 			if (!tot->m_source) {
 				return m_error.set(DATACFGERR_RESOLVETOTAL, tot->m_lineNum, tot->m_name); //TODO добавить номер линии
 			}
+
+			for (auto item : tot->m_items) {
+				item->m_source.m_source =
+			}
 		}
 	}
 
