@@ -104,7 +104,7 @@ public:
 		rItem(rItem& src);
 		virtual ~rItem() = default;
 
-		rLink  m_source;      // Источник данных
+		rLink  m_link;        // Источник данных
 		string m_name  = "";  // Имя для переменных
 		LREAL  m_value = 0.0; // Значение в текущем отчете
 

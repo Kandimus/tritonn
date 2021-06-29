@@ -107,6 +107,11 @@ protected:
 
 	void  saveWeb();
 
+private:
+	rSource* getSource(const rLink& link);
+	rSource* getSource(const rLink* link);
+	rSource* getSource(const std::string& alias, const std::string& input);
+
 public:
 	std::string FileName;
 	rError      m_error;

@@ -269,17 +269,17 @@ UDINT rReport::calculate()
 
 		// Устредняем
 		for(auto item : avr->m_items) {
-			item->m_source.calculate();
+			item->m_link.calculate();
 
 			if(curmass <= 0.0) continue;
 
-			item->m_value = ((item->m_value * inc) + (item->m_source.m_value * oldmass)) / curmass;
+			item->m_value = ((item->m_value * inc) + (item->m_link.m_value * oldmass)) / curmass;
 		}
 	}
 
 	for(auto item : m_present.m_snapshotItems) {
-		item->m_source.calculate();
-		item->m_value = item->m_source.m_value;
+		item->m_link.calculate();
+		item->m_value = item->m_link.m_value;
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -317,14 +317,14 @@ void rReport::rDataset::generateVars(const string &prefix, rVariableList& list)
 		name = prefix + tot->m_name + ".";
 
 		for (auto item : tot->m_items) {
-			list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_source.getSourceUnit(), ACCESS_SA, "Значение устредняемого параметра");
+			list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_link.getSourceUnit(), ACCESS_SA, "Значение устредняемого параметра");
 		}
 	}
 
 	name = prefix + "snapshot.";
 
 	for(auto item : m_snapshotItems) {
-		list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_source.getSourceUnit(), ACCESS_SA, "Значение не устредняемого параметра");
+		list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_link.getSourceUnit(), ACCESS_SA, "Значение не устредняемого параметра");
 	}
 }
 
@@ -464,7 +464,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
 			}
 
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_source)) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_link)) {
 				return err.getError();
 			}
 		}
@@ -486,7 +486,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
 			}
 
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_source)) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_link)) {
 				return err.getError();
 			}
 		}
@@ -610,7 +610,7 @@ void rReport::rItem::print(tinyxml2::XMLPrinter& printer)
 	printer.CloseElement();
 
 	printer.OpenElement(XmlName::UNIT);
-	printer.PushText(m_source.getSourceUnit());
+	printer.PushText(m_link.getSourceUnit());
 	printer.CloseElement();
 
 	printer.CloseElement();

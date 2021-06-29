@@ -849,27 +849,44 @@ UDINT rDataConfig::checkSource(void)
 	return TRITONN_RESULT_OK;
 }
 
+rSource* rDataConfig::getSource(const rLink& link)
+{
+	return getSource(link.m_alias, link.m_param);
+}
+
+rSource* rDataConfig::getSource(const rLink* link)
+{
+	return getSource(link->m_alias, link->m_param);
+}
+
+rSource* rDataConfig::getSource(const std::string& alias, const std::string& input)
+{
+	std::string alias_low = String_tolower(alias);
+
+	for (auto src : *ListSource) {
+		if (alias_low == src->m_alias) {
+			if (input.size()) {
+				return (!src->checkOutput(input)) ? src : nullptr;
+			} else {
+				return src;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 //
 UDINT rDataConfig::ResolveLinks(void)
 {
 	for (auto link : ListLink) {
-		// Проходим все загруженные объекты
-		for (auto src : *ListSource) {
-			volatile std::string src_alias  = src->m_alias;
-			volatile std::string link_alias = link->m_alias;
+		auto src = getSource(link);
 
-			if (!strcasecmp(link->m_alias.c_str(), src->m_alias.c_str())) {
-				if (link->m_param.size()) {
-					if (src->checkOutput(link->m_param)) {
-						src->checkOutput(link->m_param);
-						return m_error.set(DATACFGERR_CHECKLINK, link->m_lineNum, link->m_fullTag);
-					}
-				}
-
-				link->m_source = src;
-				break;
-			}
+		if (!src) {
+			return m_error.set(DATACFGERR_CHECKLINK, link->m_lineNum, link->m_fullTag);
 		}
+
+		link->m_source = src;
 
 		if (!link->isValid()) {
 			return m_error.set(DATACFGERR_RESOLVELINK, link->m_lineNum, link->m_fullTag);
@@ -886,25 +903,26 @@ UDINT rDataConfig::resolveReports(void)
 		rReport::rDataset *rpt = &reports->m_present;
 
 		for (auto tot: rpt->m_averageItems) {
-			for(auto scr: *ListSource) {
-				const rTotal *scrtot = scr->getTotal();
+			auto src = getSource(tot->m_alias, "");
 
-				if (!scrtot) {
-					continue;
-				}
-
-				if (tot->m_alias == scr->m_alias) {
-					tot->m_source = scrtot;
-					break;
-				}
+			if (!src) {
+				return m_error.set(DATACFGERR_REPORT_RESOLVETOTAL, tot->m_lineNum, tot->m_name);
 			}
 
-			if (!tot->m_source) {
-				return m_error.set(DATACFGERR_RESOLVETOTAL, tot->m_lineNum, tot->m_name); //TODO добавить номер линии
+			auto src_tot = src->getTotal();
+
+			if (!src_tot) {
+				return m_error.set(DATACFGERR_REPORT_TOTALS_IS_NULL, tot->m_lineNum, tot->m_name);
 			}
+
+			tot->m_source = src_tot;
 
 			for (auto item : tot->m_items) {
-				item->m_source.m_source =
+				item->m_link.m_source = getSource(item->m_link);
+
+				if (!item->m_link.m_source) {
+					return m_error.set(DATACFGERR_RESOLVELINK, item->m_link.m_lineNum, item->m_link.m_fullTag);
+				}
 			}
 		}
 	}
