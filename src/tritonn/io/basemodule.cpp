@@ -80,21 +80,6 @@ UDINT rIOBaseModule::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
-std::string rIOBaseModule::getAlias() const
-{
-	return m_alias;
-}
-
-std::string rIOBaseModule::getName() const
-{
-	return m_name;
-}
-
-STRID rIOBaseModule::getDescr() const
-{
-	return m_descr;
-}
-
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
 	UNUSED(issimulate);
