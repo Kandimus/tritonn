@@ -339,7 +339,7 @@ UDINT rDataConfig::loadIO(tinyxml2::XMLElement* root, cJSON* jroot, rStation* ow
 		cJSON *jitm = cJSON_CreateObject();
 		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->m_alias.c_str()));
 		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->m_descr));
-		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
+		cJSON_AddItemToObject(jitm, source->getRTTI(), jsrc);
 		cJSON_AddItemToArray(jroot, jitm);
 	}
 
@@ -393,7 +393,7 @@ UDINT rDataConfig::loadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		cJSON* jsrc = cJSON_CreateObject();
 		cJSON_AddItemToObject(jsrc, XmlName::ALIAS, cJSON_CreateString(source->m_alias.c_str()));
 		cJSON_AddItemToObject(jsrc, XmlName::DESC , cJSON_CreateNumber(source->m_descr));
-		cJSON_AddItemToObject(jitm, source->RTTI(), jsrc);
+		cJSON_AddItemToObject(jitm, source->getRTTI(), jsrc);
 		cJSON_AddItemToArray(jroot, jitm);
 	}
 
@@ -434,7 +434,7 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 		cJSON_AddItemToObject(jstn, XmlName::DESC   , cJSON_CreateNumber(stn->m_descr));
 		cJSON_AddItemToObject(jstn, XmlName::STREAMS, jstr);
 		cJSON_AddItemToObject(jstn, XmlName::CALC   , jobj);
-		cJSON_AddItemToObject(jitm, stn->RTTI()     , jstn);
+		cJSON_AddItemToObject(jitm, stn->getRTTI()     , jstn);
 		cJSON_AddItemToArray (jroot, jitm);
 
 		if (TRITONN_RESULT_OK != loadIO(station_xml, m_json_io, stn, stn->m_alias + ".io")) {
@@ -486,7 +486,7 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 		cJSON_AddItemToObject(jstr, XmlName::ALIAS, cJSON_CreateString(str->m_alias.c_str()));
 		cJSON_AddItemToObject(jstr, XmlName::DESC , cJSON_CreateNumber(str->m_descr));
 		cJSON_AddItemToObject(jstr, XmlName::CALC , jobj);
-		cJSON_AddItemToObject(jitm, str->RTTI()  , jstr);
+		cJSON_AddItemToObject(jitm, str->getRTTI()  , jstr);
 		cJSON_AddItemToArray (jroot, jitm);
 
 		// Кросс-линк станции и линии
@@ -859,14 +859,14 @@ rSource* rDataConfig::getSource(const rLink* link)
 	return getSource(link->m_alias, link->m_param);
 }
 
-rSource* rDataConfig::getSource(const std::string& alias, const std::string& input)
+rSource* rDataConfig::getSource(const std::string& alias, const std::string& param)
 {
 	std::string alias_low = String_tolower(alias);
 
 	for (auto src : *ListSource) {
 		if (alias_low == src->m_alias) {
-			if (input.size()) {
-				return (!src->checkOutput(input)) ? src : nullptr;
+			if (param.size()) {
+				return src->checkOutput(param) ? src : nullptr;
 			} else {
 				return src;
 			}
@@ -917,13 +917,31 @@ UDINT rDataConfig::resolveReports(void)
 
 			tot->m_source = src_tot;
 
+			auto stn = src->getOwner();
+			tot->m_unitMass   = stn->getUnit().getMass();
+			tot->m_unitVolume = stn->getUnit().getVolume();
+
+printf("report unitMass %u\n", tot->m_unitMass.toUDINT());
+
 			for (auto item : tot->m_items) {
 				item->m_link.m_source = getSource(item->m_link);
+				item->m_link.m_unit   = U_any;
 
 				if (!item->m_link.m_source) {
 					return m_error.set(DATACFGERR_RESOLVELINK, item->m_link.m_lineNum, item->m_link.m_fullTag);
 				}
 			}
+		}
+
+		for (auto item : rpt->m_snapshotItems) {
+			item->m_link.m_source = getSource(item->m_link);
+			item->m_link.m_unit   = U_any;
+
+			if (!item->m_link.m_source) {
+				return m_error.set(DATACFGERR_RESOLVELINK, item->m_link.m_lineNum, item->m_link.m_fullTag);
+			}
+
+
 		}
 	}
 

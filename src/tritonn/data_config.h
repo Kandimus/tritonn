@@ -110,7 +110,7 @@ protected:
 private:
 	rSource* getSource(const rLink& link);
 	rSource* getSource(const rLink* link);
-	rSource* getSource(const std::string& alias, const std::string& input);
+	rSource* getSource(const std::string& alias, const std::string& param);
 
 public:
 	std::string FileName;

@@ -271,6 +271,8 @@ UDINT rReport::calculate()
 		for(auto item : avr->m_items) {
 			item->m_link.calculate();
 
+//printf("Calculate %s '%s:%s' [%u]\n", item->m_name.c_str(), item->m_link.m_alias.c_str(), item->m_link.m_param.c_str(), item->m_link.m_unit.toUDINT());
+
 			if(curmass <= 0.0) continue;
 
 			item->m_value = ((item->m_value * inc) + (item->m_link.m_value * oldmass)) / curmass;
@@ -280,6 +282,8 @@ UDINT rReport::calculate()
 	for(auto item : m_present.m_snapshotItems) {
 		item->m_link.calculate();
 		item->m_value = item->m_link.m_value;
+
+//printf("Calculate %s '%s:%s' [%u]\n", item->m_name.c_str(), item->m_link.m_alias.c_str(), item->m_link.m_param.c_str(), item->m_link.m_unit.toUDINT());
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -506,7 +510,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 void rReport::store()
 {
 	m_present.FinalTime.setCurTime();
-
+нужно запись ед.измерения итемов и тоталов сделать один раз, во время загрузки это делать нельзя, так как не прошел еще чек
 	m_completed.m_mark      = m_present.m_mark;
 	m_completed.m_timeStart = m_present.m_timeStart;
 	m_completed.FinalTime   = m_present.FinalTime;
@@ -525,11 +529,14 @@ void rReport::store()
 		::rTotal::clear(p_total->m_finalTotal);
 
 		for (UDINT jj = 0; jj < p_total->m_items.size(); ++jj) {
-			auto p_itm = p_total->m_items[ii];
-			auto c_itm = c_total->m_items[ii];
+			auto p_itm = p_total->m_items[jj];
+			auto c_itm = c_total->m_items[jj];
 
-			c_itm->m_value = p_itm->m_value;
-			p_itm->m_value = 0.0;
+			c_itm->m_value       = p_itm->m_value;
+			c_itm->m_link.m_unit = p_itm->m_link.getSourceUnit();
+			p_itm->m_value       = 0.0;
+
+			printf("store %s '%s:%s' [%u]\n", p_itm->m_name.c_str(), p_itm->m_link.m_alias.c_str(), p_itm->m_link.m_param.c_str(), c_itm->m_link.m_unit.toUDINT());
 		}
 	}
 
@@ -537,8 +544,9 @@ void rReport::store()
 		auto p_itm = m_present.m_snapshotItems[ii];
 		auto c_itm = m_completed.m_snapshotItems[ii];
 
-		c_itm->m_value = p_itm->m_value;
-		p_itm->m_value = 0.0;
+		c_itm->m_value       = p_itm->m_value;
+		c_itm->m_link.m_unit = p_itm->m_link.getSourceUnit();
+		p_itm->m_value       = 0.0;
 	}
 
 	rEventManager::instance().add(reinitEvent(EID_REPORT_GENERATED));
@@ -610,23 +618,20 @@ void rReport::rItem::print(tinyxml2::XMLPrinter& printer)
 	printer.CloseElement();
 
 	printer.OpenElement(XmlName::UNIT);
-	printer.PushText(m_link.getSourceUnit());
+	printer.PushText(m_link.m_unit.toUDINT());
 	printer.CloseElement();
 
 	printer.CloseElement();
 }
 
-
-
-
 void rReport::rTotal::printTotals(tinyxml2::XMLPrinter& printer, const char* name, const rBaseTotal& total)
 {
 	printer.OpenElement(name);
 
-	PrintElement(printer, "mass"    , total.Mass    , m_unitMass);
-	PrintElement(printer, "volume"  , total.Volume  , m_unitVolume);
-	PrintElement(printer, "volume15", total.Volume15, m_unitVolume);
-	PrintElement(printer, "volume20", total.Volume20, m_unitVolume);
+	PrintElement(printer, "mass"    , total.Mass    , m_unitMass.toUDINT());
+	PrintElement(printer, "volume"  , total.Volume  , m_unitVolume.toUDINT());
+	PrintElement(printer, "volume15", total.Volume15, m_unitVolume.toUDINT());
+	PrintElement(printer, "volume20", total.Volume20, m_unitVolume.toUDINT());
 
 	printer.CloseElement();
 }
@@ -713,7 +718,6 @@ UDINT rReport::SaveToXML(UDINT present)
 
 
 	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), m_alias.c_str(), reptime._UNIX);
-//	UDINT   result  = SimpleFileSave(filename, printer.CStr());
 	UDINT result = xmlFileSave(filename, printer.CStr(), "signature");
 
 	if (result != TRITONN_RESULT_OK) {

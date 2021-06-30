@@ -44,7 +44,7 @@ public:
 	rSource(const rStation* owner = nullptr);
 	virtual ~rSource();
 
-	UDINT       checkOutput(const std::string& name);
+	bool        checkOutput(const std::string& name);
 	std::string getMarkDown();
 
 protected:
@@ -62,7 +62,7 @@ protected:
 
 
 public:
-	virtual const char *RTTI() const = 0;
+	virtual const char *getRTTI() const = 0;
 
 	virtual LREAL       getValue(const std::string& name, UDINT unit, UDINT &err);
 	virtual STRID       getValueUnit(const std::string& name, UDINT& err);
@@ -76,13 +76,15 @@ public:
 	virtual UDINT       preCalculate();
 	virtual UDINT       calculate();
 	virtual UDINT       postCalculate();
-	virtual UDINT       check(rError& err); //TODO Зачем это? если проверять переменные, то нужно это делать после generateVars, а если если получать данные от станции то до этого. Дилема!
+	virtual UDINT       check(rError& err);
 
 	virtual const rTotal* getTotal(void) const     { return nullptr; }
 	virtual rTotal* getTotalNoConst(void)          { return nullptr; }
 	virtual std::string   getModuleAlias() const   { return std::string(); }
 	virtual USINT         getModuleNumber() const  { return 0xFF; }
 	virtual USINT         getChannelNumber() const { return 0xFF; }
+
+	virtual const rStation* getOwner() const { return m_station; }
 
 protected:
 	virtual UDINT initLink(UINT setup, rLink& link, UDINT unit, STRID nameid, const std::string& name, const std::string& shadow);
