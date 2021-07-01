@@ -31,12 +31,6 @@ const std::string rLink::SHADOW_NONE = "";
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-const rSource* rLink::getOwner() const
-{
-	return m_owner;
-}
-
-
 bool rLink::isValid() const
 {
 	return /*m_owner &&*/ m_source;
@@ -99,7 +93,6 @@ UDINT rLink::calculate()
 	}
 
 	if (m_setup & Setup::DISABLE) {
-printf("DISABLE\n");
 		return TRITONN_RESULT_OK;
 	}
 

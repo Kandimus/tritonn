@@ -104,7 +104,7 @@ public:
 		rItem(rItem& src);
 		virtual ~rItem() = default;
 
-		rLink  m_source;      // Источник данных
+		rLink  m_link;        // Источник данных
 		string m_name  = "";  // Имя для переменных
 		LREAL  m_value = 0.0; // Значение в текущем отчете
 
@@ -177,7 +177,7 @@ protected:
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const override { return "report"; }
+	virtual const char* getRTTI() const override { return "report"; }
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
 	virtual UDINT generateVars(rVariableList& list) override;

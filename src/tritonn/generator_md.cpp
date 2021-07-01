@@ -154,7 +154,7 @@ rGeneratorMD::rItem::rItem(const std::string& name)
 rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput, Type type)
 {
 	m_source     = source;
-	m_name       = source->RTTI();
+	m_name       = source->getRTTI();
 	m_filename   = m_name;
 	m_isStdInput = isstdinput;
 	m_type       = type;

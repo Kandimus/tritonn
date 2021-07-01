@@ -484,18 +484,18 @@ std::string rSource::getXmlInput() const
 	return result;
 }
 
-UDINT rSource::checkOutput(const string &name)
+bool rSource::checkOutput(const string &name)
 {
 	string lowname = String_tolower(name);
 
-	if(XmlName::FAULT == lowname) return 0;
+	if(XmlName::FAULT == lowname) return true;
 
 	for(auto link : m_outputs)
 	{
-		if(lowname == link->m_ioName) return 0;
+		if(lowname == link->m_ioName) return true;
 	}
 
-	return 1;
+	return false;
 }
 
 

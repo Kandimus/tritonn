@@ -269,17 +269,21 @@ UDINT rReport::calculate()
 
 		// Устредняем
 		for(auto item : avr->m_items) {
-			item->m_source.calculate();
+			item->m_link.calculate();
+
+//printf("Calculate %s '%s:%s' [%u]\n", item->m_name.c_str(), item->m_link.m_alias.c_str(), item->m_link.m_param.c_str(), item->m_link.m_unit.toUDINT());
 
 			if(curmass <= 0.0) continue;
 
-			item->m_value = ((item->m_value * inc) + (item->m_source.m_value * oldmass)) / curmass;
+			item->m_value = ((item->m_value * inc) + (item->m_link.m_value * oldmass)) / curmass;
 		}
 	}
 
 	for(auto item : m_present.m_snapshotItems) {
-		item->m_source.calculate();
-		item->m_value = item->m_source.m_value;
+		item->m_link.calculate();
+		item->m_value = item->m_link.m_value;
+
+//printf("Calculate %s '%s:%s' [%u]\n", item->m_name.c_str(), item->m_link.m_alias.c_str(), item->m_link.m_param.c_str(), item->m_link.m_unit.toUDINT());
 	}
 
 	//----------------------------------------------------------------------------------------------
@@ -317,14 +321,14 @@ void rReport::rDataset::generateVars(const string &prefix, rVariableList& list)
 		name = prefix + tot->m_name + ".";
 
 		for (auto item : tot->m_items) {
-			list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_source.getSourceUnit(), ACCESS_SA, "Значение устредняемого параметра");
+			list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_link.getSourceUnit(), ACCESS_SA, "Значение устредняемого параметра");
 		}
 	}
 
 	name = prefix + "snapshot.";
 
 	for(auto item : m_snapshotItems) {
-		list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_source.getSourceUnit(), ACCESS_SA, "Значение не устредняемого параметра");
+		list.add(name + item->m_name, rVariable::Flags::RS__, &item->m_value, item->m_link.getSourceUnit(), ACCESS_SA, "Значение не устредняемого параметра");
 	}
 }
 
@@ -464,7 +468,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
 			}
 
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_source)) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_link)) {
 				return err.getError();
 			}
 		}
@@ -486,7 +490,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 				return err.set(DATACFGERR_REPORT, item_xml->GetLineNum(), "undefined name");
 			}
 
-			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_source)) {
+			if (TRITONN_RESULT_OK != rDataConfig::instance().LoadLink(item_xml->FirstChildElement(XmlName::LINK), item->m_link)) {
 				return err.getError();
 			}
 		}
@@ -520,16 +524,19 @@ void rReport::store()
 
 		c_total->m_startTotal = p_total->m_startTotal;
 		c_total->m_finalTotal = p_total->m_finalTotal;
+		c_total->m_unitMass   = p_total->m_unitMass;
+		c_total->m_unitVolume = p_total->m_unitVolume;
 
 		::rTotal::clear(p_total->m_startTotal);
 		::rTotal::clear(p_total->m_finalTotal);
 
 		for (UDINT jj = 0; jj < p_total->m_items.size(); ++jj) {
-			auto p_itm = p_total->m_items[ii];
-			auto c_itm = c_total->m_items[ii];
+			auto p_itm = p_total->m_items[jj];
+			auto c_itm = c_total->m_items[jj];
 
-			c_itm->m_value = p_itm->m_value;
-			p_itm->m_value = 0.0;
+			c_itm->m_value       = p_itm->m_value;
+			c_itm->m_link.m_unit = p_itm->m_link.getSourceUnit();
+			p_itm->m_value       = 0.0;
 		}
 	}
 
@@ -537,8 +544,9 @@ void rReport::store()
 		auto p_itm = m_present.m_snapshotItems[ii];
 		auto c_itm = m_completed.m_snapshotItems[ii];
 
-		c_itm->m_value = p_itm->m_value;
-		p_itm->m_value = 0.0;
+		c_itm->m_value       = p_itm->m_value;
+		c_itm->m_link.m_unit = p_itm->m_link.getSourceUnit();
+		p_itm->m_value       = 0.0;
 	}
 
 	rEventManager::instance().add(reinitEvent(EID_REPORT_GENERATED));
@@ -610,23 +618,20 @@ void rReport::rItem::print(tinyxml2::XMLPrinter& printer)
 	printer.CloseElement();
 
 	printer.OpenElement(XmlName::UNIT);
-	printer.PushText(m_source.getSourceUnit());
+	printer.PushText(m_link.m_unit.toUDINT());
 	printer.CloseElement();
 
 	printer.CloseElement();
 }
 
-
-
-
 void rReport::rTotal::printTotals(tinyxml2::XMLPrinter& printer, const char* name, const rBaseTotal& total)
 {
 	printer.OpenElement(name);
 
-	PrintElement(printer, "mass"    , total.Mass    , m_unitMass);
-	PrintElement(printer, "volume"  , total.Volume  , m_unitVolume);
-	PrintElement(printer, "volume15", total.Volume15, m_unitVolume);
-	PrintElement(printer, "volume20", total.Volume20, m_unitVolume);
+	PrintElement(printer, "mass"    , total.Mass    , m_unitMass.toUDINT());
+	PrintElement(printer, "volume"  , total.Volume  , m_unitVolume.toUDINT());
+	PrintElement(printer, "volume15", total.Volume15, m_unitVolume.toUDINT());
+	PrintElement(printer, "volume20", total.Volume20, m_unitVolume.toUDINT());
 
 	printer.CloseElement();
 }
@@ -713,7 +718,6 @@ UDINT rReport::SaveToXML(UDINT present)
 
 
 	string filename = String_format("%s%s/%lu.xml", DIR_REPORT.c_str(), m_alias.c_str(), reptime._UNIX);
-//	UDINT   result  = SimpleFileSave(filename, printer.CStr());
 	UDINT result = xmlFileSave(filename, printer.CStr(), "signature");
 
 	if (result != TRITONN_RESULT_OK) {
