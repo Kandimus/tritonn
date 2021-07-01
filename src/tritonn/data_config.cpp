@@ -921,8 +921,6 @@ UDINT rDataConfig::resolveReports(void)
 			tot->m_unitMass   = stn->getUnit().getMass();
 			tot->m_unitVolume = stn->getUnit().getVolume();
 
-printf("report unitMass %u\n", tot->m_unitMass.toUDINT());
-
 			for (auto item : tot->m_items) {
 				item->m_link.m_source = getSource(item->m_link);
 				item->m_link.m_unit   = U_any;

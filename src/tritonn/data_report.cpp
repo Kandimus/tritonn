@@ -510,7 +510,7 @@ UDINT rReport::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 void rReport::store()
 {
 	m_present.FinalTime.setCurTime();
-нужно запись ед.измерения итемов и тоталов сделать один раз, во время загрузки это делать нельзя, так как не прошел еще чек
+
 	m_completed.m_mark      = m_present.m_mark;
 	m_completed.m_timeStart = m_present.m_timeStart;
 	m_completed.FinalTime   = m_present.FinalTime;
@@ -524,6 +524,8 @@ void rReport::store()
 
 		c_total->m_startTotal = p_total->m_startTotal;
 		c_total->m_finalTotal = p_total->m_finalTotal;
+		c_total->m_unitMass   = p_total->m_unitMass;
+		c_total->m_unitVolume = p_total->m_unitVolume;
 
 		::rTotal::clear(p_total->m_startTotal);
 		::rTotal::clear(p_total->m_finalTotal);
@@ -535,8 +537,6 @@ void rReport::store()
 			c_itm->m_value       = p_itm->m_value;
 			c_itm->m_link.m_unit = p_itm->m_link.getSourceUnit();
 			p_itm->m_value       = 0.0;
-
-			printf("store %s '%s:%s' [%u]\n", p_itm->m_name.c_str(), p_itm->m_link.m_alias.c_str(), p_itm->m_link.m_param.c_str(), c_itm->m_link.m_unit.toUDINT());
 		}
 	}
 
