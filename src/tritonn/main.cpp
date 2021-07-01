@@ -6,6 +6,7 @@
 #include "threadmaster.h"
 #include "system_manager.h"
 #include "data_manager.h"
+#include "system_variable.h"
 #include "io/manager.h"
 #include "term_manager.h"
 #include "json_manager.h"
@@ -28,23 +29,6 @@
 int main(int argc, char* argv[])
 {
 	rEvent event;
-
-	if(0)
-	{
-		string text    = "";
-		string crypt   = "";
-		string uncrypt = "";
-
-		simpleFileLoad("./users.xml", text);
-
-		EncryptEAS(text, AES_KEY, AES_IV, crypt);
-
-		simpleFileSave("./users.crypt.txt", crypt);
-	
-		DecryptEAS(crypt, AES_KEY, AES_IV, uncrypt);
-
-		simpleFileSave("./users.uncrypt.xml", uncrypt);
-	}
 
 	rLogManager::instance().setDir(DIR_LOG);
 
@@ -73,6 +57,8 @@ int main(int argc, char* argv[])
 #endif
 
 	rThreadMaster::instance().Run(1000);
+
+	rSystemVariable::instance().setSimulate(rSimpleArgs::instance().isSet(rArg::Simulate));
 
 
 	// Таблицы конвертации единиц измерения

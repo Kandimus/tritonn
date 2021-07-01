@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include "data_module.h"
 #include "def.h"
 #include "singlenton.h"
@@ -60,7 +61,7 @@ class rDataConfig
 	};
 
 public:
-	UDINT LoadFile(const std::string& filename, rSystemVariable& sysvar, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);
+	UDINT LoadFile(const std::string& filename, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);
 	UDINT LoadLink(tinyxml2::XMLElement* element, rLink& link, bool required = true);
 	UDINT LoadShadowLink(tinyxml2::XMLElement* element, rLink& link, rLink& mainlink, const string& name);
 
@@ -68,21 +69,6 @@ public:
 	tinyxml2::XMLElement* GetRootSecurity();
 
 protected:
-	cJSON* m_json     = nullptr;
-	cJSON* m_json_io  = nullptr;
-	cJSON* m_json_obj = nullptr;
-	cJSON* m_json_var = nullptr;
-	cJSON* m_json_usr = nullptr;
-	cJSON* m_json_hdw = nullptr;
-
-	tinyxml2::XMLElement* m_xmlRootSecurity;
-	rSystemVariable*      SysVar;
-	std::vector<rSource*>    *ListSource;
-	std::vector<rInterface*> *ListInterface;
-	std::vector<rReport*>*    m_listReport;
-	std::vector<rLink*>       ListLink; //TODO Нужно ли это оставлять тут, или перенести в rDataManager?
-	std::vector<rLinkTotal>   m_listTotals;
-
 	UDINT LoadSecurity  (tinyxml2::XMLElement* root, tinyxml2::XMLDocument& doc_security);
 	UDINT loadHardware  (tinyxml2::XMLElement* root);
 	UDINT LoadConfig    (tinyxml2::XMLElement* root);
@@ -107,13 +93,31 @@ protected:
 
 	void  saveWeb();
 
+public:
+	std::string FileName;
+	rError      m_error;
+	std::string m_lang = LANG_RU;
+
+protected:
+	cJSON* m_json     = nullptr;
+	cJSON* m_json_io  = nullptr;
+	cJSON* m_json_obj = nullptr;
+	cJSON* m_json_var = nullptr;
+	cJSON* m_json_usr = nullptr;
+	cJSON* m_json_hdw = nullptr;
+
+	tinyxml2::XMLElement*     m_xmlRootSecurity;
+	std::vector<rSource*>    *ListSource;
+	std::vector<rInterface*> *ListInterface;
+	std::vector<rReport*>*    m_listReport;
+	std::vector<rLink*>       ListLink; //TODO Нужно ли это оставлять тут, или перенести в rDataManager?
+	std::vector<rLinkTotal>   m_listTotals;
+
+	std::map<std::string, UDINT> m_max;
+
 private:
 	rSource* getSource(const rLink& link);
 	rSource* getSource(const rLink* link);
 	rSource* getSource(const std::string& alias, const std::string& param);
-
-public:
-	std::string FileName;
-	rError      m_error;
 };
 

@@ -19,6 +19,7 @@
 #include "basechannel.h"
 #include "../data_config.h"
 #include "../data_manager.h"
+#include "../system_variable.h"
 #include "../units.h"
 #include "simpleargs.h"
 #include "../def_arguments.h"
@@ -118,7 +119,7 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 
 rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT lineno)
 {
-	auto sysvar = rDataManager::instance().getSysVar();
+	auto sysvar = rSystemVariable::instance().getPointer();
 	rIOBaseModule* module = nullptr;
 
 	if (type == rModuleCPU::getRTTI()) {

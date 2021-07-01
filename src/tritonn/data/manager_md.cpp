@@ -17,6 +17,7 @@
 #include "../data_manager.h"
 #include <string.h>
 #include "xml_util.h"
+#include "../system_variable.h"
 #include "../generator_md.h"
 #include "../data_station.h"
 #include "../data_stream.h"
@@ -118,7 +119,6 @@ UDINT rDataManager::saveMarkDown()
 	opcua.generateMarkDown(md);
 
 	// Other
-	rSystemVariable sysvar;
 	rReport         prpt;
 	rReport         brpt;
 
@@ -129,8 +129,9 @@ UDINT rDataManager::saveMarkDown()
 	generateMarkDown(md);
 	prpt.generateMarkDown(md);
 	brpt.generateMarkDown(md);
-	sysvar.generateMarkDown(md);
+
 	rUser::generateMarkDown(md);
+	rSystemVariable::instance().generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);
 

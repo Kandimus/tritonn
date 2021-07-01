@@ -28,6 +28,7 @@
 #include "hash.h"
 #include "text_id.h"
 #include "threadmaster.h"
+#include "system_variable.h"
 #include "io/manager.h"
 #include "io/defines.h"
 #include "data_manager.h"
@@ -89,7 +90,7 @@ rDataConfig::~rDataConfig()
 
 //-------------------------------------------------------------------------------------------------
 // Получение данных от менеджера данных
-UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vector<rSource *> &listsrc, vector<rInterface *> &listiface, vector<rReport *> &listrpt)
+UDINT rDataConfig::LoadFile(const string &filename, vector<rSource *> &listsrc, vector<rInterface *> &listiface, vector<rReport *> &listrpt)
 {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLDocument doc_security;
@@ -100,19 +101,11 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	std::string info_ver      = "";
 
 	FileName      = filename;
-	SysVar        = &sysvar;
 	ListSource    = &listsrc;
 	m_listReport  = &listrpt;
 	ListInterface = &listiface;
 
 	m_error.clear();
-
-	// Очистим структуру информации
-	SysVar->ConfigInfo.Developer[0] = 0;
-	SysVar->ConfigInfo.File[0]      = 0;
-	SysVar->ConfigInfo.Hash[0]      = 0;
-	SysVar->ConfigInfo.Name[0]      = 0;
-	SysVar->ConfigInfo.Version[0]   = 0;
 
 	//TODO Нужно проверить Hasp
 	//TODO Нужно передавать не имя, а указатель на xml_root, так как в rDataManager::LoadConfig мы уже разобрали этот файл
@@ -169,10 +162,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	// Загружаем события
 
 	// Заполним информацию по конфиге
-	strncpy(SysVar->ConfigInfo.File, filename.c_str(), MAX_CONFIG_NAME);
-
-	//TODO прока пропишем жестко русский язык
-	strncpy(SysVar->Lang, LANG_RU.c_str(), MAX_LANG_SIZE);
+	rSystemVariable::instance().loadConfigInfo(filename, root);
 
 	// Сохраняем информацию для WEB
 	saveWeb();
@@ -550,6 +540,8 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 	if (!custom) {
 		return TRITONN_RESULT_OK;
 	}
+
+	m_lang = XmlUtils::getAttributeString(custom, XmlName::LANG, LANG_RU, XmlUtils::Flags::TOLOWER);
 
 	userstr   = custom->FirstChildElement(XmlName::STRINGS);
 //	userevent = custom->FirstChildElement(XmlName::EVENTS);
