@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <list>
 #include "def.h"
 #include "structures.h"
 #include "bits_array.h"
@@ -22,6 +23,7 @@
 
 class rVariableList;
 class rGeneratorMD;
+class rError;
 
 namespace tinyxml2 {
 	class XMLElement;
@@ -39,7 +41,8 @@ public:
 
 	void  clearConfigInfo1();
 	void  getConfigInfo(rConfigInfo& conf);
-	UDINT loadConfigInfo(const std::string& filename, tinyxml2::XMLElement* root);
+	UDINT loadFromXml(const std::string& filename, tinyxml2::XMLElement* root);
+	UDINT loadEthernet(tinyxml2::XMLElement* root, rError& err);
 
 	void  getState(rState& st);
 	void  getTime(struct tm& sdt);
@@ -53,6 +56,7 @@ public:
 	void setEventAlarm(UDINT count);
 	void setLive(Live live);
 	void setSimulate(USINT sim);
+	void applyEthernet();
 
 private:
 	pthread_rwlock_t m_rwlock;
@@ -68,7 +72,7 @@ private:
 
 	rBitsArray    m_flagsLive;
 
-	//TODO IP
+	std::list<rEthernet> m_ethernet;
 
 
 };

@@ -127,6 +127,7 @@ UDINT rDataManager::saveMarkDown()
 
 	generateTypes(md);
 	generateMarkDown(md);
+	generateSettings(md);
 	prpt.generateMarkDown(md);
 	brpt.generateMarkDown(md);
 
@@ -186,6 +187,29 @@ void rDataManager::generateMarkDown(rGeneratorMD& md)
 
 	md.add("config").addRemark(text);
 
+}
+
+void rDataManager::generateSettings(rGeneratorMD& md)
+{
+	std::string text = "## XML\n````xml\n";
+
+	text += "<" + std::string(XmlName::SETTINGS) + ">\n";
+	text += "\t<" + std::string(XmlName::CONTRACTHOUR) + ">hour</" + std::string(XmlName::CONTRACTHOUR) + ">\n";
+	text += "\t<" + std::string(XmlName::EVENTSTORAGE) + ">days</" + std::string(XmlName::EVENTSTORAGE) + ">\n";
+	text += "\t<" + std::string(XmlName::ETHERNET) + " " + std::string(XmlName::DEVICE) + "=\"device 1 name\">\n";
+	text += "\t\t<" + std::string(XmlName::IP) + ">ip4 address xx.xx.xx.xx</" + std::string(XmlName::IP) + ">\n";
+	text += "\t\t<" + std::string(XmlName::MASK) + ">ip4 mask xx.xx.xx.xx</" + std::string(XmlName::MASK) + ">\n";
+	text += "\t\t<" + std::string(XmlName::GATEWAY) + ">ip4 mask xx.xx.xx.xx</" + std::string(XmlName::GATEWAY) + ">\n";
+	text += "\t</" + std::string(XmlName::ETHERNET) + ">\n";
+	text += "\t<" + std::string(XmlName::ETHERNET) + " " + std::string(XmlName::DEVICE) + "=\"device 2 name\">\n";
+	text += "\t\t<" + std::string(XmlName::IP) + ">ip4 address xx.xx.xx.xx</" + std::string(XmlName::IP) + ">\n";
+	text += "\t\t<" + std::string(XmlName::MASK) + ">ip4 mask xx.xx.xx.xx</" + std::string(XmlName::MASK) + ">\n";
+	text += "\t\t<" + std::string(XmlName::GATEWAY) + ">ip4 mask xx.xx.xx.xx</" + std::string(XmlName::GATEWAY) + ">\n";
+	text += "\t<" + std::string(XmlName::ETHERNET) + ">\n";
+	text += "</" + std::string(XmlName::SETTINGS) + ">\n";
+	text += "````\n";
+
+	md.add("settings").addRemark(text);
 }
 
 void rDataManager::generateTypes(rGeneratorMD& md)

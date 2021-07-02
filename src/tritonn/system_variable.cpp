@@ -17,11 +17,14 @@
 #include "locker.h"
 #include "units.h"
 #include "tritonn_version.h"
+#include "xml_util.h"
+#include "error.h"
 #include "datetime.h"
 #include "log_manager.h"
 #include "system_variable.h"
 #include "variable_item.h"
 #include "variable_list.h"
+#include "system_manager.h"
 #include "comment_defines.h"
 #include "generator_md.h"
 
@@ -172,13 +175,48 @@ void rSystemVariable::setSimulate(USINT sim)
 	m_state.m_isSimulate = sim;
 }
 
+void rSystemVariable::applyEthernet()
+{
+	for (auto& eth : m_ethernet) {
+		rSystemManager::add("")
+	}
+}
 
-UDINT rSystemVariable::loadConfigInfo(const std::string& filename, tinyxml2::XMLElement* root)
+
+UDINT rSystemVariable::loadFromXml(const std::string& filename, tinyxml2::XMLElement* root)
 {
 	rLocker locker(m_rwlock, rLocker::TYPELOCK::WRITE); locker.Nop();
 
 	strncpy(m_configInfo.File, filename.c_str(), MAX_CONFIG_NAME);
 
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rSystemVariable::loadEthernet(tinyxml2::XMLElement* root, rError& err)
+{
+	if (!root) {
+		return TRITONN_RESULT_OK;
+	}
+
+	rEthernet eth;
+	UDINT     fault = 0;
+
+	eth.m_dev     = XmlUtils::getAttributeString(root, XmlName::DEVICE, "", XmlUtils::Flags::TOLOWER);
+	eth.m_ip      = XmlUtils::getTextString(root->FirstChildElement(XmlName::IP)     , "", fault);
+	eth.m_mask    = XmlUtils::getTextString(root->FirstChildElement(XmlName::MASK)   , "", fault);
+	eth.m_gateway = XmlUtils::getTextString(root->FirstChildElement(XmlName::GATEWAY), "", fault);
+
+	if (eth.m_dev.empty()) {
+		return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "device is null");
+	}
+
+	if (fault) {
+		return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "");
+	}
+
+	m_ethernet.push_back(eth);
+
+	return TRITONN_RESULT_OK;
 }
 
 void rSystemVariable::generateMarkDown(rGeneratorMD& md)

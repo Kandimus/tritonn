@@ -84,6 +84,7 @@ protected:
 
 	void  generateMarkDown(rGeneratorMD& md);
 	void  generateTypes(rGeneratorMD& md);
+	void  generateSettings(rGeneratorMD& md);
 
 private:
 	rSafityValue<Live>  m_live;     // Текущий статус жизни процесса

@@ -162,7 +162,7 @@ UDINT rDataConfig::LoadFile(const string &filename, vector<rSource *> &listsrc, 
 	// Загружаем события
 
 	// Заполним информацию по конфиге
-	rSystemVariable::instance().loadConfigInfo(filename, root);
+	rSystemVariable::instance().loadFromXml(filename, root);
 
 	// Сохраняем информацию для WEB
 	saveWeb();
@@ -532,29 +532,33 @@ UDINT rDataConfig::loadReport(tinyxml2::XMLElement* root)
 //
 UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 {
-	tinyxml2::XMLElement* custom    = root->FirstChildElement(XmlName::CUSTOM);
-	tinyxml2::XMLElement* userstr   = nullptr;
-//	tinyxml2::XMLElement* userevent = nullptr;
-	tinyxml2::XMLElement* precision = nullptr;
+	auto xml_custom = root->FirstChildElement(XmlName::CUSTOM);
 
-	if (!custom) {
+	if (!xml_custom) {
 		return TRITONN_RESULT_OK;
 	}
 
-	m_lang = XmlUtils::getAttributeString(custom, XmlName::LANG, LANG_RU, XmlUtils::Flags::TOLOWER);
+	m_lang = XmlUtils::getAttributeString(xml_custom, XmlName::LANG, LANG_RU, XmlUtils::Flags::TOLOWER);
 
-	userstr   = custom->FirstChildElement(XmlName::STRINGS);
-//	userevent = custom->FirstChildElement(XmlName::EVENTS);
-	precision = custom->FirstChildElement(XmlName::PRECISION);
+	auto xml_userstr   = xml_custom->FirstChildElement(XmlName::STRINGS);
+//	auto userevent = custom->FirstChildElement(XmlName::EVENTS);
+	auto xml_precision = xml_custom->FirstChildElement(XmlName::PRECISION);
+	auto xml_ethernet  = xml_custom->FirstChildElement(XmlName::ETHERNET);
 
-	if (userstr) {
-		if (TRITONN_RESULT_OK != rTextManager::instance().load(userstr, m_error)) {
+	if (xml_userstr) {
+		if (TRITONN_RESULT_OK != rTextManager::instance().load(xml_userstr, m_error)) {
 			return m_error.getError();
 		}
 	}
 
-	if (precision) {
-		if (TRITONN_RESULT_OK != rPrecision::instance().load(precision, m_error)) {
+	if (xml_precision) {
+		if (TRITONN_RESULT_OK != rPrecision::instance().load(xml_precision, m_error)) {
+			return m_error.getError();
+		}
+	}
+
+	if (xml_ethernet) {
+		if (TRITONN_RESULT_OK != rSystemVariable::instance().loadEthernet(xml_ethernet, m_error)) {
 			return m_error.getError();
 		}
 	}

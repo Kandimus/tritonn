@@ -65,6 +65,14 @@ struct rState
 	USINT m_isSimulate;
 };
 
+struct rEthernet
+{
+	std::string m_dev;
+	std::string m_ip;
+	std::string m_mask;
+	std::string m_gateway;
+};
+
 // Учет времени работы потоков и функций
 class rProfile
 {
