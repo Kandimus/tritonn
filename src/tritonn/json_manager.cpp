@@ -20,6 +20,7 @@
 #include "hash.h"
 #include "log_manager.h"
 #include "data_manager.h"
+#include "system_variable.h"
 #include "variable_item.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
@@ -666,13 +667,13 @@ string rJSONManager::Packet_Status(cJSON */*root*/)
 	cJSON_AddItemToObject(response, JSONSTR_COMMAND , cJSON_CreateString(JSONSTR_ISTATUS));
 	cJSON_AddItemToObject(response, JSONSTR_TIME    , time);
 
-	rDataManager::instance().GetState(state);
-	rDataManager::instance().GetTime (sdt);
+	rSystemVariable::instance().getState(state);
+	rSystemVariable::instance().getTime (sdt);
 
 	// Выдаем уровень доступа
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateTrue());
-	cJSON_AddItemToObject(response, JSONSTR_LIVE    , cJSON_CreateNumber(state.Live));
-	cJSON_AddItemToObject(response, JSONSTR_ALARM   , cJSON_CreateNumber(state.EventAlarm));
+	cJSON_AddItemToObject(response, JSONSTR_LIVE    , cJSON_CreateNumber(static_cast<USINT>(state.m_live)));
+	cJSON_AddItemToObject(response, JSONSTR_ALARM   , cJSON_CreateNumber(state.m_eventAlarm));
 	cJSON_AddItemToObject(time    , JSONSTR_SEC     , cJSON_CreateNumber(sdt.tm_sec ));
 	cJSON_AddItemToObject(time    , JSONSTR_MIN     , cJSON_CreateNumber(sdt.tm_min ));
 	cJSON_AddItemToObject(time    , JSONSTR_HOUR    , cJSON_CreateNumber(sdt.tm_hour));
@@ -699,8 +700,8 @@ string rJSONManager::Packet_Conf(cJSON */*root*/)
 	cJSON_AddItemToObject(response, JSONSTR_VERSION , jver);
 	cJSON_AddItemToObject(response, JSONSTR_CONFIG  , jconf);
 
-	rDataManager::instance().GetConfigInfo(conf);
-	rDataManager::instance().GetVersion   (ver);
+	rSystemVariable::instance().getConfigInfo(conf);
+	rSystemVariable::instance().getVersion   (ver);
 
 	// Выдаем уровень доступа
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS, cJSON_CreateTrue());

@@ -16,12 +16,12 @@
 
 #include "data_manager.h"
 #include <string.h>
-#include "tritonn_version.h"
 #include "tickcount.h"
 #include "locker.h"
 #include "log_manager.h"
 #include "simplefile.h"
 #include "simpleargs.h"
+#include "system_variable.h"
 #include "variable_item.h"
 #include "threadmaster.h"
 #include "error.h"
@@ -39,20 +39,9 @@
 extern rSafityValue<DINT> gReboot;
 
 
-rDataManager::rDataManager() : rVariableClass(Mutex), m_live(Live::UNDEF)
+rDataManager::rDataManager() : rThreadClass(), rVariableClass(Mutex), m_live(Live::UNDEF)
 {
 	RTTI = "rDataManager";
-
-	m_sysVar.m_version.m_major = TRITONN_VERSION_MAJOR;
-	m_sysVar.m_version.m_minor = TRITONN_VERSION_MINOR;
-	m_sysVar.m_version.m_build = TRITONN_VERSION_BUILD;
-	m_sysVar.m_version.m_hash  = TRITONN_VERSION_HASH;
-
-	m_sysVar.m_metrologyVer.m_major = 1;
-	m_sysVar.m_metrologyVer.m_minor = 0;
-	m_sysVar.m_metrologyVer.m_crc   = 0x11223344;
-
-	m_sysVar.initFlags();
 
 	m_live.Set(Live::RUNNING);
 	Halt.Set(false);
@@ -68,7 +57,8 @@ void rDataManager::setLiveStatus(Live status)
 {
 	if(m_live.Get() != Live::HALT) {
 		TRACEW(LOG::DATAMGR, "Set Live Status is %u (%s)",
-			   status, m_sysVar.m_flagsLive.getNameByValue(static_cast<UDINT>(status)).c_str());
+			   status, rSystemVariable::instance().getLiveName(status).c_str());
+
 		m_live.Set(status);
 	}
 }
@@ -150,34 +140,6 @@ UDINT rDataManager::Restart(USINT restart, const string &filename)
 	}
 }
 
-
-
-// Защиты по мьютексу нет, так как это статические данные и не меняются
-void rDataManager::GetVersion(rVersion &ver) const
-{
-	ver = m_sysVar.m_version;
-}
-
-void rDataManager::GetState(rState &state)
-{
-	rLocker locker(Mutex); locker.Nop();
-
-	state = m_sysVar.m_state;
-}
-
-void rDataManager::GetTime(struct tm &sdt)
-{
-	rLocker locker(Mutex); locker.Nop();
-
-	sdt = m_sysVar.DateTime;
-}
-
-void rDataManager::GetConfigInfo(rConfigInfo &conf) const
-{
-	conf = m_sysVar.ConfigInfo;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Работа с файлом конфигурации
@@ -193,7 +155,7 @@ UDINT rDataManager::LoadConfig()
 	string text   = "";
 	string conf   = "";
 
-	strcpy(m_sysVar.Lang, LANG_RU.c_str());
+	setLang(LANG_RU);
 
 	// Устанавливаем флаг, что загружаемся
 	setLiveStatus(Live::STARTING);
@@ -212,14 +174,14 @@ UDINT rDataManager::LoadConfig()
 		TRACEI(LOG::DATAMGR, "Load config file '%s'", conf.c_str());
 
 		//TODO тут нужно заменить на вызов XMLFileCheck()
-		if (rDataConfig::instance().LoadFile(conf, m_sysVar, m_listSource, ListInterface, m_listReport) != TRITONN_RESULT_OK) {
+		if (rDataConfig::instance().LoadFile(conf, m_listSource, ListInterface, m_listReport) != TRITONN_RESULT_OK) {
 			return CreateHaltEvent(rDataConfig::instance().m_error);
 		}
 	}
 
 	//--------------------------------------------
 	// Создаем переменные
-	m_sysVar.initVariables(m_varList);
+	rSystemVariable::instance().initVariables(m_varList);
 
 	// Добавляем интерфейсы, создаем под них переменные
 	for (auto interface : ListInterface) {
@@ -263,7 +225,7 @@ UDINT rDataManager::LoadConfig()
 	//TODO Сохранить массивы строк для WEB
 
 	//
-	SetLang(m_sysVar.Lang);
+	setLang(rDataConfig::instance().m_lang);
 
 	if (!rSimpleArgs::instance().isSet(rArg::NoDump)) {
 		loadDumps();
@@ -276,20 +238,10 @@ UDINT rDataManager::LoadConfig()
 }
 
 
-const rConfigInfo *rDataManager::GetConfName() const
-{
-	return &m_sysVar.ConfigInfo;
-}
-
-
-UDINT rDataManager::SetLang(const string &lang)
+void rDataManager::setLang(const string &lang)
 {
 	rEventManager::instance().setCurLang(lang);
 	rTextManager::instance().setCurLang(lang);
-
-	strncpy(m_sysVar.Lang, lang.c_str(), 8);
-
-	return 0;
 }
 
 
@@ -298,6 +250,7 @@ UDINT rDataManager::SetLang(const string &lang)
 rThreadStatus rDataManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	Live curLive;
 
 	m_timerTotal.start(1000);
 
@@ -309,29 +262,18 @@ rThreadStatus rDataManager::Proccesing()
 			return thread_status;
 		}
 
+
 		//Lock();
 		rLocker lock(rVariableClass::m_mutex); lock.Nop();
 
-		m_sysVar.m_state.EventAlarm = rEventManager::instance().getAlarm();
-		m_sysVar.m_state.Live       = m_live.Get();
+		curLive = m_live.Get();
 
-		getCurrentTime(m_sysVar.UnixTime, &m_sysVar.DateTime);
+		rSystemVariable::instance().setEventAlarm(rEventManager::instance().getAlarm());
+		rSystemVariable::instance().setLive(curLive);
 
-		// set current time and date
-		if (m_sysVar.SetDateTimeAccept) {
-			setCurrentTime(m_sysVar.SetDateTime);
-			//TODO Кидать мессагу о изменении времени
+		rSystemVariable::instance().processing();
 
-			m_sysVar.SetDateTimeAccept   = 0;
-			m_sysVar.SetDateTime.tm_sec  = 0;
-			m_sysVar.SetDateTime.tm_min  = 0;
-			m_sysVar.SetDateTime.tm_hour = 0;
-			m_sysVar.SetDateTime.tm_mday = 0;
-			m_sysVar.SetDateTime.tm_mon  = 0;
-			m_sysVar.SetDateTime.tm_year = 0;
-		}
-
-		if (m_sysVar.m_state.Live == Live::RUNNING)
+		if (curLive == Live::RUNNING)
 		{
 			// Пердвычисления для всех объектов
 			for (auto item : m_listSource) {
@@ -393,8 +335,6 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 UDINT rDataManager::startInterfaces()
 {
 	rError err;
-
-	m_sysVar.m_state.m_isSimulate = rSimpleArgs::instance().isSet(rArg::Simulate);
 
 	rThreadMaster::instance().generateVars(getVariableClass());
 

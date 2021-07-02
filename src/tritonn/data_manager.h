@@ -20,7 +20,7 @@
 #include "thread_class.h"
 #include "variable_class.h"
 #include "data/dump.h"
-#include "data_sysvar.h"
+#include "structures.h"
 #include "tickcount.h"
 
 namespace tinyxml2 {
@@ -46,11 +46,6 @@ public:
 	void  setLiveStatus(Live status/*, UDINT haltreason*/);
 	Live  getLiveStatus();
 
-	void  GetVersion(rVersion &ver) const;
-	void  GetConfigInfo(rConfigInfo &conf) const;
-	void  GetState(rState &st);
-	void  GetTime(struct tm &sdt);
-
 	// Перезагрузка
 	void  DoHalt(UDINT reason);
 	UDINT Restart(USINT restart, const string &filename);
@@ -58,10 +53,9 @@ public:
 	// Конфигурация
 	UDINT LoadConfig();
 	UDINT saveMarkDown();
-	const rConfigInfo *GetConfName() const;
 
 	// Работа с языками
-	UDINT SetLang(const string &lang);
+	void  setLang(const std::string& lang);
 
 	void  doSaveVars();
 	void  forceLoadDumpVars(bool forceload);
@@ -69,8 +63,6 @@ public:
 
 	UDINT startInterfaces();
 	void  startReports();
-
-	rSystemVariable* getSysVar() { return &m_sysVar; }
 
 protected:
 	virtual rThreadStatus Proccesing();
@@ -98,13 +90,12 @@ private:
 	rSafityValue<USINT> Halt;       // Флаг, перехода в HALT режим
 	rSafityValue<USINT> m_doSaveVars;
 
-	rSystemVariable          m_sysVar;     // Системные переменные
 	std::vector<rSource*>    m_listSource; // Список всех объектов (линии, станции, ввод-вывод и объекты)
 	std::vector<rInterface*> ListInterface;
 	std::vector<rReport*>    m_listReport; // Список отчетов
 	std::vector<string>      ListLang;
 
-	std::string m_hashCfg;
+	std::string m_hashCfg; //TODO Убрать в rConfigInfo
 
 	rTickCount m_timerTotal;
 	rDumpFile  m_dumpVars;

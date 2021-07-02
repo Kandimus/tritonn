@@ -28,6 +28,7 @@
 #include "hash.h"
 #include "text_id.h"
 #include "threadmaster.h"
+#include "system_variable.h"
 #include "io/manager.h"
 #include "io/defines.h"
 #include "data_manager.h"
@@ -89,7 +90,7 @@ rDataConfig::~rDataConfig()
 
 //-------------------------------------------------------------------------------------------------
 // Получение данных от менеджера данных
-UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vector<rSource *> &listsrc, vector<rInterface *> &listiface, vector<rReport *> &listrpt)
+UDINT rDataConfig::LoadFile(const string &filename, vector<rSource *> &listsrc, vector<rInterface *> &listiface, vector<rReport *> &listrpt)
 {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLDocument doc_security;
@@ -100,19 +101,11 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	std::string info_ver      = "";
 
 	FileName      = filename;
-	SysVar        = &sysvar;
 	ListSource    = &listsrc;
 	m_listReport  = &listrpt;
 	ListInterface = &listiface;
 
 	m_error.clear();
-
-	// Очистим структуру информации
-	SysVar->ConfigInfo.Developer[0] = 0;
-	SysVar->ConfigInfo.File[0]      = 0;
-	SysVar->ConfigInfo.Hash[0]      = 0;
-	SysVar->ConfigInfo.Name[0]      = 0;
-	SysVar->ConfigInfo.Version[0]   = 0;
 
 	//TODO Нужно проверить Hasp
 	//TODO Нужно передавать не имя, а указатель на xml_root, так как в rDataManager::LoadConfig мы уже разобрали этот файл
@@ -169,10 +162,7 @@ UDINT rDataConfig::LoadFile(const string &filename, rSystemVariable &sysvar, vec
 	// Загружаем события
 
 	// Заполним информацию по конфиге
-	strncpy(SysVar->ConfigInfo.File, filename.c_str(), MAX_CONFIG_NAME);
-
-	//TODO прока пропишем жестко русский язык
-	strncpy(SysVar->Lang, LANG_RU.c_str(), MAX_LANG_SIZE);
+	rSystemVariable::instance().loadConfigInfo(filename, root);
 
 	// Сохраняем информацию для WEB
 	saveWeb();
@@ -238,7 +228,7 @@ UDINT rDataConfig::loadHardware(tinyxml2::XMLElement* root)
 
 		type = String_tolower(type);
 
-		auto module = rIOManager::instance().addModule(type, m_error, module_xml->GetLineNum());
+		auto module = rIOManager::instance().addModule(type, m_error, module_xml->GetLineNum(), m_max);
 		if (!module) {
 			return m_error.getError();
 		}
@@ -318,16 +308,16 @@ UDINT rDataConfig::loadIO(tinyxml2::XMLElement* root, cJSON* jroot, rStation* ow
 		source = nullptr;
 
 		//TODO реализовать как в модулях IO
-		if (XmlName::AI == name) { if(SysVar->m_max[name] >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      }
-		if (XmlName::FI == name) { if(SysVar->m_max[name] >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); }
-		if (XmlName::DI == name) { if(SysVar->m_max[name] >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      }
-		if (XmlName::DO == name) { if(SysVar->m_max[name] >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      }
+		if (XmlName::AI == name) { if(m_max[name] >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      }
+		if (XmlName::FI == name) { if(m_max[name] >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); }
+		if (XmlName::DI == name) { if(m_max[name] >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      }
+		if (XmlName::DO == name) { if(m_max[name] >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      }
 
 		if (!source) {
 			return m_error.set(DATACFGERR_UNKNOWIO, obj->GetLineNum());
 		}
 
-		source->m_ID = SysVar->m_max[name]++;
+		source->m_ID = m_max[name]++;
 
 		if(source->loadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
 			return m_error.getError();
@@ -365,23 +355,23 @@ UDINT rDataConfig::loadCalc(tinyxml2::XMLElement* root, cJSON* jroot, rStation* 
 		name   = obj->Name();
 		source = nullptr;
 
-		if (XmlName::DENSSOL     == name) { if (SysVar->m_max[name] >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL  , 0); source = dynamic_cast<rSource*>(new rDensSol(owner));            }
-		if (XmlName::REDUCEDDENS == name) { if (SysVar->m_max[name] >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS  , 0); source = dynamic_cast<rSource*>(new rReducedDens(owner));        }
-		if (XmlName::MSELECTOR   == name) { if (SysVar->m_max[name] >= MAX_MSELECTOR  ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));           }
-		if (XmlName::SELECTOR    == name) { if (SysVar->m_max[name] >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));           }
-		if (XmlName::SAMPLER     == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_SAMPLER  , 0); source = dynamic_cast<rSource*>(new rSampler(owner));            }
-		if (XmlName::PROVE       == name) { if (SysVar->m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_PROVE    , 0); source = dynamic_cast<rSource*>(new rProve(owner));              }
-		if (XmlName::AVERAGE     == name) { if (SysVar->m_max[name] >= MAX_AVERAGE    ) return m_error.set(DATACFGERR_MAX_AVERAGE  , 0); source = dynamic_cast<rSource*>(new rAverage(owner));            }
-		if (XmlName::MASSWATER   == name) { if (SysVar->m_max[name] >= MAX_MASSWATER  ) return m_error.set(DATACFGERR_MAX_MASSWATER, 0); source = dynamic_cast<rSource*>(new rMassWater(owner));          }
-		if (XmlName::VOLWATER    == name) { if (SysVar->m_max[name] >= MAX_VOLWATER   ) return m_error.set(DATACFGERR_MAX_VOLWATER , 0); source = dynamic_cast<rSource*>(new rVolWater(owner));           }
-		if (XmlName::KINVISC     == name) { if (SysVar->m_max[name] >= MAX_KINVISC    ) return m_error.set(DATACFGERR_MAX_KINVISC  , 0); source = dynamic_cast<rSource*>(new rKinematicViscosity(owner)); }
-		if (XmlName::DYNVISC     == name) { if (SysVar->m_max[name] >= MAX_DYNVISC    ) return m_error.set(DATACFGERR_MAX_DYNVISC  , 0); source = dynamic_cast<rSource*>(new rDynamicViscosity(owner));   }
+		if (XmlName::DENSSOL     == name) { if (m_max[name] >= MAX_DENSSOL    ) return m_error.set(DATACFGERR_MAX_DENSSOL  , 0); source = dynamic_cast<rSource*>(new rDensSol(owner));            }
+		if (XmlName::REDUCEDDENS == name) { if (m_max[name] >= MAX_REDUCEDDENS) return m_error.set(DATACFGERR_MAX_RDCDENS  , 0); source = dynamic_cast<rSource*>(new rReducedDens(owner));        }
+		if (XmlName::MSELECTOR   == name) { if (m_max[name] >= MAX_MSELECTOR  ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));           }
+		if (XmlName::SELECTOR    == name) { if (m_max[name] >= MAX_SELECTOR   ) return m_error.set(DATACFGERR_MAX_SELECTOR , 0); source = dynamic_cast<rSource*>(new rSelector(owner));           }
+		if (XmlName::SAMPLER     == name) { if (m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_SAMPLER  , 0); source = dynamic_cast<rSource*>(new rSampler(owner));            }
+		if (XmlName::PROVE       == name) { if (m_max[name] >= MAX_SAMPLER    ) return m_error.set(DATACFGERR_MAX_PROVE    , 0); source = dynamic_cast<rSource*>(new rProve(owner));              }
+		if (XmlName::AVERAGE     == name) { if (m_max[name] >= MAX_AVERAGE    ) return m_error.set(DATACFGERR_MAX_AVERAGE  , 0); source = dynamic_cast<rSource*>(new rAverage(owner));            }
+		if (XmlName::MASSWATER   == name) { if (m_max[name] >= MAX_MASSWATER  ) return m_error.set(DATACFGERR_MAX_MASSWATER, 0); source = dynamic_cast<rSource*>(new rMassWater(owner));          }
+		if (XmlName::VOLWATER    == name) { if (m_max[name] >= MAX_VOLWATER   ) return m_error.set(DATACFGERR_MAX_VOLWATER , 0); source = dynamic_cast<rSource*>(new rVolWater(owner));           }
+		if (XmlName::KINVISC     == name) { if (m_max[name] >= MAX_KINVISC    ) return m_error.set(DATACFGERR_MAX_KINVISC  , 0); source = dynamic_cast<rSource*>(new rKinematicViscosity(owner)); }
+		if (XmlName::DYNVISC     == name) { if (m_max[name] >= MAX_DYNVISC    ) return m_error.set(DATACFGERR_MAX_DYNVISC  , 0); source = dynamic_cast<rSource*>(new rDynamicViscosity(owner));   }
 
 		if(!source) {
 			return m_error.set(DATACFGERR_UNKNOWCALC, obj->GetLineNum(), name);
 		}
 
-		source->m_ID = SysVar->m_max[name]++;
+		source->m_ID = m_max[name]++;
 
 		if(source->loadFromXML(obj, m_error, prefix) != TRITONN_RESULT_OK) {
 			return m_error.getError();
@@ -414,13 +404,13 @@ UDINT rDataConfig::LoadStation(tinyxml2::XMLElement *root, cJSON *jroot)
 
 	// Разбираем элементы
 	XML_FOR(station_xml, stations_xml, XmlName::STATION) {
-		if (SysVar->m_max[XmlName::STATION] >= MAX_STATION) {
+		if (m_max[XmlName::STATION] >= MAX_STATION) {
 			return m_error.set(DATACFGERR_MAX_STATION, station_xml->GetLineNum());
 		}
 
 		rStation* stn = new rStation();
 
-		stn->m_ID = SysVar->m_max[XmlName::STATION]++;
+		stn->m_ID = m_max[XmlName::STATION]++;
 
 		if (TRITONN_RESULT_OK != stn->loadFromXML(station_xml, m_error, "")) {
 			return m_error.getError();
@@ -468,13 +458,13 @@ UDINT rDataConfig::loadStream(tinyxml2::XMLElement* root, cJSON* jroot, rStation
 	}
 
 	XML_FOR(stream_xml, streams, XmlName::STREAM) {
-		if (SysVar->m_max[XmlName::STREAM] >= MAX_STREAM) {
+		if (m_max[XmlName::STREAM] >= MAX_STREAM) {
 			return m_error.set(DATACFGERR_MAX_STREAM, stream_xml->GetLineNum());
 		}
 
 		rStream* str = new rStream(owner);
 
-		str->m_ID = SysVar->m_max[XmlName::STREAM]++;
+		str->m_ID = m_max[XmlName::STREAM]++;
 
 		if (TRITONN_RESULT_OK != str->loadFromXML(stream_xml, m_error, prefix)) {
 			return m_error.getError();
@@ -550,6 +540,8 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 	if (!custom) {
 		return TRITONN_RESULT_OK;
 	}
+
+	m_lang = XmlUtils::getAttributeString(custom, XmlName::LANG, LANG_RU, XmlUtils::Flags::TOLOWER);
 
 	userstr   = custom->FirstChildElement(XmlName::STRINGS);
 //	userevent = custom->FirstChildElement(XmlName::EVENTS);
