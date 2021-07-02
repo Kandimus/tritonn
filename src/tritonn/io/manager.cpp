@@ -117,9 +117,8 @@ UDINT rIOManager::generateVars(rVariableClass* parent)
 	return TRITONN_RESULT_OK;
 }
 
-rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT lineno)
+rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT lineno, std::map<std::string, UDINT>& maxmap)
 {
-	auto sysvar = rSystemVariable::instance().getPointer();
 	rIOBaseModule* module = nullptr;
 
 	if (type == rModuleCPU::getRTTI()) {
@@ -128,8 +127,8 @@ rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT
 			return nullptr;
 		}
 
-		module = dynamic_cast<rIOBaseModule*>(new rModuleCPU(sysvar->m_max[rModuleCPU::getRTTI()]));
-		++sysvar->m_max[rModuleCPU::getRTTI()];
+		module = dynamic_cast<rIOBaseModule*>(new rModuleCPU(maxmap[rModuleCPU::getRTTI()]));
+		++maxmap[rModuleCPU::getRTTI()];
 
 	} else {
 		if (!m_modules.size()) {
@@ -138,25 +137,23 @@ rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT
 		}
 
 		if (type == rModuleAI6::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6(sysvar->m_max[rModuleAI6::getRTTI()]));
-			++sysvar->m_max[rModuleAI6::getRTTI()];
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6(maxmap[rModuleAI6::getRTTI()]));
 
 		} else if (type == rModuleDI8DO8::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(sysvar->m_max[rModuleDI8DO8::getRTTI()]));
-			++sysvar->m_max[rModuleDI8DO8::getRTTI()];
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(maxmap[rModuleDI8DO8::getRTTI()]));
 
 		} else if (type == rModuleFI4::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(sysvar->m_max[rModuleFI4::getRTTI()]));
-			++sysvar->m_max[rModuleFI4::getRTTI()];
+			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(maxmap[rModuleFI4::getRTTI()]));
 
 		} else if (type == rModuleCRM::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(sysvar->m_max[rModuleCRM::getRTTI()]));
-			++sysvar->m_max[rModuleCRM::getRTTI()];
+			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(maxmap[rModuleCRM::getRTTI()]));
 
 		} else {
 			err.set(DATACFGERR_UNKNOWN_MODULE, lineno, "");
 			return nullptr;
 		}
+
+		++maxmap[type];
 	}
 
 	m_modules.push_back(module);

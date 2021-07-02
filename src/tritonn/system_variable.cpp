@@ -106,7 +106,9 @@ void rSystemVariable::processing()
 
 	// set current time and date
 	if (m_setDateTimeAccept) {
+#ifdef TRITONN_YOCTO
 		setCurrentTime(m_setDateTime);
+#endif
 		//TODO Кидать мессагу о изменении времени
 
 		m_setDateTimeAccept   = 0;

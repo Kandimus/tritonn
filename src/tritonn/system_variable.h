@@ -46,7 +46,6 @@ public:
 
 	rSystemVariable*       getPointer() const;
 	const rSystemVariable* getConstPointer() const;
-//	const rConfigInfo*     getConfName() const { return &m_configInfo; }
 
 	void        getVersion(rVersion& ver) const { ver = m_version; }
 	std::string getLiveName(Live live)    const { return m_flagsLive.getNameByValue(static_cast<UDINT>(live)); }

@@ -2,7 +2,7 @@
 //===
 //=== locker.h
 //===
-//=== Copyright (c) 2020 by VeduN.
+//=== Copyright (c) 2020-2021 by VeduN.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.

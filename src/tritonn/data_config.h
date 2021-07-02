@@ -47,7 +47,6 @@ struct rBitFlag
 	rBitFlag(const std::string &name, UDINT value) : Name(name), Value(value) {}
 };
 
-
 class rDataConfig
 {
 	SINGLETON(rDataConfig)
@@ -59,6 +58,7 @@ class rDataConfig
 		std::string m_name;
 		UDINT       m_lineno;
 	};
+
 
 public:
 	UDINT LoadFile(const std::string& filename, std::vector<rSource*>& listsrc, std::vector<rInterface*>& listiface, std::vector<rReport*>& listrpt);

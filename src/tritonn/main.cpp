@@ -84,9 +84,12 @@ int main(int argc, char* argv[])
 	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
 	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 	TRACEI(LOG::MAIN, "argumets:");
-	TRACEI(LOG::MAIN, "\tForceRun : %s", rSimpleArgs::instance().isSet(rArg::ForceRun) ? "true" : "false");
-	TRACEI(LOG::MAIN, "\tSimulate : %s", rSimpleArgs::instance().isSet(rArg::Simulate) ? "true" : "false");
-	TRACEI(LOG::MAIN, "\tNoDump   : %s", rSimpleArgs::instance().isSet(rArg::NoDump)   ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tForceRun : %s"  , rSimpleArgs::instance().isSet(rArg::ForceRun) ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tTerminal : %s"  , rSimpleArgs::instance().isSet(rArg::Terminal) ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tSimulate : %s"  , rSimpleArgs::instance().isSet(rArg::Simulate) ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tNoDump   : %s"  , rSimpleArgs::instance().isSet(rArg::NoDump)   ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tLog      : 0x%s", rSimpleArgs::instance().getOption(rArg::Log).c_str());
+	TRACEI(LOG::MAIN, "\tConfig   : '%s'", rSimpleArgs::instance().getOption(rArg::Config).c_str());
 	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
 	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 	rLogManager::instance().Run(16);
@@ -125,8 +128,8 @@ int main(int argc, char* argv[])
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
 
-	TRACEI(LOG::MAIN, "Log storage: %u / %u", rLogManager::instance().COMPRESS_DAYS, rLogManager::instance().DELETE_DAYS);
-	TRACEI(LOG::MAIN, "Event storage: %u / %u", rEventManager::instance().getStorage(), rEventManager::instance().DELETE_DAYS);
+	TRACEI(LOG::MAIN, "Log storage:   %3u / %3u", rLogManager::instance().COMPRESS_DAYS, rLogManager::instance().DELETE_DAYS);
+	TRACEI(LOG::MAIN, "Event storage: %3u / %3u", rEventManager::instance().getStorage(), rEventManager::instance().DELETE_DAYS);
 
 
 	// Стартуем обмен с модулями IO

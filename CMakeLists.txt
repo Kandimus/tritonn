@@ -9,6 +9,10 @@ option(TRITONN_TESTS "Make tests" ON)
 option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
 
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
+	set(TRITONN_YOCTO 1)
+endif()
+
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)
 	set(PROJECT_VERSION_MAJOR 0)
