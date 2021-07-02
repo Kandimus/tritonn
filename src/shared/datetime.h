@@ -14,6 +14,7 @@
 #include <string>
 #include "types.h"
 #include "container.h"
+#include "time64.h"
 
 class rDateTime
 {
@@ -25,6 +26,9 @@ public:
 	};
 
 	rDateTime();
+	rDateTime(const UDT& udt);
+	rDateTime(const Time64_T& time64);
+	rDateTime(const STM& stm);
 	virtual ~rDateTime() = default;
 
 	std::string toString() const;

@@ -17,6 +17,8 @@
 #include "locker.h"
 #include "units.h"
 #include "tritonn_version.h"
+#include "datetime.h"
+#include "log_manager.h"
 #include "system_variable.h"
 #include "variable_item.h"
 #include "variable_list.h"
@@ -106,8 +108,15 @@ void rSystemVariable::processing()
 
 	// set current time and date
 	if (m_setDateTimeAccept) {
+		rDateTime curdt(m_dateTime);
+		rDateTime newdt(m_setDateTime);
+
+		TRACEW(LOG::SYSVAR, "Set new time %s (present time %s)", newdt.toString().c_str(), curdt.toString().c_str());
+
 #ifdef TRITONN_YOCTO
 		setCurrentTime(m_setDateTime);
+#else
+		TRACEW(LOG::SYSVAR, "Set time disable. Not YOCTO build");
 #endif
 		//TODO Кидать мессагу о изменении времени
 

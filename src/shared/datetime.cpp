@@ -10,12 +10,35 @@
 //=================================================================================================
 
 #include "datetime.h"
-#include "time64.h"
 #include "stringex.h"
 
 rDateTime::rDateTime()
 {
 	setCurTime();
+}
+
+rDateTime::rDateTime(const Time64_T& time64)
+{
+	m_datetime.tv_sec  = time64;
+	m_datetime.tv_usec = 0;
+}
+
+rDateTime::rDateTime(const UDT& udt)
+{
+	m_datetime = udt;
+}
+
+rDateTime::rDateTime(const STM& stm)
+{
+	STM _stm = stm;
+
+	if (_stm.tm_year > 1900) {
+		_stm.tm_mon  = _stm.tm_mon - 1;
+		_stm.tm_year = _stm.tm_year - 1900;
+	}
+
+	m_datetime.tv_sec  = mktime(&_stm);
+	m_datetime.tv_usec = 0;
 }
 
 std::string rDateTime::toString() const
