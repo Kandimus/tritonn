@@ -23,13 +23,11 @@
 	<config>
 		<settings>
 			<ethernet device="eth0">
-				<ip>192.168.1.100</ip>
-				<mask>255.255.255.0</mask>
+				<ip>192.168.1.100/24</ip>
 				<gateway></gateway>
 			</ethernet>
 			<ethernet device="eth1">
-				<ip>192.168.1.101</ip>
-				<mask>255.255.255.0</mask>
+				<ip>192.168.1.200/24</ip>
 				<gateway></gateway>
 			</ethernet>
 			<contracthour>0</contracthour>

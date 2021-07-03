@@ -25,6 +25,7 @@
 #include "variable_item.h"
 #include "variable_list.h"
 #include "system_manager.h"
+#include "simplefile.h"
 #include "comment_defines.h"
 #include "generator_md.h"
 
@@ -177,9 +178,27 @@ void rSystemVariable::setSimulate(USINT sim)
 
 void rSystemVariable::applyEthernet()
 {
+	// check for new ip
+
+	std::string text = "# tritonn config ip\nauto lo\niface lo inet loopback\n\n";
+
 	for (auto& eth : m_ethernet) {
-		rSystemManager::add("")
+		text += "allow-hotplug " + eth.m_dev + "\n";
+		text += "auto " + eth.m_dev + "\n";
+		text += "iface " + eth.m_dev + " inet static\n";
+		text += "\t  address " + eth.m_ip + "\n";
+		text += "\t  netmask " + eth.m_mask + "\n";
+
+		if (eth.m_gateway.size()) {
+			text += "\t  gateway " + eth.m_gateway + "\n";
+		}
+
+		text += "\n";
 	}
+
+	simpleFileSave("/etc/network/interfaces", text);
+
+	rSystemManager::add("");
 }
 
 

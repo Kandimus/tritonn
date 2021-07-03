@@ -134,7 +134,6 @@ int main(int argc, char* argv[])
 
 	// Стартуем обмен с модулями IO
 	rIOManager::instance().Run(100);
-
 	rThreadMaster::instance().add(&rIOManager::instance(), TMF_NONE, "io");
 
 

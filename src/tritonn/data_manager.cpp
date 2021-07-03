@@ -220,10 +220,6 @@ UDINT rDataManager::LoadConfig()
 	saveMarkDown();
 	m_hashCfg = "00112233445566778899aabbccddeeff00112233";
 
-	//--------------------------------------------
-	//TODO Нужно из rTextManager и rEventManager извлеч список языков, и сформировать единый список внутри rDataManager
-	//TODO Сохранить массивы строк для WEB
-
 	//
 	setLang(rDataConfig::instance().m_lang);
 
