@@ -1,3 +1,4 @@
-scp /home/vedun/projects/build/tritonn-arm/src/tritonn/tritonn root@192.168.1.67:/home/root/tritonn
-scp -r /home/vedun/projects/tritonn/bin/* root@192.168.1.67:/home/root/tritonn
-
+ssh root@192.168.1.72 'mkdir ~/tritonn'
+scp /home/vedun/projects/build/tritonn-arm/src/tritonn/tritonn root@192.168.1.72:/home/root/tritonn
+scp -r /home/vedun/projects/tritonn/bin/* root@192.168.1.72:/home/root/tritonn/
+scp -r /home/vedun/projects/tritonn/www/* root@192.168.1.72:/home/root/tritonn/www/

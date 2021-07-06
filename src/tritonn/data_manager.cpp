@@ -210,12 +210,13 @@ UDINT rDataManager::LoadConfig()
 
 	m_varList.sort();
 
-	//--------------------------------------------
-	//NOTE только в процессе разработки
 	if (getLiveStatus() != Live::STARTING) {
 		return result;
 	}
 
+	// Все порядке, запускаемся дальше
+
+	//NOTE Блок только во время разработки
 	m_varList.saveToCSV(DIR_FTP + conf); // Сохраняем их на ftp-сервер
 	saveMarkDown();
 	m_hashCfg = "00112233445566778899aabbccddeeff00112233";
@@ -229,6 +230,8 @@ UDINT rDataManager::LoadConfig()
 		TRACEI(LOG::DATAMGR, "NoDump is set!");
 		setLiveStatus(Live::RUNNING);
 	}
+
+	rSystemVariable::instance().applyEthernet();
 
 	return result;
 }
@@ -322,7 +325,7 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 	DoHalt(HALT_REASON_CONFIGFILE | err.getError());
 
 	TRACEP(LOG::DATAMGR, "Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.",
-			   rDataConfig::instance().FileName.c_str(), err.getError(), err.getLineno(), err.getText().c_str());
+			   rDataConfig::instance().m_fileName.c_str(), err.getError(), err.getLineno(), err.getText().c_str());
 
 	return err.getError();
 }

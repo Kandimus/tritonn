@@ -41,8 +41,7 @@ public:
 
 	void  clearConfigInfo1();
 	void  getConfigInfo(rConfigInfo& conf);
-	UDINT loadFromXml(const std::string& filename, tinyxml2::XMLElement* root);
-	UDINT loadEthernet(tinyxml2::XMLElement* root, rError& err);
+	UDINT loadFromXml(const std::string& filename, tinyxml2::XMLElement* root, tinyxml2::XMLElement* xml_setting, rError& err);
 
 	void  getState(rState& st);
 	void  getTime(struct tm& sdt);

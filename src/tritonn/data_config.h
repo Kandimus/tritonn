@@ -94,7 +94,7 @@ protected:
 	void  saveWeb();
 
 public:
-	std::string FileName;
+	std::string m_fileName;
 	rError      m_error;
 	std::string m_lang = LANG_RU;
 
@@ -106,7 +106,8 @@ protected:
 	cJSON* m_json_usr = nullptr;
 	cJSON* m_json_hdw = nullptr;
 
-	tinyxml2::XMLElement*     m_xmlRootSecurity;
+	tinyxml2::XMLElement*     m_xmlRoot = nullptr;
+	tinyxml2::XMLElement*     m_xmlRootSecurity = nullptr;
 	std::vector<rSource*>    *ListSource;
 	std::vector<rInterface*> *ListInterface;
 	std::vector<rReport*>*    m_listReport;

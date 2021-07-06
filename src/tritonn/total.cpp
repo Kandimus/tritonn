@@ -163,7 +163,7 @@ bool rTotal::fromXmlBase(tinyxml2::XMLElement* root, rBaseTotal& total)
 	bt.Volume   = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::VOLUME)  , 0, err);
 	bt.Volume15 = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::VOLUME15), 0, err);
 	bt.Volume20 = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::VOLUME20), 0, err);
-	bt.Count    = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::COUNT)   , 0, err);
+	bt.Count    = XmlUtils::getTextUDINT(root->FirstChildElement(XmlName::COUNT)   , 0, err);
 
 	if (err) {
 		return false;

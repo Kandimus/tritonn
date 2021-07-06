@@ -64,7 +64,6 @@ rDataConfig::rDataConfig()
 	m_json_obj = cJSON_CreateArray();
 	m_json_usr = cJSON_CreateArray();
 	m_json_hdw = cJSON_CreateArray();
-	m_xmlRootSecurity = nullptr;
 
 	cJSON_AddItemToObject(m_json, XmlName::HARDWARE, m_json_hdw);
 	cJSON_AddItemToObject(m_json, XmlName::VARS    , m_json_var);
@@ -85,6 +84,9 @@ rDataConfig::~rDataConfig()
 		cJSON_Delete(m_json);
 		m_json = nullptr;
 	}
+
+	m_xmlRoot = nullptr;
+	m_xmlRootSecurity = nullptr;
 }
 
 
@@ -100,7 +102,7 @@ UDINT rDataConfig::LoadFile(const string &filename, vector<rSource *> &listsrc, 
 	std::string info_name     = "";
 	std::string info_ver      = "";
 
-	FileName      = filename;
+	m_fileName    = filename;
 	ListSource    = &listsrc;
 	m_listReport  = &listrpt;
 	ListInterface = &listiface;
@@ -114,20 +116,20 @@ UDINT rDataConfig::LoadFile(const string &filename, vector<rSource *> &listsrc, 
 		return m_error.set(doc.ErrorID(), doc.ErrorLineNum(), doc.ErrorStr());
 	}
 
-	auto root = doc.FirstChildElement(XmlName::TRITONN);
-	if (!root) {
+	m_xmlRoot = doc.FirstChildElement(XmlName::TRITONN);
+	if (!m_xmlRoot) {
 		return m_error.set(DATACFGERR_STRUCT, 0, "Is not tritonn-conf file");
 	}
 
-	if (TRITONN_RESULT_OK != LoadSecurity(root, doc_security)) {
+	if (TRITONN_RESULT_OK != LoadSecurity(m_xmlRoot, doc_security)) {
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != loadHardware(root)) {
+	if (TRITONN_RESULT_OK != loadHardware(m_xmlRoot)) {
 		return m_error.getError();
 	}
 
-	if (TRITONN_RESULT_OK != LoadConfig(root)) {
+	if (TRITONN_RESULT_OK != LoadConfig(m_xmlRoot)) {
 		return m_error.getError();
 	}
 
@@ -150,19 +152,17 @@ UDINT rDataConfig::LoadFile(const string &filename, vector<rSource *> &listsrc, 
 	}
 
 	// Загружаем строки и события
-	if (TRITONN_RESULT_OK != LoadCustom(root)) {
+	if (TRITONN_RESULT_OK != LoadCustom(m_xmlRoot)) {
 		return m_error.getError();
 	}
 
 	// Загружаем интерфейсы
-	if (TRITONN_RESULT_OK != LoadComms(root)) {
+	if (TRITONN_RESULT_OK != LoadComms(m_xmlRoot)) {
 		return m_error.getError();
 	}
 
 	// Загружаем события
 
-	// Заполним информацию по конфиге
-	rSystemVariable::instance().loadFromXml(filename, root);
 
 	// Сохраняем информацию для WEB
 	saveWeb();
@@ -543,7 +543,6 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 	auto xml_userstr   = xml_custom->FirstChildElement(XmlName::STRINGS);
 //	auto userevent = custom->FirstChildElement(XmlName::EVENTS);
 	auto xml_precision = xml_custom->FirstChildElement(XmlName::PRECISION);
-	auto xml_ethernet  = xml_custom->FirstChildElement(XmlName::ETHERNET);
 
 	if (xml_userstr) {
 		if (TRITONN_RESULT_OK != rTextManager::instance().load(xml_userstr, m_error)) {
@@ -556,13 +555,6 @@ UDINT rDataConfig::LoadCustom(tinyxml2::XMLElement* root)
 			return m_error.getError();
 		}
 	}
-
-	if (xml_ethernet) {
-		if (TRITONN_RESULT_OK != rSystemVariable::instance().loadEthernet(xml_ethernet, m_error)) {
-			return m_error.getError();
-		}
-	}
-
 
 	return TRITONN_RESULT_OK;
 }
@@ -961,6 +953,10 @@ UDINT rDataConfig::loadSettings(tinyxml2::XMLElement* root)
 				XmlUtils::getTextUDINT(xml_settings->FirstChildElement(XmlName::EVENTSTORAGE),
 									   rEventManager::instance().getStorage(),
 									   fault));
+
+	if (rSystemVariable::instance().loadFromXml(m_fileName, m_xmlRoot, xml_settings, m_error) != TRITONN_RESULT_OK) {
+		return m_error.getError();
+	}
 
 	return TRITONN_RESULT_OK;
 }

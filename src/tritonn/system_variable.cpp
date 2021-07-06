@@ -178,8 +178,6 @@ void rSystemVariable::setSimulate(USINT sim)
 
 void rSystemVariable::applyEthernet()
 {
-	// check for new ip
-
 	std::string text = "# tritonn config ip\nauto lo\niface lo inet loopback\n\n";
 
 	for (auto& eth : m_ethernet) {
@@ -194,46 +192,53 @@ void rSystemVariable::applyEthernet()
 		}
 
 		text += "\n";
+
+		TRACEI(LOG::SYSVAR, "Set IP addresses on %s as %s", eth.m_dev.c_str(), eth.m_ip.c_str());
 	}
 
+#ifndef TRITONN_YOCTO
+	TRACEW(LOG::SYSVAR, "Not YOCTO build. IP addresses do not apply");
+	simpleFileSave("interfaces.txt", text);
+#else
+	TRACEW(LOG::SYSVAR, "IP addresses apply. Restart network");
 	simpleFileSave("/etc/network/interfaces", text);
 
-	rSystemManager::add("");
+	rSystemManager::instance().add("ifup -a");
+#endif
 }
 
 
-UDINT rSystemVariable::loadFromXml(const std::string& filename, tinyxml2::XMLElement* root)
+UDINT rSystemVariable::loadFromXml(const std::string& filename, tinyxml2::XMLElement* root, tinyxml2::XMLElement* xml_setting, rError& err)
 {
 	rLocker locker(m_rwlock, rLocker::TYPELOCK::WRITE); locker.Nop();
 
 	strncpy(m_configInfo.File, filename.c_str(), MAX_CONFIG_NAME);
 
-	return TRITONN_RESULT_OK;
-}
+	if (xml_setting) {
+		XML_FOR(xml_ethernet, xml_setting, XmlName::ETHERNET) {
+			rEthernet eth;
+			UDINT     fault = 0;
 
-UDINT rSystemVariable::loadEthernet(tinyxml2::XMLElement* root, rError& err)
-{
-	if (!root) {
-		return TRITONN_RESULT_OK;
+			eth.m_dev = XmlUtils::getAttributeString(xml_ethernet, XmlName::DEVICE, "", XmlUtils::Flags::TOLOWER);
+			if (eth.m_dev.empty()) {
+				return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "device is null");
+			}
+
+			eth.m_ip = XmlUtils::getTextString(xml_ethernet->FirstChildElement(XmlName::IP), "", fault);
+			if (fault || eth.m_ip.empty()) {
+				return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "ip is null");
+			}
+
+			eth.m_mask = XmlUtils::getTextString(xml_ethernet->FirstChildElement(XmlName::MASK), "", fault);
+			if (fault || eth.m_mask.empty()) {
+				return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "mask is null");
+			}
+
+			eth.m_gateway = XmlUtils::getTextString(xml_ethernet->FirstChildElement(XmlName::GATEWAY), "", fault);
+
+			m_ethernet.push_back(eth);
+		}
 	}
-
-	rEthernet eth;
-	UDINT     fault = 0;
-
-	eth.m_dev     = XmlUtils::getAttributeString(root, XmlName::DEVICE, "", XmlUtils::Flags::TOLOWER);
-	eth.m_ip      = XmlUtils::getTextString(root->FirstChildElement(XmlName::IP)     , "", fault);
-	eth.m_mask    = XmlUtils::getTextString(root->FirstChildElement(XmlName::MASK)   , "", fault);
-	eth.m_gateway = XmlUtils::getTextString(root->FirstChildElement(XmlName::GATEWAY), "", fault);
-
-	if (eth.m_dev.empty()) {
-		return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "device is null");
-	}
-
-	if (fault) {
-		return err.set(DATACFGERR_EHTERNET_LOAD_FAULT, root->GetLineNum(), "");
-	}
-
-	m_ethernet.push_back(eth);
 
 	return TRITONN_RESULT_OK;
 }
