@@ -36,12 +36,12 @@ rThreadStatus rSystemManager::Proccesing()
 			return thread_status;
 		}
 
-		if (m_timer.isFinished()) {
+		{
 			Lock();
 			if (m_list.size()) {
 				int result = system(m_list.front().c_str());
 
-				TRACEI(LOG::SYSTEM, "%i <- [%s]", result, m_list.front().c_str());
+				TRACEI(LOG::SYSTEM, "root# '%s' -> %i", m_list.front().c_str(), result);
 
 				m_list.pop_front();
 			}
@@ -56,6 +56,10 @@ rThreadStatus rSystemManager::Proccesing()
 	return rThreadStatus::UNDEF;
 }
 
+int rSystemManager::force(const std::string& command)
+{
+	return system(command.c_str());
+}
 
 void rSystemManager::add(const std::string& text)
 {

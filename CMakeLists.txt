@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
+message(STATUS "CMAKE: ${CMAKE_VERSION}")
+
+cmake_minimum_required(VERSION 3.12)
 
 #-march=armv7-a -mcpu=cortex-a5
 
@@ -10,7 +12,7 @@ option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
-	set(TRITONN_YOCTO 1)
+	add_compile_definitions(TRITONN_YOCTO)
 endif()
 
 #
@@ -75,7 +77,6 @@ if (NOT (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm"))
 endif()
 
 message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "Yocto: ${TRITONN_YOCTO}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "Version: ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH} ${PROJECT_VERSION_DATE} ${PROJECT_VERSION_TIME} (${PROJECT_VERSION_UNIXTIME})")

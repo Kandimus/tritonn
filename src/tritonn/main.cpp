@@ -30,6 +30,11 @@ int main(int argc, char* argv[])
 {
 	rEvent event;
 
+#ifdef TRITONN_YOCTO
+	rSystemManager::instance().force("ip a flush dev eth0 > /dev/null");
+	rSystemManager::instance().force("ip a flush dev eth1 > /dev/null");
+#endif
+
 	rLogManager::instance().setDir(DIR_LOG);
 
 	// Разбираем командную строку
@@ -98,7 +103,7 @@ int main(int argc, char* argv[])
 
 
 	// Менеджер системных команд
-	rSystemManager::instance().Run(250);
+	rSystemManager::instance().Run(120);
 	rThreadMaster::instance().add(&rSystemManager::instance(), TMF_NONE, "system");
 
 

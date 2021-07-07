@@ -181,6 +181,8 @@ void rSystemVariable::applyEthernet()
 	std::string text = "# tritonn config ip\nauto lo\niface lo inet loopback\n\n";
 
 	for (auto& eth : m_ethernet) {
+		TRACEI(LOG::SYSVAR, "Set IP addresses on %s as %s", eth.m_dev.c_str(), eth.m_ip.c_str());
+
 		text += "allow-hotplug " + eth.m_dev + "\n";
 		text += "auto " + eth.m_dev + "\n";
 		text += "iface " + eth.m_dev + " inet static\n";
@@ -193,7 +195,15 @@ void rSystemVariable::applyEthernet()
 
 		text += "\n";
 
-		TRACEI(LOG::SYSVAR, "Set IP addresses on %s as %s", eth.m_dev.c_str(), eth.m_ip.c_str());
+#ifdef TRITONN_YOCTO
+		std::string text_ip = "ip addr add " + eth.m_ip + "/" + eth.m_mask + " dev " + eth.m_dev;
+
+		if (eth.m_gateway.size()) {
+			text_ip += "; ip route add " + eth.m_ip + "/" + eth.m_mask + " via " + eth.m_gateway;
+		}
+
+		rSystemManager::instance().add(text_ip);
+#endif
 	}
 
 #ifndef TRITONN_YOCTO
@@ -203,7 +213,9 @@ void rSystemVariable::applyEthernet()
 	TRACEW(LOG::SYSVAR, "IP addresses apply. Restart network");
 	simpleFileSave("/etc/network/interfaces", text);
 
-	rSystemManager::instance().add("ifup -a");
+	//rSystemManager::instance().add("ifup -a");
+
+	mSleep(300);
 #endif
 }
 
