@@ -29,7 +29,8 @@
 #include "generator_md.h"
 #include "comment_defines.h"
 
-rBitsArray rStation::m_flagsProduct;
+const char* rStation::RTTI = "station";
+rBitsArray  rStation::m_flagsProduct;
 
 
 /*
@@ -47,6 +48,7 @@ const UDINT FI_LE_CODE_FAULT = 0x00000020;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 rStation::rStation() :
+	rSource(this),
 	m_setup(0),
 	m_total(reinitEvent(EID_STATION_TOTAL_MASS),
 			reinitEvent(EID_STATION_TOTAL_VOLUME),

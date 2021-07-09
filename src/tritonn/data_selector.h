@@ -59,12 +59,13 @@ public:
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const override { return (m_setup.Value & Setup::MULTI) ? "mselector" : "selector"; }
+	virtual const char* getRTTI() const override { return (m_setup.Value & Setup::MULTI) ? "mselector" : "selector"; }
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement *element, rError& err, const std::string& prefix) override;
 	virtual UDINT generateVars(rVariableList& list) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
 	virtual UDINT calculate() override;
+	virtual UDINT check(rError& err) override;
 protected:
 	virtual UDINT initLimitEvent(rLink &link) override;
 	

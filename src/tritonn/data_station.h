@@ -40,7 +40,7 @@ public:
 
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const override { return "station"; }
+	virtual const char* getRTTI() const override { return RTTI; }
 
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;
 	virtual UDINT generateVars(rVariableList& list) override;
@@ -53,6 +53,8 @@ protected:
 	virtual UDINT initLimitEvent(rLink& link) override;
 
 public:
+	static const char* RTTI;
+
 	// Inputs/Outputs
 	rLink m_temp;
 	rLink m_pres;

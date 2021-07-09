@@ -22,13 +22,13 @@
 	</hardware>
 	<config>
 		<settings>
-			<ethernet name="eth0">
+			<ethernet device="eth0">
 				<ip>192.168.1.100</ip>
 				<mask>255.255.255.0</mask>
 				<gateway></gateway>
 			</ethernet>
-			<ethernet name="eth1">
-				<ip>192.168.1.101</ip>
+			<ethernet device="eth1">
+				<ip>192.168.1.200</ip>
 				<mask>255.255.255.0</mask>
 				<gateway></gateway>
 			</ethernet>
@@ -828,22 +828,22 @@
 			<datasets>
 				<dataset name="std_report">
 					<fwa name="Line1" alias="sikn_123.Line1"> <!--  Указываем источник нарастающих (Stream или Station only) -->
-						<item name="item_1"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
-						<item name="item_2"><link alias="SIKN_123.Line1.io.pres:present"/></item>
-						<item name="item_3"><link alias="SIKN_123.Line1:density"/></item>
-						<item name="item_4"><link alias="SIKN_123.Line1.io.temp:present"/></item>
+						<item name="l1_temp"><link alias="SIKN_123.line1.io.temp:present"/></item> <!-- Это линки -->
+						<item name="l1_pres"><link alias="SIKN_123.Line1.io.pres:present"/></item>
+						<item name="l1_dens"><link alias="SIKN_123.Line1:density"/></item>
+						<item name="l1_curr"><link alias="SIKN_123.Line1.io.temp:current"/></item>
 					</fwa>
 					<fwa name="Line2" alias="sikn_123.Line2">
-						<item name="item_1"><link alias="SIKN_123.Line2.io.temp:present"/></item>
-						<item name="item_2"><link alias="SIKN_123.Line2.io.pres:present"/></item>
-						<item name="item_3"><link alias="SIKN_123.Line2:density"/></item>
-						<item name="item_4"><link alias="SIKN_123.Line2.io.temp:present"/></item>
+						<item name="l2_temp"><link alias="SIKN_123.Line2.io.temp:present"/></item>
+						<item name="l2_pres"><link alias="SIKN_123.Line2.io.pres:present"/></item>
+						<item name="l2_dens"><link alias="SIKN_123.Line2:density"/></item>
+						<item name="l2_curr"><link alias="SIKN_123.Line2.io.temp:current"/></item>
 					</fwa>
 					<fwa name="SIKN123" alias="sikn_123">
-						<item name="item_1"><link alias="SIKN_123:temperature"/></item>
-						<item name="item_2"><link alias="SIKN_123:pressure"/></item>
-						<item name="item_3"><link alias="SIKN_123:density"/></item>
-						<item name="item_4"><link alias="SIKN_123.obj.StnWater:output"/></item>
+						<item name="l3_temp"><link alias="SIKN_123:temperature"/></item>
+						<item name="l3_pres"><link alias="SIKN_123:pressure"/></item>
+						<item name="l3_dens"><link alias="SIKN_123:density"/></item>
+						<item name="l3_watr"><link alias="SIKN_123.obj.StnWater:output"/></item>
 					</fwa>
 					<snapshots> <!-- Сюда попадают значения, которые не нужно средневзвешивать -->
 						<item name="ss_1"><link alias="sikn_321.io.counter:frequency"/></item>

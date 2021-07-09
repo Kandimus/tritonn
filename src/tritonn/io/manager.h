@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <memory>
 #include "safity.h"
 #include "tinyxml2.h"
@@ -27,6 +28,7 @@ class rDataConfig;
 class rIOBaseChannel;
 class rError;
 class rGeneratorMD;
+
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -52,7 +54,7 @@ public:
 protected:
 	virtual rThreadStatus Proccesing();
 
-	rIOBaseModule* addModule(const std::string& type, rError& err, UDINT lineno);
+	rIOBaseModule* addModule(const std::string& type, rError& err, UDINT lineno, std::map<std::string, UDINT>& maxmap);
 
 private:
 	std::vector<rIOBaseModule*> m_modules; //

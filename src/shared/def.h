@@ -379,13 +379,13 @@ enum rTritonn_Error
 	DATACFGERR_LIMIT,                       //
 	DATACFGERR_REPORT,                      // 148
 	DATACFGERR_NOREPORTS,                   //
-	DATACFGERR_RESOLVETOTAL,                // 150
-	DATACFGERR_VAR,                         //
-	DATACFGERR_VAR_SETUP,                   // 152
-	DATACFGERR_VAR_DEFAULT,                 //
-	DATACFGERR_VAR_LINK,                    // 154
-	DATACFGERR_VAR_UNIT,                    //
-	DATACFGERR_RESERV2____________,         // 156
+	DATACFGERR_REPORT_RESOLVETOTAL,         // 150
+	DATACFGERR_REPORT_TOTALS_IS_NULL,       //
+	DATACFGERR_VAR,                         // 152
+	DATACFGERR_VAR_SETUP,                   //
+	DATACFGERR_VAR_DEFAULT,                 // 154
+	DATACFGERR_VAR_LINK,                    //
+	DATACFGERR_VAR_UNIT,                    // 156
 	DATACFGERR_RESERV3____________,         //
 	DATACFGERR_USERS_NF,                    // 158     Not Found Template BLOCKS
 	DATACFGERR_INTERNAL,                    //
@@ -450,6 +450,8 @@ enum rTritonn_Error
 	DATACFGERR_KINVISC_NODENSITY,           // 218
 	DATACFGERR_DYNVISC_NOKINVISC,           //
 	DATACFGERR_DYNVISC_NODENSITY,           // 220
+	DATACFGERR_EHTERNET_LOAD_FAULT,         //
+	DATACFGERR_EHTERNET_APPLY_FAULT,        // 222
 
 	DATACFGERR_LANG_STRUCT = 500,           // 500
 	DATACFGERR_LANG_UNKNOW,                 //

@@ -46,12 +46,11 @@ public:
 	void  init(UINT setup, UDINT unit, rSource *owner, const std::string& ioname, STRID descr);
 	void  calculateLimit();
 	STRID getSourceUnit();
-	const rSource* getOwner() const;
 	bool  isValid() const;
 	
 	// Виртуальные функции от rSource
 public:
-	virtual const char* RTTI() const override { return "link"; }
+	virtual const char* getRTTI() const override { return "link"; }
 
 	virtual UDINT getFault() override;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::string& prefix) override;

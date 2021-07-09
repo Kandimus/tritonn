@@ -21,6 +21,7 @@ class rSystemManager: public rThreadClass
 	SINGLETON(rSystemManager)
 
 public:
+	int  force(const std::string& command);
 	void add(const std::string& command);
 	void addTarByTime(const std::string& path, const std::string& mask, UDINT days, const std::string& tarname);
 	void addDelByTime(const std::string& path, const std::string& mask, UDINT days);

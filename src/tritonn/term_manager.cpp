@@ -16,6 +16,7 @@
 #include <string.h>
 #include "log_manager.h"
 #include "data_manager.h"
+#include "system_variable.h"
 #include "users.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
@@ -179,9 +180,9 @@ UDINT rTermManager::PacketLogin(rTermClient *client, rPacketLoginData *packet)
 	rPacketLoginAnswe answe;
 
 	answe.Data.Access  = client->User->GetAccess();
-	rDataManager::instance().GetVersion(answe.Data.Version);
-	rDataManager::instance().GetState  (answe.Data.State);
-	rDataManager::instance().GetConfigInfo(answe.Data.Config);
+	rSystemVariable::instance().getVersion   (answe.Data.Version);
+	rSystemVariable::instance().getState     (answe.Data.State);
+	rSystemVariable::instance().getConfigInfo(answe.Data.Config);
 
 	Send(client, &answe.Data, LENGTH_PACKET_LOGINANSWE);
 

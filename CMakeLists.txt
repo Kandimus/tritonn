@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
+message(STATUS "CMAKE: ${CMAKE_VERSION}")
+
+cmake_minimum_required(VERSION 3.12)
 
 #-march=armv7-a -mcpu=cortex-a5
 
@@ -8,6 +10,10 @@ set(PROJECT_NAME_PREFIX TT_)
 option(TRITONN_TESTS "Make tests" ON)
 option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
+
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
+	add_compile_definitions(TRITONN_YOCTO)
+endif()
 
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)

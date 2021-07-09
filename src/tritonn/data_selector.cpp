@@ -134,7 +134,7 @@ UDINT rSelector::calculate()
 					rEventManager::instance().add(reinitEvent(EID_SELECTOR_TOFAULT) << m_select.Value);
 
 					m_select.Value = -1;
-					m_fault      = 1;
+					m_fault        = 1;
 				}
 
 				// Переходим на следующий канал
@@ -169,8 +169,10 @@ UDINT rSelector::calculate()
 	// Записываем в "выхода" требуемые значения входов, так же изменяем ед. измерения у "выходов"
 	for (UDINT grp = 0; grp < CountGroups; ++grp) {
 		ValueOut[grp].m_value = (m_select.Value == -1) ? Keypad[grp] : ValueIn[m_select.Value][grp].m_value;
-		ValueOut[grp].m_unit  = (m_select.Value == -1) ? KpUnit[grp] : ValueIn[m_select.Value][grp].m_unit;
+		ValueOut[grp].m_unit  = (m_select.Value == -1) ? KpUnit[grp] : ValueIn[m_select.Value][grp].getSourceUnit();
 	}
+
+//printf("Selector %s, output unit %u\n", m_alias.c_str(), ValueOut[0].m_unit.toUDINT());
 
 	m_fault = (m_select.Value == -1) ? 1 : faultGrp[m_select.Value];
 
@@ -179,6 +181,10 @@ UDINT rSelector::calculate()
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rSelector::check(rError& err)
+{
+	//generateIO();
+}
 
 //-------------------------------------------------------------------------------------------------
 // Генерация Inputs/Outputs
@@ -205,15 +211,14 @@ void rSelector::generateIO()
 			}
 		}
 	} else {
-		initLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].m_unit, SID::OUTPUT, XmlName::OUTPUT, rLink::SHADOW_NONE);
-
 		for (UDINT ii = 0; ii < CountInputs; ++ii) {
 			string i_name = String_format("input_%i"      , ii + 1);
 			string f_name = String_format("input_%i.fault", ii + 1);
 
-			initLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].m_unit, SID::INPUT_1 + ii, i_name, rLink::SHADOW_NONE);
-			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS            , SID::FAULT_1 + ii, f_name, i_name            );
+			initLink(rLink::Setup::INPUT                       , ValueIn[ii][0], ValueIn[ii][0].getSourceUnit(), SID::INPUT_1 + ii, i_name, rLink::SHADOW_NONE);
+			initLink(rLink::Setup::INPUT | rLink::Setup::SIMPLE, FaultIn[ii][0], U_DIMLESS                     , SID::FAULT_1 + ii, f_name, i_name            );
 		}
+		initLink(rLink::Setup::OUTPUT, ValueOut[0], ValueIn[0][0].getSourceUnit(), SID::OUTPUT, XmlName::OUTPUT, rLink::SHADOW_NONE);
 	}
 }
 

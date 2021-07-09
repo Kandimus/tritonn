@@ -542,7 +542,7 @@ UDINT rSampler::check(rError& err)
 		return err.set(DATACFGERR_SAMPLER_TOTALS, m_lineNum, "can't fount source '" + m_totalsAlias + "'");
 	}
 
-	if (std::string(src->RTTI()) != RTTI()) {
+	if (std::string(src->getRTTI()) != getRTTI()) {
 		return err.set(DATACFGERR_SAMPLER_RESERVE, m_lineNum, "source '" + m_totalsAlias + "' is not sampler");
 	}
 

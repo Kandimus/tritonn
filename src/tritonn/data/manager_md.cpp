@@ -17,6 +17,7 @@
 #include "../data_manager.h"
 #include <string.h>
 #include "xml_util.h"
+#include "../system_variable.h"
 #include "../generator_md.h"
 #include "../data_station.h"
 #include "../data_stream.h"
@@ -118,7 +119,6 @@ UDINT rDataManager::saveMarkDown()
 	opcua.generateMarkDown(md);
 
 	// Other
-	rSystemVariable sysvar;
 	rReport         prpt;
 	rReport         brpt;
 
@@ -127,10 +127,12 @@ UDINT rDataManager::saveMarkDown()
 
 	generateTypes(md);
 	generateMarkDown(md);
+	generateSettings(md);
 	prpt.generateMarkDown(md);
 	brpt.generateMarkDown(md);
-	sysvar.generateMarkDown(md);
+
 	rUser::generateMarkDown(md);
+	rSystemVariable::instance().generateMarkDown(md);
 
 	md.save(DIR_MARKDOWN);
 
@@ -185,6 +187,27 @@ void rDataManager::generateMarkDown(rGeneratorMD& md)
 
 	md.add("config").addRemark(text);
 
+}
+
+void rDataManager::generateSettings(rGeneratorMD& md)
+{
+	std::string text = "## XML\n````xml\n";
+
+	text += "<" + std::string(XmlName::SETTINGS) + ">\n";
+	text += "\t<" + std::string(XmlName::CONTRACTHOUR) + ">hour</" + std::string(XmlName::CONTRACTHOUR) + ">\n";
+	text += "\t<" + std::string(XmlName::EVENTSTORAGE) + ">days</" + std::string(XmlName::EVENTSTORAGE) + ">\n";
+	text += "\t<" + std::string(XmlName::ETHERNET) + " " + std::string(XmlName::DEVICE) + "=\"eth0\">\n";
+	text += "\t\t<" + std::string(XmlName::IP) + ">ip4 address xx.xx.xx.xx/mask</" + std::string(XmlName::IP) + ">\n";
+	text += "\t\t<" + std::string(XmlName::GATEWAY) + ">ip4 mask xx.xx.xx.xx</" + std::string(XmlName::GATEWAY) + ">" + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
+	text += "\t</" + std::string(XmlName::ETHERNET) + ">\n";
+	text += "\t<" + std::string(XmlName::ETHERNET) + " " + std::string(XmlName::DEVICE) + "=\"eth1\">\n";
+	text += "\t\t<" + std::string(XmlName::IP) + ">ip4 address xx.xx.xx.xx/mask</" + std::string(XmlName::IP) + ">\n";
+	text += "\t\t<" + std::string(XmlName::GATEWAY) + ">ip4 mask xx.xx.xx.xx</" + std::string(XmlName::GATEWAY) + ">" + rGeneratorMD::rItem::XML_OPTIONAL + "\n";
+	text += "\t<" + std::string(XmlName::ETHERNET) + ">\n";
+	text += "</" + std::string(XmlName::SETTINGS) + ">\n";
+	text += "````\n";
+
+	md.add("settings").addRemark(text);
 }
 
 void rDataManager::generateTypes(rGeneratorMD& md)
