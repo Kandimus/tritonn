@@ -68,7 +68,7 @@ rModuleCRM::~rModuleCRM()
 
 UDINT rModuleCRM::processing(USINT issim)
 {
-	rLocker lock(m_mutex); UNUSED(lock);
+	rLocker lock(m_rwlock); lock.Nop();
 
 	rIOBaseModule::processing(issim);
 
@@ -102,7 +102,7 @@ rIOBaseChannel* rModuleCRM::getChannel(USINT num)
 		return nullptr;
 	}
 
-	rLocker lock(m_mutex); UNUSED(lock);
+	rLocker lock(m_rwlock); lock.Nop();
 
 	if (num < CHANNEL_DI_COUNT) {
 		return new rIODIChannel(*m_channelDI[num]);

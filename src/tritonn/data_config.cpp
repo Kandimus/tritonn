@@ -314,7 +314,7 @@ UDINT rDataConfig::loadIO(tinyxml2::XMLElement* root, cJSON* jroot, rStation* ow
 		if (XmlName::DO == name) { if(m_max[name] >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      }
 
 		if (!source) {
-			return m_error.set(DATACFGERR_UNKNOWIO, obj->GetLineNum());
+			return m_error.set(DATACFGERR_CALC_UNKNOWIO, obj->GetLineNum());
 		}
 
 		source->m_ID = m_max[name]++;

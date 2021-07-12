@@ -36,6 +36,7 @@ public:
 		FI,
 		DI,
 		DO,
+		AO,
 	};
 
 

@@ -94,13 +94,17 @@ public:
 
 public:
 	UINT    m_setup        = 0;             // Настройка канала
-	UINT    m_ADC          = 0;             // Текущий код ацп
-	REAL    m_current      = 0;             // Текущий ток
-	Type    m_type         = Type::mA_4_20; //
-	USINT   m_actionRedLED = 0;             // Управление касным диодом
-	USINT   m_state        = 0;             // Статус канала
-	USINT   m_stateRedLED  = 0;             // Статус красного диода
+	USINT   m_state        = 0;             // Статус канала (0 - норма)
 
+	// hardware
+	Type    m_type         = Type::mA_4_20; //
+	UINT    m_ADC          = 0;             // Текущий код ацп
+	REAL    m_current      = 0;             // Текущие амперы/вольты
+	USINT   m_hardState    = 0;             // Статус канала с модуля
+	USINT   m_stateRedLED  = 0;             // Статус красного диода
+	USINT   m_actionRedLED = 0;             // Управление касным диодом
+
+	// simulate
 	UINT    m_simMax       = 65535;
 	UINT    m_simMin       = 0;
 	UINT    m_simValue     = 0;
@@ -109,7 +113,6 @@ public:
 	static rBitsArray m_flagsSimType;
 
 private:
-	USINT   m_hardState    = 0;             // Статус канала с модуля
 
 	std::list<UINT> m_average;
 

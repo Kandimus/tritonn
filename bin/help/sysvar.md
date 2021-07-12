@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # sysvar
-> 0.19.132.77cddc06
+> 0.19.149.cb63ba74
 
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
@@ -14,7 +14,7 @@ system.metrology.major | usint |  | 512 | Yes | 0x80000000 | Версия мет
 system.metrology.minor | usint |  | 512 | Yes | 0x80000000 | Подверсия метрологически значимой части ПО
 system.metrology.crc | udint |  | 512 | Yes | 0x80000000 | Контрольная сумма метрологически значимой части ПО
 system.state.alarm | udint |  | 512 | Yes | 0x80000000 | Количество не квитированных аварий
-system.state.live | usint |  | 512 | Yes | 0x80000000 | Статус:<br/>
+system.state.live | usint |  | 512 | Yes | 0x80000000 | Статус:<br/>0: Не определенный статус<br/>1: Система загружается<br/>2: Система в режиме COLD-START<br/>3: Система в режиме загрузки нарастающих<br/>4: Система в режиме загрузки уставок<br/>5: Система работает<br/>255: Система в режиме HALT<br/>
 system.state.rebootreason | usint |  | 512 | Yes | 0x80000000 | Причина перезагрузки
 system.state.simulate | usint |  | 512 | Yes |   | Флаг симуляции системы
 system.datetime.sec | usint |  | 512 | Yes |   | Текущее время. Секунды

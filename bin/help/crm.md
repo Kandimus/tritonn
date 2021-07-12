@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # crm
-> 0.19.132.77cddc06
+> 0.19.149.cb63ba74
 ## XML
 ````xml
 <module name="crm" description="string index" >
@@ -41,7 +41,6 @@ crm.vendor | udint |  | 512 | Yes |   | Нет данных
 crm.productcode | udint |  | 512 | Yes |   | Нет данных
 crm.revision | udint |  | 512 | Yes |   | Нет данных
 crm.serialnumber | udint |  | 512 | Yes |   | Нет данных
-crm.temperature | real |  | 512 | Yes |   | Нет данных
 crm.can | uint |  | 512 | Yes |   | Нет данных
 crm.firmware | uint |  | 512 | Yes |   | Нет данных
 crm.hardware | uint |  | 512 | Yes |   | Нет данных

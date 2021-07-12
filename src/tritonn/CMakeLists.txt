@@ -7,7 +7,9 @@ file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h
 							${CMAKE_BINARY_DIR}/src/*.h)
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${OPENSSL_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/candrv")
 
 # OUTPUTNAME
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tritonn")
@@ -19,6 +21,11 @@ add_lib(simpleargs)
 add_lib(open62541)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
+
+# YOCTO build
+if (${TRITONN_YOCTO})
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/redist/candrv/rpmsg_connector.a)
+endif()
 
 # INSTALL
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})

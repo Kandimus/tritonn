@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # fi4
-> 0.19.132.77cddc06
+> 0.19.149.cb63ba74
 ## XML
 ````xml
 <module name="fi4" description="string index" >
@@ -34,7 +34,6 @@ fi4.vendor | udint |  | 512 | Yes |   | Нет данных
 fi4.productcode | udint |  | 512 | Yes |   | Нет данных
 fi4.revision | udint |  | 512 | Yes |   | Нет данных
 fi4.serialnumber | udint |  | 512 | Yes |   | Нет данных
-fi4.temperature | real |  | 512 | Yes |   | Нет данных
 fi4.can | uint |  | 512 | Yes |   | Нет данных
 fi4.firmware | uint |  | 512 | Yes |   | Нет данных
 fi4.hardware | uint |  | 512 | Yes |   | Нет данных

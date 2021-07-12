@@ -1,43 +1,32 @@
-﻿//=================================================================================================
-//===
-//=== io_ai.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс аналового входног сигнала модуля CAN (AI)
-//===
-//=================================================================================================
+﻿/*
+ *
+ * module_di16.cpp
+ *
+ * Copyright (c) 2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
-#include "module_di8do8.h"
+#include "module_di16.h"
 #include "locker.h"
 #include "xml_util.h"
 #include "../error.h"
 #include "../generator_md.h"
 
-rBitsArray rModuleDI8DO8::m_flagsDOSetup;
-
-rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
+rModuleDI16::rModuleDI16(UDINT id) : rIOBaseModule(id)
 {
-	m_type    = Type::DI8DO8;
-	m_comment = "Module with 8 discrete input and 8 discrete output";
-	m_name    = "di8do8";
+	m_type    = Type::DI16;
+	m_comment = "Module 16 discrete input";
+	m_name    = "di16";
 
-	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
-		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channelDI.size()));
-		m_channelDI.push_back(ch_di);
+	while(m_channel.size() < CHANNEL_COUNT) {
+		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channel.size()));
+		m_channel.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
 
-	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
-		auto ch_do = new rIODOChannel(static_cast<USINT>(CHANNEL_DI_COUNT + m_channelDO.size()));
-		m_channelDO.push_back(ch_do);
-		m_listChannel.push_back(ch_do);
-	}
 }
 
 rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8)

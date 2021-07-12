@@ -1,20 +1,17 @@
-﻿//=================================================================================================
-//===
-//=== io_basemodule.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Основной класс-нить для получения данных с модулей ввода-вывода
-//===
-//=================================================================================================
+﻿/*
+ *
+ * io_basemodule.cpp
+ *
+ * Copyright (c) 2019 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include "basemodule.h"
 #include <algorithm>
+#include "locker.h"
 #include "basechannel.h"
 #include "bits_array.h"
 #include "xml_util.h"
@@ -31,38 +28,32 @@ rIOBaseModule::rIOBaseModule(UDINT id)
 	if (m_flagsType.empty()) {
 		m_flagsType
 				.add("", static_cast<UINT>(Type::UNDEF) , "Модуль не определен")
-				.add("", static_cast<UINT>(Type::AI6)   , "Модуль AI6")
-				.add("", static_cast<UINT>(Type::DI8DO8), "Модуль DI8DO8")
+				.add("", static_cast<UINT>(Type::CPU)   , "Базовый модуль ЦПУ")
+				.add("", static_cast<UINT>(Type::AI6a)  , "Модуль AI6a")
+				.add("", static_cast<UINT>(Type::AI6p)  , "Модуль AI6p")
 				.add("", static_cast<UINT>(Type::FI4)   , "Модуль FI4")
+				.add("", static_cast<UINT>(Type::DI8DO8), "Модуль DI8DO8")
+				.add("", static_cast<UINT>(Type::DI16)  , "Модуль DI16")
+				.add("", static_cast<UINT>(Type::DO16)  , "Модуль DO16")
 				.add("", static_cast<UINT>(Type::CRM)   , "Модуль CRM");
 	}
 
 	m_ID = id;
 
-	pthread_mutex_init(&m_mutex, nullptr);
+	pthread_rwlock_init(&m_rwlock, nullptr);
 }
 
 rIOBaseModule::rIOBaseModule(const rIOBaseModule* module)
 {
-	pthread_mutex_init(&m_mutex, nullptr);
+	pthread_rwlock_init(&m_rwlock, nullptr);
 
-	m_ID           = module->m_ID;
+	m_ID      = module->m_ID;
+	m_module  = module->m_module;
+	m_type    = module->m_type;
 
-	m_type         = module->m_type;
-	m_nodeID       = module->m_nodeID;
-	m_vendorID     = module->m_vendorID;
-	m_productCode  = module->m_productCode;
-	m_revision     = module->m_revision;
-	m_serialNumber = module->m_serialNumber;
-
-	m_temperature  = module->m_temperature;
-	m_CAN          = module->m_CAN;
-	m_firmware     = module->m_firmware;
-	m_hardware     = module->m_hardware;
-
-	m_name  = module->m_name;
-	m_alias = module->m_alias;
-	m_descr = module->m_descr;
+	m_name    = module->m_name;
+	m_alias   = module->m_alias;
+	m_descr   = module->m_descr;
 	m_comment = module->m_comment;
 
 	m_listChannel.clear();
@@ -70,14 +61,57 @@ rIOBaseModule::rIOBaseModule(const rIOBaseModule* module)
 
 rIOBaseModule::~rIOBaseModule()
 {
-	pthread_mutex_destroy(&m_mutex);
+	pthread_rwlock_destroy(&m_rwlock);
+}
+
+void rIOBaseModule::setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, UDINT readAll, UDINT exchange)
+{
+	m_dataPtr        = data;
+	m_moduleInfo     = info;
+	m_moduleSysData  = sysdata;
+	m_moduleReadAll  = readAll;
+	m_moduleExchange = exchange;
 }
 
 UDINT rIOBaseModule::processing(USINT issim)
 {
-	UNUSED(issim);
+	if(issim) {
+		return TRITONN_RESULT_OK;
+	}
+
+	if (!m_moduleInfo || !m_dataPtr)
+	{
+		return DATACFGERR_IO_FAULTMODULEPTR;
+	}
+
+	readFromModule();
+
+	// copy system data
+	m_module = *m_moduleSysData;
 
 	return TRITONN_RESULT_OK;
+}
+
+UDINT rIOBaseModule::readFromModule()
+{
+#ifdef TRITONN_YOCTO
+	if(m_moduleInfo->InWork) {
+		candrv_cmd(m_moduleReadAll, m_ID, m_dataPtr);
+	}
+#else
+	return TRITONN_RESULT_OK;
+#endif
+}
+
+UDINT rIOBaseModule::writeToModule()
+{
+#ifdef TRITONN_YOCTO
+	if(m_moduleInfo->InWork) {
+		candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
+	}
+#else
+	return TRITONN_RESULT_OK;
+#endif
 }
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
@@ -88,16 +122,15 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 
 	std::string p = m_alias + ".";
 
-	list.add(p + "type"        , TYPE::UINT, rVariable::Flags::R___, &m_type        , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "node"        ,             rVariable::Flags::R___, &m_nodeID      , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "vendor"      ,             rVariable::Flags::R___, &m_vendorID    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "productCode" ,             rVariable::Flags::R___, &m_productCode , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "revision"    ,             rVariable::Flags::R___, &m_revision    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "serialNumber",             rVariable::Flags::R___, &m_serialNumber, U_DIMLESS , 0, "Нет данных");
-	list.add(p + "temperature" ,             rVariable::Flags::R___, &m_temperature , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "can"         ,             rVariable::Flags::R___, &m_CAN         , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "firmware"    ,             rVariable::Flags::R___, &m_firmware    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "hardware"    ,             rVariable::Flags::R___, &m_hardware    , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "type"        , TYPE::UINT, rVariable::Flags::R___, &m_type             , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "node"        ,             rVariable::Flags::R___, &m_module.NodeID    , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "vendor"      ,             rVariable::Flags::R___, &m_module.IDVendor  , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "productCode" ,             rVariable::Flags::R___, &m_module.IDProdCode, U_DIMLESS , 0, "Нет данных");
+	list.add(p + "revision"    ,             rVariable::Flags::R___, &m_module.IDRevision, U_DIMLESS , 0, "Нет данных");
+	list.add(p + "serialNumber",             rVariable::Flags::R___, &m_module.IDSerial  , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "can"         ,             rVariable::Flags::R___, &m_CAN              , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "firmware"    ,             rVariable::Flags::R___, &m_firmware         , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "hardware"    ,             rVariable::Flags::R___, &m_hardware         , U_DIMLESS , 0, "Нет данных");
 
 	return TRITONN_RESULT_OK;
 }
@@ -116,7 +149,7 @@ UDINT rIOBaseModule::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 UDINT rIOBaseModule::generateMarkDown(rGeneratorMD& md)
 {
-	UNUSED(md)
+	UNUSED(md);
 	return TRITONN_RESULT_OK;
 }
 

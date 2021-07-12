@@ -66,7 +66,7 @@ rModuleFI4::~rModuleFI4()
 
 UDINT rModuleFI4::processing(USINT issim)
 {
-	rLocker lock(m_mutex); UNUSED(lock);
+	rLocker lock(m_rwlock); lock.Nop();
 
 	rIOBaseModule::processing(issim);
 
@@ -92,7 +92,7 @@ rIOBaseChannel* rModuleFI4::getChannel(USINT num)
 		return nullptr;
 	}
 
-	rLocker lock(m_mutex); UNUSED(lock);
+	rLocker lock(m_rwlock); lock.Nop();
 
 	return new rIOFIChannel(*m_channel[num]);
 }

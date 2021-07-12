@@ -38,7 +38,8 @@
 #include "kinematicviscosity.h"
 #include "dynamicviscosity.h"
 #include "../io/manager.h"
-#include "../io/module_ai6.h"
+#include "../io/module_ai6a.h"
+#include "../io/module_ai6p.h"
 #include "../io/module_crm.h"
 #include "../io/module_di8do8.h"
 #include "../io/module_fi4.h"
@@ -101,12 +102,14 @@ UDINT rDataManager::saveMarkDown()
 
 	// Hardware
 	UDINT moduleID = 0;
-	rModuleAI6 ai6(moduleID);
+	rModuleAI6a ai6a(moduleID);
+	rModuleAI6p ai6p(moduleID);
 	rModuleCRM crm(moduleID);
 	rModuleDI8DO8 di8do8(moduleID);
 	rModuleFI4 fi4(moduleID);
 
-	ai6.generateMarkDown(md);
+	ai6a.generateMarkDown(md);
+	ai6p.generateMarkDown(md);
 	crm.generateMarkDown(md);
 	di8do8.generateMarkDown(md);
 	fi4.generateMarkDown(md);

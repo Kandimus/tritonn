@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # di8do8
-> 0.19.132.77cddc06
+> 0.19.149.cb63ba74
 ## XML
 ````xml
 <module name="di8do8" description="string index" >
@@ -63,7 +63,6 @@ di8do8.vendor | udint |  | 512 | Yes |   | Нет данных
 di8do8.productcode | udint |  | 512 | Yes |   | Нет данных
 di8do8.revision | udint |  | 512 | Yes |   | Нет данных
 di8do8.serialnumber | udint |  | 512 | Yes |   | Нет данных
-di8do8.temperature | real |  | 512 | Yes |   | Нет данных
 di8do8.can | uint |  | 512 | Yes |   | Нет данных
 di8do8.firmware | uint |  | 512 | Yes |   | Нет данных
 di8do8.hardware | uint |  | 512 | Yes |   | Нет данных

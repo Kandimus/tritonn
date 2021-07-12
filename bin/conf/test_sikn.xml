@@ -3,20 +3,20 @@
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
 		<module ver="1.0" name="cpu" type="cpu" />
-		<module ver="1.0" name="ai6_1" type="AI6">
+		<module ver="1.0" name="ai6_1" type="ai6a">
 			<channel number="0" setup="AVERAGE" />
 		</module>
-		<module type="di8do8" name="di8do8_1">
+		<module name="di8do8_1" type="di8do8">
 			<channel number="0" setup=""/>
 			<channel number="1" setup="INVERSED"/>
 			<channel number="8" setup=""/>
 			<channel number="9" setup="INVERSED"/>
 		</module>
-		<module type="fi4" name="fi4_1">
+		<module name="fi4_1" type="fi4">
 		</module>
-		<module type="crm" name="crm_1">
+		<module name="crm_1" type="crm">
 		</module>
-		<module type="ai6" name="ai6_2" >
+		<module name="ai6_2" type="ai6a">
 			<channel number="0" setup="AVERAGE" />
 		</module>
 	</hardware>

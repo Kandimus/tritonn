@@ -181,11 +181,11 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE::UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "adc"    ,              rVariable::Flags::R___, &m_ADC    , U_DIMLESS , 0, "Текущий код АЦП");
-	list.add(p + "current",              rVariable::Flags::R___, &m_current, U_DIMLESS , 0, "Текущее значение тока/напряжения");
-	list.add(p + "state"  ,              rVariable::Flags::R___, &m_state  , U_DIMLESS , 0, "Статус канала");
-	list.add(p + "type"   , TYPE::USINT, rVariable::Flags::____, &m_type   , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
+	list.add(p + "setup"      , TYPE::UINT , rVariable::Flags::RS__, &m_setup      , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "adc"        ,              rVariable::Flags::R___, &m_ADC        , U_DIMLESS , 0, "Текущий код АЦП");
+	list.add(p + "current"    ,              rVariable::Flags::R___, &m_current    , U_DIMLESS , 0, "Текущее значение тока/напряжения");
+	list.add(p + "state"      ,              rVariable::Flags::R___, &m_state      , U_DIMLESS , 0, "Статус канала");
+	list.add(p + "type"       , TYPE::USINT, rVariable::Flags::____, &m_type       , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
 
 	if (issimulate) {
 		list.add(p + "simulate.max"  , rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MAX);

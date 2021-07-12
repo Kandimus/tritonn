@@ -28,8 +28,10 @@
 #include "../error.h"
 #include "defines.h"
 
+#include "rpmsg_connector.h"
 #include "module_cpu.h"
-#include "module_ai6.h"
+#include "module_ai6a.h"
+#include "module_ai6p.h"
 #include "module_di8do8.h"
 #include "module_fi4.h"
 #include "module_crm.h"
@@ -38,11 +40,19 @@
 rIOManager::rIOManager() : rVariableClass(Mutex)
 {
 	RTTI = "rIOManager";
+
+#ifdef TRITONN_YOCTO
+	candrv_init();
+#endif
 }
 
 
 rIOManager::~rIOManager()
 {
+#ifdef TRITONN_YOCTO
+	candrv_deinit();
+#endif
+
 	for(auto item : m_modules) {
 		if (item) {
 			delete item;
@@ -136,17 +146,20 @@ rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT
 			return nullptr;
 		}
 
-		if (type == rModuleAI6::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6(maxmap[rModuleAI6::getRTTI()]));
+		if (type == rModuleAI6a::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6a(maxmap[type]));
+
+		} else if (type == rModuleAI6p::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6p(maxmap[type]));
 
 		} else if (type == rModuleDI8DO8::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(maxmap[rModuleDI8DO8::getRTTI()]));
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(maxmap[type]));
 
 		} else if (type == rModuleFI4::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(maxmap[rModuleFI4::getRTTI()]));
+			module = dynamic_cast<rIOBaseModule*>(new rModuleFI4(maxmap[type]));
 
 		} else if (type == rModuleCRM::getRTTI()) {
-			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(maxmap[rModuleCRM::getRTTI()]));
+			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(maxmap[type]));
 
 		} else {
 			err.set(DATACFGERR_UNKNOWN_MODULE, lineno, "");
