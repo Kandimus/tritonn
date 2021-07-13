@@ -24,7 +24,7 @@ rModuleAI6a::rModuleAI6a(UDINT id) : rIOBaseModule(id)
 	m_name    = "ai6a";
 
 	while (m_channel.size() < CHANNEL_COUNT) {
-		auto ch_ai = new rIOAIChannel(static_cast<USINT>(m_channel.size()));
+		auto ch_ai = new rIOAIChannel(static_cast<USINT>(m_channel.size()), true);
 		m_channel.push_back(ch_ai);
 		m_listChannel.push_back(ch_ai);
 	}
@@ -82,19 +82,15 @@ UDINT rModuleAI6a::processing(USINT issim)
 			channel->m_current     = m_data.Read.Data[idx];
 			channel->m_hardState   = m_data.Read.StateCh[idx]     != K19_AI6a_StateCh_Normal;
 			channel->m_stateRedLED = m_data.Read.StateRedLED[idx] == K19_AI6a_StateRedLED_ON;
-		}
 
-		channel->processing();
-
-		if (!issim) {
 			m_data.Write.ChType[idx]       = getHardwareModuleChType(idx);
 			m_data.Write.OutADCType[idx]   = K19_AI6a_OutType_TrueADC;
 			m_data.Write.OutDataType[idx]  = K19_AI6a_OutType_ReducedData;
 			m_data.Write.RedLEDAction[idx] = (channel->m_setup & rIOAIChannel::Setup::OFF) ? K19_AI6a_RedLEDBlocked : K19_AI6a_RedLEDNormal;
 		}
-	}
 
-	writeToModule();
+		channel->processing();
+	}
 
 	return TRITONN_RESULT_OK;
 }
@@ -124,7 +120,7 @@ UDINT rModuleAI6a::generateVars(const std::string& prefix, rVariableList& list, 
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
 	std::string p = prefix + m_alias + ".";
-	list.add(p + ".temperature", rVariable::Flags::R___, &m_data.Read.Temp, U_C, 0, "Температура модуля в гр.С.");
+	list.add(p + "temperature", rVariable::Flags::R___, &m_data.Read.Temp, U_C, 0, "Температура модуля в гр.С.");
 
 	for (auto channel : m_channel) {
 		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index);

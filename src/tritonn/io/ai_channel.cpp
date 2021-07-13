@@ -23,19 +23,28 @@
 #include "../comment_defines.h"
 
 rBitsArray rIOAIChannel::m_flagsSetup;
-rBitsArray rIOAIChannel::m_flagsType;
+rBitsArray rIOAIChannel::m_flagsTypeA;
+rBitsArray rIOAIChannel::m_flagsTypeP;
 rBitsArray rIOAIChannel::m_flagsSimType;
 
-rIOAIChannel::rIOAIChannel(USINT index, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::AI, index, comment)
+rIOAIChannel::rIOAIChannel(USINT index, bool isActive, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::AI, index, comment)
 {
+	m_isActive = isActive;
+
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF)
 				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Усреднение значения");
 	}
 
-	if (m_flagsType.empty()) {
-		m_flagsType
+	if (m_flagsTypeA.empty()) {
+		m_flagsTypeA
+				.add("", static_cast<UINT>(Type::mA_0_20) , "0..20мА")
+				.add("", static_cast<UINT>(Type::mA_4_20) , "4..40мА");
+	}
+
+	if (m_flagsTypeP.empty()) {
+		m_flagsTypeP
 				.add("", static_cast<UINT>(Type::mA_0_20) , "0..20мА")
 				.add("", static_cast<UINT>(Type::mA_4_20) , "4..40мА")
 				.add("", static_cast<UINT>(Type::V_m10_10), "-10..+10V")
@@ -181,11 +190,11 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"      , TYPE::UINT , rVariable::Flags::RS__, &m_setup      , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "adc"        ,              rVariable::Flags::R___, &m_ADC        , U_DIMLESS , 0, "Текущий код АЦП");
-	list.add(p + "current"    ,              rVariable::Flags::R___, &m_current    , U_DIMLESS , 0, "Текущее значение тока/напряжения");
-	list.add(p + "state"      ,              rVariable::Flags::R___, &m_state      , U_DIMLESS , 0, "Статус канала");
-	list.add(p + "type"       , TYPE::USINT, rVariable::Flags::____, &m_type       , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
+	list.add(p + "setup"      , TYPE::UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "adc"        ,              rVariable::Flags::R___, &m_ADC    , U_DIMLESS, 0, "Текущий код АЦП");
+	list.add(p + "current"    ,              rVariable::Flags::R___, &m_current, U_DIMLESS, 0, "Текущее значение тока" + std::string(m_isActive ? "" : "/напряжения"));
+	list.add(p + "state"      ,              rVariable::Flags::R___, &m_state  , U_DIMLESS, 0, "Статус канала");
+	list.add(p + "type"       , TYPE::USINT, rVariable::Flags::____, &m_type   , U_DIMLESS, 0, "Тип канала:<br/>" + ((m_isActive) ? m_flagsTypeA.getInfo(true) : m_flagsTypeP.getInfo(true)));
 
 	if (issimulate) {
 		list.add(p + "simulate.max"  , rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MAX);

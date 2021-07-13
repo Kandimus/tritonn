@@ -70,14 +70,14 @@ Live rDataManager::getLiveStatus()
 }
 
 
-void rDataManager::DoHalt(UDINT reason)
+void rDataManager::DoHalt(HaltReason hr, UDINT reason)
 {
 	if(Halt.Get()) return;
 
 	Halt.Set(true);
 	m_live.Set(Live::HALT);
 
-	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, reason);
+	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, static_cast<UDINT>(hr) | reason);
 
 	simpleFileSave(FILE_RESTART, "cold");
 }
@@ -320,9 +320,9 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 {
 	rEvent event(EID_SYSTEM_CFGERROR);
 
-	rEventManager::instance().add(event << (HALT_REASON_CONFIGFILE | err.getError()) << err.getLineno());
+	rEventManager::instance().add(event << (static_cast<UDINT>(HaltReason::CONFIGFILE) | err.getError()) << err.getLineno());
 
-	DoHalt(HALT_REASON_CONFIGFILE | err.getError());
+	DoHalt(HaltReason::CONFIGFILE, err.getError());
 
 	TRACEP(LOG::DATAMGR, "Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.",
 			   rDataConfig::instance().m_fileName.c_str(), err.getError(), err.getLineno(), err.getText().c_str());
@@ -401,9 +401,9 @@ UDINT rDataManager::getConfFile(std::string& conf)
 
 	result = simpleFileLoad(FILE_CONF, conf);
 	if(TRITONN_RESULT_OK != result) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_CFGERROR, static_cast<UDINT>(HaltReason::CONFIGFILE) | result);
 
-		DoHalt(HALT_REASON_CONFIGFILE | result);
+		DoHalt(HaltReason::CONFIGFILE, result);
 
 		TRACEP(LOG::DATAMGR, "Can't load file '%s'. Error ID: %i", FILE_CONF.c_str(), result);
 

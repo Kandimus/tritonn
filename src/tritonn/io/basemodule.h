@@ -79,8 +79,6 @@ public:
 
 protected:
 	void  setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, UDINT readAll, UDINT exchange);
-	UDINT readFromModule();
-	UDINT writeToModule();
 
 public:
 	static rBitsArray m_flagsType;

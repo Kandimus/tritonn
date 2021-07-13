@@ -81,37 +81,24 @@ UDINT rIOBaseModule::processing(USINT issim)
 
 	if (!m_moduleInfo || !m_dataPtr)
 	{
-		return DATACFGERR_IO_FAULTMODULEPTR;
+		return DATACFGERR_HARDWARE_MODULEISNULL;
 	}
 
-	readFromModule();
+#ifdef TRITONN_YOCTO
+	if (!m_moduleInfo->InWork) {
+		candrv_cmd(m_moduleReadAll, m_ID, m_dataPtr);
+	}
+	if (m_moduleInfo->InWork) {
+		candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
+	} else {
+		return DATACFGERR_HARDWARE_MODULEFAULT;
+	}
+	#endif
 
 	// copy system data
 	m_module = *m_moduleSysData;
 
 	return TRITONN_RESULT_OK;
-}
-
-UDINT rIOBaseModule::readFromModule()
-{
-#ifdef TRITONN_YOCTO
-	if(m_moduleInfo->InWork) {
-		candrv_cmd(m_moduleReadAll, m_ID, m_dataPtr);
-	}
-#else
-	return TRITONN_RESULT_OK;
-#endif
-}
-
-UDINT rIOBaseModule::writeToModule()
-{
-#ifdef TRITONN_YOCTO
-	if(m_moduleInfo->InWork) {
-		candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
-	}
-#else
-	return TRITONN_RESULT_OK;
-#endif
 }
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

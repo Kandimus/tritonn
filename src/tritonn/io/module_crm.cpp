@@ -73,7 +73,7 @@ UDINT rModuleCRM::processing(USINT issim)
 	rIOBaseModule::processing(issim);
 
 	for (auto channel : m_channelDI) {
-		if (channel->m_setup & rIODIChannel::Setup::OFF) {
+		if (channel->isOff()) {
 			continue;
 		}
 

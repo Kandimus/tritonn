@@ -52,6 +52,7 @@ public:
 
 private:
 	std::vector<rIODIChannel*> m_channel;
+	K19_DI16_str m_data;
 };
 
 

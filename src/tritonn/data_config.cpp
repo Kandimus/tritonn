@@ -976,10 +976,10 @@ void rDataConfig::saveWeb()
 	free(str);
 	if(TRITONN_RESULT_OK != result)
 	{
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 		TRACEP(LOG::CONFIG, "Can't save json tree");
 
-		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+		rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 		return;
 	}
 
@@ -993,10 +993,10 @@ void rDataConfig::saveWeb()
 
 	result = simpleFileSave(FILE_WWW_PRECISION, text);
 	if (TRITONN_RESULT_OK != result) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 		TRACEP(LOG::CONFIG, "Can't save precision file");
 
-		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+		rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 		return;
 	}
 
@@ -1022,10 +1022,10 @@ void rDataConfig::saveWeb()
 		std::string filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_LANG;
 		result = simpleFileSave(filename, text);
 		if (TRITONN_RESULT_OK != result) {
-			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 			TRACEP(LOG::CONFIG, "Can't save sid file");
 
-			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+			rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 			return;
 		}
 
@@ -1038,10 +1038,10 @@ void rDataConfig::saveWeb()
 		filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_EVENT;
 		result = simpleFileSave(filename, text);
 		if(TRITONN_RESULT_OK != result) {
-			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 			TRACEP(LOG::CONFIG, "Can't save event file");
 
-			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+			rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 			return;
 		}
 	}

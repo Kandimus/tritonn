@@ -31,7 +31,7 @@ rIODIChannel::rIODIChannel(USINT index, const std::string& comment) : rIOBaseCha
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"     , static_cast<UINT>(rIODIChannel::Setup::OFF)     , COMMENT::SETUP_OFF)
-				.add("BOUNCE"  , static_cast<UINT>(rIODIChannel::Setup::BOUNCE)  , "Устранение дребезга")
+				.add("FILTER"  , static_cast<UINT>(rIODIChannel::Setup::FILTER)  , "Устранение дребезга")
 				.add("INVERSED", static_cast<UINT>(rIODIChannel::Setup::INVERSED), COMMENT::SETUP_INVERSE);
 	}
 
@@ -54,10 +54,10 @@ UDINT rIODIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE::UINT , rVariable::Flags::RS__, &m_setup , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "value"  ,              rVariable::Flags::R___, &m_value , U_DIMLESS, 0, COMMENT::VALUE);
-	list.add(p + "state"  ,              rVariable::Flags::R___, &m_state , U_DIMLESS, 0, COMMENT::STATUS + "Нет данных");
-	list.add(p + "bounce" ,              rVariable::Flags::___D, &m_bounce, U_msec   , 0, "Значение таймера антидребезга");
+	list.add(p + "setup"  , TYPE::UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "value"  ,              rVariable::Flags::R___, &m_value  , U_DIMLESS, 0, COMMENT::VALUE);
+	list.add(p + "phvalue",              rVariable::Flags::R___, &m_phValue, U_DIMLESS, 0, COMMENT::PHVALUE);
+	list.add(p + "filter" ,              rVariable::Flags::___D, &m_filter , U_msec   , 0, "Значение таймера фильтрации");
 
 	if (issimulate) {
 		list.add(p + "simulate.value", rVariable::Flags::____, &m_simValue, U_DIMLESS, 0, "Значение симулированного значения");
@@ -69,35 +69,33 @@ UDINT rIODIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 UDINT rIODIChannel::processing()
 {
-	m_state = false;
+	USINT curvalue = m_phValue;
 
-	// Изменяем статус
-	if (m_hardState) {
-		m_state = true;
+	if (m_setup & Setup::FILTER) {
+		if (m_timer.isStarted()) {
+			if (m_oldValue == m_phValue) {
+				m_timer.stop();
+			}
 
-		//TODO send on to RedLED
-		return TRITONN_RESULT_OK;
-	}
-
-	if (m_setup & Setup::BOUNCE) {
-		if (m_oldValue == m_hardValue) {
-			m_bounceTimer = 0;
-			m_value       = m_hardValue;
+			if (m_timer.isFinished()) {
+				m_oldValue = m_phValue;
+				curvalue   = m_phValue;
+				m_timer.stop();
+			}
 		} else {
-			if (!m_bounceTimer) {
-				m_bounceTimer = rTickCount::SysTick();
-			} else if (rTickCount::SysTick() - m_bounceTimer >= m_bounce) {
-				m_bounceTimer = 0;
-				m_oldValue    = m_hardValue;
-				m_value       = m_hardValue;
+			if (m_oldValue != m_phValue) {
+				m_timer.start(m_filter);
 			}
 		}
 	} else {
-		m_value = m_hardValue;
+		m_oldValue = m_phValue;
+		curvalue   = m_phValue;
 	}
 
 	if (m_setup & INVERSED) {
-		m_value = !m_value;
+		m_value = !curvalue;
+	} else {
+		m_value =  curvalue;
 	}
 
 	return TRITONN_RESULT_OK;
@@ -105,8 +103,6 @@ UDINT rIODIChannel::processing()
 
 UDINT rIODIChannel::simulate()
 {
-	m_hardState = false;
-
 	++m_pullingCount;
 
 	switch(m_simType) {
@@ -114,24 +110,24 @@ UDINT rIODIChannel::simulate()
 			break;
 
 		case SimType::CONST: {
-			m_hardValue = m_simValue;
+			m_phValue = m_simValue;
 			break;
 		}
 
 		case SimType::PULSE: {
 			if (rTickCount::SysTick() - m_simTimer >= m_simBlink) {
-				m_simValue  = !m_simValue;
-				m_hardValue = m_simValue;
-				m_simTimer  = rTickCount::SysTick();
+				m_simValue = !m_simValue;
+				m_phValue  = m_simValue;
+				m_simTimer = rTickCount::SysTick();
 			}
 			break;
 		}
 
 		case SimType::RANDOM: {
 			if (rTickCount::SysTick() - m_simTimer >= m_simBlink) {
-				m_simValue  = true == (rand() & 1);
-				m_hardValue = m_simValue;
-				m_simTimer  = rTickCount::SysTick();
+				m_simValue = true == (rand() & 1);
+				m_phValue  = m_simValue;
+				m_simTimer = rTickCount::SysTick();
 			}
 			break;
 		}

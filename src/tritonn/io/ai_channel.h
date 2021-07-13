@@ -77,7 +77,7 @@ public:
 	const UDINT MAX_AVERAGE = 3;
 
 public:
-	rIOAIChannel(USINT index, const std::string& comment = "");
+	rIOAIChannel(USINT index, bool isActive, const std::string& comment = "");
 	virtual ~rIOAIChannel() = default;
 
 	UINT getMinValue() const;
@@ -95,6 +95,7 @@ public:
 public:
 	UINT    m_setup        = 0;             // Настройка канала
 	USINT   m_state        = 0;             // Статус канала (0 - норма)
+	bool    m_isActive     = false;
 
 	// hardware
 	Type    m_type         = Type::mA_4_20; //
@@ -117,6 +118,7 @@ private:
 	std::list<UINT> m_average;
 
 	static rBitsArray m_flagsSetup;
-	static rBitsArray m_flagsType;
+	static rBitsArray m_flagsTypeA;
+	static rBitsArray m_flagsTypeP;
 };
 

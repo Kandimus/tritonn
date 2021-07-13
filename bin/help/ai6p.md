@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # ai6p
-> 0.19.149.cb63ba74
+> 0.19.150.5d5232f4
 ## XML
 ````xml
 <module name="ai6p" description="string index" >
@@ -41,7 +41,7 @@ ai6p.serialnumber | udint |  | 512 | Yes |   | Нет данных
 ai6p.can | uint |  | 512 | Yes |   | Нет данных
 ai6p.firmware | uint |  | 512 | Yes |   | Нет данных
 ai6p.hardware | uint |  | 512 | Yes |   | Нет данных
-ai6p..temperature | real | °C | 16 | Yes |   | Температура модуля в гр.С.
+ai6p.temperature | real | °C | 16 | Yes |   | Температура модуля в гр.С.
 ai6p.ch_00.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 ai6p.ch_00.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0020: Усреднение значения<br/>
 ai6p.ch_00.adc | uint |  | 512 | Yes |   | Текущий код АЦП

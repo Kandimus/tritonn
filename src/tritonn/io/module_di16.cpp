@@ -29,78 +29,68 @@ rModuleDI16::rModuleDI16(UDINT id) : rIOBaseModule(id)
 
 }
 
-rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8)
+rModuleDI16::rModuleDI16(const rModuleDI16* di16) : rIOBaseModule(di16)
 {
-	m_channelDI.clear();
-	m_channelDO.clear();
+	m_channel.clear();
 	m_listChannel.clear();
 
-	for (auto channel : di8do8->m_channelDI) {
+	for (auto channel : di16->m_channel) {
 		auto ch_di = new rIODIChannel(*channel);
 
-		m_channelDI.push_back(ch_di);
+		m_channel.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
-
-	for (auto channel : di8do8->m_channelDO) {
-		auto ch_do = new rIODOChannel(*channel);
-
-		m_channelDO.push_back(ch_do);
-		m_listChannel.push_back(ch_do);
-	}
 }
 
-rModuleDI8DO8::~rModuleDI8DO8()
+rModuleDI16::~rModuleDI16()
 {
-	for (auto channel : m_channelDI) {
+	for (auto channel : m_channel) {
 		if (channel) {
 			delete channel;
 		}
 	}
-	m_channelDI.clear();
-
-	for (auto channel : m_channelDO) {
-		if (channel) {
-			delete channel;
-		}
-	}
-	m_channelDO.clear();
+	m_channel.clear();
 }
 
-UDINT rModuleDI8DO8::processing(USINT issim)
+UDINT rModuleDI16::processing(USINT issim)
 {
 	rLocker lock(m_rwlock); lock.Nop();
 
-	rIOBaseModule::processing(issim);
+	UDINT result = rIOBaseModule::processing(issim);
+	if (result != TRITONN_RESULT_OK) {
+		return result;
+	}
 
-	for (auto channel : m_listChannel) {
+	for (auto channel : m_channel) {
+		USINT idx = channel->m_index;
+
 		if (issim) {
 			channel->simulate();
+		} else {
+			channel->m_phValue = m_data.Read.In[idx] == UL_K19_DI16_ChStHigh;
 		}
 
 		channel->processing();
 	}
 
+	m_data.Write.Filter = 0;
+
 	return TRITONN_RESULT_OK;
 }
 
 
-rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num)
+rIOBaseChannel* rModuleDI16::getChannel(USINT num)
 {
-	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
+	if (num >= CHANNEL_COUNT) {
 		return nullptr;
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
 
-	if (num < CHANNEL_DI_COUNT) {
-		return new rIODIChannel(*m_channelDI[num]);
-	}
-
-	return new rIODOChannel(*m_channelDO[num - CHANNEL_DI_COUNT]);
+	return new rIODIChannel(*m_channel[num]);
 }
 
-UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
+UDINT rModuleDI16::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
@@ -113,7 +103,7 @@ UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list
 }
 
 
-UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
+UDINT rModuleDI16::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
 	if (rIOBaseModule::loadFromXML(element, err) != TRITONN_RESULT_OK) {
 		return err.getError();
@@ -122,15 +112,11 @@ UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	XML_FOR(channel_xml, element, XmlName::CHANNEL) {
 		USINT number = XmlUtils::getAttributeUSINT (channel_xml, XmlName::NUMBER, 0xFF);
 
-		if (number >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
+		if (number >= CHANNEL_COUNT) {
 			return err.set(DATACFGERR_IO_CHANNEL, channel_xml->GetLineNum(), "invalide number");
 		}
 
-		if (number < CHANNEL_DI_COUNT) {
-			m_channelDI[number]->loadFromXML(channel_xml, err);
-		} else {
-			m_channelDO[number - CHANNEL_DI_COUNT]->loadFromXML(channel_xml, err);
-		}
+		m_channel[number]->loadFromXML(channel_xml, err);
 
 		if (err.getError()) {
 			return err.getError();
@@ -140,7 +126,7 @@ UDINT rModuleDI8DO8::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rModuleDI8DO8::generateMarkDown(rGeneratorMD& md)
+UDINT rModuleDI16::generateMarkDown(rGeneratorMD& md)
 {
 	md.add(this)
 			.addRemark("[^simtype]: **Тип симуляции DI:**<br/>" + rIODIChannel::m_flagsSimType.getInfo(true) + "<br/>");

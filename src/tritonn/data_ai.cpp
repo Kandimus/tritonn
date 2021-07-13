@@ -160,7 +160,7 @@ UDINT rAI::calculate()
 
 		if (channel == nullptr) {
 			rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 

@@ -32,6 +32,7 @@
 #include "module_cpu.h"
 #include "module_ai6a.h"
 #include "module_ai6p.h"
+#include "module_di16.h"
 #include "module_di8do8.h"
 #include "module_fi4.h"
 #include "module_crm.h"
@@ -92,6 +93,7 @@ std::string rIOManager::getModuleAlias(USINT module) const
 rThreadStatus rIOManager::Proccesing()
 {
 	rThreadStatus thread_status = rThreadStatus::UNDEF;
+	bool isSim = rSimpleArgs::instance().isSet(rArg::Simulate);
 
 	while (true) {
 		// Обработка команд нити
@@ -104,7 +106,11 @@ rThreadStatus rIOManager::Proccesing()
 			rLocker lock(Mutex); UNUSED(lock);
 
 			for(auto& item : m_modules) {
-				item->processing(rSimpleArgs::instance().isSet(rArg::Simulate));
+				UDINT result = item->processing(isSim);
+				if (result != TRITONN_RESULT_OK) {
+					rDataManager::instance().DoHalt(HaltReason::HARDWARE, result);
+					break;
+				}
 			}
 
 			rVariableClass::processing();
@@ -152,6 +158,9 @@ rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT
 		} else if (type == rModuleAI6p::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6p(maxmap[type]));
 
+		} else if (type == rModuleDI16::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDI16(maxmap[type]));
+
 		} else if (type == rModuleDI8DO8::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(maxmap[type]));
 
@@ -162,7 +171,7 @@ rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT
 			module = dynamic_cast<rIOBaseModule*>(new rModuleCRM(maxmap[type]));
 
 		} else {
-			err.set(DATACFGERR_UNKNOWN_MODULE, lineno, "");
+			err.set(DATACFGERR_HARDWARE_UNKNOWNMODULE, lineno, "");
 			return nullptr;
 		}
 

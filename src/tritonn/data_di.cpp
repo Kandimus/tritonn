@@ -120,33 +120,33 @@ UDINT rDI::calculate()
 
 		if (channel == nullptr) {
 			rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		rEvent event_s;
-		rEvent event_f;
-		checkExpr(channel->m_state, DI_LE_CODE_FAULT,
-				  event_f.reinit(EID_DI_CH_FAULT) << m_ID << m_descr,
-				  event_s.reinit(EID_DI_CH_OK)    << m_ID << m_descr);
+//		rEvent event_s;
+//		rEvent event_f;
+//		checkExpr(channel->m_state, DI_LE_CODE_FAULT,
+//				  event_f.reinit(EID_DI_CH_FAULT) << m_ID << m_descr,
+//				  event_s.reinit(EID_DI_CH_OK)    << m_ID << m_descr);
 
 		m_physical.m_value = channel->getValue();
 		m_status           = Status::NORMAL;
 
-		if (channel->m_state) {
-			m_fault = true;
+//		if (channel->m_state) {
+//			m_fault = true;
 
-			if (m_mode == Mode::PHIS) {
-				// если симуляция разрешена, то симулируем этот сигнал
-				if (m_setup.Value & Setup::ERR_KEYPAD) {
-					m_mode = Mode::KEYPAD;
-				}
+//			if (m_mode == Mode::PHIS) {
+//				// если симуляция разрешена, то симулируем этот сигнал
+//				if (m_setup.Value & Setup::ERR_KEYPAD) {
+//					m_mode = Mode::KEYPAD;
+//				}
 
-				m_status = Status::FAULT; // выставляем флаг ошибки
-			}
+//				m_status = Status::FAULT; // выставляем флаг ошибки
+//			}
 
-			setFault();
-		}
+//			setFault();
+//		}
 
 		if (channel_ptr) {
 			delete channel_ptr;
