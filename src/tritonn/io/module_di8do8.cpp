@@ -38,6 +38,8 @@ rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 		m_channelDO.push_back(ch_do);
 		m_listChannel.push_back(ch_do);
 	}
+
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_DIDO8_ModuleReadAll, _K19_DIDO8_ModuleExchange);
 }
 
 rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8)
@@ -63,18 +65,12 @@ rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8
 
 rModuleDI8DO8::~rModuleDI8DO8()
 {
-	for (auto channel : m_channelDI) {
+	for (auto channel : m_listChannel) {
 		if (channel) {
 			delete channel;
 		}
 	}
 	m_channelDI.clear();
-
-	for (auto channel : m_channelDO) {
-		if (channel) {
-			delete channel;
-		}
-	}
 	m_channelDO.clear();
 }
 
@@ -82,15 +78,36 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 {
 	rLocker lock(m_rwlock); lock.Nop();
 
-	rIOBaseModule::processing(issim);
+	UDINT result = rIOBaseModule::processing(issim);
+	if (result != TRITONN_RESULT_OK) {
+		return result;
+	}
 
-	for (auto channel : m_listChannel) {
+	for (auto channel : m_channelDI) {
+		USINT idx = channel->m_index;
+
 		if (issim) {
 			channel->simulate();
+		} else {
+			channel->m_phValue = m_data.Read.DI[idx] == UL_K19_DIDO8_ChStHigh;
 		}
 
 		channel->processing();
 	}
+
+	for (auto channel : m_channelDO) {
+		USINT idx = channel->m_index;
+
+		if (issim) {
+			channel->simulate();
+		} else {
+			m_data.Write.DO[idx] = channel->m_value ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
+		}
+
+		channel->processing();
+	}
+
+	m_data.Write.DIFilter = 0;
 
 	return TRITONN_RESULT_OK;
 }

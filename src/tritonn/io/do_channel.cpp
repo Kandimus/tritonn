@@ -32,40 +32,38 @@ rIODOChannel::rIODOChannel(USINT index, const std::string& comment)
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"     , static_cast<UINT>(rIODOChannel::Setup::OFF)     , COMMENT::SETUP_OFF)
+				.add("PULSE"   , static_cast<UINT>(rIODOChannel::Setup::PULSE)   , "Выдать одиночный импульс")
 				.add("INVERSED", static_cast<UINT>(rIODOChannel::Setup::INVERSED), COMMENT::SETUP_INVERSE);
 	}
 }
 
 UDINT rIODOChannel::processing()
 {
-	m_state = false;
-
 	if (m_setup & Setup::PULSE) {
-		if (m_oldValue != m_value && !m_pulseTimer) {
-			m_pulseTimer = rTickCount::SysTick();
+		if (m_timer.isFinished()) {
+			m_timer.stop();
+			m_value    = !m_value;
+			m_oldValue = m_value;
 		}
 
-		if (rTickCount::SysTick() - m_pulseTimer >= m_pulse) {
-			m_pulseTimer = 0;
-			m_value      = !m_value;
+		if (m_oldValue != m_value) {
+			if (!m_timer.isStarted()) {
+				m_timer.start(m_pulse);
+			}
+		} else {
+			m_timer.stop();
 		}
+	} else {
+		m_oldValue = m_value;
 	}
 
-	m_hardValue = m_value;
-	m_oldValue  = m_value;
-
-	if (m_setup & Setup::INVERSED)
-	{
-		m_hardValue = !m_hardValue;
-	}
+	m_phValue = (m_setup & Setup::INVERSED) ? !m_value : m_value;
 
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rIODOChannel::simulate()
 {
-	m_hardState = false;
-
 	++m_pullingCount;
 
 	return TRITONN_RESULT_OK;
@@ -80,7 +78,7 @@ UDINT rIODOChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	list.add(p + "setup", TYPE::UINT, rVariable::Flags::RS__, &m_setup, U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(p + "value",             rVariable::Flags::R___, &m_value, U_DIMLESS , 0, COMMENT::VALUE);
-	list.add(p + "state",             rVariable::Flags::R___, &m_state, U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");
+	list.add(p + "pulse",             rVariable::Flags::____, &m_pulse, U_msec    , 0, "Длина одиночного импульса");
 
 	return TRITONN_RESULT_OK;
 }

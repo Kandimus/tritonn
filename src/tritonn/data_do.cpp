@@ -120,16 +120,16 @@ UDINT rDO::calculate()
 				return DATACFGERR_REALTIME_MODULELINK;
 			}
 
-			rEvent event_s;
-			rEvent event_f;
-			checkExpr(channel->m_state, DO_LE_CODE_FAULT,
-					  event_f.reinit(EID_DO_CH_FAULT) << m_ID << m_descr,
-					  event_s.reinit(EID_DO_CH_OK)    << m_ID << m_descr);
+//			rEvent event_s;
+//			rEvent event_f;
+//			checkExpr(channel->m_state, DO_LE_CODE_FAULT,
+//					  event_f.reinit(EID_DO_CH_FAULT) << m_ID << m_descr,
+//					  event_s.reinit(EID_DO_CH_OK)    << m_ID << m_descr);
 
-			if (channel->m_state) {
-				m_fault  = true;
-				m_status = Status::FAULT; // выставляем флаг ошибки
-			} else {
+//			if (channel->m_state) {
+//				m_fault  = true;
+//				m_status = Status::FAULT; // выставляем флаг ошибки
+//			} else {
 				if (m_oldvalue != m_present.m_value) {
 					auto module = rIOManager::instance().getModule(m_module);
 					rSnapshot ss(rDataManager::instance().getVariableClass());
@@ -137,7 +137,7 @@ UDINT rDO::calculate()
 					m_physical = static_cast<USINT>(m_present.m_value);
 					ss.add(module->getAlias() + String_format(".ch_%u.value", channel->m_index), m_physical);
 					ss.set();
-				}
+//				}
 			}
 
 			if (channel_ptr) {

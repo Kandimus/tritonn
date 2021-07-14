@@ -60,6 +60,8 @@ private:
 	static rBitsArray m_flagsDOSetup;
 	std::vector<rIODIChannel*> m_channelDI;
 	std::vector<rIODOChannel*> m_channelDO;
+
+	K19_DIDO8_str m_data;
 };
 
 

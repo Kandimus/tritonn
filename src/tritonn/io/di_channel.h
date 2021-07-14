@@ -21,6 +21,7 @@
 #include "tickcount.h"
 
 class rModuleDI16;
+class rModuleDI8DO8;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -28,6 +29,7 @@ class rModuleDI16;
 class rIODIChannel : public rIOBaseChannel
 {
 friend rModuleDI16;
+friend rModuleDI8DO8;
 
 public:
 	enum SimType

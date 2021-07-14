@@ -18,12 +18,19 @@
 #include <list>
 #include "bits_array.h"
 #include "basechannel.h"
+#include "tickcount.h"
+
+class rModuleDO16;
+class rModuleDI8DO8;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
 class rIODOChannel : public rIOBaseChannel
 {
+friend rModuleDO16;
+friend rModuleDI8DO8;
+
 public:
 	enum Setup : UINT
 	{
@@ -46,20 +53,16 @@ public:
 	virtual UDINT simulate() override;
 	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
 
-public:
-	UINT  m_setup        = 0;             // Настройка канала
-	UINT  m_value        = 0;             // Текущий код ацп
-	USINT m_actionRedLED = 0;             // Управление касным диодом
-	USINT m_state        = 0;             // Статус канала
-	USINT m_stateRedLED  = 0;             // Статус красного диода
+protected:
+	UINT  m_setup    = 0;             // Настройка канала
+	UINT  m_value    = 0;             // Текущий код ацп
+	UDINT m_pulse    = 1000;
 
-	UDINT m_pulse        = 1000;
 
-private:
-	USINT m_hardValue    = 0;
-	USINT m_hardState    = 0;
-	USINT m_oldValue     = 0;
-	UDINT m_pulseTimer   = 0;
+	USINT m_phValue  = 0;
+	USINT m_oldValue = 0;
+
+	rTickCount m_timer;
 
 	static rBitsArray m_flagsSetup;
 };
