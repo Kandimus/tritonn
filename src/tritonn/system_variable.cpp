@@ -180,6 +180,10 @@ void rSystemVariable::applyEthernet()
 {
 	std::string text = "# tritonn config ip\nauto lo\niface lo inet loopback\n\n";
 
+#ifdef TRITONN_YOCTO
+	bool needreset = true;
+#endif
+
 	for (auto& eth : m_ethernet) {
 		TRACEI(LOG::SYSVAR, "Set IP addresses on %s as %s", eth.m_dev.c_str(), eth.m_ip.c_str());
 
@@ -200,6 +204,12 @@ void rSystemVariable::applyEthernet()
 
 		if (eth.m_gateway.size()) {
 			text_ip += "; ip route add " + eth.m_ip + "/" + eth.m_mask + " via " + eth.m_gateway;
+		}
+
+		if (needreset) {
+			rSystemManager::instance().force("ip a flush dev eth0 > /dev/null");
+			rSystemManager::instance().force("ip a flush dev eth1 > /dev/null");
+			needreset = false;
 		}
 
 		rSystemManager::instance().add(text_ip);

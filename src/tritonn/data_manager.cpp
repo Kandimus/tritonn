@@ -231,7 +231,9 @@ UDINT rDataManager::LoadConfig()
 		setLiveStatus(Live::RUNNING);
 	}
 
-	rSystemVariable::instance().applyEthernet();
+	if (!rSimpleArgs::instance().isSet(rArg::NoSetIP)) {
+		rSystemVariable::instance().applyEthernet();
+	}
 
 	return result;
 }
@@ -262,6 +264,7 @@ rThreadStatus rDataManager::Proccesing()
 		}
 
 
+		{
 		//Lock();
 		rLocker lock(rVariableClass::m_mutex); lock.Nop();
 
@@ -303,9 +306,16 @@ rThreadStatus rDataManager::Proccesing()
 				saveDataTotals();
 				#endif
 				m_timerTotal.restart();
+
+				static int aaa = 1;
+				rSnapshot ss(getVariableClass());
+				ss.add("hardware.di8do8_1.ch_08.value", aaa);
+				ss.set();
+				aaa = !aaa;
 			}
 		}
 
+		}
 //		Unlock();
 
 		rVariableClass::processing();

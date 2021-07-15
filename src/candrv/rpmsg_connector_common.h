@@ -1387,7 +1387,6 @@ typedef enum {
 } ModulesFunc __attribute__ ((mode(__byte__)));
 
 #pragma pack(pop)
-// #pragma enum(pop)
 
 #endif
 

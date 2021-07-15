@@ -30,11 +30,6 @@ int main(int argc, char* argv[])
 {
 	rEvent event;
 
-#ifdef TRITONN_YOCTO
-	rSystemManager::instance().force("ip a flush dev eth0 > /dev/null");
-	rSystemManager::instance().force("ip a flush dev eth1 > /dev/null");
-#endif
-
 	rLogManager::instance().setDir(DIR_LOG);
 
 	// Разбираем командную строку
@@ -47,6 +42,7 @@ int main(int argc, char* argv[])
 			.setSwitch(rArg::Terminal , false)
 			.setSwitch(rArg::Simulate , true)
 			.setSwitch(rArg::NoDump   , true)
+			.setSwitch(rArg::NoSetIP  , true)
 			.setOption(rArg::Log      , "FFFFFFFF")
 			.setOption(rArg::Config   , "test.xml");
 #else
@@ -54,7 +50,8 @@ int main(int argc, char* argv[])
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
-			.addSwitch(rArg::NoDump   , 'd')
+			.addSwitch(rArg::NoDump   , 'D')
+			.setSwitch(rArg::NoSetIP  , 'I')
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::Config   , 'c', "test_sikn.xml");
 

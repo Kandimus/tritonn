@@ -4,7 +4,7 @@ project(${PROJECT_NAME_PREFIX}tritonn)
 file(GLOB_RECURSE files_cpp ${PROJECT_SOURCE_DIR}/*.cpp
 							${PROJECT_SOURCE_DIR}/*.c)
 file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h
-							${CMAKE_BINARY_DIR}/src/*.h)
+						  ${CMAKE_BINARY_DIR}/src/*.h)
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 
@@ -23,8 +23,9 @@ add_lib(open62541)
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
 
 # YOCTO build
-if (${TRITONN_YOCTO})
-	target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/redist/candrv/rpmsg_connector.a)
+if (DEFINED CMAKE_TRITONN_YOCTO)
+	message(STATUS "++++++++++ added candrv ++++++++++")
+	target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/redist/candrv/rpmsg_connector.a")
 endif()
 
 # INSTALL

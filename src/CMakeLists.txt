@@ -11,6 +11,6 @@ add_subdirectory(testevent)
 add_subdirectory(checkxml)
 add_subdirectory(ttutil)
 
-if(TRITONN_TESTS)
+if(TRITONN_TESTS AND DEFINED CMAKE_TRITONN_YOCTO)
 	add_subdirectory(tests)
 endif()
