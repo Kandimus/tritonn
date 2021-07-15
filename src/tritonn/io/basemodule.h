@@ -46,6 +46,7 @@ public:
 		DI16   = 6,
 		DO16   = 7,
 		CRM    = 8,
+		AO4    = 9,
 	};
 
 	rIOBaseModule(UDINT id);

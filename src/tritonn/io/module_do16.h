@@ -51,7 +51,7 @@ public:
 	USINT getState(USINT id);
 
 private:
-	std::vector<rIODIChannel*> m_channel;
+	std::vector<rIODOChannel*> m_channel;
 	K19_DO16_str m_data;
 };
 

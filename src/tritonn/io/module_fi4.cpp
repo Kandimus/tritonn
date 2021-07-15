@@ -34,6 +34,9 @@ rModuleFI4::rModuleFI4(UDINT id) : rIOBaseModule(id)
 		m_listChannel.push_back(ch_fi);
 	}
 
+	memset(&m_data, 0, sizeof(m_data));
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_FIO_ModuleReadAll, _K19_FIO_ModuleExchange);
+
 #ifndef TRITONN_TEST
 	m_channel[0]->m_simType  = rIOFIChannel::SimType::CONST;
 	m_channel[0]->m_simValue = 5000;

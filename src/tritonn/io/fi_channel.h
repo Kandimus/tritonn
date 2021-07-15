@@ -51,11 +51,11 @@ public:
 	LREAL getFreq()  const { return m_freq;  }
 
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
-	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
-	virtual UDINT processing();
-	virtual UDINT simulate();
-	virtual rBitsArray& getFlagsSetup() { return m_flagsSetup; }
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
+	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
+	virtual UDINT processing() override;
+	virtual UDINT simulate() override;
+	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
 
 public:
 	UINT  m_setup        = 0;             // Настройка канала

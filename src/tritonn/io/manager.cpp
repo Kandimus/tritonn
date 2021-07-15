@@ -32,7 +32,9 @@
 #include "module_cpu.h"
 #include "module_ai6a.h"
 #include "module_ai6p.h"
+#include "module_ao4.h"
 #include "module_di16.h"
+#include "module_do16.h"
 #include "module_di8do8.h"
 #include "module_fi4.h"
 #include "module_crm.h"
@@ -158,8 +160,14 @@ rIOBaseModule* rIOManager::addModule(const std::string& type, rError& err, UDINT
 		} else if (type == rModuleAI6p::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleAI6p(maxmap[type]));
 
+		} else if (type == rModuleAO4::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleAO4(maxmap[type]));
+
 		} else if (type == rModuleDI16::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleDI16(maxmap[type]));
+
+		} else if (type == rModuleDO16::getRTTI()) {
+			module = dynamic_cast<rIOBaseModule*>(new rModuleDO16(maxmap[type]));
 
 		} else if (type == rModuleDI8DO8::getRTTI()) {
 			module = dynamic_cast<rIOBaseModule*>(new rModuleDI8DO8(maxmap[type]));

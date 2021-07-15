@@ -1,6 +1,6 @@
 ﻿/*
  *
- * module_fi4.h
+ * module_ao4.h
  *
  * Copyright (c) 2021 by RangeSoft.
  * All rights reserved.
@@ -15,48 +15,46 @@
 #include "def.h"
 #include "basemodule.h"
 #include "basechannel.h"
-#include "fi_channel.h"
+#include "rpmsg_connector.h"
+#include "ao_channel.h"
 
 class rIOManager;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rModuleFI4 : public rIOBaseModule
+class rModuleAO4 : public rIOBaseModule
 {
 friend class rIOManager;
 
 public:
-
 	const UDINT CHANNEL_COUNT = 4;
 
-	rModuleFI4(UDINT id);
-	rModuleFI4(const rModuleFI4* fi4);
-	virtual ~rModuleFI4();
+	rModuleAO4(UDINT id);
+	rModuleAO4(const rModuleAO4* ai6);
+	virtual ~rModuleAO4();
 
-	static std::string getRTTI() { return "fi4"; }
+	static std::string getRTTI() { return "ao4"; }
 	
 	// Виртуальные функции от rBaseModule
 public:
-	virtual std::string getModuleType() override { return rModuleFI4::getRTTI(); }
+	virtual std::string getModuleType() override { return rModuleAO4::getRTTI(); }
 	virtual UDINT processing(USINT issim) override;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
 	virtual rIOBaseChannel* getChannel(USINT channel) override;
-	virtual rIOBaseModule*  getModulePtr() override { return new rModuleFI4(this); }
+	virtual rIOBaseModule*  getModulePtr() override { return new rModuleAO4(this); }
+
+protected:
 
 public:
-	UDINT getCounter(USINT id);
-	USINT getState(USINT id);
+	void setCurrent(USINT id, UINT current);
+	rIOAOChannel::Type getType(USINT id);
 
 private:
-	std::vector<rIOFIChannel*> m_channel;
-
-	USINT m_outtype = 0;
-	UINT  m_filter  = 100;
-
-	K19_FIO_str m_data;
+	std::vector<rIOAOChannel*> m_channel;
+	K19_AO4_str m_data;
 };
 
 

@@ -27,6 +27,8 @@ rModuleDO16::rModuleDO16(UDINT id) : rIOBaseModule(id)
 		m_listChannel.push_back(ch_do);
 	}
 
+	memset(&m_data, 0, sizeof(m_data));
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_DO16_ModuleReadAll, _K19_DO16_ModuleExchange);
 }
 
 rModuleDO16::rModuleDO16(const rModuleDO16* do16) : rIOBaseModule(do16)
@@ -124,8 +126,7 @@ UDINT rModuleDO16::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 UDINT rModuleDO16::generateMarkDown(rGeneratorMD& md)
 {
-	md.add(this)
-			.addRemark("[^simtype]: **Тип симуляции DO:**<br/>" + rIODOChannel::m_flagsSimType.getInfo(true) + "<br/>");
+	md.add(this);
 
 	return TRITONN_RESULT_OK;
 }

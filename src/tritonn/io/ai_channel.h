@@ -86,10 +86,10 @@ public:
 	REAL getCurrent() const { return m_current; }
 
 public:
-	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
-	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
-	virtual UDINT processing();
-	virtual UDINT simulate();
+	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
+	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
+	virtual UDINT processing() override;
+	virtual UDINT simulate() override;
 	virtual rBitsArray& getFlagsSetup() { return m_flagsSetup; }
 
 public:

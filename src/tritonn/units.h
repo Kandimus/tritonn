@@ -117,6 +117,7 @@ enum UNITID
 	U_perc_v       = 520,
 	U_COEFSOL      = 521,
 	U_discrete     = 522,
+	U_mkA          = 523,
 
 	U_UNDEF   = 999
 };

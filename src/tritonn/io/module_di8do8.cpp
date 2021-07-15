@@ -39,6 +39,7 @@ rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 		m_listChannel.push_back(ch_do);
 	}
 
+	memset(&m_data, 0, sizeof(m_data));
 	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_DIDO8_ModuleReadAll, _K19_DIDO8_ModuleExchange);
 }
 
