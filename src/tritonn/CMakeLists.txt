@@ -24,7 +24,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
 
 # YOCTO build
 if (DEFINED CMAKE_TRITONN_YOCTO)
-	message(STATUS "++++++++++ added candrv ++++++++++")
 	target_link_libraries(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/redist/candrv/rpmsg_connector.a")
 endif()
 

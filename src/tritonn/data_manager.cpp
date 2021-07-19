@@ -307,11 +307,11 @@ rThreadStatus rDataManager::Proccesing()
 				#endif
 				m_timerTotal.restart();
 
-				static int aaa = 1;
-				rSnapshot ss(getVariableClass());
-				ss.add("hardware.di8do8_1.ch_08.value", aaa);
-				ss.set();
-				aaa = !aaa;
+//				static int aaa = 1;
+//				rSnapshot ss(getVariableClass());
+//				ss.add("hardware.di8do8_1.ch_08.value", aaa);
+//				ss.set();
+//				aaa = !aaa;
 			}
 		}
 

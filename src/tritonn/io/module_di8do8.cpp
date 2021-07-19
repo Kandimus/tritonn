@@ -110,6 +110,14 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 
 	m_data.Write.DIFilter = 0;
 
+	static int ttt = 0;
+	static int aaa = 1;
+	if (++ttt > 20) {
+		m_data.Write.DO[0] = aaa ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
+		aaa = !aaa;
+		ttt = 0;
+	}
+
 	return TRITONN_RESULT_OK;
 }
 
