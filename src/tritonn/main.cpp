@@ -83,16 +83,17 @@ int main(int argc, char* argv[])
 	rLogManager::instance().setLogMask(logmask);
 	rLogManager::instance().m_terminal.Set(true);
 	TRACEI(LOG::MAIN, " ");
-	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
+	TRACEI(LOG::MAIN, "----------------------------------------------------------");
 	TRACEI(LOG::MAIN, "Tritonn %i.%i.%i.%x (C) VeduN, 2019-2020 RSoft, OZNA", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 	TRACEI(LOG::MAIN, "argumets:");
 	TRACEI(LOG::MAIN, "\tForceRun : %s"  , rSimpleArgs::instance().isSet(rArg::ForceRun) ? "true" : "false");
 	TRACEI(LOG::MAIN, "\tTerminal : %s"  , rSimpleArgs::instance().isSet(rArg::Terminal) ? "true" : "false");
 	TRACEI(LOG::MAIN, "\tSimulate : %s"  , rSimpleArgs::instance().isSet(rArg::Simulate) ? "true" : "false");
 	TRACEI(LOG::MAIN, "\tNoDump   : %s"  , rSimpleArgs::instance().isSet(rArg::NoDump)   ? "true" : "false");
+	TRACEI(LOG::MAIN, "\tNoSetIP  : %s"  , rSimpleArgs::instance().isSet(rArg::NoSetIP)  ? "true" : "false");
 	TRACEI(LOG::MAIN, "\tLog      : 0x%s", rSimpleArgs::instance().getOption(rArg::Log).c_str());
 	TRACEI(LOG::MAIN, "\tConfig   : '%s'", rSimpleArgs::instance().getOption(rArg::Config).c_str());
-	TRACEI(LOG::MAIN, "----------------------------------------------------------------------------------------------");
+	TRACEI(LOG::MAIN, "----------------------------------------------------------");
 	rLogManager::instance().m_terminal.Set(rSimpleArgs::instance().isSet(rArg::Terminal));
 	rLogManager::instance().Run(16);
 

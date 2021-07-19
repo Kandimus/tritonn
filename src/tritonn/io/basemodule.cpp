@@ -91,7 +91,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 	if (m_moduleInfo->InWork) {
 		candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
 	} else {
-		return DATACFGERR_HARDWARE_MODULEFAULT;
+		;//return DATACFGERR_HARDWARE_MODULEFAULT;
 	}
 	#endif
 

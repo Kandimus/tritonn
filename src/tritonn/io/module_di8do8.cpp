@@ -18,6 +18,7 @@
 #include "xml_util.h"
 #include "../error.h"
 #include "../generator_md.h"
+	#include "log_manager.h"
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
@@ -103,6 +104,8 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 			channel->simulate();
 		} else {
 			m_data.Write.DO[idx] = channel->m_value ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
+			TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i", channel->m_index, channel->m_value);
+			тут косяк, нужен id для структур CAN
 		}
 
 		channel->processing();
@@ -110,13 +113,14 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 
 	m_data.Write.DIFilter = 0;
 
-	static int ttt = 0;
-	static int aaa = 1;
-	if (++ttt > 20) {
-		m_data.Write.DO[0] = aaa ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
-		aaa = !aaa;
-		ttt = 0;
-	}
+//	static int ttt = 0;
+//	static int aaa = 1;
+//	if (++ttt > 20) {
+//		TRACEI(LOG::CANIO, "DI8DO8 set do[0] is %i, di[0] is %i", aaa, m_data.Read.DI[0]);
+//		m_data.Write.DO[0] = aaa ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
+//		aaa = !aaa;
+//		ttt = 0;
+//	}
 
 	return TRITONN_RESULT_OK;
 }

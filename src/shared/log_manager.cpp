@@ -68,7 +68,7 @@ void  rLogManager::add(UDINT mask, const rDateTime& timestamp, const std::string
 		return;
 	}
 
-	auto fulltext = saveLogText(mask, timestamp, "", 0, text);
+	auto fulltext = saveLogText(mask, timestamp, "", 0, text, true);
 
 	outTerminal(mask, fulltext);
 }
@@ -85,7 +85,7 @@ void rLogManager::add(UDINT mask, const char* filesource, UDINT lineno, const ch
 	vsnprintf(buff, MAX_TEXT_BUFF, format, args);
 	va_end(args);
 
-	auto fulltext = saveLogText(mask, rDateTime(), filesource, lineno, buff);
+	auto fulltext = saveLogText(mask, rDateTime(), filesource, lineno, buff, true);
 	delete[] buff;
 
 	outTerminal(mask, fulltext);
@@ -148,9 +148,10 @@ void rLogManager::outTerminal(UDINT mask, const std::string& text)
 }
 
 
-std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text)
+std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text, bool isshort)
 {
 	std::string filename = m_dir + String_format("%u.log", timestamp.getSec() / rDateTime::SEC_IN_DAY);
+	std::string s_text = "";
 	char logt[5] = "----";
 
 	// Тип сообщения
@@ -159,17 +160,19 @@ std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, con
 	if(mask & LOG::W) logt[2] = 'W';
 	if(mask & LOG::I) logt[3] = 'I';
 
-	std::string fulltext = timestamp.toString() + "[" + logt;
+	std::string shorttext = timestamp.toString();
+	std::string fulltext  = shorttext + "[" + logt;
 
 	if (source.size()) {
 		fulltext += ":" + source + String_format(":%u", lineno);
 	}
 
-	fulltext += String_format("] %08x %s\n", mask, text.c_str());
+	fulltext  += String_format("] %08x %s\n", mask, text.c_str());
+	shorttext += " " + text + "\n";
 
 	if (m_save.Get()) {
 		simpleFileAppend(filename, fulltext);
 	}
 
-	return fulltext;
+	return isshort ? shorttext : fulltext;
 }

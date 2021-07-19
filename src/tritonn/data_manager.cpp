@@ -233,6 +233,8 @@ UDINT rDataManager::LoadConfig()
 
 	if (!rSimpleArgs::instance().isSet(rArg::NoSetIP)) {
 		rSystemVariable::instance().applyEthernet();
+	} else {
+		TRACEI(LOG::DATAMGR, "Don't load IP addresses");
 	}
 
 	return result;
@@ -254,6 +256,9 @@ rThreadStatus rDataManager::Proccesing()
 	Live curLive;
 
 	m_timerTotal.start(1000);
+
+rTickCount ttt;
+ttt.start(2000);
 
 	while(true)
 	{
@@ -306,17 +311,25 @@ rThreadStatus rDataManager::Proccesing()
 				saveDataTotals();
 				#endif
 				m_timerTotal.restart();
-
-//				static int aaa = 1;
-//				rSnapshot ss(getVariableClass());
-//				ss.add("hardware.di8do8_1.ch_08.value", aaa);
-//				ss.set();
-//				aaa = !aaa;
 			}
 		}
 
 		}
 //		Unlock();
+
+		if (ttt.isFinished()) {
+			static int aaa = 1;
+			rSnapshot ss(getVariableClass());
+
+			ss.add("hardware.di8do8_1.ch_08.value", aaa);
+			ss.set();
+
+			if (ss("hardware.di8do8_1.ch_08.value")) {
+				TRACEI(LOG::DATAMGR, "hardware.di8do8_1.ch_08.value = %i", aaa);
+			}
+			aaa = !aaa;
+			ttt.restart();
+		}
 
 		rVariableClass::processing();
 		rThreadClass::EndProccesing();
