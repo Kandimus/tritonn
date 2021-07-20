@@ -114,19 +114,19 @@ UDINT rCounter::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		checkExpr(channel->m_state, FI_LE_CODE_FAULT,
-				  event_f.reinit(EID_COUNTER_CH_FAULT) << m_ID << m_descr,
-				  event_s.reinit(EID_COUNTER_CH_OK)    << m_ID << m_descr);
+//		checkExpr(channel->m_state, FI_LE_CODE_FAULT,
+//				  event_f.reinit(EID_COUNTER_CH_FAULT) << m_ID << m_descr,
+//				  event_s.reinit(EID_COUNTER_CH_OK)    << m_ID << m_descr);
 
-		m_fault = channel->m_state;
+//		m_fault = channel->m_state;
 
-		if (channel->m_state) {
-			m_period.m_value  = std::numeric_limits<LREAL>::quiet_NaN();
-			m_freq.m_value    = std::numeric_limits<LREAL>::quiet_NaN();
-			m_impulse.m_value = std::numeric_limits<LREAL>::quiet_NaN();
+//		if (channel->m_state) {
+//			m_period.m_value  = std::numeric_limits<LREAL>::quiet_NaN();
+//			m_freq.m_value    = std::numeric_limits<LREAL>::quiet_NaN();
+//			m_impulse.m_value = std::numeric_limits<LREAL>::quiet_NaN();
 
-		} else {
-			UDINT count = channel->getValue();
+//		} else {
+			UDINT count = channel->getCounter();
 			LREAL freq  = channel->getFreq();
 			UDINT tick  = rTickCount::SysTick();
 
@@ -147,7 +147,7 @@ UDINT rCounter::calculate()
 					m_pullingCount    = channel->getPullingCount();
 				}
 			}
-		}
+//		}
 
 		if (channel_ptr) {
 			delete channel_ptr;

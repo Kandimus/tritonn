@@ -84,8 +84,6 @@ protected:
 public:
 	static rBitsArray m_flagsType;
 
-
-
 protected:
 	Type m_type = Type::UNDEF;
 
@@ -105,6 +103,7 @@ protected:
 	std::string     m_alias   = "";
 	STRID           m_descr   = 0;
 	std::string     m_comment = "";
+	bool            m_isFault = false;
 
 	std::vector<rIOBaseChannel*> m_listChannel;
 

@@ -57,6 +57,7 @@ public:
 public:
 	USINT       m_simType = 0;
 	USINT       m_index   = 0xFF;
+	USINT       m_canIdx  = 0xFF;
 	std::string m_comment = "";
 
 protected:

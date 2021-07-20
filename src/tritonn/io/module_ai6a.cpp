@@ -25,6 +25,9 @@ rModuleAI6a::rModuleAI6a(UDINT id) : rIOBaseModule(id)
 
 	while (m_channel.size() < CHANNEL_COUNT) {
 		auto ch_ai = new rIOAIChannel(static_cast<USINT>(m_channel.size()), true);
+
+		ch_ai->m_canIdx = m_channel.size();
+
 		m_channel.push_back(ch_ai);
 		m_listChannel.push_back(ch_ai);
 	}
@@ -33,9 +36,11 @@ rModuleAI6a::rModuleAI6a(UDINT id) : rIOBaseModule(id)
 
 	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_AI6a_ModuleReadAll, _K19_AI6a_ModuleExchange);
 
-#ifndef TRITONN_TEST
-	m_channel[0]->m_simType  = rIOAIChannel::SimType::LINEAR;
-	m_channel[0]->m_simSpeed = 1234;
+#ifndef TRITONN_YOCTO
+	#ifndef TRITONN_TEST
+		m_channel[0]->m_simType  = rIOAIChannel::SimType::LINEAR;
+		m_channel[0]->m_simSpeed = 1234;
+	#endif
 #endif
 }
 

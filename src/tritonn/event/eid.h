@@ -79,13 +79,14 @@ const UINT EVENT_OBJ_MASWTR   = 0x0014;
 const UINT EVENT_OBJ_VOLWTR   = 0x0015;
 const UINT EVENT_OBJ_CINVISC  = 0x0016;
 const UINT EVENT_OBJ_DYNVISC  = 0x0017;
-const UINT EVENT_OBJ__END     = 0x0018;
+const UINT EVENT_OBJ_HARWARE  = 0x0018;
+const UINT EVENT_OBJ__END     = 0x0019;
 const UINT EVENT_OBJ_MAX      = 0x003F;
 
 const string EVENT_OBJ_DESC[EVENT_OBJ__END + 1] = {"UNDEF", "SYSTEM", "TCP", "LOG", "EVENT", "SELECTOR", "AI", "FI",
 												   "DENSSOL", "REDUCEDDENS", "STREAM", "STATION", "TEST", "REPORT", "VARIABLES", "DI",
 												   "DO", "AO", "SAMPLER", "PROVE", "MASSWATER", "VOLUMEWATER",
-												   "CINEMATICVISCOSITY", "DYNAMICVISCOSITY",
+												   "CINEMATICVISCOSITY", "DYNAMICVISCOSITY", "HARDWARE",
 												   "USER"};
 
 
@@ -111,6 +112,11 @@ CREATE_EID(EID_SYSTEM_RESTART_WARM    , EMT_WARNING, EVENT_OBJ_SYSTEM  , 30)  //
 CREATE_EID(EID_SYSTEM_RESTART_COLD    , EMT_WARNING, EVENT_OBJ_SYSTEM  , 31)  // Команда "Cold-restart"
 CREATE_EID(EID_SYSTEM_RESTART_UNKNOW  , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 32)  // Неизвестная команда перезагрузки
 
+
+//-------------------------------------------------------------------------------------------------
+// Hardware
+CREATE_EID(EID_HARDWARE_MODULE_ISNULL , EMT_ERROR  , EVENT_OBJ_HARWARE , 1)  // Внутренняя ошибка при обработке модуля
+CREATE_EID(EID_HARDWARE_MODULE_FAULT  , EMT_ERROR  , EVENT_OBJ_HARWARE , 2)  // Внутренняя ошибка модуля или его отсутствие
 
 //-------------------------------------------------------------------------------------------------
 // Selector

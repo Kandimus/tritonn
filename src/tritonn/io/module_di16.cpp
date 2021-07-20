@@ -23,6 +23,9 @@ rModuleDI16::rModuleDI16(UDINT id) : rIOBaseModule(id)
 
 	while(m_channel.size() < CHANNEL_COUNT) {
 		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channel.size()));
+
+		ch_di->m_canIdx = m_channel.size();
+
 		m_channel.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
@@ -64,7 +67,7 @@ UDINT rModuleDI16::processing(USINT issim)
 	}
 
 	for (auto channel : m_channel) {
-		USINT idx = channel->m_index;
+		USINT idx = channel->m_canIdx;
 
 		if (issim) {
 			channel->simulate();

@@ -25,6 +25,9 @@ rModuleAI6p::rModuleAI6p(UDINT id) : rIOBaseModule(id)
 
 	while (m_channel.size() < CHANNEL_COUNT) {
 		auto ch_ai = new rIOAIChannel(static_cast<USINT>(m_channel.size()), false);
+
+		ch_ai->m_canIdx = m_channel.size();
+
 		m_channel.push_back(ch_ai);
 		m_listChannel.push_back(ch_ai);
 	}
@@ -33,9 +36,11 @@ rModuleAI6p::rModuleAI6p(UDINT id) : rIOBaseModule(id)
 
 	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_AI6p_ModuleReadAll, _K19_AI6p_ModuleExchange);
 
-#ifndef TRITONN_TEST
-	m_channel[0]->m_simType  = rIOAIChannel::SimType::LINEAR;
-	m_channel[0]->m_simSpeed = 1234;
+#ifndef TRITONN_YOCTO
+	#ifndef TRITONN_TEST
+		m_channel[0]->m_simType  = rIOAIChannel::SimType::LINEAR;
+		m_channel[0]->m_simSpeed = 1234;
+	#endif
 #endif
 }
 
@@ -73,7 +78,7 @@ UDINT rModuleAI6p::processing(USINT issim)
 	}
 
 	for (auto channel : m_channel) {
-		USINT idx = channel->m_index;
+		USINT idx = channel->m_canIdx;
 
 		if (issim) {
 			channel->simulate();

@@ -15,6 +15,8 @@
 #include "basechannel.h"
 #include "bits_array.h"
 #include "xml_util.h"
+#include "../text_id.h"
+#include "../event/manager.h"
 #include "../data_config.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
@@ -75,12 +77,14 @@ void rIOBaseModule::setModule(void* data, ModuleInfo_str* info, ModuleSysData_st
 
 UDINT rIOBaseModule::processing(USINT issim)
 {
-	if(issim) {
+	if(issim || m_isFault) {
 		return TRITONN_RESULT_OK;
 	}
 
 	if (!m_moduleInfo || !m_dataPtr)
 	{
+		m_isFault = true;
+		rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_ISNULL) << (static_cast<UINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
 		return DATACFGERR_HARDWARE_MODULEISNULL;
 	}
 
@@ -91,6 +95,9 @@ UDINT rIOBaseModule::processing(USINT issim)
 	if (m_moduleInfo->InWork) {
 		candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
 	} else {
+		m_isFault = true;
+		rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_FAULT) << (static_cast<UINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
+		//NOTE убрать!!!
 		;//return DATACFGERR_HARDWARE_MODULEFAULT;
 	}
 	#endif

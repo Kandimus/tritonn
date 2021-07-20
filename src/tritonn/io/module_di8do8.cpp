@@ -30,12 +30,18 @@ rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channelDI.size()));
+
+		ch_di->m_canIdx = m_channelDI.size();
+
 		m_channelDI.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
 
 	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
 		auto ch_do = new rIODOChannel(static_cast<USINT>(CHANNEL_DI_COUNT + m_channelDO.size()));
+
+		ch_do->m_canIdx = m_channelDO.size();
+
 		m_channelDO.push_back(ch_do);
 		m_listChannel.push_back(ch_do);
 	}
@@ -86,7 +92,7 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 	}
 
 	for (auto channel : m_channelDI) {
-		USINT idx = channel->m_index;
+		USINT idx = channel->m_canIdx;
 
 		if (issim) {
 			channel->simulate();
@@ -98,14 +104,13 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 	}
 
 	for (auto channel : m_channelDO) {
-		USINT idx = channel->m_index;
+		USINT idx = channel->m_canIdx;
 
 		if (issim) {
 			channel->simulate();
 		} else {
 			m_data.Write.DO[idx] = channel->m_value ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
 			TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i", channel->m_index, channel->m_value);
-			тут косяк, нужен id для структур CAN
 		}
 
 		channel->processing();

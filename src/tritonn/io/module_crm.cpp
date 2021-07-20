@@ -27,11 +27,17 @@ rModuleCRM::rModuleCRM(UDINT id) : rIOBaseModule(id)
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(m_channelDI.size(), String_format("Детектор %u", m_channelDI.size() + 1));
+
+		ch_di->m_canIdx = m_channelDI.size();
+
 		m_channelDI.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
 
 	m_channelFI = new rIOFIChannel(m_channelDI.size(), "Частота с ПР");
+
+	m_channelFI->m_canIdx = 0;
+
 	m_listChannel.push_back(m_channelFI);
 }
 
@@ -118,7 +124,7 @@ LREAL rModuleCRM::getFreq() const
 
 UDINT rModuleCRM::getCounter() const
 {
-	return m_channelFI->getValue();
+	return m_channelFI->getCounter();
 }
 
 UINT rModuleCRM::getDetectors() const

@@ -133,10 +133,25 @@
 
 		<str id="1400">Не определенный модуль</str> <!-- SID_HARWARE_UNKNOW -->
 		<str id="1401">Модуль ЦПУ (Display 800x600, 2 Eth, 4 RS-485)</str> <!-- SID_HARWARE_CPU -->
-		<str id="1402">Модуль аналового входного сигнала (6 сигналов, пассивный, mA/V)</str> <!-- SID_HARWARE_AI6 -->
-		<str id="1403">Модуль дискретных входных-выходных сигналов (8 входных, 8 выходных пассивных)</str> <!-- SID_HARWARE_DI8DO8 -->
+		<str id="1402">Модуль аналового входного сигнала (6 сигналов, активный, mA)</str> <!-- SID_HARWARE_AI6a -->
+		<str id="1403">Модуль аналового входного сигнала (6 сигналов, пассивный, mA/V)</str> <!-- SID_HARWARE_AI6p -->
 		<str id="1404">Модуль частотно импульных входных сигналов (4 сигнала)</str> <!-- SID_HARWARE_FI4 -->
-		<str id="1405">Модуль прувера (1 частотно-импульсный сигнал, 4 быстрых входных дискретных сигнала)</str> <!-- SID_HARWARE_CRM -->
+		<str id="1405">Модуль дискретных входных-выходных сигналов (8 входных, 8 выходных пассивных)</str> <!-- SID_HARWARE_DI8DO8 -->
+		<str id="1406">Модуль дискретных входных сигналов (16 входных)</str> <!-- SID_HARWARE_DI16 -->
+		<str id="1407">Модуль дискретных выходных сигналов (16 выходных пассивных)</str> <!-- SID_HARWARE_DO16 -->
+		<str id="1408">Модуль прувера (1 частотно-импульсный сигнал, 4 быстрых входных дискретных сигнала)</str> <!-- SID_HARWARE_CRM -->
+		<str id="1409">Модуль аналового выходного сигнала (2 активных, 2 пассивных, mA)</str> <!-- SID_HARWARE_AO4 -->
+
+		<str id="1450">UNKNOW</str> <!-- SID_HARWARE_SHORT_UNKNOW -->
+		<str id="1451">CPU</str> <!-- SID_HARWARE_SHORT_CPU -->
+		<str id="1452">AI6a</str> <!-- SID_HARWARE_SHORT_AI6a -->
+		<str id="1453">AI6p</str> <!-- SID_HARWARE_SHORT_AI6p -->
+		<str id="1454">FI4</str> <!-- SID_HARWARE_SHORT_FI4 -->
+		<str id="1455">DI8DO8</str> <!-- SID_HARWARE_SHORT_DI8DO8 -->
+		<str id="1456">DI16</str> <!-- SID_HARWARE_SHORT_DI16 -->
+		<str id="1457">DO16</str> <!-- SID_HARWARE_SHORT_DO16 -->
+		<str id="1458">CRM</str> <!-- SID_HARWARE_SHORT_CRM -->
+		<str id="1459">AO4</str> <!-- SID_HARWARE_SHORT_AO4 -->
 
 		<str id="1500">группа 1, входное значение 1</str> <!-- SID_SEL_GRP1_IN1 -->
 		<str id="1501">группа 1, входное значение 2</str> <!-- SID_SEL_GRP1_IN2 -->

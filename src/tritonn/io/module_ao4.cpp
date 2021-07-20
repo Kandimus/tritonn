@@ -25,6 +25,9 @@ rModuleAO4::rModuleAO4(UDINT id) : rIOBaseModule(id)
 
 	while (m_channel.size() < CHANNEL_COUNT) {
 		auto ch_ao = new rIOAOChannel(static_cast<USINT>(m_channel.size()));
+
+		ch_ao->m_canIdx = m_channel.size();
+
 		m_channel.push_back(ch_ao);
 		m_listChannel.push_back(ch_ao);
 	}
@@ -66,7 +69,7 @@ UDINT rModuleAO4::processing(USINT issim)
 	}
 
 	for (auto channel : m_channel) {
-		USINT idx = channel->m_index;
+		USINT idx = channel->m_canIdx;
 
 		if (issim) {
 			channel->simulate();

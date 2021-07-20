@@ -27,6 +27,15 @@ class rModuleFI4 : public rIOBaseModule
 friend class rIOManager;
 
 public:
+	enum class OutType : USINT
+	{
+		NONE = 0,
+		CHANNEL_1,
+		CHANNEL_2,
+		CHANNEL_3,
+		CHANNEL_4,
+	};
+
 
 	const UDINT CHANNEL_COUNT = 4;
 
@@ -50,13 +59,17 @@ public:
 	UDINT getCounter(USINT id);
 	USINT getState(USINT id);
 
+protected:
+	K19_FIO_OutType getOutType();
+
 private:
 	std::vector<rIOFIChannel*> m_channel;
 
-	USINT m_outtype = 0;
-	UINT  m_filter  = 100;
+	OutType m_outtype = OutType::NONE;
 
 	K19_FIO_str m_data;
+
+	static rBitsArray m_flagsOutType;
 };
 
 
