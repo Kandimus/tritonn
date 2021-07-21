@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # ai6p
-> 0.19.150.5d5232f4
+> 0.19.156.28f9fa2c
 ## XML
 ````xml
-<module name="ai6p" description="string index" >
+<module type="ai6p" name="valid object name" description="string index" >
 	<channel number="0" setup="AI setup flags" />
 	<channel number="1" setup="AI setup flags" />
 	<channel number="2" setup="AI setup flags" />
@@ -32,7 +32,7 @@ Number | Type | Comment
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
-ai6p.type | uint |  | 512 | Yes |   | Нет данных
+ai6p.type | uint |  | 512 | Yes |   | Тип модуля:<br>0: Модуль не определен<br/>1: Базовый модуль ЦПУ<br/>2: Модуль AI6a<br/>3: Модуль AI6p<br/>4: Модуль FI4<br/>5: Модуль DI8DO8<br/>6: Модуль DI16<br/>7: Модуль DO16<br/>8: Модуль CRM<br/>
 ai6p.node | uint |  | 512 | Yes |   | Нет данных
 ai6p.vendor | udint |  | 512 | Yes |   | Нет данных
 ai6p.productcode | udint |  | 512 | Yes |   | Нет данных

@@ -141,7 +141,7 @@ UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, b
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
 	std::string p = prefix + m_alias + ".";
-	list.add(p + "out", TYPE::USINT, rVariable::Flags::____, &m_outtype, U_DIMLESS, 0, "Привязка выходной частоты:<br>" + m_flagsType.getInfo(true));
+	list.add(p + "out", TYPE::USINT, rVariable::Flags::____, &m_outtype, U_DIMLESS, 0, "Привязка выходной частоты:<br>" + m_flagsOutType.getInfo(true));
 
 	for (auto channel : m_listChannel) {
 		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index);

@@ -116,7 +116,7 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 
 	std::string p = m_alias + ".";
 
-	list.add(p + "type"        , TYPE::UINT, rVariable::Flags::R___, &m_type             , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "type"        , TYPE::UINT, rVariable::Flags::R___, &m_type             , U_DIMLESS , 0, "Тип модуля:<br>" + m_flagsType.getInfo(true));
 	list.add(p + "node"        ,             rVariable::Flags::R___, &m_module.NodeID    , U_DIMLESS , 0, "Нет данных");
 	list.add(p + "vendor"      ,             rVariable::Flags::R___, &m_module.IDVendor  , U_DIMLESS , 0, "Нет данных");
 	list.add(p + "productCode" ,             rVariable::Flags::R___, &m_module.IDProdCode, U_DIMLESS , 0, "Нет данных");

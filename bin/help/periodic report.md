@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # report
-> 0.19.150.5d5232f4
+> 0.19.156.28f9fa2c
 ## XML
 ````xml
 <report name="valid object name" description="string index" type="text value" >

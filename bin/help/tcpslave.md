@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # tcpslave
-> 0.19.150.5d5232f4
+> 0.19.156.28f9fa2c
 ## XML
 ````xml
 <tcpslave name="valid object name" id="0" count_error="3" security="0" maxclient="8" >
