@@ -34,7 +34,7 @@ rModuleAI6a::rModuleAI6a(UDINT id) : rIOBaseModule(id)
 
 	memset(&m_data, 0, sizeof(m_data));
 
-	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_AI6a_ModuleReadAll, _K19_AI6a_ModuleExchange);
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_AI6a_ModuleReadAll, _K19_AI6a_ModuleExchange);
 
 #ifndef TRITONN_YOCTO
 	#ifndef TRITONN_TEST

@@ -31,6 +31,13 @@ namespace tinyxml2 {
 class XMLElement;
 }
 
+struct rModuleStatus
+{
+	UINT m_CAN      = 0;
+	UINT m_firmware = 0;
+	UINT m_hardware = 0;
+};
+
 class rIOBaseModule
 {
 public:
@@ -74,28 +81,27 @@ public:
 	virtual UDINT getModuleIDProdCode() const { return m_module.IDProdCode; }
 	virtual UDINT getModuleIDRevision() const { return m_module.IDRevision; }
 	virtual UDINT getModuleIDSerial()   const { return m_module.IDSerial; }
-	virtual UDINT getCAN()              const { return m_CAN; }
-	virtual UDINT getFirmware()         const { return m_firmware; }
-	virtual UDINT getHardware()         const { return m_hardware; }
+	virtual UDINT getCAN()              const { return m_status.m_CAN; }
+	virtual UDINT getFirmware()         const { return m_status.m_firmware; }
+	virtual UDINT getHardware()         const { return m_status.m_hardware; }
 
 protected:
-	void  setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, UDINT readAll, UDINT exchange);
+	void setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, void* status, UDINT readAll, UDINT exchange);
+	void printModuleInfo();
 
 public:
 	static rBitsArray m_flagsType;
 
 protected:
-	Type m_type = Type::UNDEF;
-
-	USINT m_ID               = 0xFF;
-	void* m_dataPtr          = nullptr;
-	UDINT m_moduleReadAll    = 0;
-	UDINT m_moduleExchange   = 0;
-	UINT  m_CAN              = 0;
-	UINT  m_firmware         = 0;
-	UINT  m_hardware         = 0;
+	Type m_type            = Type::UNDEF;
+	USINT m_ID             = 0xFF;
+	void* m_dataPtr        = nullptr;
+	UDINT m_moduleReadAll  = 0;
+	UDINT m_moduleExchange = 0;
 
 	ModuleSysData_str  m_module;
+	rModuleStatus      m_status;
+	rModuleStatus*     m_moduleStatus = nullptr;
 	ModuleInfo_str*    m_moduleInfo    = nullptr;
 	ModuleSysData_str* m_moduleSysData = nullptr;
 

@@ -49,7 +49,7 @@ rModuleFI4::rModuleFI4(UDINT id) : rIOBaseModule(id)
 	}
 
 	memset(&m_data, 0, sizeof(m_data));
-	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_FIO_ModuleReadAll, _K19_FIO_ModuleExchange);
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_FIO_ModuleReadAll, _K19_FIO_ModuleExchange);
 
 #ifndef TRITONN_YOCTO
 	#ifndef TRITONN_TEST

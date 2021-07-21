@@ -66,10 +66,11 @@ rIOBaseModule::~rIOBaseModule()
 	pthread_rwlock_destroy(&m_rwlock);
 }
 
-void rIOBaseModule::setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, UDINT readAll, UDINT exchange)
+void rIOBaseModule::setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, void* status, UDINT readAll, UDINT exchange)
 {
 	m_dataPtr        = data;
 	m_moduleInfo     = info;
+	m_moduleStatus   = static_cast<rModuleStatus*>(status);
 	m_moduleSysData  = sysdata;
 	m_moduleReadAll  = readAll;
 	m_moduleExchange = exchange;
@@ -81,7 +82,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 		return TRITONN_RESULT_OK;
 	}
 
-	if (!m_moduleInfo || !m_dataPtr)
+	if (!m_moduleInfo || !m_dataPtr || !m_moduleStatus)
 	{
 		m_isFault = true;
 		rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_ISNULL) << (static_cast<UINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
@@ -104,8 +105,33 @@ UDINT rIOBaseModule::processing(USINT issim)
 
 	// copy system data
 	m_module = *m_moduleSysData;
+	m_status = *m_moduleStatus;
+
+	printModuleInfo();
 
 	return TRITONN_RESULT_OK;
+}
+
+void rIOBaseModule::printModuleInfo()
+{
+	if (!m_moduleInfo || !m_moduleSysData) {
+		return;
+	}
+
+	printf("Module type %s[%i]:\n", m_flagsType.getNameByValue(static_cast<UINT>(m_type)).c_str(), m_ID);
+	printf("\tNodeID ....... %i\n", m_module.NodeID);
+	printf("\tIDVendor ..... %i\n", m_module.IDVendor);
+	printf("\tIDProdCode ... %i\n", m_module.IDProdCode);
+	printf("\tIDRevision ... %i\n", m_module.IDRevision);
+	printf("\tIDSerial ..... %i\n", m_module.IDSerial);
+	printf("\tHeatrbeatState %i\n", m_module.HeatrbeatState);
+	printf("\tHeatrbeatFl .. %i\n", m_module.HeatrbeatFl);
+	printf("\tPDOCounter ... %i\n", m_module.PDOCounter);
+	printf("\tPDOCycle ..... %i\n", m_module.PDOCycle);
+
+	printf("\tCAN .......... %i\n", m_status.m_CAN);
+	printf("\tFirmware ..... %i\n", m_status.m_firmware);
+	printf("\tHardware ..... %i\n", m_status.m_hardware);
 }
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
@@ -122,9 +148,9 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 	list.add(p + "productCode" ,             rVariable::Flags::R___, &m_module.IDProdCode, U_DIMLESS , 0, "Нет данных");
 	list.add(p + "revision"    ,             rVariable::Flags::R___, &m_module.IDRevision, U_DIMLESS , 0, "Нет данных");
 	list.add(p + "serialNumber",             rVariable::Flags::R___, &m_module.IDSerial  , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "can"         ,             rVariable::Flags::R___, &m_CAN              , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "firmware"    ,             rVariable::Flags::R___, &m_firmware         , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "hardware"    ,             rVariable::Flags::R___, &m_hardware         , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "can"         ,             rVariable::Flags::R___, &m_status.m_CAN     , U_DIMLESS , 0, "Нет данных");
+	list.add(p + "firmware"    ,             rVariable::Flags::R___, &m_status.m_firmware, U_DIMLESS , 0, "Нет данных");
+	list.add(p + "hardware"    ,             rVariable::Flags::R___, &m_status.m_hardware, U_DIMLESS , 0, "Нет данных");
 
 	return TRITONN_RESULT_OK;
 }

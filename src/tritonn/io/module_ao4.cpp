@@ -34,7 +34,7 @@ rModuleAO4::rModuleAO4(UDINT id) : rIOBaseModule(id)
 
 	memset(&m_data, 0, sizeof(m_data));
 
-	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_AO4_ModuleReadAll, _K19_AO4_ModuleExchange);
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_AO4_ModuleReadAll, _K19_AO4_ModuleExchange);
 }
 
 rModuleAO4::rModuleAO4(const rModuleAO4* ao4) : rIOBaseModule(ao4)

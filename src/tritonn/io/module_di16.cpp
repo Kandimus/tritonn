@@ -31,7 +31,7 @@ rModuleDI16::rModuleDI16(UDINT id) : rIOBaseModule(id)
 	}
 
 	memset(&m_data, 0, sizeof(m_data));
-	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_DI16_ModuleReadAll, _K19_DI16_ModuleExchange);
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_DI16_ModuleReadAll, _K19_DI16_ModuleExchange);
 }
 
 rModuleDI16::rModuleDI16(const rModuleDI16* di16) : rIOBaseModule(di16)

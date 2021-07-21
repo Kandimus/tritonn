@@ -47,7 +47,7 @@ rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 	}
 
 	memset(&m_data, 0, sizeof(m_data));
-	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, _K19_DIDO8_ModuleReadAll, _K19_DIDO8_ModuleExchange);
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_DIDO8_ModuleReadAll, _K19_DIDO8_ModuleExchange);
 }
 
 rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8)
