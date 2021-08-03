@@ -10,10 +10,7 @@ set(PROJECT_NAME_PREFIX TT_)
 option(TRITONN_TESTS "Make tests" ON)
 option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
-
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
-	add_compile_definitions(TRITONN_YOCTO)
-endif()
+option(PROTOBUF_FULL_LIB "Uses full proto lib" ON)
 
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)
@@ -58,6 +55,9 @@ set_project_version("src/tritonn_version.h.in")
 include_directories("${CMAKE_BINARY_DIR}/src")
 #
 add_subdirectory(src)
+
+#
+find_package(Protobuf REQUIRED)
 
 # Библиотеки PThread и OpenSSL
 #set(THREADS_PREFER_PTHREAD_FLAG ON)

@@ -2,6 +2,7 @@
 compile_submodule("simpleargs" "" "")
 
 add_subdirectory(shared)
+add_subdirectory(proto)
 add_subdirectory(xml)
 add_subdirectory(open62541)
 add_subdirectory(tritonn)
