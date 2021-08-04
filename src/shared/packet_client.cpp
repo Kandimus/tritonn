@@ -55,13 +55,12 @@ void rPacketClient::ResetRecvBuff(USINT *buff, UDINT size)
 USINT *rPacketClient::Recv(USINT *read_buff, UDINT read_size)
 {
 	// Если буффера еще нет, то это начало пакета
-	if(!Buff)
+	if(m_buff.empty())
 	{
-		Buff   = new USINT[read_size];
-		Size   = read_size;
-		Marker = 0;
-		Length = 0;
+		m_buff.reserve(read_size];
+		m_size = read_size;
 
+		clearHeader();
 		memcpy(Buff, read_buff, Size);
 	}
 	else
@@ -78,8 +77,7 @@ USINT *rPacketClient::Recv(USINT *read_buff, UDINT read_size)
 	}
 
 	// Заголовок еще не получен, ждем...
-	if(Size < 6)
-	{
+	if (Size < sizeof(rPacketHeader)) {
 		return nullptr;
 	}
 
@@ -116,4 +114,8 @@ void rPacketClient::PopBuff(UDINT pop_size)
 	}
 }
 
-
+void rPacketClient::clearHeader()
+{
+	m_header.m_magic    = 0;
+	m_header.m_dataSize = 0;
+}

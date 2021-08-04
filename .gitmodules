@@ -1,9 +1,9 @@
 [submodule "src/simpleargs"]
 	path = src/simpleargs
-	url = ssh://git@github.com:Kandimus/SimpleArgs.git
+	url = git@github.com:Kandimus/SimpleArgs.git
 [submodule "www"]
 	path = www
 	url = git@github.com:kingrussian/webtritonn.git
 [submodule "src/proto"]
 	path = src/proto
-	url = https://github.com/Kandimus/protobuf.git
+	url = git@github.com:Kandimus/protobuf.git

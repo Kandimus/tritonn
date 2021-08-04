@@ -204,7 +204,7 @@ macro( compile_proto PROJECTNAME)
 
 			add_custom_command(
 				COMMAND ${PROTOBUF_COMPILER}
-				ARGS ${proto_path} --cpp_out="\"${${PROJECTNAME}_BINARY_DIR}\"" ${proto_item}
+				ARGS ${proto_path} --cpp_out="${${PROJECTNAME}_BINARY_DIR}" ${proto_item}
 				DEPENDS ${proto_item}
 				OUTPUT ${protos_out}
 			)

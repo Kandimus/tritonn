@@ -1,17 +1,13 @@
-//=================================================================================================
-//===
-//=== packet_client.h
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Клиент для класса-потока терминала
-//===
-//=================================================================================================
+/*
+ *
+ * packet_client.h
+ *
+ * Copyright (c) 2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
@@ -19,6 +15,15 @@
 
 #define TERMCLNT_RECV_ERROR   ((USINT *)0xFFFFFFFF)
 
+struct rPacketHeader
+{
+	UDINT m_magic;
+	UINT  m_version;
+	UINT  m_flags;
+	UDINT m_reserved;
+	UDINT m_dataSize;
+	UDINT m_crc32;
+};
 
 class rPacketClient : public rClientTCP
 {
@@ -34,11 +39,13 @@ public:
 protected:
 	void ResetRecvBuff(USINT *buff, UDINT pop_size);
 
+	void clearHeader();
+
 public:
-	USINT *Buff;
-	UDINT  Size;
-	UDINT  Marker;
-	UINT   Length;
+	std::vector<USINT> m_buff;
+	UDINT  m_size;
+
+	rPacketHeader m_header;
 };
 
 

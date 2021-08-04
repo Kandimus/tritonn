@@ -17,25 +17,16 @@
 
 #include "tcp_class.h"
 #include "variable_class.h"
+#include "singlenton.h"
 
 class  rTermClient;
 struct rPacketLoginData;
 struct rPacketSetData;
 struct rPacketGetData;
 
-class rTermManager: public rTCPClass//, public rVariableClass
+class rTermManager : public rTCPClass//, public rVariableClass
 {
-public:
-	virtual ~rTermManager();
-
-// Singleton
-private:
-	rTermManager();
-	rTermManager(const rTermManager &);
-	rTermManager& operator=(rTermManager &);
-
-public:
-	static rTermManager &Instance();
+	SINGLETON(rTermManager)
 
 protected:
 	virtual rThreadStatus Proccesing(void);

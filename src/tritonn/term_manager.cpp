@@ -53,16 +53,6 @@ rTermManager::~rTermManager()
 
 //-------------------------------------------------------------------------------------------------
 //
-rTermManager &rTermManager::Instance()
-{
-	static rTermManager Singleton;
-
-	return Singleton;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//
 rThreadStatus rTermManager::Proccesing()
 {
 	while(1)
@@ -89,18 +79,16 @@ rClientTCP *rTermManager::NewClient(SOCKET socket, sockaddr_in *addr)
 
 UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 {
-	rTermClient *tclient = (rTermClient *)client;
-	USINT       *data    = tclient->Recv(buff, size);
-	UDINT        result  = 0;
+	auto  tclient = dynamic_cast<rTermClient*>(client);
+	auto  data    = tclient->Recv(buff, size);
+	UDINT result  = 0;
 
-	if(TERMCLNT_RECV_ERROR == data)
-	{
+	if (TERMCLNT_RECV_ERROR == data) {
 		return 0;
 	}
 
    // Посылку считали не полностью
-	if(nullptr == data)
-	{
+	if (nullptr == data) {
 		return 1;
 	}
 
