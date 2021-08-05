@@ -12,6 +12,8 @@
 #pragma once
 
 #include "tcp_client.h"
+#include "data_proto.h"
+#include "login_proto.h"
 
 #define TERMCLNT_RECV_ERROR   ((USINT *)0xFFFFFFFF)
 
@@ -30,22 +32,20 @@ class rPacketClient : public rClientTCP
 public:
 	rPacketClient();
 	rPacketClient(SOCKET socket, sockaddr_in *addr);
-	virtual ~rPacketClient();
+	virtual ~rPacketClient() = default;
 
-	virtual USINT *Recv(USINT *read_buff, UDINT read_size);
+	virtual USINT *Recv(USINT *read_buff, UDINT read_size) override;
+	virtual UDINT send(const TTT::DataMsg& message);
+	virtual UDINT send(const TTT::LoginMsg& message);
 
-	void PopBuff(UDINT size);
+	void clearPacket();
 
 protected:
-	void ResetRecvBuff(USINT *buff, UDINT pop_size);
-
 	void clearHeader();
 
 public:
 	std::vector<USINT> m_buff;
-	UDINT  m_size;
-
-	rPacketHeader m_header;
+	rPacketHeader      m_header;
 };
 
 

@@ -9,8 +9,6 @@
 //===
 //=================================================================================================
 
-#pragma once
-
 #include "stringid.h"
 
 Container& rStringID::toContainer(Container& cnt) const

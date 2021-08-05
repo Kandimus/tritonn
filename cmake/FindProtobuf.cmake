@@ -4,8 +4,10 @@ endif(PROTOBUF_INCLUDE_DIR AND PROTOBUF_LIBRARY)
 
 if(PROTOBUF_FULL_LIB)
 	set(PROTOBUF_LIB_NAME "protobuf")
+	set(PROTOBUF_LIB_NAME_X "protobuf")
 else()
 	set(PROTOBUF_LIB_NAME "protobuf-lite")
+	set(PROTOBUF_LIB_NAME_X "protobuf-lite")
 endif()
 
 if (PROTOBUF_PREFER_STATIC_LIB)
@@ -22,7 +24,8 @@ if(PROTOBUF_FULL_LIB)
 			${NAMES_}
 			protobuf${BICYCLE_DEBUG_POSTFIX}
 			libprotobuf${BICYCLE_DEBUG_POSTFIX}
-		PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC})
+		PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}
+		NO_DEFAULT_PATH)
 else()
 	find_library(PROTOBUF_LIBRARY
 		NAMES
@@ -30,12 +33,14 @@ else()
 			protobuf-lite${BICYCLE_DEBUG_POSTFIX}
 			libprotobuf-lite${BICYCLE_DEBUG_POSTFIX}
 			libprotobuf-lite${BICYCLE_DEBUG_POSTFIX}.lib
-		PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC})
+		PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}
+		NO_DEFAULT_PATH)
 endif(PROTOBUF_FULL_LIB)
 
 find_library(PROTOBUF_LIBRARY
 	NAMES "${NAMES}"
-	PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC})
+	PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}
+	NO_DEFAULT_PATH)
 
 find_path(PROTOBUF_INCLUDE_DIR
 	google/protobuf/service.h

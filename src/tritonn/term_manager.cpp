@@ -20,6 +20,8 @@
 #include "users.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
+#include "login_proto.h"
+#include "data_proto.h"
 #include "packet_get.h"
 #include "packet_getanswe.h"
 #include "packet_login.h"
@@ -92,15 +94,9 @@ UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 		return 1;
 	}
 
-	// Проверка на то, что принимаемая посылка из перечня допустимых
-	if((tclient->Marker == MARKER_PACKET_LOGIN && tclient->Length == LENGTH_PACKET_LOGIN) ||
-		(tclient->Marker == MARKER_PACKET_SET   && tclient->Length == LENGTH_PACKET_SET  ) ||
-		(tclient->Marker == MARKER_PACKET_GET   && tclient->Length == LENGTH_PACKET_GET  ))
-	{
-		;
-	}
-	else
-	{
+	if (tclient->m_header.m_magic != TTT::DataMagic &&
+		tclient->m_header.m_magic != TTT::LoginMagic) {
+
 		unsigned char *ip = (unsigned char *)&client->Addr.sin_addr.s_addr;
 
 		TRACEW(LogMask, "Client [%i.%i.%i.%i] send unknow packet", ip[0], ip[1], ip[2], ip[3]);
@@ -109,17 +105,17 @@ UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 	}
 
 	// Получаем посылку
-	switch(tclient->Marker)
-	{
-		case MARKER_PACKET_LOGIN: result = PacketLogin(tclient, (rPacketLoginData *)data); break;
-		case MARKER_PACKET_SET:   result = PacketSet  (tclient, (rPacketSetData   *)data); break;
-		case MARKER_PACKET_GET:   result = PacketGet  (tclient, (rPacketGetData   *)data); break;
+//	switch(tclient->Marker)
+//	{
+//		case MARKER_PACKET_LOGIN: result = PacketLogin(tclient, (rPacketLoginData *)data); break;
+//		case MARKER_PACKET_SET:   result = PacketSet  (tclient, (rPacketSetData   *)data); break;
+//		case MARKER_PACKET_GET:   result = PacketGet  (tclient, (rPacketGetData   *)data); break;
 
-		default: result = 0; break; // Как мы тут оказались не понятно ))) Но клиента отключим
-	}
+//		default: result = 0; break; // Как мы тут оказались не понятно ))) Но клиента отключим
+//	}
 
 	// Удаляем из буффера приема клиента посылку
-	tclient->PopBuff(tclient->Length);
+	tclient->clearPacket();
 
 	return result;
 }

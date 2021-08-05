@@ -19,36 +19,51 @@
 
 rPacketClient::rPacketClient() : rClientTCP()
 {
-	Buff   = nullptr;
-	Size   = 0;
-	Marker = 0;
-	Length = 0;
+	clearPacket();
 }
 
 
 rPacketClient::rPacketClient(SOCKET socket, sockaddr_in *addr) : rClientTCP(socket, addr)
 {
-	Buff   = nullptr;
-	Size   = 0;
-	Marker = 0;
-	Length = 0;
+	clearPacket();
 }
 
-
-rPacketClient::~rPacketClient()
+UDINT rPacketClient::send(const TTT::DataMsg& message)
 {
-	ResetRecvBuff(nullptr, 0);
+	rPacketHeader hdr;
+	std::vector<USINT> arr = serialize_DataMsg(message);
+
+	hdr.m_magic    = TTT::DataMagic;
+	hdr.m_reserved = 0;
+	hdr.m_flags    = 0;
+	hdr.m_version  = 0x0100;
+	hdr.m_dataSize = arr.size();
+	hdr.m_crc32    = 0;
+//	hdr.m_crc32    =
+
+	Send(&hdr, sizeof(rPacketHeader));
+	Send(arr.data(), arr.size());
+
+	return 0;
 }
 
-
-void rPacketClient::ResetRecvBuff(USINT *buff, UDINT size)
+UDINT rPacketClient::send(const TTT::LoginMsg& message)
 {
-	if(Buff) delete[] Buff;
+	rPacketHeader hdr;
+	std::vector<USINT> arr = serialize_LoginMsg(message);
 
-	Buff   = buff;
-	Size   = size;
-	Marker = 0;
-	Length = 0;
+	hdr.m_magic    = TTT::LoginMagic;
+	hdr.m_reserved = 0;
+	hdr.m_flags    = 0;
+	hdr.m_version  = 0x0100;
+	hdr.m_dataSize = arr.size();
+	hdr.m_crc32    = 0;
+//	hdr.m_crc32    =
+
+	Send(&hdr, sizeof(rPacketHeader));
+	Send(arr.data(), arr.size());
+
+	return 0;
 }
 
 
@@ -57,61 +72,44 @@ USINT *rPacketClient::Recv(USINT *read_buff, UDINT read_size)
 	// Если буффера еще нет, то это начало пакета
 	if(m_buff.empty())
 	{
-		m_buff.reserve(read_size];
-		m_size = read_size;
+		m_buff.reserve(4 * 1024 * 1024);
+		m_buff.resize(read_size);
 
 		clearHeader();
-		memcpy(Buff, read_buff, Size);
+		memcpy(m_buff.data(), read_buff, read_size);
 	}
 	else
 	{
-		USINT *tmp_buff = new USINT[Size + read_size];
+		UDINT pos = m_buff.size();
 
-		// Получаем общий буффер, состоящий из старого буффера и нового
-		memcpy(tmp_buff       , Buff     , Size);
-		memcpy(tmp_buff + Size, read_buff, read_size);
+		m_buff.resize(m_buff.size() + read_size);
 
-		delete[] Buff;
-		Buff  = tmp_buff;
-		Size += read_size;
+		memcpy(m_buff.data() + pos, read_buff, read_size);
 	}
 
-	// Заголовок еще не получен, ждем...
-	if (Size < sizeof(rPacketHeader)) {
-		return nullptr;
+	if (!m_header.m_magic || !m_header.m_dataSize) {
+		if (m_buff.size() < sizeof(rPacketHeader)) {
+			return nullptr;
+		}
+
+		m_header = *(rPacketHeader*)m_buff.data();
+		m_buff.erase(m_buff.begin(), m_buff.begin() + sizeof(rPacketHeader));
 	}
 
-	// Если получили заголовок, то заполняем поля пакета
-	Marker = *(UDINT *)&Buff[0];
-	Length = *(UINT  *)&Buff[4];
-
-	// Проверка, что в буффере содержится одна целая посылка
-	if(Size < Length)
-	{
-		// Все хорошо, ждем когда прийдут остальные данные
-		return nullptr;
-	}
-
-	return Buff;
+	return m_buff.size() < m_header.m_dataSize ? nullptr : m_buff.data();
 }
 
 
 //
-void rPacketClient::PopBuff(UDINT pop_size)
+void rPacketClient::clearPacket()
 {
 	// Удаляем посылку из буффера
-	if(pop_size >= Size)
-	{
-		ResetRecvBuff(nullptr, 0);
+	if (m_header.m_dataSize >= m_buff.size()) {
+		m_buff.clear();
+	} else {
+		m_buff.erase(m_buff.begin(), m_buff.begin() + m_header.m_dataSize);
 	}
-	else
-	{
-		USINT *tmp_buff = new USINT[Size - pop_size];
-
-		memcpy(tmp_buff, Buff + pop_size, Size - pop_size);
-
-		ResetRecvBuff(tmp_buff, Size - pop_size);
-	}
+	clearHeader();
 }
 
 void rPacketClient::clearHeader()

@@ -10,7 +10,7 @@ set(PROJECT_NAME_PREFIX TT_)
 option(TRITONN_TESTS "Make tests" ON)
 option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
-option(PROTOBUF_FULL_LIB "Uses full proto lib" ON)
+option(PROTOBUF_FULL_LIB "Uses full proto lib" OFF)
 
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)
@@ -35,8 +35,8 @@ include(UsefulMacros)
 #
 set(CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED YES)
-set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -Wall -Wfloat-conversion")
-set(CMAKE_C_FLAGS "-std=c99")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lstdc++ -std=c++14 -Wall -Wfloat-conversion -no-pie")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -no-pie")
 
 if(${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
 	if(NOT TRITONN_X64)

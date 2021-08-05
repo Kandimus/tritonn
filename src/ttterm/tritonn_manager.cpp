@@ -19,6 +19,9 @@
 #include "packet_client.h"
 #include "display_manager.h"
 #include "tritonn_manager.h"
+#include "tritonn_manager.h"
+#include "login_proto.h"
+#include "data_proto.h"
 #include "packet_login.h"
 #include "packet_loginanswe.h"
 #include "packet_get.h"
@@ -126,32 +129,25 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 		return 0;
 	}
 
-	// Проверка на то, что принимаемая посылка из перечня допустимых
-	if((client->Marker == MARKER_PACKET_LOGINANSWE && client->Length == LENGTH_PACKET_LOGINANSWE) ||
-		(client->Marker == MARKER_PACKET_SETANSWE   && client->Length == LENGTH_PACKET_SETANSWE  ) ||
-		(client->Marker == MARKER_PACKET_GETANSWE   && client->Length == LENGTH_PACKET_GETANSWE  ))
-	{
-		//printf("recv packet %i, lenght %i\n", client->Marker, client->Length);
-		;
-	}
-	else
-	{
-		TRACEW(LogMask, "Server send unknow packet. Marker %#X, length %u", client->Marker, client->Length);
+	if (client->m_header.m_magic != TTT::DataMagic &&
+		client->m_header.m_magic != TTT::LoginMagic) {
+
+		TRACEW(LogMask, "Server send unknow packet. Marker %#X, length %u", client->m_header.m_magic, client->m_header.m_dataSize);
 
 		return 2; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
 	}
 
 	// Получаем посылку
-	switch(client->Marker)
-	{
-		case MARKER_PACKET_LOGINANSWE: result = PacketLoginAnswe((rPacketLoginAnsweData *)data); break;
-		case MARKER_PACKET_SETANSWE  : result = PacketSetAnswe  ((rPacketSetAnsweData   *)data); break;
-		case MARKER_PACKET_GETANSWE  : result = PacketGetAnswe  ((rPacketGetAnsweData   *)data); break;
+//	switch(client->Marker)
+//	{
+//		case MARKER_PACKET_LOGINANSWE: result = PacketLoginAnswe((rPacketLoginAnsweData *)data); break;
+//		case MARKER_PACKET_SETANSWE  : result = PacketSetAnswe  ((rPacketSetAnsweData   *)data); break;
+//		case MARKER_PACKET_GETANSWE  : result = PacketGetAnswe  ((rPacketGetAnsweData   *)data); break;
 
-		default:	result = 0; // Как мы тут оказались не понятно ))) Но клиента отключим
-	}
+//		default:	result = 0; // Как мы тут оказались не понятно ))) Но клиента отключим
+//	}
 
-	client->PopBuff(client->Length);
+	client->clearPacket();
 
 	return 0;
 }

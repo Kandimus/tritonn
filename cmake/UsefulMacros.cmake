@@ -36,27 +36,10 @@ endif()
 
 ### MACRO #########################################################################################
 
-macro( add_lib projectname )
-
-	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_NAME_PREFIX}${projectname}")
-	target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/${projectname}")
-
-endmacro()
-
-
-macro( compile_submodule submodulename ADD_DIRECTORIES ADD_DEFININITIONS)
-	project(${PROJECT_NAME_PREFIX}${submodulename})
-
-	file(GLOB submodule_cpp ${CMAKE_SOURCE_DIR}/src/${submodulename}/*.c
-							${CMAKE_SOURCE_DIR}/src/${submodulename}/*.cpp)
-	file(GLOB submodule_h   ${CMAKE_SOURCE_DIR}/src/${submodulename}/*.h)
-
-	add_library(${PROJECT_NAME} STATIC ${submodule_cpp} ${submodule_h})
-
-	target_include_directories(${PROJECT_NAME} PUBLIC ${ADD_DIRECTORIES})
-
-	target_compile_definitions(${PROJECT_NAME} PUBLIC ${ADD_DEFININITIONS})
-
+macro( add_lib libname )
+	target_link_libraries(${PROJECT_NAME} PRIVATE "${PROJECT_NAME_PREFIX}${libname}")
+	target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/${libname}")
+	target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_BINARY_DIR}/src/${libname}")
 endmacro()
 
 
@@ -123,19 +106,31 @@ macro( set_project_version FILE_IN)
 	configure_file("${CMAKE_SOURCE_DIR}/${FILE_IN}" "${CMAKE_BINARY_DIR}/${FILE_OUT}")
 endmacro()
 
-function (ListToString result delim)
-	list(GET ARGV 2 temp)
-	math(EXPR N "${ARGC}-1")
-	foreach(IDX RANGE 3 ${N})
-		list(GET ARGV ${IDX} STR)
-		set(temp "${temp}${delim}${STR}")
-	endforeach()
-	set(${result} "${temp}" PARENT_SCOPE)
-endfunction(ListToString)
+
+macro( compile_submodule submodulename ADD_FILES ADD_DIRECTORIES ADD_DEFININITIONS ADD_LIBS)
+	project(${PROJECT_NAME_PREFIX}${submodulename})
+
+	file(GLOB submodule_cpp ${CMAKE_SOURCE_DIR}/src/${submodulename}/*.c
+							${CMAKE_SOURCE_DIR}/src/${submodulename}/*.cpp)
+	file(GLOB submodule_h   ${CMAKE_SOURCE_DIR}/src/${submodulename}/*.h)
+
+	add_library(${PROJECT_NAME} STATIC ${submodule_cpp} ${submodule_h} ${ADD_FILES})
+
+	target_include_directories(${PROJECT_NAME} PUBLIC ${ADD_DIRECTORIES})
+
+	target_compile_definitions(${PROJECT_NAME} PUBLIC ${ADD_DEFININITIONS})
+
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${ADD_LIBS})
+
+endmacro()
+
 
 macro( compile_proto PROJECTNAME)
 	file( GLOB_RECURSE protos "*.proto" )
 	file( GLOB_RECURSE protosin "*.proto.in" )
+
+	set(PROTO_BINARY_DIR ${CMAKE_BINARY_DIR}/src/${PROJECTNAME})
+	set(PROTO_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/${PROJECTNAME})
 
 	foreach( proto ${exclude_proto} )
 		list( REMOVE_ITEM protos ${proto} )
@@ -158,7 +153,7 @@ macro( compile_proto PROJECTNAME)
 			set(PROTOBUF_FULL_LIB_STRING "option optimize_for = LITE_RUNTIME;")
 		endif()
 
-		set(dest_protoin_file ${${PROJECTNAME}_BINARY_DIR}/${protoin_file_name}.proto)
+		set(dest_protoin_file ${PROTO_BINARY_DIR}/${protoin_file_name}.proto)
 		configure_file(${protoin_item} ${dest_protoin_file} @ONLY)
 		set_property(SOURCE ${dest_protoin_file} PROPERTY GENERATED ON)
 		list(APPEND protos ${dest_protoin_file})
@@ -172,13 +167,13 @@ macro( compile_proto PROJECTNAME)
 			get_filename_component(proto_item_NAME ${proto_item} NAME_WE)
 			get_filename_component(proto_item_DIR ${proto_item} PATH)
 
-			set(protos_out ${${PROJECTNAME}_BINARY_DIR}/${proto_item_NAME}.pb.cc ${${PROJECTNAME}_BINARY_DIR}/${proto_item_NAME}.pb.h)
+			set(protos_out ${PROTO_BINARY_DIR}/${proto_item_NAME}.pb.cc ${PROTO_BINARY_DIR}/${proto_item_NAME}.pb.h)
 			get_property(a3 SOURCE ${proto_item} PROPERTY GENERATED)
 
 			list(APPEND proto_path "--proto_path=${PROTOBUF_INCLUDE_DIR}")
 
 			if (a3)
-				list(APPEND proto_path "--proto_path=${proto_item_DIR}" "--proto_path=${${PROJECTNAME}_BINARY_DIR}" "--proto_path=${${PROJECTNAME}_SOURCE_DIR}")
+				list(APPEND proto_path "--proto_path=${proto_item_DIR}" "--proto_path=${PROTO_BINARY_DIR}" "--proto_path=${PROTO_SOURCE_DIR}")
 				foreach(lib ${libs} )
 					if(${lib} MATCHES ${PROJECT_NAME_GLOBAL} )
 						list(APPEND proto_path "--proto_path=${${lib}_BINARY_DIR}" "--proto_path=${${lib}_SOURCE_DIR}")
@@ -193,18 +188,14 @@ macro( compile_proto PROJECTNAME)
 			list(APPEND srcs ${protos_out})
 			set_source_files_properties(${protos_out} PROPERTIES GENERATED TRUE)
 
-			#ListToString(proto_path_str, " ", ${proto_path})
-			#string(REPLACE ";" " " proto_path_str "${proto_path}")
-			#string(REPLACE ";" " " protos_out_str "${protos_out}")
-
-			message(STATUS "PROTOBUF: ======================================")
-			message(STATUS "COMMAND: ${PROTOBUF_COMPILER} ${proto_path_str} --cpp_out=\"${${PROJECTNAME}_BINARY_DIR}\" ${proto_item}")
-			message(STATUS "proto_item: ${proto_item}")
-			message(STATUS "protos_out: ${protos_out}")
+#			message(STATUS "PROTOBUF: ======================================")
+#			message(STATUS "COMMAND: ${PROTOBUF_COMPILER} ${proto_path_str} --cpp_out=\"${${PROJECTNAME}_BINARY_DIR}\" ${proto_item}")
+#			message(STATUS "proto_item: ${proto_item}")
+#			message(STATUS "protos_out: ${protos_out}")
 
 			add_custom_command(
 				COMMAND ${PROTOBUF_COMPILER}
-				ARGS ${proto_path} --cpp_out="${${PROJECTNAME}_BINARY_DIR}" ${proto_item}
+				ARGS ${proto_path} --cpp_out="${PROTO_BINARY_DIR}" ${proto_item}
 				DEPENDS ${proto_item}
 				OUTPUT ${protos_out}
 			)

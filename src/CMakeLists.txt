@@ -1,8 +1,10 @@
 
-compile_submodule("simpleargs" "" "")
+
+compile_submodule("simpleargs" "" "" "" "")
+compile_proto("proto")
+compile_submodule("proto" "${protos_out_all}" "" "" "protobuf-lite")
 
 add_subdirectory(shared)
-add_subdirectory(proto)
 add_subdirectory(xml)
 add_subdirectory(open62541)
 add_subdirectory(tritonn)

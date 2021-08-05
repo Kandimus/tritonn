@@ -11,10 +11,11 @@ add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ttterm")
 
 # LIBRARIES
-target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ncurses)
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ncurses protobuf-lite)
 
 add_lib(shared)
 add_lib(simpleargs)
+add_lib(proto)
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_BINARY_DIR}/src")
 
