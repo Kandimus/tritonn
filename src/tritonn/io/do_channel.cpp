@@ -77,7 +77,7 @@ UDINT rIODOChannel::generateVars(const std::string& name, rVariableList& list, b
 	rIOBaseChannel::generateVars(name, list, false);
 
 	list.add(p + "setup", TYPE::UINT, rVariable::Flags::RS__, &m_setup, U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "value",             rVariable::Flags::R___, &m_value, U_DIMLESS , 0, COMMENT::VALUE);
+	list.add(p + "value",             rVariable::Flags::____, &m_value, U_DIMLESS , 0, COMMENT::VALUE);
 	list.add(p + "pulse",             rVariable::Flags::____, &m_pulse, U_msec    , 0, "Длина одиночного импульса");
 
 	return TRITONN_RESULT_OK;

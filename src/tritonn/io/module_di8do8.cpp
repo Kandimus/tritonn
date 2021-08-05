@@ -106,14 +106,14 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 	for (auto channel : m_channelDO) {
 		USINT idx = channel->m_canIdx;
 
+		channel->processing();
+
 		if (issim) {
 			channel->simulate();
 		} else {
-			m_data.Write.DO[idx] = channel->m_value ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
-			TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i", channel->m_index, channel->m_value);
+			m_data.Write.DO[idx] = channel->m_phValue ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
+			TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i (%i)", channel->m_index, channel->m_phValue, channel->m_value);
 		}
-
-		channel->processing();
 	}
 
 	m_data.Write.DIFilter = 0;

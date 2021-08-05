@@ -24,20 +24,22 @@
 #include "../error.h"
 
 rBitsArray rIOBaseModule::m_flagsType;
+rBitsArray rIOBaseModule::m_flagsShortType;
 
 rIOBaseModule::rIOBaseModule(UDINT id)
 {
 	if (m_flagsType.empty()) {
 		m_flagsType
-				.add("", static_cast<UINT>(Type::UNDEF) , "Модуль не определен")
-				.add("", static_cast<UINT>(Type::CPU)   , "Базовый модуль ЦПУ")
-				.add("", static_cast<UINT>(Type::AI6a)  , "Модуль AI6a")
-				.add("", static_cast<UINT>(Type::AI6p)  , "Модуль AI6p")
-				.add("", static_cast<UINT>(Type::FI4)   , "Модуль FI4")
-				.add("", static_cast<UINT>(Type::DI8DO8), "Модуль DI8DO8")
-				.add("", static_cast<UINT>(Type::DI16)  , "Модуль DI16")
-				.add("", static_cast<UINT>(Type::DO16)  , "Модуль DO16")
-				.add("", static_cast<UINT>(Type::CRM)   , "Модуль CRM");
+				.add("UNDEF" , static_cast<UINT>(Type::UNDEF) , "Модуль не определен")
+				.add("CPU"   , static_cast<UINT>(Type::CPU)   , "Базовый модуль ЦПУ")
+				.add("AI6a"  , static_cast<UINT>(Type::AI6a)  , "Модуль AI6a")
+				.add("AI6p"  , static_cast<UINT>(Type::AI6p)  , "Модуль AI6p")
+				.add("FI4"   , static_cast<UINT>(Type::FI4)   , "Модуль FI4")
+				.add("DI8DO8", static_cast<UINT>(Type::DI8DO8), "Модуль DI8DO8")
+				.add("DI16"  , static_cast<UINT>(Type::DI16)  , "Модуль DI16")
+				.add("DO16"  , static_cast<UINT>(Type::DO16)  , "Модуль DO16")
+				.add("CRM"   , static_cast<UINT>(Type::CRM)   , "Модуль CRM")
+				.add("AO4"   , static_cast<UINT>(Type::AO4)   , "Модуль AO4");
 	}
 
 	m_ID = id;
@@ -107,7 +109,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 	m_module = *m_moduleSysData;
 	m_status = *m_moduleStatus;
 
-	printModuleInfo();
+//	printModuleInfo();
 
 	return TRITONN_RESULT_OK;
 }

@@ -91,6 +91,7 @@ protected:
 
 public:
 	static rBitsArray m_flagsType;
+	static rBitsArray m_flagsShortType;
 
 protected:
 	Type m_type            = Type::UNDEF;
