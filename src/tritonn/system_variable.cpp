@@ -56,11 +56,11 @@ rSystemVariable::rSystemVariable()
 	m_metrologyVer.m_minor = 0;
 	m_metrologyVer.m_crc   = 0x11223344;
 
-	m_configInfo.Developer[0] = 0;
-	m_configInfo.File[0]      = 0;
-	m_configInfo.Hash[0]      = 0;
-	m_configInfo.Name[0]      = 0;
-	m_configInfo.Version[0]   = 0;
+	m_configInfo.m_developer = "";
+	m_configInfo.m_filename  = "";
+	m_configInfo.m_hash      = "";
+	m_configInfo.m_name      = "";
+	m_configInfo.m_version   = "";
 }
 
 rSystemVariable::~rSystemVariable()
@@ -83,7 +83,7 @@ UDINT rSystemVariable::initVariables(rVariableList& list)
 
 	list.add("system.state.alarm"        ,              rVariable::Flags::RS__, &m_state.m_eventAlarm  , U_DIMLESS, ACCESS_SA, "Количество не квитированных аварий");
 	list.add("system.state.live"         , TYPE::USINT, rVariable::Flags::RS__, &m_state.m_live        , U_DIMLESS, ACCESS_SA, COMMENT::STATUS + m_flagsLive.getInfo(true));
-	list.add("system.state.rebootreason" , TYPE::USINT, rVariable::Flags::RS__, &m_state.StartReason   , U_DIMLESS, ACCESS_SA, "Причина перезагрузки");
+	list.add("system.state.rebootreason" , TYPE::USINT, rVariable::Flags::RS__, &m_state.m_startReason , U_DIMLESS, ACCESS_SA, "Причина перезагрузки");
 	list.add("system.state.simulate"     ,              rVariable::Flags::R___, &m_state.m_isSimulate  , U_DIMLESS, 0        , "Флаг симуляции системы");
 
 	list.add("system.datetime.sec"       , TYPE::USINT, rVariable::Flags::R___, &m_dateTime.tm_sec     , U_DIMLESS, 0        , COMMENT::TIME_CURRENT + COMMENT::SECONDS);
@@ -224,7 +224,11 @@ UDINT rSystemVariable::loadFromXml(const std::string& filename, tinyxml2::XMLEle
 {
 	rLocker locker(m_rwlock, rLocker::TYPELOCK::WRITE); locker.Nop();
 
-	strncpy(m_configInfo.File, filename.c_str(), MAX_CONFIG_NAME);
+	m_configInfo.m_filename  = filename.c_str();
+	m_configInfo.m_developer = XmlUtils::getAttributeString(root, XmlName::DEVELOPMENT, "");
+	m_configInfo.m_name      = XmlUtils::getAttributeString(root, XmlName::NAME       , "");
+	m_configInfo.m_version   = XmlUtils::getAttributeString(root, XmlName::VERSION    , "");
+	m_configInfo.m_hash      = XmlUtils::getAttributeString(root, XmlName::HASH       , "");
 
 	if (xml_setting) {
 		XML_FOR(xml_ethernet, xml_setting, XmlName::ETHERNET) {

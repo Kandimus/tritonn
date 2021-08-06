@@ -35,15 +35,17 @@ public:
 	virtual ~rPacketClient() = default;
 
 	virtual USINT *Recv(USINT *read_buff, UDINT read_size) override;
-	virtual UDINT send(const TTT::DataMsg& message);
-	virtual UDINT send(const TTT::LoginMsg& message);
+	virtual UDINT send(const TT::DataMsg& message);
+	virtual UDINT send(const TT::LoginMsg& message);
 
 	void clearPacket();
+	const std::vector<USINT>& getBuff()   { return m_buff;   }
+	const rPacketHeader&      getHeader() { return m_header; }
 
 protected:
 	void clearHeader();
 
-public:
+protected:
 	std::vector<USINT> m_buff;
 	rPacketHeader      m_header;
 };

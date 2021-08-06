@@ -20,7 +20,7 @@ add_lib(open62541)
 add_lib(simpleargs)
 add_lib(proto)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread protobuf-lite)
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ${PROTOBUF_LIB_NAME})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tritonn")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/tests")

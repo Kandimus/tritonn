@@ -181,7 +181,7 @@ void rDisplayManager::Draw()
 
 		if (TritonnVer.m_build || TritonnVer.m_major || TritonnVer.m_minor || TritonnVer.m_hash) {
 			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%x <%s>", TritonnVer.m_major, TritonnVer.m_minor, TritonnVer.m_build, TritonnVer.m_hash,
-						 TritonnConf.File[0] ? TritonnConf.File : "?");
+						 TritonnConf.m_filename.c_str());
 		}
 		else
 		{
@@ -413,7 +413,7 @@ UDINT rDisplayManager::CallbackLoginAnswe(rPacketLoginAnsweData *data)
 	{
 		LoginOK     = data->Access;
 		TritonnVer  = data->Version;
-		TritonnConf = data->Config;
+//!		TritonnConf = data->Config;
 		RedrawInfo  = true;
 	}
 	else

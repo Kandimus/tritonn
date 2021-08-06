@@ -184,6 +184,7 @@ UDINT rSelector::calculate()
 UDINT rSelector::check(rError& err)
 {
 	//generateIO();
+	return TRITONN_RESULT_OK;
 }
 
 //-------------------------------------------------------------------------------------------------

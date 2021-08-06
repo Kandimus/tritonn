@@ -4,10 +4,8 @@ endif(PROTOBUF_INCLUDE_DIR AND PROTOBUF_LIBRARY)
 
 if(PROTOBUF_FULL_LIB)
 	set(PROTOBUF_LIB_NAME "protobuf")
-	set(PROTOBUF_LIB_NAME_X "protobuf")
 else()
 	set(PROTOBUF_LIB_NAME "protobuf-lite")
-	set(PROTOBUF_LIB_NAME_X "protobuf-lite")
 endif()
 
 if (PROTOBUF_PREFER_STATIC_LIB)

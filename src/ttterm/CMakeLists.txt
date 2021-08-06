@@ -11,7 +11,7 @@ add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "ttterm")
 
 # LIBRARIES
-target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ncurses protobuf-lite)
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ncurses ${PROTOBUF_LIB_NAME})
 
 add_lib(shared)
 add_lib(simpleargs)

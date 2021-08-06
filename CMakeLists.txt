@@ -53,8 +53,6 @@ endif()
 #generate version
 set_project_version("src/tritonn_version.h.in")
 include_directories("${CMAKE_BINARY_DIR}/src")
-#
-add_subdirectory(src)
 
 #
 find_package(Protobuf REQUIRED)
@@ -75,6 +73,9 @@ if (NOT (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm"))
 		return()
 	endif()
 endif()
+
+#
+add_subdirectory(src)
 
 message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")

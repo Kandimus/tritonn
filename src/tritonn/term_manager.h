@@ -24,6 +24,10 @@ struct rPacketLoginData;
 struct rPacketSetData;
 struct rPacketGetData;
 
+namespace TT {
+	class DataMsg;
+}
+
 class rTermManager : public rTCPClass//, public rVariableClass
 {
 	SINGLETON(rTermManager)
@@ -33,11 +37,12 @@ protected:
 	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
 	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 
-	UDINT PacketLogin(rTermClient *client, rPacketLoginData *packet);
-	UDINT PacketSet  (rTermClient *client, rPacketSetData *packet);
-	UDINT PacketGet  (rTermClient *client, rPacketGetData *packet);
+	bool PacketLogin(rTermClient* client);
+	bool PacketData (rTermClient* client);
+	void sendDefaultMessage(rTermClient* client);
 
-private:
+	void addConfInfo(TT::DataMsg& msg);
+	void addVersion(TT::DataMsg& msg);
 };
 
 

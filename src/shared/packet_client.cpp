@@ -28,12 +28,12 @@ rPacketClient::rPacketClient(SOCKET socket, sockaddr_in *addr) : rClientTCP(sock
 	clearPacket();
 }
 
-UDINT rPacketClient::send(const TTT::DataMsg& message)
+UDINT rPacketClient::send(const TT::DataMsg& message)
 {
 	rPacketHeader hdr;
 	std::vector<USINT> arr = serialize_DataMsg(message);
 
-	hdr.m_magic    = TTT::DataMagic;
+	hdr.m_magic    = TT::DataMagic;
 	hdr.m_reserved = 0;
 	hdr.m_flags    = 0;
 	hdr.m_version  = 0x0100;
@@ -47,12 +47,12 @@ UDINT rPacketClient::send(const TTT::DataMsg& message)
 	return 0;
 }
 
-UDINT rPacketClient::send(const TTT::LoginMsg& message)
+UDINT rPacketClient::send(const TT::LoginMsg& message)
 {
 	rPacketHeader hdr;
 	std::vector<USINT> arr = serialize_LoginMsg(message);
 
-	hdr.m_magic    = TTT::LoginMagic;
+	hdr.m_magic    = TT::LoginMagic;
 	hdr.m_reserved = 0;
 	hdr.m_flags    = 0;
 	hdr.m_version  = 0x0100;

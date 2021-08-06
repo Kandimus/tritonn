@@ -30,6 +30,7 @@
 #include "packet_setanswe.h"
 #include "term_client.h"
 #include "term_manager.h"
+#include "stringex.h"
 
 
 
@@ -94,27 +95,23 @@ UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 		return 1;
 	}
 
-	if (tclient->m_header.m_magic != TTT::DataMagic &&
-		tclient->m_header.m_magic != TTT::LoginMagic) {
+	if (tclient->getHeader().m_magic != TT::DataMagic &&
+		tclient->getHeader().m_magic != TT::LoginMagic) {
 
 		unsigned char *ip = (unsigned char *)&client->Addr.sin_addr.s_addr;
 
-		TRACEW(LogMask, "Client [%i.%i.%i.%i] send unknow packet", ip[0], ip[1], ip[2], ip[3]);
+		TRACEW(LogMask, "Client [%i.%i.%i.%i] send unknow packet (magic 0x%X, length %u).",
+			   ip[0], ip[1], ip[2], ip[3], tclient->getHeader().m_magic, tclient->getHeader().m_dataSize);
 
 		return 0; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
 	}
 
-	// Получаем посылку
-//	switch(tclient->Marker)
-//	{
-//		case MARKER_PACKET_LOGIN: result = PacketLogin(tclient, (rPacketLoginData *)data); break;
-//		case MARKER_PACKET_SET:   result = PacketSet  (tclient, (rPacketSetData   *)data); break;
-//		case MARKER_PACKET_GET:   result = PacketGet  (tclient, (rPacketGetData   *)data); break;
+	switch(tclient->getHeader().m_magic) {
+		case TT::LoginMagic: result = PacketLogin(tclient); break;
+		case TT::DataMagic:  result = PacketData (tclient); break;
+		default:             result = 0; break;
+	}
 
-//		default: result = 0; break; // Как мы тут оказались не понятно ))) Но клиента отключим
-//	}
-
-	// Удаляем из буффера приема клиента посылку
 	tclient->clearPacket();
 
 	return result;
@@ -123,140 +120,190 @@ UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rTermManager::PacketLogin(rTermClient *client, rPacketLoginData *packet)
+bool rTermManager::PacketLogin(rTermClient* client)
 {
-	UDINT result = 0;
+	if (!client) {
+		TRACEW(LogMask, "Client is NULL!");
+		return false;
+	}
 
-	if(nullptr != client->User)
-	{
+	//NOTE может не отключать пользователя?
+	if(nullptr != client->User) {
 		TRACEW(LogMask, "Re-authorization. Client disconnected.");
-		return 0;
+		return false;
 	}
 
-	// Проверка на соответствие логина и пароля уровню SA
-	client->User = rUser::LoginHash(packet->UserName, packet->UserPwd, result);
+	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff());
 
-	if(nullptr == client->User)
-	{
+	if (!isCorrectLoginMsg(msg)) {
+		TRACEW(LogMask, "Login message deserialize is fault.");
+		return false;
+	}
+
+	UDINT result;
+	USINT user_hash[MAX_HASH_SIZE] = {0};
+	USINT pwd_hash [MAX_HASH_SIZE] = {0};
+
+	String_ToBuffer(msg.user().c_str(), user_hash, MAX_HASH_SIZE);
+	String_ToBuffer(msg.pwd().c_str() , pwd_hash , MAX_HASH_SIZE);
+
+	client->User = rUser::LoginHash(user_hash, pwd_hash, result);
+	if (!client->User) {
 		TRACEW(LogMask, "Unknow authorization. Cilent disconnected.");
-		return 0;
+		return false;
 	}
 
-	if(LOGIN_OK != result)
-	{
+	if (LOGIN_OK != result) {
 		TRACEW(LogMask, "Fault authorization. Cilent disconnected.");
-		return 0;
-	}
-	else if(client->User->GetAccess() & ACCESS_SA)
-	{
+		return false;
+	} else if(client->User->GetAccess() & ACCESS_SA) {
 		TRACEW(LogMask, "SA is authorized.");
 	}
-	else if(client->User->GetAccess() & ACCESS_ADMIN)
-	{
+	else if(client->User->GetAccess() & ACCESS_ADMIN) {
 		TRACEW(LogMask, "Administrator is authorized.");
-	}
-	else
-	{
+	} else {
 		TRACEW(LogMask, "Authorization failed. Cilent disconnected.");
-		return 0;
+		return false;
 	}
 
-	rPacketLoginAnswe answe;
+	TT::LoginMsg answe;
+	answe.set_result(result);
+	client->send(answe);
 
-	answe.Data.Access  = client->User->GetAccess();
-	rSystemVariable::instance().getVersion   (answe.Data.Version);
-	rSystemVariable::instance().getState     (answe.Data.State);
-	rSystemVariable::instance().getConfigInfo(answe.Data.Config);
+	sendDefaultMessage(client);
 
-	Send(client, &answe.Data, LENGTH_PACKET_LOGINANSWE);
-
-	return 1;
+//	rSystemVariable::instance().getVersion   (answe.Data.Version);
+//	rSystemVariable::instance().getState     (answe.Data.State);
+//	rSystemVariable::instance().getConfigInfo(answe.Data.Config);
+	return true;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rTermManager::PacketSet(rTermClient *client, rPacketSetData *packet)
+bool rTermManager::PacketData(rTermClient* client)
 {
-	if(nullptr == client->User)
-	{
+	if (!client) {
+		TRACEW(LogMask, "Client is NULL!");
+		return false;
+	}
+
+	if (!client->User) {
 		TRACEW(LogMask, "Client is not authorized. Client disconnected.");
-		return 0;
+		return false;
 	}
 
-//	TRACEW(LogMask, "Packet Set %s", packet->Name[0]);
+	TT::DataMsg msg = deserialize_DataMsg(client->getBuff());
 
-	rPacketSetAnswe answe;
-	rSnapshot       ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
-
-	answe.Data.UserData = packet->UserData;
-	answe.Data.Count    = packet->Count;
-
-	for(UDINT ii = 0; ii < packet->Count; ++ii)
-	{
-		string      name   = packet->Name[ii];
-		string      val    = packet->Value[ii];
-
-		ss.add(name, val);
-
-		// Копируем имя переменной из входящего пакета в исходящий
-		memcpy(answe.Data.Name[ii], packet->Name[ii], MAX_VARIABLE_LENGTH);
+	if (!isCorrectDataMsg(msg)) {
+		TRACEW(LogMask, "Data message deserialize is fault.");
+		return false;
 	}
 
-	ss.set();
+	TT::DataMsg answe;
 
-	for(UDINT ii = 0; ii < packet->Count; ++ii)
-	{
-
-		answe.Data.Result[ii] = ss[ii]->getStatus();
-
-		strncpy(answe.Data.Value[ii], ss[ii]->getValueString().c_str(), MAX_VARVALUE_LENGTH);
+	if (msg.has_userdata()) {
+		answe.set_userdata(msg.userdata());
 	}
 
-	Send(client, &answe.Data, LENGTH_PACKET_SETANSWE);
+	if (isWriteDataMsg(msg)) {
+		rSnapshot ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
+
+		for (auto ii = 0; ii < msg.write_size(); ++ii) {
+			auto item       = msg.write(ii);
+			auto answe_item = answe.add_write();
+
+			answe_item->set_name(item.name());
+
+			ss.add(item.name(), item.has_value() ? item.value() : "");
+		}
+
+		ss.set();
+
+		for (auto ii = 0; ii < msg.write_size(); ++ii) {
+			auto answe_item = answe.mutable_write(ii);
+
+			answe_item->set_result(ss[ii]->getStatus());
+
+			answe_item->set_value(ss[ii]->getValueString());
+		}
+	}
+
+	if (isReadDataMsg(msg)) {
+		rSnapshot ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
+
+		for (auto ii = 0; ii < msg.read_size(); ++ii) {
+			auto item       = msg.read(ii);
+			auto answe_item = answe.add_read();
+
+			answe_item->set_name(item.name());
+
+			ss.add(item.name());
+		}
+
+		ss.get();
+
+		for (auto ii = 0; ii < msg.read_size(); ++ii) {
+			auto answe_item = answe.mutable_read(ii);
+
+			answe_item->set_result(ss[ii]->getStatus());
+			answe_item->set_value(ss[ii]->getValueString());
+		}
+	}
+
+	if (isNeedConfigInfoDataMsg(msg)) {
+		addConfInfo(answe);
+	}
+
+	if (isNeedVersionDataMsg(msg)) {
+		addVersion(answe);
+	}
+
+	rState state;
+	rSystemVariable::instance().getState(state);
+
+	answe.mutable_state()->set_eventalarm(state.m_eventAlarm);
+	answe.mutable_state()->set_issimulate(state.m_isSimulate);
+	answe.mutable_state()->set_live(state.m_live);
+	answe.mutable_state()->set_startreason(state.m_startReason);
+
+	client->send(answe);
 
 	return 1;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rTermManager::PacketGet(rTermClient *client, rPacketGetData *packet)
+void rTermManager::sendDefaultMessage(rTermClient* client)
 {
-	if(nullptr == client->User)
-	{
-		TRACEW(LogMask, "Client is not authorized. Client disconnected.");
-		return 0;
-	}
+	TT::DataMsg msg;
 
-	//TRACEW(LogMask, "Packet Get.");
+	addConfInfo(msg);
+	addVersion(msg);
 
-	rSnapshot       ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
-	rPacketGetAnswe answe;
-
-	answe.Data.UserData = packet->UserData;
-	answe.Data.Count    = packet->Count;
-
-	for(UDINT ii = 0; ii < packet->Count; ++ii)
-	{
-		memcpy(answe.Data.Name[ii], packet->Name[ii], MAX_VARIABLE_LENGTH);
-
-		ss.add(packet->Name[ii]);
-	}
-
-	ss.get();
-
-	for(UDINT ii = 0; ii < packet->Count; ++ii)
-	{
-		strncpy(answe.Data.Value[ii], ss[ii]->getValueString().c_str(), MAX_VARVALUE_LENGTH);
-		answe.Data.Result[ii] = ss[ii]->getStatus();
-	}
-
-	Send(client, &answe.Data, LENGTH_PACKET_GETANSWE);
-
-	return 1;
+	client->send(msg);
 }
 
+void rTermManager::addConfInfo(TT::DataMsg& msg)
+{
+	rConfigInfo ci;
 
+	rSystemVariable::instance().getConfigInfo(ci);
 
+	msg.mutable_confinfo()->set_developer(ci.m_developer);
+	msg.mutable_confinfo()->set_filename(ci.m_filename);
+	msg.mutable_confinfo()->set_hash(ci.m_hash);
+	msg.mutable_confinfo()->set_name(ci.m_name);
+	msg.mutable_confinfo()->set_version(ci.m_version);
+}
+
+void rTermManager::addVersion(TT::DataMsg& msg)
+{
+	rVersion ver;
+
+	rSystemVariable::instance().getVersion(ver);
+
+	msg.mutable_version()->set_build(ver.m_build);
+	msg.mutable_version()->set_hash(ver.m_hash);
+	msg.mutable_version()->set_major(ver.m_major);
+	msg.mutable_version()->set_minor(ver.m_minor);
+}
 

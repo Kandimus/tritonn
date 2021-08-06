@@ -37,19 +37,13 @@ struct rMetrologyVer
 
 
 // Информация об загруженной конфигурации
-// Структура на массивах для того что бы ее можно было спокойно положить в rPacket_*
 struct rConfigInfo
 {
-	char File[MAX_CONFIG_NAME];      // Путь до конфигурации (файл)
-	char Name[MAX_CONFIG_NAME];      // Имя конфигурации. Срока "Наименование"
-	char Version[MAX_CFGVER_SIZE];   // Версия кофигурации //NOTE Может сделать версию просто числом?
-	char Developer[MAX_CONFIG_NAME]; // Срока "Разработчик"
-	char Hash[MAX_HASH_SIZE];        // Контрольная сумма конфигурации
-//	std::string m_filename; //TODO для protobuf нужно перейти на строки
-//	std::string m_name;
-//	std::string m_version;
-//	std::string m_developer;
-//	std::string m_hash;
+	std::string m_filename;
+	std::string m_name;
+	std::string m_version;
+	std::string m_developer;
+	std::string m_hash;
 };
 
 
@@ -61,7 +55,7 @@ struct rState
 //	UDINT HaltReason;     // Код ошибки перехода в Halt //TODO Нужно ли это
 //	USINT ColdRestart;    // Команда на "холодную" перезагрузку
 //	USINT WarmRestart;    // Команда на "горячую" перезагрузку
-	USINT StartReason;    // Причина последней перезагрузки
+	USINT m_startReason;  // Причина последней перезагрузки
 	USINT m_isSimulate;
 };
 

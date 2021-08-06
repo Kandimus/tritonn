@@ -129,10 +129,10 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 		return 0;
 	}
 
-	if (client->m_header.m_magic != TTT::DataMagic &&
-		client->m_header.m_magic != TTT::LoginMagic) {
+	if (client->getHeader().m_magic != TT::DataMagic &&
+		client->getHeader().m_magic != TT::LoginMagic) {
 
-		TRACEW(LogMask, "Server send unknow packet. Marker %#X, length %u", client->m_header.m_magic, client->m_header.m_dataSize);
+		TRACEW(LogMask, "Server send unknow packet (magic 0x%X, length %u).", client->getHeader().m_magic, client->getHeader().m_dataSize);
 
 		return 2; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
 	}

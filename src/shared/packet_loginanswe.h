@@ -30,7 +30,7 @@ struct rPacketLoginAnsweData
 	USINT       Access;      //
 	rVersion    Version;     //
 	rState      State;
-	rConfigInfo Config;
+//	rConfigInfo Config;
 };
 
 class rPacketLoginAnswe

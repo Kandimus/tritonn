@@ -19,8 +19,6 @@ add_lib(xml)
 add_lib(simpleargs)
 add_lib(open62541)
 
-message(STATUS "XXXXXXXXXXXXXXXXXx ${PROTOBUF_LIB_NAME}")
-
 target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread protobuf-lite)
 
 # INSTALL
