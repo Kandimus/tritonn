@@ -124,9 +124,13 @@ K19_FIO_OutType rModuleFI4::getOutType()
 }
 
 
-rIOBaseChannel* rModuleFI4::getChannel(USINT num)
+rIOBaseChannel* rModuleFI4::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_COUNT) {
+		return nullptr;
+	}
+
+	if (m_channel[num]->getType() != type) {
 		return nullptr;
 	}
 
@@ -140,7 +144,7 @@ UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, b
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	std::string p = prefix + m_alias + ".";
+	std::string p = m_alias + ".";
 	list.add(p + "out", TYPE::USINT, rVariable::Flags::____, &m_outtype, U_DIMLESS, 0, "Привязка выходной частоты:<br>" + m_flagsOutType.getInfo(true));
 
 	for (auto channel : m_listChannel) {

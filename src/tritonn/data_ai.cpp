@@ -155,7 +155,7 @@ UDINT rAI::calculate()
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
 	if (isSetModule()) {
-		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
+		auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::AI, m_channel);
 		auto channel     = static_cast<rIOAIChannel*>(channel_ptr);
 
 		if (channel == nullptr) {

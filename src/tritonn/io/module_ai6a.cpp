@@ -100,9 +100,13 @@ UDINT rModuleAI6a::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
-rIOBaseChannel* rModuleAI6a::getChannel(USINT num)
+rIOBaseChannel* rModuleAI6a::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_COUNT) {
+		return nullptr;
+	}
+
+	if (m_channel[num]->getType() != type) {
 		return nullptr;
 	}
 
@@ -124,7 +128,7 @@ UDINT rModuleAI6a::generateVars(const std::string& prefix, rVariableList& list, 
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
-	std::string p = prefix + m_alias + ".";
+	std::string p = m_alias + ".";
 	list.add(p + "temperature", rVariable::Flags::R___, &m_data.Read.Temp, U_C, 0, "Температура модуля в гр.С.");
 
 	for (auto channel : m_channel) {

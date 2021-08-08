@@ -23,6 +23,7 @@
 #include "../variable_class.h"
 #include "thread_class.h"
 #include "basemodule.h"
+#include "basechannel.h"
 
 class rDataConfig;
 class rIOBaseChannel;
@@ -45,8 +46,8 @@ public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
 
-	rIOBaseChannel* getChannel(USINT module, USINT channel);
-	rIOBaseModule*  getModule(USINT module);
+	rIOBaseChannel* getChannel(USINT module, rIOBaseChannel::Type type, USINT channel);
+	rIOBaseModule*  getModule(USINT module, rIOBaseModule::Type type);
 	std::string getModuleAlias(USINT module) const;
 
 	bool checkListOfModules() const;

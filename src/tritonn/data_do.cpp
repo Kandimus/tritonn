@@ -95,7 +95,6 @@ UDINT rDO::calculate()
 
 	// Если аналоговый сигнал выключен, то выходим
 	if (m_setup.Value & Setup::OFF) {
-		m_physical        = 0;
 		m_present.m_value = 0;
 		m_mode            = Mode::PHIS;
 		m_status          = Status::UNDEF;
@@ -111,8 +110,8 @@ UDINT rDO::calculate()
 
 	if (m_mode == Mode::PHIS) {
 		if (isSetModule()) {
-			auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-			auto channel     = static_cast<rIODOChannel*>(channel_ptr);
+			auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::DO, m_channel);
+			auto channel     = dynamic_cast<rIODOChannel*>(channel_ptr);
 
 			if (channel == nullptr) {
 				rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
@@ -130,15 +129,18 @@ UDINT rDO::calculate()
 //				m_fault  = true;
 //				m_status = Status::FAULT; // выставляем флаг ошибки
 //			} else {
-				if (m_oldvalue != m_present.m_value) {
-					auto module = rIOManager::instance().getModule(m_module);
+//				if (m_oldvalue != m_present.m_value) {
+					std::string varalias = rIOManager::instance().getModuleAlias(m_module) + String_format(".ch_%u.value", channel->m_index);
 					rSnapshot ss(rDataManager::instance().getVariableClass());
 
-					m_physical = static_cast<USINT>(m_present.m_value);
-					ss.add(module->getAlias() + String_format(".ch_%u.value", channel->m_index), m_physical);
-					ss.set();
+					USINT physical = static_cast<USINT>(m_present.m_value);
+					ss.add(varalias, physical);
+					ss.set(); Тут висит походу в мьютексе, нужно развязывать мьютексы в датаменеджере. отдельно его, отдельно на переменные
+							или делать особые функции, что не хочется.
+
+					printf("%s set %i\n", varalias.c_str(), physical);
 //				}
-			}
+//			}
 
 			if (channel_ptr) {
 				delete channel_ptr;
@@ -237,7 +239,7 @@ UDINT rDO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 
 	UDINT fault = 0;
 
-	m_physical = XmlUtils::getTextUSINT(element->FirstChildElement(XmlName::VALUE), 0, fault);
+	m_present.m_value = XmlUtils::getTextUSINT(element->FirstChildElement(XmlName::VALUE), 0, fault);
 	fault      = 0;
 
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));

@@ -2,23 +2,25 @@
 <tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="00112233445566778899aabbccddeeff00112233"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
-		<module ver="1.0" name="cpu" type="cpu" />
-		<module ver="1.0" name="ai6_1" type="ai6a">
+		<module ver="1.0" name="cpu" type="cpu" />    <!-- 0 -->
+		<module ver="1.0" name="ai6_1" type="ai6a">   <!-- 1 -->
 			<channel number="0" setup="AVERAGE" />
 		</module>
-		<module name="di8do8_1" type="di8do8">
+		<module name="di8do8_1" type="di8do8">        <!-- 2 -->
 			<channel number="0" setup=""/>
 			<channel number="1" setup="INVERSED"/>
 			<channel number="8" setup=""/>
 			<channel number="9" setup="INVERSED"/>
 		</module>
-		<module name="fi4_1" type="fi4">
+		<module name="fi4_1" type="fi4">              <!-- 3 -->
 		</module>
-		<module name="crm_1" type="crm">
+		<module name="crm_1" type="crm">              <!-- 4 -->
 		</module>
-		<module name="ai6_2" type="ai6a">
+		<module name="ai6_2" type="ai6a">             <!-- 5 -->
 			<channel number="0" setup="AVERAGE" />
 		</module>
+		<module name="di16_1" type="di16"/>           <!-- 6 -->
+		<module name="do16_1" type="do16"/>           <!-- 7 -->
 	</hardware>
 	<config>
 		<settings>
@@ -53,6 +55,13 @@
 					</limit>
 				</limits>
 			</ai>
+			<do name="test_do" mode="PHIS" setup="" description="4001">
+				<io_link module="7" channel="0"/>
+			</do>
+			<di name="test_di" mode="PHIS" setup="" description="4001">
+				<io_link module="6" channel="0"/>
+				<keypad>0</keypad>
+			</di>
 		</io>
 		<stations>
 			<station name="SIKN_123" product="PETROLEUM" description="4100">
@@ -870,6 +879,8 @@
 		<strings>
 			<lang value="ru">
 			<str id="4000">Температура глобальная</str>
+			<str id="4001">Тестовый дискреный выход</str>
+			<str id="4002">Тестовый дискреный вход</str>
 			<str id="4100">СИКН 1</str>
 			<str id="4101">СИКН 1. Температура входа ТПУ</str>
 			<str id="4102">СИКН 1. Температура выхода ТПУ</str>

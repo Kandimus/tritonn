@@ -148,6 +148,7 @@ rOPCUAManager::rOPCUAManager(bool createopcua)
 	OPCServer = nullptr;
 
 	memset(&Logins, 0, sizeof(Logins));
+	memset(&OPCServerConf, 0, sizeof(OPCServerConf));
 	LoginsCount    = 0;
 	LoginAnonymous = 0;
 

@@ -84,9 +84,13 @@ UDINT rModuleDI16::processing(USINT issim)
 }
 
 
-rIOBaseChannel* rModuleDI16::getChannel(USINT num)
+rIOBaseChannel* rModuleDI16::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_COUNT) {
+		return nullptr;
+	}
+
+	if (m_channel[num]->getType() != type) {
 		return nullptr;
 	}
 

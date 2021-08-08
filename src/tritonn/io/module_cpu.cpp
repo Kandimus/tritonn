@@ -62,13 +62,3 @@ UDINT rModuleCPU::generateMarkDown(rGeneratorMD& md)
 
 	return TRITONN_RESULT_OK;
 }
-
-rIOBaseChannel* rModuleCPU::getChannel(USINT channel)
-{
-	return nullptr;
-}
-
-rIOBaseModule* rModuleCPU::getModulePtr()
-{
-	return nullptr;
-}

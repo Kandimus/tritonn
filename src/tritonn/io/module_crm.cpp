@@ -102,19 +102,19 @@ UDINT rModuleCRM::processing(USINT issim)
 }
 
 
-rIOBaseChannel* rModuleCRM::getChannel(USINT num)
+rIOBaseChannel* rModuleCRM::getChannel(USINT num, rIOBaseChannel::Type type)
 {
-	if (num >= CHANNEL_DI_COUNT) {
+	if (num >= CHANNEL_DI_COUNT + 1) {
 		return nullptr;
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
 
 	if (num < CHANNEL_DI_COUNT) {
-		return new rIODIChannel(*m_channelDI[num]);
+		return (m_channelDI[num]->getType() == type) ? new rIODIChannel(*m_channelDI[num]) : nullptr;
 	}
 
-	return new rIOFIChannel(*m_channelFI);
+	return (m_channelFI->getType() == type) ? new rIOFIChannel(*m_channelFI) : nullptr;
 }
 
 LREAL rModuleCRM::getFreq() const

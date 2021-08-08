@@ -321,11 +321,11 @@ ttt.start(2000);
 			static int aaa = 1;
 			rSnapshot ss(getVariableClass());
 
-			ss.add("hardware.di8do8_1.ch_08.value", aaa);
+			ss.add("io.test_do.present.value", aaa);
 			ss.set();
 
-			if (ss("hardware.di8do8_1.ch_08.value")) {
-				TRACEI(LOG::DATAMGR, "hardware.di8do8_1.ch_08.value = %i", aaa);
+			if (ss("io.test_do.present.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_do.present.value = %i", aaa);
 			}
 			aaa = !aaa;
 			ttt.restart();

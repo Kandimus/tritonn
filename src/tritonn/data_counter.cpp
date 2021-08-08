@@ -105,8 +105,8 @@ UDINT rCounter::calculate()
 	m_fault = false;
 
 	if(isSetModule()) {
-		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-		auto channel     = static_cast<rIOFIChannel*>(channel_ptr);
+		auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::FI, m_channel);
+		auto channel     = dynamic_cast<rIOFIChannel*>(channel_ptr);
 
 		if (channel == nullptr) {
 			rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);

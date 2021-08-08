@@ -115,8 +115,8 @@ UDINT rDI::calculate()
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
 	if (isSetModule()) {
-		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-		auto channel     = static_cast<rIODIChannel*>(channel_ptr);
+		auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::DI, m_channel);
+		auto channel     = dynamic_cast<rIODIChannel*>(channel_ptr);
 
 		if (channel == nullptr) {
 			rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);

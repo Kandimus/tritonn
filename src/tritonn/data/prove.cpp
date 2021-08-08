@@ -165,7 +165,7 @@ UDINT rProve::calculate()
 	}
 
 	if (isSetModule()) {
-		auto module_ptr = rIOManager::instance().getModule(m_module);
+		auto module_ptr = rIOManager::instance().getModule(m_module, rIOBaseModule::Type::CRM);
 		auto module     = dynamic_cast<rModuleCRM*>(module_ptr);
 
 		if (!module) {

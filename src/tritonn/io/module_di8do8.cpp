@@ -101,6 +101,7 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 		}
 
 		channel->processing();
+//		if (idx == 0) TRACEI(LOG::CANIO, "DI8DO8 set di[%i] is %i (ph %i)", channel->m_index, channel->m_value, channel->m_phValue);
 	}
 
 	for (auto channel : m_channelDO) {
@@ -112,26 +113,17 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 			channel->simulate();
 		} else {
 			m_data.Write.DO[idx] = channel->m_phValue ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
-			TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i (%i)", channel->m_index, channel->m_phValue, channel->m_value);
+//			if (idx == 0) TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i (ph %i)", channel->m_index, channel->m_phValue, channel->m_value);
 		}
 	}
 
 	m_data.Write.DIFilter = 0;
 
-//	static int ttt = 0;
-//	static int aaa = 1;
-//	if (++ttt > 20) {
-//		TRACEI(LOG::CANIO, "DI8DO8 set do[0] is %i, di[0] is %i", aaa, m_data.Read.DI[0]);
-//		m_data.Write.DO[0] = aaa ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
-//		aaa = !aaa;
-//		ttt = 0;
-//	}
-
 	return TRITONN_RESULT_OK;
 }
 
 
-rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num)
+rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
 		return nullptr;
@@ -140,10 +132,12 @@ rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num)
 	rLocker lock(m_rwlock); lock.Nop();
 
 	if (num < CHANNEL_DI_COUNT) {
-		return new rIODIChannel(*m_channelDI[num]);
+		return (m_channelDI[num]->getType() == type) ? new rIODIChannel(*m_channelDI[num]) : nullptr;
 	}
 
-	return new rIODOChannel(*m_channelDO[num - CHANNEL_DI_COUNT]);
+	USINT num_do = num - CHANNEL_DI_COUNT;
+
+	return (m_channelDO[num_do]->getType() == type) ? new rIODOChannel(*m_channelDO[num_do]) : nullptr;
 }
 
 UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

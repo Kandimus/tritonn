@@ -86,9 +86,13 @@ UDINT rModuleAO4::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
-rIOBaseChannel* rModuleAO4::getChannel(USINT num)
+rIOBaseChannel* rModuleAO4::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_COUNT) {
+		return nullptr;
+	}
+
+	if (m_channel[num]->getType() != type) {
 		return nullptr;
 	}
 

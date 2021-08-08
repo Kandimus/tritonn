@@ -38,8 +38,8 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
-	virtual rIOBaseChannel* getChannel(USINT channel);
-	virtual rIOBaseModule*  getModulePtr();
+	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override { return nullptr; }
+	virtual rIOBaseModule*  getModulePtr() override { return nullptr; }
 
 public:
 

@@ -81,7 +81,7 @@ public:
 	// Output
 
 	// Внутренние переменные
-	USINT    m_physical;              // Текущее физическое значение
+//	USINT    m_physical;              // Текущее физическое значение
 	Mode     m_mode;                  // Режим работы
 	rCmpUINT m_setup;                 // Настройка сигнала
 	Status   m_status;                //
