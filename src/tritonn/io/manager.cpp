@@ -80,11 +80,24 @@ rIOBaseModule* rIOManager::getModule(USINT module, rIOBaseModule::Type type)
 		return nullptr;
 	}
 
-	if (m_modules[module]->getType() != type) {
+	if (m_modules[module]->getType() != type && type != rIOBaseModule::Type::UNDEF) {
 		return nullptr;
 	}
 
 	return m_modules[module]->getModulePtr();
+}
+
+rIOBaseInterface* rIOManager::getModuleInterface(USINT module, rIOBaseModule::Type type)
+{
+	if (module >= m_modules.size()) {
+		return nullptr;
+	}
+
+	if (m_modules[module]->getType() != type && type != rIOBaseModule::Type::UNDEF) {
+		return nullptr;
+	}
+
+	return m_modules[module]->getModuleInterface();
 }
 
 std::string rIOManager::getModuleAlias(USINT module) const

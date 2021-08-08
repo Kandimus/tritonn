@@ -22,6 +22,7 @@
 #include "rpmsg_connector.h"
 #include "bits_array.h"
 
+class rIOBaseInterface;
 class rDataConfig;
 class rVariableList;
 class rError;
@@ -68,8 +69,10 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) = 0;
-	virtual rIOBaseModule*  getModulePtr() = 0;
+	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) = 0; //TODO delete
+	virtual rIOBaseModule*  getModulePtr() = 0; // TODO delete
+	virtual rIOBaseInterface* getModuleInterface() { return nullptr; } //TODO = 0;
+
 	virtual std::string getAlias() const { return m_alias; }
 	virtual std::string getName()  const { return m_name;  }
 	virtual STRID       getDescr() const { return m_descr; }

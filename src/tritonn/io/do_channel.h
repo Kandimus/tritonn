@@ -44,7 +44,7 @@ public:
 	rIODOChannel(USINT index, const std::string& comment = "");
 	virtual ~rIODOChannel() = default;
 
-	USINT getValue() { return m_value; }
+	void setValue(bool value);
 
 public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;

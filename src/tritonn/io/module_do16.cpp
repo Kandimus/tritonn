@@ -80,6 +80,40 @@ UDINT rModuleDO16::processing(USINT issim)
 }
 
 
+UDINT rModuleDO16::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	if (num >= CHANNEL_COUNT) {
+		fault = DATACFGERR_REALTIME_CHANNELLINK;
+		return false;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	if (m_channel[num]->m_type != type) {
+		fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+		return false;
+	}
+
+	return m_channel[num]->m_value;
+}
+
+
+UDINT rModuleDO16::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	if (num >= CHANNEL_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	if (m_channel[num]->m_type != type) {
+		return DATACFGERR_REALTIME_WRONGCHANNEL;
+	}
+
+	m_channel[num]->m_value = (value != true);
+	return TRITONN_RESULT_OK;
+}
+
 rIOBaseChannel* rModuleDO16::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_COUNT) {

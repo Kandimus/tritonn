@@ -62,6 +62,11 @@ UDINT rIODOChannel::processing()
 	return TRITONN_RESULT_OK;
 }
 
+void rIODOChannel::setValue(bool value)
+{
+	m_value = value;
+}
+
 UDINT rIODOChannel::simulate()
 {
 	++m_pullingCount;

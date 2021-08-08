@@ -1,34 +1,30 @@
-//=================================================================================================
-//===
-//=== data_di.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс дискретного входного сигнала (DI)
-//===
-//=================================================================================================
+/*
+ *
+ * data/do.h
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
-#include "data_do.h"
+#include "do.h"
 #include <string.h>
 #include "tinyxml2.h"
-#include "event/eid.h"
-#include "event/manager.h"
-#include "text_id.h"
-#include "data_manager.h"
-#include "data_snapshot.h"
-#include "data_config.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "io/manager.h"
-#include "io/do_channel.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../text_id.h"
+#include "../data_manager.h"
+#include "../data_snapshot.h"
+#include "../data_config.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../io/manager.h"
+#include "../io/baseinterface.h"
 #include "xml_util.h"
-#include "generator_md.h"
-#include "comment_defines.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
 
 const UDINT DO_LE_KEYPAD_ON  = 0x00000001;
 const UDINT DO_LE_KEYPAD_OFF = 0x00000002;
@@ -110,13 +106,21 @@ UDINT rDO::calculate()
 
 	if (m_mode == Mode::PHIS) {
 		if (isSetModule()) {
-			auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::DO, m_channel);
-			auto channel     = dynamic_cast<rIODOChannel*>(channel_ptr);
+//			auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::DO, m_channel);
+//			auto channel     = dynamic_cast<rIODOChannel*>(channel_ptr);
+			auto interface = rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF);
 
-			if (channel == nullptr) {
+			if (!interface) {
 				rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
 				rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 				return DATACFGERR_REALTIME_MODULELINK;
+			}
+
+			UDINT fault = interface->setValue(m_channel, rIOBaseChannel::Type::DO, static_cast<UDINT>(m_present.m_value));
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
 			}
 
 //			rEvent event_s;
@@ -130,21 +134,21 @@ UDINT rDO::calculate()
 //				m_status = Status::FAULT; // выставляем флаг ошибки
 //			} else {
 //				if (m_oldvalue != m_present.m_value) {
-					std::string varalias = rIOManager::instance().getModuleAlias(m_module) + String_format(".ch_%u.value", channel->m_index);
-					rSnapshot ss(rDataManager::instance().getVariableClass());
+//					std::string varalias = rIOManager::instance().getModuleAlias(m_module) + String_format(".ch_%u.value", channel->m_index);
+//					rSnapshot ss(rDataManager::instance().getVariableClass());
 
-					USINT physical = static_cast<USINT>(m_present.m_value);
-					ss.add(varalias, physical);
-					ss.set(); Тут висит походу в мьютексе, нужно развязывать мьютексы в датаменеджере. отдельно его, отдельно на переменные
-							или делать особые функции, что не хочется.
+//					USINT physical = static_cast<USINT>(m_present.m_value);
+//					ss.add(varalias, physical);
+//					ss.set(); Тут висит походу в мьютексе, нужно развязывать мьютексы в датаменеджере. отдельно его, отдельно на переменные
+//							или делать особые функции, что не хочется.
 
-					printf("%s set %i\n", varalias.c_str(), physical);
+//					printf("%s set %i\n", varalias.c_str(), physical);
 //				}
 //			}
 
-			if (channel_ptr) {
-				delete channel_ptr;
-			}
+//			if (channel_ptr) {
+//				delete channel_ptr;
+//			}
 		}
 	}
 
