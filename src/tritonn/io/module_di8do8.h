@@ -19,6 +19,7 @@
 #include "def.h"
 #include "basemodule.h"
 #include "basechannel.h"
+#include "baseinterface.h"
 #include "di_channel.h"
 #include "do_channel.h"
 
@@ -27,7 +28,7 @@ class rIOManager;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rModuleDI8DO8 : public rIOBaseModule
+class rModuleDI8DO8 : public rIOBaseModule, public rIOBaseInterface
 {
 friend class rIOManager;
 
@@ -42,15 +43,22 @@ public:
 
 	static std::string getRTTI() { return "di8do8"; }
 	
-	// Виртуальные функции от rBaseModule
+// rBaseModule
 public:
 	virtual std::string getModuleType() override { return rModuleDI8DO8::getRTTI(); }
 	virtual UDINT processing(USINT issim) override;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual rIOBaseInterface* getModuleInterface() override { return dynamic_cast<rIOBaseInterface*>(this); }
+
 	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override;
 	virtual rIOBaseModule*  getModulePtr() override { return new rModuleDI8DO8(this); }
+
+// IOBaseInterface
+public:
+	virtual UDINT getValue(USINT channel, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UDINT setValue(USINT channel, rIOBaseChannel::Type type, UDINT  value) override;
 
 public:
 	USINT getValue(USINT id);

@@ -433,14 +433,14 @@
 						<keypad>0</keypad>
 					</di>
 					<di name="valve_closed" mode="PHIS" setup="" description="4105">
-						<io_link module="2" channel="0"/>
+						<io_link module="2" channel="1"/>
 						<keypad>0</keypad>
 					</di>
 					<do name="valve_open" mode="PHIS" setup="" description="4106">
 						<io_link module="2" channel="8"/>
 					</do>
 					<do name="valve_close" mode="PHIS" setup="" description="4107">
-						<io_link module="2" channel="8"/>
+						<io_link module="2" channel="9"/>
 						<value>1</value>
 					</do>
 				</io>

@@ -1,26 +1,21 @@
-﻿//=================================================================================================
-//===
-//=== data_di.h
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс дискретного входного сигнала (DI)
-//===
-//=================================================================================================
+﻿/*
+ *
+ * data/do.h
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
-#include "data_source.h"
-#include "data_module.h"
+#include "../data_source.h"
+#include "../data_module.h"
+#include "../compared_values.h"
+#include "../data_link.h"
 #include "bits_array.h"
-#include "compared_values.h"
-#include "data_link.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

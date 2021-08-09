@@ -1,6 +1,6 @@
 /*
  *
- * data/do.h
+ * data/do.cpp
  *
  * Copyright (c) 2019-2021 by RangeSoft.
  * All rights reserved.
@@ -101,13 +101,11 @@ UDINT rDO::calculate()
 	// Обработка ввода пользователя
 	m_setup.Compare(reinitEvent(EID_DO_NEW_SETUP));
 	// Сообщения об изменении Mode формируем в ручную
-	
+
 	m_status = Status::NORMAL;
 
 	if (m_mode == Mode::PHIS) {
 		if (isSetModule()) {
-//			auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::DO, m_channel);
-//			auto channel     = dynamic_cast<rIODOChannel*>(channel_ptr);
 			auto interface = rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF);
 
 			if (!interface) {
@@ -128,27 +126,6 @@ UDINT rDO::calculate()
 //			checkExpr(channel->m_state, DO_LE_CODE_FAULT,
 //					  event_f.reinit(EID_DO_CH_FAULT) << m_ID << m_descr,
 //					  event_s.reinit(EID_DO_CH_OK)    << m_ID << m_descr);
-
-//			if (channel->m_state) {
-//				m_fault  = true;
-//				m_status = Status::FAULT; // выставляем флаг ошибки
-//			} else {
-//				if (m_oldvalue != m_present.m_value) {
-//					std::string varalias = rIOManager::instance().getModuleAlias(m_module) + String_format(".ch_%u.value", channel->m_index);
-//					rSnapshot ss(rDataManager::instance().getVariableClass());
-
-//					USINT physical = static_cast<USINT>(m_present.m_value);
-//					ss.add(varalias, physical);
-//					ss.set(); Тут висит походу в мьютексе, нужно развязывать мьютексы в датаменеджере. отдельно его, отдельно на переменные
-//							или делать особые функции, что не хочется.
-
-//					printf("%s set %i\n", varalias.c_str(), physical);
-//				}
-//			}
-
-//			if (channel_ptr) {
-//				delete channel_ptr;
-//			}
 		}
 	}
 

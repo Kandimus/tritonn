@@ -140,6 +140,48 @@ rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num, rIOBaseChannel::Type type)
 	return (m_channelDO[num_do]->getType() == type) ? new rIODOChannel(*m_channelDO[num_do]) : nullptr;
 }
 
+UDINT rModuleDI8DO8::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
+		fault = DATACFGERR_REALTIME_CHANNELLINK;
+		return false;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	if (num < CHANNEL_DI_COUNT) {
+		if (m_channelDI[num]->m_type != type) {
+			fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+			return false;
+		}
+		return m_channelDI[num]->m_value;
+	}
+
+	num -= CHANNEL_DI_COUNT;
+	if (m_channelDO[num]->m_type != type) {
+		fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+		return false;
+	}
+	return m_channelDO[num]->m_value;
+}
+
+UDINT rModuleDI8DO8::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT || num < CHANNEL_DI_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	num -= CHANNEL_DI_COUNT;
+	if (m_channelDO[num]->m_type != type) {
+		return DATACFGERR_REALTIME_WRONGCHANNEL;
+	}
+
+	m_channelDO[num]->m_value = (value != 0);
+	return TRITONN_RESULT_OK;
+}
+
 UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);

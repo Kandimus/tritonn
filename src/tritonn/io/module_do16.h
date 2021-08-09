@@ -51,8 +51,8 @@ public:
 
 // IOBaseInterface
 public:
-	virtual UDINT getValue(USINT channel, rIOBaseChannel::Type type, UDINT& fault) override;
-	virtual UDINT setValue(USINT channel, rIOBaseChannel::Type type, UDINT  value) override;
+	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
 
 private:
 	std::vector<rIODOChannel*> m_channel;

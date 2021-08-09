@@ -77,7 +77,9 @@ void rDataManager::DoHalt(HaltReason hr, UDINT reason)
 	Halt.Set(true);
 	m_live.Set(Live::HALT);
 
-	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, static_cast<UDINT>(hr) | reason);
+	UDINT code = static_cast<UDINT>(hr) | reason;
+	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, code);
+	TRACEP(LOG::DATAMGR, "Critical HALT %u (reason 0x%08X, error %u)", code, static_cast<UDINT>(hr), reason);
 
 	simpleFileSave(FILE_RESTART, "cold");
 }
@@ -262,7 +264,6 @@ ttt.start(2000);
 
 	while(true)
 	{
-		// Обработка команд нити
 		thread_status = rThreadClass::Proccesing();
 		if (!THREAD_IS_WORK(thread_status)) {
 			return thread_status;
@@ -289,28 +290,33 @@ ttt.start(2000);
 
 			// Основной расчет всех объектов
 			for (auto item : m_listSource) {
+				if (m_live.Get() != Live::RUNNING) break;
 				item->calculate();
 			}
 
 			// Пердвычисления для отчетов
 			for (auto item : m_listReport) {
+				if (m_live.Get() != Live::RUNNING) break;
 				item->preCalculate();
 			}
 
 			// Основной расчет отчетов
 			for (auto item : m_listReport) {
+				if (m_live.Get() != Live::RUNNING) break;
 				item->calculate();
 			}
 
-			if (m_doSaveVars.Get()) {
-				saveDataVariables();
-			}
+			if (m_live.Get() == Live::RUNNING) {
+				if (m_doSaveVars.Get()) {
+					saveDataVariables();
+				}
 
-			if (m_timerTotal.isFinished()) {
-				#ifndef TRITONN_TEST
-				saveDataTotals();
-				#endif
-				m_timerTotal.restart();
+				if (m_timerTotal.isFinished()) {
+					#ifndef TRITONN_TEST
+					saveDataTotals();
+					#endif
+					m_timerTotal.restart();
+				}
 			}
 		}
 

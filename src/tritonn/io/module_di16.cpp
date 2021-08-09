@@ -99,6 +99,33 @@ rIOBaseChannel* rModuleDI16::getChannel(USINT num, rIOBaseChannel::Type type)
 	return new rIODIChannel(*m_channel[num]);
 }
 
+UDINT rModuleDI16::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	if (num >= CHANNEL_COUNT) {
+		fault = DATACFGERR_REALTIME_CHANNELLINK;
+		return false;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	if (m_channel[num]->m_type != type) {
+		fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+		return false;
+	}
+
+	return m_channel[num]->m_value;
+}
+
+
+UDINT rModuleDI16::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	UNUSED(num);
+	UNUSED(type);
+	UNUSED(value);
+
+	return DATACFGERR_REALTIME_WRONGCHANNEL;
+}
+
 UDINT rModuleDI16::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);

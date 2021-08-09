@@ -14,6 +14,7 @@
 #include "system_manager.h"
 #include "simplefile.h"
 #include "datetime.h"
+#include "bashcolor.h"
 
 rLogManager::rLogManager()
 {
@@ -143,7 +144,11 @@ bool rLogManager::check(UDINT mask)
 void rLogManager::outTerminal(UDINT mask, const std::string& text)
 {
 	if (m_terminal.Get() || (mask & (LOG::LOGMGR | LOG::P))) {
+#ifdef WIN32
 		fprintf(stderr, "%s", text.c_str());
+#else
+		fprintf(stderr, "%s", rBashColor::setColor(rBashColor::Color::RED, rBashColor::Color::UNUSED, rBashColor::Style::BOLD, text, mask & LOG::P, true).c_str());
+#endif
 	}
 }
 

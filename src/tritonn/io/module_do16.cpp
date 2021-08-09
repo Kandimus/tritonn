@@ -110,7 +110,7 @@ UDINT rModuleDO16::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
 		return DATACFGERR_REALTIME_WRONGCHANNEL;
 	}
 
-	m_channel[num]->m_value = (value != true);
+	m_channel[num]->m_value = (value != 0);
 	return TRITONN_RESULT_OK;
 }
 

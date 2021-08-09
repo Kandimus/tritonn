@@ -78,18 +78,16 @@ public:
 		return getColor(rBashColor::RED, rBashColor::UNUSED, rBashColor::NONE, iscolored);
 	}
 
-	std::string setColor(Color txt, Color bg, Style style, const std::string str, bool iscolored, bool isescaped)
+	static std::string setColor(Color txt, Color bg, Style style, const std::string& str, bool iscolored, bool isescaped)
 	{
 		std::string result = str;
 		std::string escape = getColor(txt, bg, style, iscolored);
 
 		if (escape.size()) {
 			result = escape + result;
-
-			if (isescaped) {
-				result += COLOR_RESET;
-			}
 		}
+
+		result += reset(iscolored && isescaped);
 
 		return result;
 	}
