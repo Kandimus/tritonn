@@ -140,20 +140,20 @@ bool rTermManager::PacketLogin(rTermClient* client)
 		return false;
 	}
 
-	UDINT result;
 	USINT user_hash[MAX_HASH_SIZE] = {0};
 	USINT pwd_hash [MAX_HASH_SIZE] = {0};
 
 	String_ToBuffer(msg.user().c_str(), user_hash, MAX_HASH_SIZE);
 	String_ToBuffer(msg.pwd().c_str() , pwd_hash , MAX_HASH_SIZE);
 
+	rUser::LoginResult result;
 	client->User = rUser::LoginHash(user_hash, pwd_hash, result);
 	if (!client->User) {
 		TRACEW(LogMask, "Unknow authorization. Cilent disconnected.");
 		return false;
 	}
 
-	if (LOGIN_OK != result) {
+	if (result != rUser::LoginResult::SUCCESS && result != rUser::LoginResult::CHANGEPWD ) {
 		TRACEW(LogMask, "Fault authorization. Cilent disconnected.");
 		return false;
 	} else if(client->User->GetAccess() & ACCESS_SA) {
@@ -167,7 +167,7 @@ bool rTermManager::PacketLogin(rTermClient* client)
 	}
 
 	TT::LoginMsg answe;
-	answe.set_result(result);
+	answe.set_result(static_cast<UDINT>(result));
 	client->send(answe);
 
 	sendDefaultMessage(client);

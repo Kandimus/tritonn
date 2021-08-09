@@ -20,6 +20,8 @@
 #include "tickcount.h"
 #include "simplefile.h"
 #include "tritonn_version.h"
+#include "data_proto.h"
+#include "login_proto.h"
 #include "packet_login.h"
 #include "packet_loginanswe.h"
 #include "packet_set.h"
@@ -50,11 +52,7 @@ rDisplayManager::rDisplayManager()
 	Hide          = false;
 	AutoID        = 0;
 
-	PacketGetCount              = 0;
-	PacketGetAnsweData.UserData = 1;
-	PacketGetAnsweData.Count    = 0;
-	PacketGetData.UserData      = 1;
-	PacketGetData.Count         = 0;
+	m_msgGetData.set_userdata(1);
 
 	//DEBUG
 	InputHistory.push_back("c 127.0.0.1");
@@ -138,10 +136,9 @@ rThreadStatus rDisplayManager::Proccesing()
 		{
 			tperiod.restart();
 
-			if(PacketGetData.Count)
-			{
+			if (m_msgGetData.read_size()) {
 				++PacketGetCount;
-				gTritonnManager.SendPacketGet(PacketGetData);
+				gTritonnManager.sendDataMsg(m_msgGetData);
 			}
 		}
 		
@@ -405,30 +402,24 @@ UDINT rDisplayManager::SendPacketLogin()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDisplayManager::CallbackLoginAnswe(rPacketLoginAnsweData *data)
+void rDisplayManager::CallbackLogin(TT::LoginMsg* msg)
 {
-	rLocker locker(Mutex);
+	rLocker locker(Mutex); locker.Nop();
 
-	if(data)
-	{
-		LoginOK     = data->Access;
-		TritonnVer  = data->Version;
-//!		TritonnConf = data->Config;
-		RedrawInfo  = true;
-	}
-	else
-	{
+	if (msg) {
+		LoginOK = msg.access();
+	} else {
+		LoginOK = 0;
 		memset(&TritonnVer, 0, sizeof(TritonnVer));
-		RedrawInfo = true;
 	}
 
-	return 0;
+	RedrawInfo  = true;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDisplayManager::CallbackSetAnswe(rPacketSetAnsweData *data)
+UDINT rDisplayManager::CallbackData(rPacketClient* client)
 {
 	for(UDINT ii = 0; ii < data->Count; ++ii)
 	{

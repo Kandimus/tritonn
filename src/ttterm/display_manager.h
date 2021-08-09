@@ -21,18 +21,17 @@
 #include "def.h"
 #include "thread_class.h"
 #include "structures.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
+#include "data_proto.h"
 #include "tritonn_manager.h"
 
 using std::vector;
 using std::list;
 
 
-struct rPacketLoginAnsweData;
-struct rPacketSetAnsweData;
-
-
+namespace TT {
+	class LoginMsg;
+	class DataMsg;
+}
 
 
 // Этапы ввода логина и пароля
@@ -48,7 +47,6 @@ const UDINT USER_DUMP     = 2;
 
 const UDINT WAITTING_NONE  = 0;
 const UDINT WAITTING_ANSWE = 1;
-
 
 
 //-------------------------------------------------------------------------------------------------
@@ -69,9 +67,11 @@ public:
 
 	UDINT LoadAutoCommand(const string &filename);
 
-	UDINT CallbackLoginAnswe(rPacketLoginAnsweData *data);
-	UDINT CallbackSetAnswe  (rPacketSetAnsweData   *data);
-	UDINT CallbackGetAnswe  (rPacketGetAnsweData   *data);
+	void CallbackLogin(TT::LoginMsg* msg);
+	void CallbackData(TT::DataMsg* msg);
+
+
+//	UDINT CallbackGetAnswe  (rPacketGetAnsweData   *data);
 
 protected:
 	virtual rThreadStatus Proccesing();
@@ -136,8 +136,7 @@ private:
 
 	pthread_mutex_t     MutexPacket;
 	UDINT               PacketGetCount;
-	rPacketGetAnsweData PacketGetAnsweData;
-	rPacketGetData      PacketGetData;
+	TT::DataMsg         m_msgGetData;
 
 };
 

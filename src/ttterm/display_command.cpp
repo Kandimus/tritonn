@@ -98,7 +98,7 @@ void rDisplayManager::cmdDisconnect(vector<string> &args)
 	{
 		gTritonnManager.Disconnect();
 
-		CallbackLoginAnswe(nullptr);
+		CallbackLogin(nullptr);
 	}
 	else
 	{
@@ -157,7 +157,7 @@ void rDisplayManager::cmdSet(vector<string> &args)
 	// Если мы в режиме автотеста, то нужно ждать ответа, иначе (мы в режиме терминала) не нужна
 	WaitingAnswe.Set((Auto) ? WAITTING_ANSWE : WAITTING_NONE);
 
-	gTritonnManager.SendPacketSet(pset.Data);
+	gTritonnManager.sendDataMsg(pset.Data);
 }
 
 

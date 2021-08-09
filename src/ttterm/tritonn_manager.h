@@ -18,13 +18,12 @@
 #include <list>
 #include "tcpclient_class.h"
 
+class rPacketClient;
 
-struct rPacketLoginAnsweData;
-struct rPacketGetData;
-struct rPacketGetAnsweData;
-struct rPacketSetData;
-struct rPacketSetAnsweData;
-
+namespace TT {
+	class LoginMsg;
+	class DataMsg;
+}
 
 class rTritonnManager : public rTCPClientClass
 {
@@ -34,8 +33,8 @@ public:
 
 	virtual UDINT Connect(const string &ip, UINT port);
 
-	UDINT SendPacketSet(rPacketSetData &data);
-	UDINT SendPacketGet(rPacketGetData &data);
+	UDINT sendDataMsg(TT::DataMsg& msg);
+	UDINT sendLoginMsg(TT::LoginMsg& msg);
 
 protected:
 	virtual rThreadStatus Proccesing(void);
@@ -43,11 +42,8 @@ protected:
 
 	string GetPSGARError(USINT err);
 
-	UDINT PacketLoginAnswe(rPacketLoginAnsweData *data);
-	UDINT PacketSetAnswe  (rPacketSetAnsweData   *data);
-	UDINT PacketGetAnswe  (rPacketGetAnsweData   *data);
-	
-public:
+	bool PacketLogin(rPacketClient* client);
+	bool PacketData (rPacketClient* client);
 
 protected:
 	UDINT Access;

@@ -166,18 +166,6 @@ const UINT   REPORT_DEFAULT_STORAGE    = 91;
 
 //-------------------------------------------------------------------------------------------------
 //
-const UDINT  LOGIN_OK                  = 0; // Логин успешен
-const UDINT  LOGIN_FAULT               = 1; // Логин или пароль не верен
-const UDINT  LOGIN_BLOCKED             = 2; // Пользователь заблокирован
-const UDINT  LOGIN_CHANGEPWD           = 3; // Пользователю нужно сменить пароль
-
-//
-const USINT  USER_CHANGEPWD            = 0x01;        // Пользователь должен сменить пароль
-const USINT  USER_MASK_BLOCKED         = 0xF0;
-const USINT  USER_BLOCKEDMANUAL        = 0x10;        // Пользователя заблокировал администратор
-const USINT  USER_BLOCKEDAUTOMAT       = 0x20;        // Пользователь заблокирован после 3-х попыток ввода пароля
-
-//
 const std::string USER_PWD_SALT        = "getsystem"; // Соль для пароля пользователя
 const std::string XMLCONFIG_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
 const std::string XMLREPORT_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";

@@ -147,7 +147,7 @@ UDINT rUser::Add(const string &name, USINT *pwd_hash, UDINT intaccess, UDINT ext
 
 //-------------------------------------------------------------------------------------------------
 //
-const rUser *rUser::Login(const string &name, USINT *pwd, UDINT &result)
+const rUser *rUser::Login(const string &name, USINT *pwd, LoginResult& result)
 {
 	USINT  hash[MAX_HASH_SIZE];
 
@@ -157,51 +157,51 @@ const rUser *rUser::Login(const string &name, USINT *pwd, UDINT &result)
 }
 
 
-const rUser *rUser::LoginHash(USINT *name_hash, USINT *pwd_hash, UDINT &result)
+const rUser *rUser::LoginHash(USINT *name_hash, USINT *pwd_hash, LoginResult& result)
 {
 	const rUser *user = FindHash(name_hash);
 
 	// Проверка что такой пользователь существует
 	if(nullptr == user)
 	{
-		result = LOGIN_FAULT;
+		result = LoginResult::FAULT;
 		return nullptr;
 	}
 
 	// Проверка на блокировку пользователя
-	if(user->GetStatus() & USER_MASK_BLOCKED)
+	if(user->GetStatus() & UserFlags::MASK_BLOCKED)
 	{
-		result = LOGIN_BLOCKED;
+		result = LoginResult::BLOCKED;
 		return nullptr;
 	}
 
 	// Проверка пароля
 	if(!CmpHash(user->Pwd, pwd_hash))
 	{
-		result = LOGIN_FAULT;
+		result = LoginResult::FAULT;
 		return nullptr;
 	}
 
 	// Пароли совпали
-	result = (user->GetStatus() & USER_CHANGEPWD) ? LOGIN_CHANGEPWD : LOGIN_OK;
+	result = (user->GetStatus() & UserFlags::CHANGEPWD) ? LoginResult::CHANGEPWD : LoginResult::SUCCESS;
 	return user;
 }
 
 
 //
-const rUser *rUser::Login(UDINT login, UDINT pwd, UDINT &result)
+const rUser *rUser::Login(UDINT login, UDINT pwd, LoginResult& result)
 {
 	const rUser *user = Find(login);
 
 	if (nullptr == user) {
-		result = LOGIN_FAULT;
+		result = LoginResult::FAULT;
 		return nullptr;
 	}
 
 	// Проверка на блокировку пользователя
-	if(user->GetStatus() & USER_MASK_BLOCKED)
+	if(user->GetStatus() & UserFlags::MASK_BLOCKED)
 	{
-		result = LOGIN_BLOCKED;
+		result = LoginResult::BLOCKED;
 		return nullptr;
 	}
 
@@ -211,12 +211,12 @@ const rUser *rUser::Login(UDINT login, UDINT pwd, UDINT &result)
 	GetBufHash(&pwd, sizeof(pwd), hash);
 	if(!CmpHash(user->Interface.Pwd, hash))
 	{
-		result = LOGIN_FAULT;
+		result = LoginResult::FAULT;
 		return nullptr;
 	}
 
 	// Пароли совпали
-	result = LOGIN_OK;
+	result = LoginResult::SUCCESS;
 	return user;
 }
 

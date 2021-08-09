@@ -25,6 +25,24 @@ class rGeneratorMD;
 //
 class rUser
 {
+public:
+	enum class LoginResult : UDINT
+	{
+		SUCCESS = 0, // Логин успешен
+		FAULT, // Логин или пароль не верен
+		BLOCKED,  // Пользователь заблокирован
+		CHANGEPWD,  // Пользователю нужно сменить пароль
+	};
+
+	enum UserFlags : USINT
+	{
+		CHANGEPWD = 0x01,       // Пользователь должен сменить пароль
+		MASK_BLOCKED = 0xF0,
+		BLOCKEDMANUAL = 0x10,   // Пользователя заблокировал администратор
+		BLOCKEDAUTOMAT = 0x20,  // Пользователь заблокирован после 3-х попыток ввода пароля
+
+	};
+
 //	friend class rDataManager;
 private:
 	struct rInterface
@@ -59,9 +77,9 @@ public:
 	static const rUser *Find     (const string &name);
 	static const rUser *Find     (UDINT login);
 	// Проверка имени/логина и пароля
-	static const rUser *Login    (const string &name, USINT *pwd, UDINT &result);
-	static const rUser *LoginHash(USINT *name_hash, USINT *pwd_hash, UDINT &result);
-	static const rUser *Login    (UDINT login, UDINT pwd, UDINT &result);
+	static const rUser *Login    (const string &name, USINT *pwd, LoginResult& result);
+	static const rUser *LoginHash(USINT *name_hash, USINT *pwd_hash, LoginResult& result);
+	static const rUser *Login    (UDINT login, UDINT pwd, LoginResult& result);
 	//
 	static UDINT        NewPwd   (const string &name, const USINT *newpwd);
 	static UDINT        SetAccess(const string &name, UDINT access, UDINT webaccess);
