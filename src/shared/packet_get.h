@@ -23,7 +23,7 @@ struct rPacketGetData
 	UDINT    Marker;                      // [ 4] Маркер пакета
 	UINT     Size;                        // [ 2] Длина пакета
 
-	SINT     Name[MAX_PACKET_GET_COUNT][MAX_VARIABLE_LENGTH];
+//	SINT     Name[MAX_PACKET_GET_COUNT][MAX_VARIABLE_LENGTH];
 	UDINT    Count;
 	UDINT    UserData;
 };

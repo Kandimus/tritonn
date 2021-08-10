@@ -167,7 +167,10 @@ bool rTermManager::PacketLogin(rTermClient* client)
 	}
 
 	TT::LoginMsg answe;
+
 	answe.set_result(static_cast<UDINT>(result));
+	answe.set_access(client->User->GetAccess());
+
 	client->send(answe);
 
 	sendDefaultMessage(client);

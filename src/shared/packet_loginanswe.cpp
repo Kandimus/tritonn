@@ -18,8 +18,8 @@
 
 rPacketLoginAnswe::rPacketLoginAnswe()
 {
-	Data.Marker = MARKER_PACKET_LOGINANSWE;
-	Data.Size   = LENGTH_PACKET_LOGINANSWE;
+//	Data.Marker = MARKER_PACKET_LOGINANSWE;
+//	Data.Size   = LENGTH_PACKET_LOGINANSWE;
 
 	//Data.Config.File[0] = 0;
 	//Data.Config.Name[0] = 0;

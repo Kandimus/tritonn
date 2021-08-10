@@ -38,8 +38,7 @@ UDINT rPacketClient::send(const TT::DataMsg& message)
 	hdr.m_flags    = 0;
 	hdr.m_version  = 0x0100;
 	hdr.m_dataSize = arr.size();
-	hdr.m_crc32    = 0;
-//	hdr.m_crc32    =
+	hdr.m_crc32    = m_crc.get(&hdr, sizeof(hdr) - 4);
 
 	Send(&hdr, sizeof(rPacketHeader));
 	Send(arr.data(), arr.size());
@@ -57,8 +56,7 @@ UDINT rPacketClient::send(const TT::LoginMsg& message)
 	hdr.m_flags    = 0;
 	hdr.m_version  = 0x0100;
 	hdr.m_dataSize = arr.size();
-	hdr.m_crc32    = 0;
-//	hdr.m_crc32    =
+	hdr.m_crc32    = m_crc.get(&hdr, sizeof(hdr) - 4);
 
 	Send(&hdr, sizeof(rPacketHeader));
 	Send(arr.data(), arr.size());
@@ -94,6 +92,15 @@ USINT *rPacketClient::Recv(USINT *read_buff, UDINT read_size)
 
 		m_header = *(rPacketHeader*)m_buff.data();
 		m_buff.erase(m_buff.begin(), m_buff.begin() + sizeof(rPacketHeader));
+
+		UDINT crc32 = m_crc.get(&m_header, sizeof(m_header) - 4);
+
+		if (crc32 != m_header.m_crc32) {
+			clearHeader();
+			m_buff.clear();
+
+			return TERMCLNT_RECV_ERROR;
+		}
 	}
 
 	return m_buff.size() < m_header.m_dataSize ? nullptr : m_buff.data();

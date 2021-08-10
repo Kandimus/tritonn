@@ -18,21 +18,21 @@
 
 rPacketSet::rPacketSet()
 {
-	Data.Marker = MARKER_PACKET_SET;
-	Data.Size   = LENGTH_PACKET_SET;
+//	Data.Marker = MARKER_PACKET_SET;
+//	Data.Size   = LENGTH_PACKET_SET;
 
-	Data.Count = 0;
-	memset(Data.Name , 0, sizeof(Data.Name));
-	memset(Data.Value, 0, sizeof(Data.Value));
+//	Data.Count = 0;
+//	memset(Data.Name , 0, sizeof(Data.Name));
+//	memset(Data.Value, 0, sizeof(Data.Value));
 }
 
 
 rPacketSet::rPacketSet(rPacketSetData &data)
 {
-	Data = data;
+//	Data = data;
 
-	Data.Marker = MARKER_PACKET_SET;
-	Data.Size   = LENGTH_PACKET_SET;
+//	Data.Marker = MARKER_PACKET_SET;
+//	Data.Size   = LENGTH_PACKET_SET;
 }
 
 rPacketSet::~rPacketSet()

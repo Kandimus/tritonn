@@ -14,6 +14,7 @@
 #include "tcp_client.h"
 #include "data_proto.h"
 #include "login_proto.h"
+#include "crc32.h"
 
 #define TERMCLNT_RECV_ERROR   ((USINT *)0xFFFFFFFF)
 
@@ -48,6 +49,7 @@ protected:
 protected:
 	std::vector<USINT> m_buff;
 	rPacketHeader      m_header;
+	rCRC32             m_crc;
 };
 
 

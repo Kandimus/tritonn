@@ -18,11 +18,11 @@
 
 rPacketLogin::rPacketLogin()
 {
-	Data.Marker = MARKER_PACKET_LOGIN;
-	Data.Size   = LENGTH_PACKET_LOGIN;
+//	Data.Marker = MARKER_PACKET_LOGIN;
+//	Data.Size   = LENGTH_PACKET_LOGIN;
 
-	memset(Data.UserName, 0, sizeof(Data.UserName));
-	memset(Data.UserPwd , 0, sizeof(Data.UserPwd));
+//	memset(Data.UserName, 0, sizeof(Data.UserName));
+//	memset(Data.UserPwd , 0, sizeof(Data.UserPwd));
 }
 
 

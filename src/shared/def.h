@@ -57,20 +57,6 @@ const UDINT  MAX_TCP_RECV_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCP_SEND_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCPCLIENT_BUFF        = 4 * MAX_TCP_RECV_BUFF; // Размер буффера принятых сообщений клиентом TCP
 
-const UDINT  MARKER_PACKET_CMD         = 0x2592E66B;  // Маркер пакета с командой
-const UDINT  MARKER_PACKET_LOGINANSWE  = 0x558CAEAC;  // Маркер пакета с регистрацией пользователя
-const UDINT  MARKER_PACKET_LOGIN       = 0xBF268FA3;  // Маркер пакета с регистрацией пользователя
-const UDINT  MARKER_PACKET_SET         = 0x7281A77D;  // Маркер пакета записи значений переменных
-const UDINT  MARKER_PACKET_SETANSWE    = 0xF8E3C2C1;  // Маркер пакета результата на запись переменных
-const UDINT  MARKER_PACKET_GET         = 0x72703587;  // Маркер пакета чтения переменных
-const UDINT  MARKER_PACKET_GETANSWE    = 0xAF5750CB;  // Маркет пакета результата чтения переменных
-
-const UDINT  MAX_VARIABLE_LENGTH       = 128;         // Предельная длинна имени переменной //TODO Стоит после создания дерева переменных уменьшить данное число до 64. В теории можно пробежаться по всем варам и узнать макс длину
-const UDINT  MAX_VARVALUE_LENGTH       = 32;          // Предельное значение значения переменной
-const UDINT  MAX_PACKET_SET_COUNT      = 32;          // Количество переменных для одновременной записи
-const UDINT  MAX_PACKET_GET_COUNT      = 32;          // Количество переменных для одновременного считывания
-
-
 //-------------------------------------------------------------------------------------------------
 // Логи
 const UDINT  MAX_LOG_TEXT              = 936;         // Общая длина посылки будет максимум 1024 байт

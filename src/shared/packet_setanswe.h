@@ -24,9 +24,9 @@ struct rPacketSetAnsweData
 	UDINT    Marker;                      // [ 4] Маркер пакета
 	UINT     Size;                        // [ 2] Длина пакета
 
-	SINT     Name  [MAX_PACKET_SET_COUNT][MAX_VARIABLE_LENGTH];
-	SINT     Value [MAX_PACKET_SET_COUNT][MAX_VARVALUE_LENGTH];
-	USINT    Result[MAX_PACKET_SET_COUNT];
+//	SINT     Name  [MAX_PACKET_SET_COUNT][MAX_VARIABLE_LENGTH];
+//	SINT     Value [MAX_PACKET_SET_COUNT][MAX_VARVALUE_LENGTH];
+//	USINT    Result[MAX_PACKET_SET_COUNT];
 	UDINT    Count;
 	UDINT    UserData;
 };

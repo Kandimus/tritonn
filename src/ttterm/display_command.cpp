@@ -17,24 +17,12 @@
 #include <sstream>
 #include "safity.h"
 #include "locker.h"
-//#include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
 #include "tritonn_version.h"
-#include "packet_login.h"
-#include "packet_loginanswe.h"
-#include "packet_set.h"
-#include "packet_setanswe.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
 #include "display_manager.h"
 
-
 #define ARGS_TEXT_EQUAL(x, y)         ((x) == args[0] || (y) == args[0])
-
-
-extern UDINT PeriodicSetAdd(rPacketSetData &pset, const string &name, const string &val);
-
 
 UDINT rDisplayManager::RunCmd(vector<string> &args)
 {
@@ -143,21 +131,20 @@ void rDisplayManager::cmdSet(vector<string> &args)
 		return;
 	}
 
-	rPacketSet pset;
+	TT::DataMsg msg;
 
 	for(UDINT ii = 1; ii < args.size(); ii += 2)
 	{
-		if(PeriodicSetAdd(pset.Data, args[ii], args[ii + 1]))
-		{
-			AddLog("Error: Can't add variable");
-			return;
-		}
+		auto item = msg.add_write();
+
+		item->set_name(args[ii]);
+		item->set_value(args[ii + 1]);
 	}
 
 	// Если мы в режиме автотеста, то нужно ждать ответа, иначе (мы в режиме терминала) не нужна
 	WaitingAnswe.Set((Auto) ? WAITTING_ANSWE : WAITTING_NONE);
 
-	gTritonnManager.sendDataMsg(pset.Data);
+	gTritonnManager.sendDataMsg(msg);
 }
 
 
@@ -210,20 +197,20 @@ void rDisplayManager::cmdGet(vector<string> &args)
 		return;
 	}
 
-	rPacketGetData data;
+	TT::DataMsg msg;
 
-	data.Count    = 0;
-	data.UserData = 0;
+	msg.set_userdata(USER_NONE);
 
-	for(UDINT ii = 1; ii < args.size(); ++ii, ++data.Count)
-	{
-		strncpy(data.Name[ii - 1], args[ii].c_str(), MAX_VARIABLE_LENGTH);
+	for (UDINT ii = 1; ii < args.size(); ++ii) {
+		auto item = msg.add_read();
+
+		item->set_name(args[ii]);
 	}
 
 	// Если мы в режиме автотеста, то нужно ждать ответа, иначе (мы в режиме терминала) не нужна
 	WaitingAnswe.Set((Auto) ? WAITTING_ANSWE : WAITTING_NONE);
 
-	gTritonnManager.SendPacketGet(data);
+	gTritonnManager.sendDataMsg(msg);
 }
 
 
@@ -243,25 +230,33 @@ void rDisplayManager::cmdPGet(vector<string> &args)
 	}
 
 	//
-	rLocker lock(MutexPacket); lock.Nop();
+	rLocker lock(m_lockGetData); lock.Nop();
 
-	if(PacketGetData.Count + (args.size() - 1) > MAX_PACKET_GET_COUNT)
+	if(m_msgGetData.read_size() + (args.size() - 1) > MAX_PACKET_GET_COUNT)
 	{
 		AddLog("Error: maximum of get variables reached.");
 		return;
 	}
 
-	for(UDINT ii = 1; ii < args.size(); ++ii, ++PacketGetData.Count)
-	{
-		args[ii] = String_tolower(args[ii]);
+	TT::DataMsg msg;
 
-		strncpy(PacketGetData.Name[PacketGetData.Count], args[ii].c_str(), MAX_VARIABLE_LENGTH);
+	*msg.mutable_read() = m_msgGetData.read();
+	for (UDINT ii = 1; ii < args.size(); ++ii) {
+		auto item = m_msgGetData.add_read();
+
+		item->set_name(String_tolower(args[ii]));
+	}
+
+	for (auto item : m_msgGetData.read()) {
+		auto new_item = msg.add_read();
+
+		new_item->set_name(item.name());
 	}
 
 	WaitingAnswe.Set(WAITTING_NONE);
 
 	// Отсылаем в TritonnManager посылку
-	gTritonnManager.SendPacketGet(PacketGetData);
+	gTritonnManager.sendDataMsg(msg);
 }
 
 
@@ -274,42 +269,36 @@ void rDisplayManager::cmdMGet(vector<string> &args)
 		return;
 	}
 
-	rLocker        lock(MutexPacket); lock.Nop();
-	rPacketGetData tmp_packet;
-	UINT           find = 0;
+	rLocker        lock(m_lockGetData); lock.Nop();
 
-	tmp_packet.UserData = PacketGetData.UserData;
-	tmp_packet.Count    = 0;
-	for(UDINT jj = 1; jj < args.size(); ++jj)
-	{
-		args[jj] = String_tolower(args[jj]);
+//	tmp_packet.UserData = PacketGetData.UserData;
+//	tmp_packet.Count    = 0;
+	args.erase(args.begin());
+	for (auto& item : args) {
+		item = String_tolower(item);
 	}
 
-	for(UDINT ii = 0; ii < PacketGetData.Count; ++ii)
-	{
-		find = 0;
+	for (UDINT ii = 0; ii < m_msgGetData.read_size(); ++ii) {
+		auto item = m_msgGetData.mutable_read()->Get(ii);
 
-		for(UDINT jj = 1; jj < args.size(); ++jj)
-		{
-			if(args[jj] == PacketGetData.Name[ii])
-			{
-				find = 1;
+		for(auto& arg : args) {
+			if (arg == item.name()) {
+				m_msgGetData.mutable_read()->DeleteSubrange(ii, 1);
+				--ii;
 				break;
 			}
 		}
-
-		if(!find)
-		{
-			strncpy(tmp_packet.Name[tmp_packet.Count++], PacketGetData.Name[ii], MAX_VARIABLE_LENGTH);
-		}
 	}
 
-	memcpy(&PacketGetData, &tmp_packet, sizeof(rPacketGetData));
+	TT::DataMsg msg;
+
+	msg.set_userdata(USER_PERIODIC);
+	msg.mutable_read()->CopyFrom(m_msgGetData.read());
 
 	WaitingAnswe.Set(WAITTING_NONE);
 
 	// Отсылаем в TritonnManager посылку
-	gTritonnManager.SendPacketGet(PacketGetData);
+	gTritonnManager.sendDataMsg(msg);
 }
 
 
@@ -334,19 +323,19 @@ void rDisplayManager::cmdDump(vector<string> &args)
 		return;
 	}
 
-	rPacketGetData data;
+	TT::DataMsg msg;
 
-	data.Count    = 0;
-	data.UserData = USER_DUMP;
+	msg.set_userdata(USER_DUMP);
 
-	for(UDINT ii = 1; ii < args.size(); ++ii, ++data.Count)
-	{
-		strncpy(data.Name[ii - 1], args[ii].c_str(), MAX_VARIABLE_LENGTH);
+	for (UDINT ii = 1; ii < args.size(); ++ii) {
+		auto item = msg.add_read();
+
+		item->set_name(String_tolower(args[ii]));
 	}
 
 	WaitingAnswe.Set(WAITTING_ANSWE);
 
-	gTritonnManager.SendPacketGet(data);
+	gTritonnManager.sendDataMsg(msg);
 }
 
 

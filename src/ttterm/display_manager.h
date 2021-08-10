@@ -19,6 +19,7 @@
 #include <list>
 #include <ncurses.h>
 #include "def.h"
+#include "locker.h"
 #include "thread_class.h"
 #include "structures.h"
 #include "data_proto.h"
@@ -48,6 +49,8 @@ const UDINT USER_DUMP     = 2;
 const UDINT WAITTING_NONE  = 0;
 const UDINT WAITTING_ANSWE = 1;
 
+const UDINT  MAX_PACKET_SET_COUNT = 32;
+const UDINT  MAX_PACKET_GET_COUNT = 32;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -70,9 +73,6 @@ public:
 	void CallbackLogin(TT::LoginMsg* msg);
 	void CallbackData(TT::DataMsg* msg);
 
-
-//	UDINT CallbackGetAnswe  (rPacketGetAnsweData   *data);
-
 protected:
 	virtual rThreadStatus Proccesing();
 
@@ -81,7 +81,7 @@ protected:
 	void   Draw();
 	void   AddToHistory(const string &str);
 
-	UDINT SendPacketLogin();
+	UDINT sendPacketLogin();
 	UDINT ProccesingLogin(const string &command);
 
 	UDINT RunCmd       (vector<string> &args);
@@ -125,7 +125,7 @@ private:
 
 	rSafityValue<UDINT> WaitingAnswe;
 
-	rVersion            TritonnVer;
+	rVersion            m_tritonnVer;
 	rConfigInfo         TritonnConf;
 
 	UDINT               Auto;
@@ -134,8 +134,8 @@ private:
 	string              DumpFileName;
 	vector<string>      AutoCommands;
 
-	pthread_mutex_t     MutexPacket;
-	UDINT               PacketGetCount;
+	pthread_rwlock_t    m_lockGetData;
+	UDINT               m_countGetData = 0;
 	TT::DataMsg         m_msgGetData;
 
 };
@@ -143,7 +143,5 @@ private:
 extern rTritonnManager     gTritonnManager;
 extern rSafityValue<UDINT> gExit;
 
-
-extern string GetStatusError(USINT err, UDINT shortname);
 extern vector<string> &split(const string &s, char delim, vector<string> &elems);
 extern vector<string> split(const string &s, char delim);

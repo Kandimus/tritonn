@@ -18,13 +18,13 @@
 
 rPacketGetAnswe::rPacketGetAnswe()
 {
-	Data.Marker = MARKER_PACKET_GETANSWE;
-	Data.Size   = LENGTH_PACKET_GETANSWE;
+//	Data.Marker = MARKER_PACKET_GETANSWE;
+//	Data.Size   = LENGTH_PACKET_GETANSWE;
 
-	Data.Count = 0;
-	memset(Data.Name  , 0, sizeof(Data.Name));
-	memset(Data.Value , 0, sizeof(Data.Value));
-	memset(Data.Result, 0, sizeof(Data.Result));
+//	Data.Count = 0;
+//	memset(Data.Name  , 0, sizeof(Data.Name));
+//	memset(Data.Value , 0, sizeof(Data.Value));
+//	memset(Data.Result, 0, sizeof(Data.Result));
 }
 
 
@@ -32,8 +32,8 @@ rPacketGetAnswe::rPacketGetAnswe(rPacketGetAnsweData &data)
 {
 	Data = data;
 
-	Data.Marker = MARKER_PACKET_GETANSWE;
-	Data.Size   = LENGTH_PACKET_GETANSWE;
+//	Data.Marker = MARKER_PACKET_GETANSWE;
+//	Data.Size   = LENGTH_PACKET_GETANSWE;
 }
 
 rPacketGetAnswe::~rPacketGetAnswe()

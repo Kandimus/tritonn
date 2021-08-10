@@ -23,11 +23,6 @@
 #include "login_proto.h"
 #include "data_proto.h"
 #include "../tritonn/users.h"
-#include "packet_loginanswe.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
-#include "packet_set.h"
-#include "packet_setanswe.h"
 
 extern rDisplayManager gDisplayManager;
 

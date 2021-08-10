@@ -18,11 +18,11 @@
 
 rPacketGet::rPacketGet()
 {
-	Data.Marker = MARKER_PACKET_GET;
-	Data.Size   = LENGTH_PACKET_GET;
+//	Data.Marker = MARKER_PACKET_GET;
+//	Data.Size   = LENGTH_PACKET_GET;
 
 	Data.Count = 0;
-	memset(Data.Name , 0, sizeof(Data.Name));
+//	memset(Data.Name , 0, sizeof(Data.Name));
 }
 
 
@@ -30,8 +30,8 @@ rPacketGet::rPacketGet(rPacketGetData &data)
 {
 	Data = data;
 
-	Data.Marker = MARKER_PACKET_GET;
-	Data.Size   = LENGTH_PACKET_GET;
+//	Data.Marker = MARKER_PACKET_GET;
+//	Data.Size   = LENGTH_PACKET_GET;
 }
 
 rPacketGet::~rPacketGet()
