@@ -14,8 +14,10 @@
 //=================================================================================================
 
 #include <string.h>
+#include "stringex.h"
 #include "safity.h"
 #include "locker.h"
+#include "hash.h"
 #include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
@@ -324,12 +326,11 @@ UDINT rDisplayManager::ProccesingLogin(const string &command)
 }
 
 
-UDINT rDisplayManager::SetAutoLogin(const string &name, const string &pwd)
+void rDisplayManager::setAutoLogin(const string &name, const string &pwd)
 {
 	LoginName = name;
 	LoginPwd  = pwd;
-
-	return 0;
+	LoginSrc  = LOGIN_NONE;
 }
 
 
@@ -367,26 +368,18 @@ UDINT rDisplayManager::LoadAutoCommand(const string &filename)
 	return 0;
 }
 
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Обработка сетевых протоколов
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//-------------------------------------------------------------------------------------------------
-// Отправка сообщения PacketLogin в тритонн
 UDINT rDisplayManager::sendPacketLogin()
 {
 	TT::LoginMsg msg;
 
-	msg.set_user(LoginName);
-	msg.set_pwd(LoginPwd);
+	USINT hash_login[MAX_HASH_SIZE];
+	USINT hash_pwd  [MAX_HASH_SIZE];
+
+	GetStrHash(LoginName, hash_login);
+	GetStrHash(LoginPwd , hash_pwd);
+
+	msg.set_user(String_FromBuffer(hash_login, MAX_HASH_SIZE));
+	msg.set_pwd (String_FromBuffer(hash_pwd  , MAX_HASH_SIZE));
 
 	gTritonnManager.sendLoginMsg(msg);
 
@@ -396,9 +389,6 @@ UDINT rDisplayManager::sendPacketLogin()
 	return 0;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-//
 void rDisplayManager::CallbackLogin(TT::LoginMsg* msg)
 {
 	rLocker locker(Mutex); locker.Nop();

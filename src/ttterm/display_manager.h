@@ -65,8 +65,8 @@ public:
 	UDINT AddPeriodicGet(vector<string> &varname);
 	UDINT DelPeriodicGet(vector<string> &varname);
 
-	void  ShowLogin();
-	UDINT SetAutoLogin(const string &name, const string &pwd);
+	void ShowLogin();
+	void setAutoLogin(const string &name, const string &pwd);
 
 	UDINT LoadAutoCommand(const string &filename);
 

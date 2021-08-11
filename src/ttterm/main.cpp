@@ -14,7 +14,7 @@
 
 namespace Args
 {
-
+const char* AUTO     = "autotest";
 const char* USER     = "user";
 const char* PASSWORD = "password";
 const char* HOST     = "host";
@@ -39,7 +39,7 @@ extern void  LogCallback(const string &text);
 int main(int argc, const char **argv)
 {
 	rSimpleArgs::instance()
-			.addOption("autotest"    , 'a', "")
+			.addOption(Args::AUTO    , 'a', "")
 			.addOption(Args::USER    , 'U', "")
 			.addOption(Args::PASSWORD, 'P', "")
 			.addOption(Args::HOST    , 'h', "127.0.0.1")
@@ -57,13 +57,11 @@ int main(int argc, const char **argv)
 	gTritonnManager.Run(16);
 	gInfo_Tritonn = gTritonnManager.GetThread();
 
-	if(rSimpleArgs::instance().getOption(Args::USER).size())
-	{
-		gDisplayManager.SetAutoLogin(rSimpleArgs::instance().getOption(Args::USER), rSimpleArgs::instance().getOption(Args::PASSWORD));
+	if(rSimpleArgs::instance().getOption(Args::USER).size() && rSimpleArgs::instance().getOption(Args::PASSWORD).size()) {
+		gDisplayManager.setAutoLogin(rSimpleArgs::instance().getOption(Args::USER), rSimpleArgs::instance().getOption(Args::PASSWORD));
 	}
 
-	if(rSimpleArgs::instance().getOption(Args::HOST).size() && rSimpleArgs::instance().getOption(Args::PORT).size())
-	{
+	if (rSimpleArgs::instance().isSet(Args::AUTO)) {
 		UINT port = atol(rSimpleArgs::instance().getOption(Args::PORT).c_str());
 		gTritonnManager.Connect(rSimpleArgs::instance().getOption(Args::HOST), port);
 	}

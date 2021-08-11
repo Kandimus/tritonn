@@ -43,6 +43,10 @@ UDINT rPacketClient::send(const TT::DataMsg& message)
 	Send(&hdr, sizeof(rPacketHeader));
 	Send(arr.data(), arr.size());
 
+printf("Data send:");
+for(auto aa : arr) printf("%02x ", aa);
+printf("\n");
+
 	return 0;
 }
 
@@ -98,10 +102,16 @@ USINT *rPacketClient::Recv(USINT *read_buff, UDINT read_size)
 		if (crc32 != m_header.m_crc32) {
 			clearHeader();
 			m_buff.clear();
-
+printf("Data recv: error crc!");
 			return TERMCLNT_RECV_ERROR;
 		}
+
+printf("Data recv: header: magic %08x, size %i, crc %04X\n", m_header.m_magic, m_header.m_dataSize, m_header.m_crc32);
 	}
+
+printf("Data recv: [");
+for(auto aa : m_buff) printf("%02x ", aa);
+printf("]\n");
 
 	return m_buff.size() < m_header.m_dataSize ? nullptr : m_buff.data();
 }
@@ -110,7 +120,6 @@ USINT *rPacketClient::Recv(USINT *read_buff, UDINT read_size)
 //
 void rPacketClient::clearPacket()
 {
-	// Удаляем посылку из буффера
 	if (m_header.m_dataSize >= m_buff.size()) {
 		m_buff.clear();
 	} else {
