@@ -39,7 +39,6 @@ public:
 		AO,
 	};
 
-
 	rIOBaseChannel(Type type, USINT index, const std::string& comment = "")
 		: m_index(index), m_comment(comment), m_type(type) {}
 	virtual ~rIOBaseChannel() = default;

@@ -34,7 +34,7 @@
 #include "data_manager.h"
 #include "data_link.h"
 #include "data_ai.h"
-#include "data_di.h"
+#include "data/di.h"
 #include "data/do.h"
 #include "data_counter.h"
 #include "data_denssol.h"

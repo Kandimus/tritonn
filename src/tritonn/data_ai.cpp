@@ -26,7 +26,7 @@
 #include "variable_item.h"
 #include "variable_list.h"
 #include "io/manager.h"
-#include "io/ai_channel.h"
+#include "io/aiinterface.h"
 #include "xml_util.h"
 #include "data_ai.h"
 #include "generator_md.h"
@@ -155,23 +155,34 @@ UDINT rAI::calculate()
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
 	if (isSetModule()) {
-		auto channel_ptr = rIOManager::instance().getChannel(m_module, rIOBaseChannel::Type::AI, m_channel);
-		auto channel     = static_cast<rIOAIChannel*>(channel_ptr);
+		auto interface = dynamic_cast<rIOAIInterface*>(rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF));
 
-		if (channel == nullptr) {
+		if (!interface) {
 			rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		checkExpr(channel->m_state, AI_LE_CODE_FAULT,
+		UDINT fault    = TRITONN_RESULT_OK;
+		USINT state    = interface->getState   (m_channel, rIOBaseChannel::Type::AI, fault);
+		UINT  adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
+		UINT  rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
+		UINT  minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
+
+		m_phValue.m_value = m_scale.Min.Value + static_cast<LREAL>(Range / rangeADC) * static_cast<LREAL>(adc - minADC);
+		m_current.m_value = interface->getCurrent(m_channel, rIOBaseChannel::Type::AI, fault);
+
+		if (fault != TRITONN_RESULT_OK) {
+			rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
+			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+			return fault;
+		}
+
+		checkExpr(state, AI_LE_CODE_FAULT,
 				  event_f.reinit(EID_AI_CH_FAULT) << m_ID << m_descr,
 				  event_s.reinit(EID_AI_CH_OK)    << m_ID << m_descr);
 
-		m_phValue.m_value = m_scale.Min.Value + static_cast<LREAL>(Range / channel->getRange()) * static_cast<LREAL>(channel->m_ADC - channel->getMinValue());
-		m_current.m_value = channel->getCurrent();
-
-		if (channel->m_state) {
+		if (state) {
 			m_fault = true;
 
 			if (m_mode == Mode::PHIS) {
@@ -186,10 +197,6 @@ UDINT rAI::calculate()
 			}
 
 			setFault();
-		}
-
-		if (channel_ptr) {
-			delete channel_ptr;
 		}
 	}
 	else //if !virtual

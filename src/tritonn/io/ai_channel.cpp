@@ -39,16 +39,16 @@ rIOAIChannel::rIOAIChannel(USINT index, bool isActive, const std::string& commen
 
 	if (m_flagsTypeA.empty()) {
 		m_flagsTypeA
-				.add("", static_cast<UINT>(Type::mA_0_20) , "0..20мА")
-				.add("", static_cast<UINT>(Type::mA_4_20) , "4..40мА");
+				.add("", static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
+				.add("", static_cast<UINT>(Mode::mA_4_20) , "4..40мА");
 	}
 
 	if (m_flagsTypeP.empty()) {
 		m_flagsTypeP
-				.add("", static_cast<UINT>(Type::mA_0_20) , "0..20мА")
-				.add("", static_cast<UINT>(Type::mA_4_20) , "4..40мА")
-				.add("", static_cast<UINT>(Type::V_m10_10), "-10..+10V")
-				.add("", static_cast<UINT>(Type::V_0_10)  , "0..+10V");
+				.add("", static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
+				.add("", static_cast<UINT>(Mode::mA_4_20) , "4..40мА")
+				.add("", static_cast<UINT>(Mode::V_m10_10), "-10..+10V")
+				.add("", static_cast<UINT>(Mode::V_0_10)  , "0..+10V");
 	}
 
 	if (m_flagsSimType.empty()) {
@@ -63,22 +63,22 @@ rIOAIChannel::rIOAIChannel(USINT index, bool isActive, const std::string& commen
 
 UINT rIOAIChannel::getMinValue() const
 {
-	switch(m_type) {
-		case Type::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Min);
-		case Type::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Min);
-		case Type::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Min);
-		case Type::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Min);
+	switch(m_mode) {
+		case Mode::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Min);
+		case Mode::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Min);
+		case Mode::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Min);
+		case Mode::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Min);
 	}
 	return 0;
 }
 
 UINT rIOAIChannel::getMaxValue() const
 {
-	switch(m_type) {
-		case Type::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Max);
-		case Type::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Max);
-		case Type::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Max);
-		case Type::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Max);
+	switch(m_mode) {
+		case Mode::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Max);
+		case Mode::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Max);
+		case Mode::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Max);
+		case Mode::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Max);
 	}
 	return 0;
 }
@@ -174,11 +174,11 @@ UDINT rIOAIChannel::simulate()
 	}
 
 	// simulate current value
-	switch (m_type) {
-		case Type::mA_0_20:  m_current = 20.0f / getRange() * static_cast<REAL>(m_ADC); break;
-		case Type::mA_4_20:  m_current = 4.0f + 16.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
-		case Type::V_m10_10: m_current = -10.0f + 20.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
-		case Type::V_0_10:   m_current = 10.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
+	switch (m_mode) {
+		case Mode::mA_0_20:  m_current = 20.0f / getRange() * static_cast<REAL>(m_ADC); break;
+		case Mode::mA_4_20:  m_current = 4.0f + 16.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
+		case Mode::V_m10_10: m_current = -10.0f + 20.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
+		case Mode::V_0_10:   m_current = 10.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
 	}
 
 	return TRITONN_RESULT_OK;
@@ -194,7 +194,7 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 	list.add(p + "adc"        ,              rVariable::Flags::R___, &m_ADC    , U_DIMLESS, 0, "Текущий код АЦП");
 	list.add(p + "current"    ,              rVariable::Flags::R___, &m_current, U_DIMLESS, 0, "Текущее значение тока" + std::string(m_isActive ? "" : "/напряжения"));
 	list.add(p + "state"      ,              rVariable::Flags::R___, &m_state  , U_DIMLESS, 0, "Статус канала");
-	list.add(p + "type"       , TYPE::USINT, rVariable::Flags::____, &m_type   , U_DIMLESS, 0, "Тип канала:<br/>" + ((m_isActive) ? m_flagsTypeA.getInfo(true) : m_flagsTypeP.getInfo(true)));
+	list.add(p + "mode"       , TYPE::USINT, rVariable::Flags::____, &m_mode   , U_DIMLESS, 0, "Режим канала:<br/>" + ((m_isActive) ? m_flagsTypeA.getInfo(true) : m_flagsTypeP.getInfo(true)));
 
 	if (issimulate) {
 		list.add(p + "simulate.max"  , rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MAX);

@@ -25,7 +25,7 @@
 #include "../data_denssol.h"
 #include "../data_reduceddensity.h"
 #include "../data_ai.h"
-#include "../data_di.h"
+#include "di.h"
 #include "do.h"
 #include "../data_counter.h"
 #include "../data_report.h"

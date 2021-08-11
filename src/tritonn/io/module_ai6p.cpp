@@ -100,6 +100,100 @@ UDINT rModuleAI6p::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleAI6p::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->m_ADC;
+}
+
+UDINT rModuleAI6p::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	UNUSED(num);
+	UNUSED(type);
+	UNUSED(value);
+
+	return DATACFGERR_REALTIME_WRONGCHANNEL;
+}
+
+REAL rModuleAI6p::getCurrent(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->m_current;
+}
+
+UINT rModuleAI6p::getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->getMinValue();
+}
+
+UINT rModuleAI6p::getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->getMaxValue();
+}
+
+UINT rModuleAI6p::getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->getRange();
+}
+
+USINT rModuleAI6p::getState(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->m_state;
+}
+
+UDINT rModuleAI6p::checkChannelAccess(USINT num, rIOBaseChannel::Type type)
+{
+	if (num >= CHANNEL_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	if (m_channel[num]->m_type != type) {
+		return DATACFGERR_REALTIME_WRONGCHANNEL;
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
 rIOBaseChannel* rModuleAI6p::getChannel(USINT num, rIOBaseChannel::Type type)
 {
 	if (num >= CHANNEL_COUNT) {
@@ -117,11 +211,11 @@ rIOBaseChannel* rModuleAI6p::getChannel(USINT num, rIOBaseChannel::Type type)
 
 K19_AI6p_ChType rModuleAI6p::getHardwareModuleChType(UDINT index)
 {
-	switch(m_channel[index]->m_type) {
-		case rIOAIChannel::Type::mA_0_20:  return K19_AI6p_ChType_mA_0_20;
-		case rIOAIChannel::Type::mA_4_20:  return K19_AI6p_ChType_mA_4_20;
-		case rIOAIChannel::Type::V_m10_10: return K19_AI6p_ChType_V_m10_10;
-		case rIOAIChannel::Type::V_0_10:   return K19_AI6p_ChType_V_0_10;
+	switch(m_channel[index]->m_mode) {
+		case rIOAIChannel::Mode::mA_0_20:  return K19_AI6p_ChType_mA_0_20;
+		case rIOAIChannel::Mode::mA_4_20:  return K19_AI6p_ChType_mA_4_20;
+		case rIOAIChannel::Mode::V_m10_10: return K19_AI6p_ChType_V_m10_10;
+		case rIOAIChannel::Mode::V_0_10:   return K19_AI6p_ChType_V_0_10;
 		default: return m_data.Read.ChType[index];
 	}
 }
