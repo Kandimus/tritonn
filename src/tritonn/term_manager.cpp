@@ -156,11 +156,13 @@ bool rTermManager::PacketLogin(rTermClient* client)
 	if (result != rUser::LoginResult::SUCCESS && result != rUser::LoginResult::CHANGEPWD ) {
 		TRACEW(LogMask, "Fault authorization. Cilent disconnected.");
 		return false;
+
 	} else if(client->User->GetAccess() & ACCESS_SA) {
 		TRACEW(LogMask, "SA is authorized.");
-	}
-	else if(client->User->GetAccess() & ACCESS_ADMIN) {
+
+	} else if(client->User->GetAccess() & ACCESS_ADMIN) {
 		TRACEW(LogMask, "Administrator is authorized.");
+
 	} else {
 		TRACEW(LogMask, "Authorization failed. Cilent disconnected.");
 		return false;
@@ -174,10 +176,6 @@ bool rTermManager::PacketLogin(rTermClient* client)
 	client->send(answe);
 
 	sendDefaultMessage(client);
-
-//	rSystemVariable::instance().getVersion   (answe.Data.Version);
-//	rSystemVariable::instance().getState     (answe.Data.State);
-//	rSystemVariable::instance().getConfigInfo(answe.Data.Config);
 	return true;
 }
 

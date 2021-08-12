@@ -217,6 +217,7 @@ const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 const std::string DIR_HOME             = "./";
 const std::string DIR_CONF             = DIR_HOME + "conf/";
 const std::string DIR_LOG              = DIR_HOME + "log/";
+const std::string DIR_LOG_TERM         = DIR_LOG + "ttterm/";
 const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
 const std::string DIR_DUMP             = DIR_HOME + "dump/";

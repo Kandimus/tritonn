@@ -23,6 +23,7 @@
 #include "login_proto.h"
 #include "data_proto.h"
 #include "../tritonn/users.h"
+#include "stringex.h"
 
 extern rDisplayManager gDisplayManager;
 
@@ -104,30 +105,33 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 	USINT*         data   = client->Recv(buff, size);
 	UDINT          result = 0;
 
-	if (TERMCLNT_RECV_ERROR == data) {
-		return 1;
-	}
+	do {
+		if (TERMCLNT_RECV_ERROR == data) {
+			return 1;
+		}
 
-	// Посылку считали не полностью
-	if(!data) {
-		return 0;
-	}
+		// Посылку считали не полностью
+		if(!data) {
+			return 0;
+		}
 
-	if (client->getHeader().m_magic != TT::DataMagic &&
-		client->getHeader().m_magic != TT::LoginMagic) {
+		if (client->getHeader().m_magic != TT::DataMagic &&
+			client->getHeader().m_magic != TT::LoginMagic) {
 
-		TRACEW(LogMask, "Server send unknow packet (magic 0x%X, length %u).", client->getHeader().m_magic, client->getHeader().m_dataSize);
+			TRACEW(LogMask, "Server send unknow packet (magic 0x%X, length %u).", client->getHeader().m_magic, client->getHeader().m_dataSize);
 
-		return 2;
-	}
+			return 2;
+		}
 
-	switch(client->getHeader().m_magic)
-	{
-		case TT::LoginMagic: result = PacketLogin(client); break;
-		case TT::DataMagic:  result = PacketData(client); break;
-	}
+		switch (client->getHeader().m_magic) {
+			case TT::LoginMagic: result = PacketLogin(client); break;
+			case TT::DataMagic:  result = PacketData(client); break;
+		}
 
-	client->clearPacket();
+		client->clearPacket();
+
+		data = client->checkBuffer();
+	} while (true);
 
 	return 0;
 }
@@ -142,8 +146,9 @@ bool rTritonnManager::PacketLogin(rPacketClient* client)
 
 	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff());
 
-	if (!isCorrectLoginMsg(msg) || !msg.has_result()) {
-		TRACEW(LogMask, "Login message deserialize is fault.");
+	if (!isCorrectLoginMsg(msg) || !msg.has_result() || !msg.has_access()) {
+		TRACEW(LogMask, "Login message deserialize is fault. reason %i%i%i", !isCorrectLoginMsg(msg), !msg.has_result(), !msg.has_access());
+		TRACEW(LogMask, "result: %u,  access 0x%08X", msg.result(), msg.access());
 		return false;
 	}
 
@@ -154,10 +159,11 @@ bool rTritonnManager::PacketLogin(rPacketClient* client)
 		return false;
 	}
 
+//TRACEI(LogMask, "LoginMsg <- [%s]", String_FromBuffer(client->getBuff().data(), client->getHeader().m_dataSize).c_str());
 	Access = msg.access();
 	gDisplayManager.CallbackLogin(&msg);
 
-	TRACEI(LogMask, "Login is OK.");
+	TRACEI(LogMask, "Login is OK. Access %08X", Access);
 
 	return true;
 }
@@ -171,8 +177,7 @@ bool rTritonnManager::PacketData(rPacketClient* client)
 		return false;
 	}
 
-	if(!Access)
-	{
+	if(!Access) {
 		TRACEA(LogMask, "Receive packet, but not authorized.");
 		return false;
 	}

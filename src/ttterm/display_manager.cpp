@@ -55,7 +55,7 @@ rDisplayManager::rDisplayManager()
 
 	//DEBUG
 	InputHistory.push_back("c 127.0.0.1");
-	InputHistory.push_back("l ./test/vars.test");
+	InputHistory.push_back("g io.globaltemp.keypad");
 	InputHistoryPos = InputHistory.size();
 }
 
@@ -209,7 +209,7 @@ void rDisplayManager::Draw()
 				clrtoeol();
 			}
 
-			if (item.has_name() && item.has_value() && item.has_result() && ii < MAX_PACKET_GET_COUNT) {
+			if (item.has_name() && item.has_value() && item.has_result() && static_cast<UDINT>(ii) < MAX_PACKET_GET_COUNT) {
 				mvwprintw(stdscr, 2 + ii / 2, x, "%s = %s (%s)",
 						  item.name().c_str(),
 						  item.result() == rSnapshotItem::Status::ASSIGNED ?  item.value().c_str() : "?",
@@ -228,6 +228,7 @@ void rDisplayManager::Draw()
 			//mvwprintw(stdscr, MaxRow - 1 - MaxVisibleLog + yy, 0/*х*/, ii->c_str());
 			clrtoeol();
 		}
+		RedrawInput = true;
 	}
 
 	if(RedrawInput)
@@ -260,7 +261,7 @@ void rDisplayManager::Draw()
 		clrtoeol();
 		refresh();
 	}
-	else if(RedrawInput || RedrawLog | RedrawGet)
+	else if(RedrawInput || RedrawLog || RedrawGet || RedrawInfo)
 	{
 		move(MaxRow - 1, InputBeginCur + InputCurPos);
 		refresh();
@@ -413,6 +414,7 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (isReadDataMsg(*msg)) {
+		TRACEI(LOG::TERMINAL, "Recv DataMsg Read");
 		switch(msg->userdata())
 		{
 			case USER_PERIODIC:
@@ -421,7 +423,7 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 
 				m_msgGetData.mutable_read()->Clear();
 				m_msgGetData.mutable_read()->CopyFrom(msg->read());
-				RedrawGet = 1;
+				RedrawGet = true;
 
 				break;
 			}
@@ -464,6 +466,7 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (isWriteDataMsg(*msg)) {
+		TRACEI(LOG::TERMINAL, "Recv DataMsg Write");
 		for (DINT ii = 0; ii < msg->write_size(); ++ii)
 		{
 			auto item = msg->write(ii);
@@ -479,10 +482,12 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (msg->has_version()) {
+		TRACEI(LOG::TERMINAL, "Recv DataMsg Version");
 		m_tritonnVer.m_build = msg->version().build();
 		m_tritonnVer.m_hash  = msg->version().hash();
 		m_tritonnVer.m_major = msg->version().major();
 		m_tritonnVer.m_minor = msg->version().minor();
+		RedrawInfo  = true;
 	}
 
 	if (msg->has_state()) {
@@ -490,7 +495,13 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (msg->has_confinfo()) {
-
+		TRACEI(LOG::TERMINAL, "Recv DataMsg ConfigInfo");
+		TritonnConf.m_developer = msg->confinfo().developer();
+		TritonnConf.m_filename = msg->confinfo().filename();
+		TritonnConf.m_hash = msg->confinfo().hash();
+		TritonnConf.m_name = msg->confinfo().name();
+		TritonnConf.m_version = msg->confinfo().version();
+		RedrawInfo  = true;
 	}
 
 	WaitingAnswe.Set(WAITTING_NONE);

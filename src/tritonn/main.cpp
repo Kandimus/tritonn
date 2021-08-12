@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
-			.addSwitch(rArg::NoDump   , 'd')
+			.addSwitch(rArg::NoDump   , 'D')
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::Config   , 'c', "test_sikn.xml");
 

@@ -35,9 +35,10 @@ public:
 	rPacketClient(SOCKET socket, sockaddr_in *addr);
 	virtual ~rPacketClient() = default;
 
-	virtual USINT *Recv(USINT *read_buff, UDINT read_size) override;
+	virtual USINT* Recv(USINT *read_buff, UDINT read_size) override;
 	virtual UDINT send(const TT::DataMsg& message);
 	virtual UDINT send(const TT::LoginMsg& message);
+	virtual USINT* checkBuffer();
 
 	void clearPacket();
 	const std::vector<USINT>& getBuff()   { return m_buff;   }
