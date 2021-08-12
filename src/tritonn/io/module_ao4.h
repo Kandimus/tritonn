@@ -15,6 +15,7 @@
 #include "def.h"
 #include "basemodule.h"
 #include "basechannel.h"
+#include "aointerface.h"
 #include "rpmsg_connector.h"
 #include "ao_channel.h"
 
@@ -23,7 +24,7 @@ class rIOManager;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rModuleAO4 : public rIOBaseModule
+class rModuleAO4 : public rIOBaseModule, public rIOAOInterface
 {
 friend class rIOManager;
 
@@ -43,14 +44,20 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
+	virtual rIOBaseInterface* getModuleInterface() override { return dynamic_cast<rIOAOInterface*>(this); }
+
 	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override;
 	virtual rIOBaseModule*  getModulePtr() override { return new rModuleAO4(this); }
 
-protected:
-
 public:
-	void setCurrent(USINT id, UINT current);
-	rIOAOChannel::Type getType(USINT id);
+	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
+	virtual UINT  getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UINT  getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UINT  getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+
+private:
+	UDINT checkChannelAccess(USINT num, rIOBaseChannel::Type type);
 
 private:
 	std::vector<rIOAOChannel*> m_channel;

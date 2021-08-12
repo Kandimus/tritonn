@@ -25,6 +25,7 @@
 #include "../data_denssol.h"
 #include "../data_reduceddensity.h"
 #include "../data_ai.h"
+#include "ao.h"
 #include "di.h"
 #include "do.h"
 #include "../data_counter.h"
@@ -58,12 +59,14 @@ UDINT rDataManager::saveMarkDown()
 
 	// io
 	rAI          ai;
+	rAO          ao;
 	rCounter     fi;
 	rDI          di;
 	rDO          do_;
 	rProve       prove;
 
 	ai.generateMarkDown(md);
+	ao.generateMarkDown(md);
 	fi.generateMarkDown(md);
 	di.generateMarkDown(md);
 	do_.generateMarkDown(md);

@@ -74,13 +74,88 @@ UDINT rModuleAO4::processing(USINT issim)
 		if (issim) {
 			channel->simulate();
 		} else {
-			channel->m_type = (m_data.Read.ChType[idx] == K19_AO4_CT_Active) ? rIOAOChannel::Type::ACTIVE : rIOAOChannel::Type::PASSIVE;
+			channel->m_mode = (m_data.Read.ChType[idx] == K19_AO4_CT_Active) ? rIOAOChannel::Mode::ACTIVE : rIOAOChannel::Mode::PASSIVE;
 
 			m_data.Write.Data[idx]        = channel->m_ADC;
-			m_data.Write.DataSetType[idx] = K19_AO4_DST_TrueUA;
+			m_data.Write.DataSetType[idx] = (channel->m_regime == rIOAOChannel::Regime::REDUCED_DAC) ? K19_AO4_DST_ReducedDAC : K19_AO4_DST_TrueUA;
 		}
 
 		channel->processing();
+	}
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rModuleAO4::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->m_ADC;
+}
+
+UDINT rModuleAO4::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	UDINT fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return fault;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	m_channel[num]->m_ADC = static_cast<UINT>(value);
+
+	return TRITONN_RESULT_OK;
+}
+
+UINT rModuleAO4::getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->getMinValue();
+}
+
+UINT rModuleAO4::getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->getMaxValue();
+}
+
+UINT rModuleAO4::getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->getRange();
+}
+
+UDINT rModuleAO4::checkChannelAccess(USINT num, rIOBaseChannel::Type type)
+{
+	if (num >= CHANNEL_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	if (m_channel[num]->m_type != type) {
+		return DATACFGERR_REALTIME_WRONGCHANNEL;
 	}
 
 	return TRITONN_RESULT_OK;

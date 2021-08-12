@@ -79,7 +79,6 @@ UDINT rModuleDO16::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
-
 UDINT rModuleDO16::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	if (num >= CHANNEL_COUNT) {

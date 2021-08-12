@@ -165,7 +165,7 @@ UDINT rAI::calculate()
 
 		UDINT fault    = TRITONN_RESULT_OK;
 		USINT state    = interface->getState   (m_channel, rIOBaseChannel::Type::AI, fault);
-		UINT  adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
+		UDINT adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
 		UINT  rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
 		UINT  minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
 

@@ -25,7 +25,7 @@ class rIOAOChannel : public rIOBaseChannel
 friend rModuleAO4;
 public:
 
-	enum class Type : UINT
+	enum class Mode : UINT
 	{
 		ACTIVE = 0,
 		PASSIVE,
@@ -35,6 +35,12 @@ public:
 	{
 		UNDEF   = 0x0000,     // Статуст не определен
 		OFF     = 0x0001,     // Канал выключен
+	};
+
+	enum class Regime : UINT
+	{
+		REDUCED_DAC = 0,
+		TRUE_UA,
 	};
 
 public:
@@ -48,18 +54,21 @@ public:
 	virtual UDINT simulate() override;
 	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
 
+protected:
+	UINT getMinValue() const;
+	UINT getMaxValue() const;
+	UINT getRange() const;
+
 public:
-	UINT    m_setup = 0;             // Настройка канала
+	UINT m_setup = 0;             // Настройка канала
 
 	// hardware
-	Type    m_type  = Type::ACTIVE;
-	UINT    m_ADC   = 0;             // Текущий код ацп
+	Mode   m_mode   = Mode::ACTIVE;
+	UINT   m_ADC    = 0;             // Текущий код ацп
+	Regime m_regime = Regime::REDUCED_DAC;
 
 private:
-	const UINT MIN = 4000;
-	const UINT MAX = 24000;
-
 	static rBitsArray m_flagsSetup;
-	static rBitsArray m_flagsType;
+	static rBitsArray m_flagsMode;
 };
 

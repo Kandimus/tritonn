@@ -1,6 +1,6 @@
 ﻿/*
  *
- * io/aiinterface.h
+ * io/aointerface.h
  *
  * Copyright (c) 2021 by RangeSoft.
  * All rights reserved.
@@ -13,14 +13,12 @@
 
 #include "baseinterface.h"
 
-class rIOAIInterface : public rIOBaseInterface
+class rIOAOInterface : public rIOBaseInterface
 {
 public:
-	rIOAIInterface() = default;
-	virtual ~rIOAIInterface() = default;
+	rIOAOInterface() = default;
+	virtual ~rIOAOInterface() = default;
 
-	virtual USINT getState(USINT num, rIOBaseChannel::Type type, UDINT& fault) = 0;
-	virtual REAL  getCurrent(USINT num, rIOBaseChannel::Type type, UDINT& fault) = 0;
 	virtual UINT  getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) = 0;
 	virtual UINT  getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) = 0;
 	virtual UINT  getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault) = 0;

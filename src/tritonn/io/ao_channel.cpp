@@ -19,7 +19,7 @@
 #include "../comment_defines.h"
 
 rBitsArray rIOAOChannel::m_flagsSetup;
-rBitsArray rIOAOChannel::m_flagsType;
+rBitsArray rIOAOChannel::m_flagsMode;
 
 rIOAOChannel::rIOAOChannel(USINT index, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::AO, index, comment)
 {
@@ -28,10 +28,10 @@ rIOAOChannel::rIOAOChannel(USINT index, const std::string& comment) : rIOBaseCha
 				.add("OFF", static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF);
 	}
 
-	if (m_flagsType.empty()) {
-		m_flagsType
-				.add("ACTIVE" , static_cast<UINT>(Type::ACTIVE) , "Активный канал")
-				.add("PASSIVE", static_cast<UINT>(Type::PASSIVE), "Пасивный канал");
+	if (m_flagsMode.empty()) {
+		m_flagsMode
+				.add("ACTIVE" , static_cast<UINT>(Mode::ACTIVE) , "Активный канал")
+				.add("PASSIVE", static_cast<UINT>(Mode::PASSIVE), "Пасивный канал");
 	}
 }
 
@@ -39,15 +39,30 @@ UDINT rIOAOChannel::processing()
 {
 	rIOBaseChannel::processing();
 
-	if (m_ADC > MAX) {
-		m_ADC = MAX;
+	if (m_ADC > getMaxValue()) {
+		m_ADC = getMaxValue();
 	}
 
-	if (m_ADC < MIN) {
-		m_ADC = MIN;
+	if (m_ADC < getMinValue()) {
+		m_ADC = getMinValue();
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+UINT rIOAOChannel::getMinValue() const
+{
+	return m_regime == Regime::REDUCED_DAC ? 0 : 4000;
+}
+
+UINT rIOAOChannel::getMaxValue() const
+{
+	return m_regime == Regime::REDUCED_DAC ? 65535 : 24000;
+}
+
+UINT rIOAOChannel::getRange() const
+{
+	return getMaxValue() - getMinValue();
 }
 
 UDINT rIOAOChannel::simulate()
@@ -59,13 +74,16 @@ UDINT rIOAOChannel::simulate()
 
 UDINT rIOAOChannel::generateVars(const std::string& name, rVariableList& list, bool issimulate)
 {
+	UNUSED(issimulate);
+
 	std::string p = name + ".";
 
 	rIOBaseChannel::generateVars(name, list, false);
 
 	list.add(p + "setup"  , TYPE::UINT, rVariable::Flags::RS__, &m_setup  , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(p + "current",             rVariable::Flags::____, &m_ADC    , U_mkA    , 0, "Выдаваемый ток");
-	list.add(p + "type"   , TYPE::UINT, rVariable::Flags::R___, &m_type   , U_DIMLESS, 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
+	list.add(p + "mode"   , TYPE::UINT, rVariable::Flags::R___, &m_mode   , U_DIMLESS, 0, "Тип канала:<br/>" + m_flagsMode.getInfo(true));
+	list.add(p + "regime" , TYPE::UINT, rVariable::Flags::RSH_, &m_regime , U_DIMLESS, 0, "Режим канала:<br/>0 : код АЦП<br/>1 : значение в мкА");
 
 	return TRITONN_RESULT_OK;
 }

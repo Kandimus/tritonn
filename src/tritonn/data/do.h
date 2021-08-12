@@ -8,6 +8,7 @@
  * Litvinov "VeduN" Vitaliy O.
  *
  */
+
 #pragma once
 
 #include "../data_source.h"

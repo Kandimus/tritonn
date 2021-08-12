@@ -87,7 +87,7 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
 	virtual UDINT simulate() override;
-	virtual rBitsArray& getFlagsSetup() { return m_flagsSetup; }
+	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
 
 protected:
 	UINT getMinValue() const;

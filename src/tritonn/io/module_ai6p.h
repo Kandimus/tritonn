@@ -49,15 +49,15 @@ public:
 	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override;
 	virtual rIOBaseModule*  getModulePtr() override { return new rModuleAI6p(this); }
 
-// IOBaseInterface
+// IOAIInterface
 public:
+	virtual USINT getState(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
 	virtual REAL  getCurrent(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UINT  getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UINT  getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UINT  getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
-	virtual USINT getState(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 
 protected:
 	K19_AI6p_ChType getHardwareModuleChType(UDINT index);

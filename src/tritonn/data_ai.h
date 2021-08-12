@@ -59,13 +59,13 @@ public:
 
 	struct rScale
 	{
-		rScale() : Min(0), Max(100), Code_4mA(10923), Code_20mA(54613) {}
+		rScale() : Min(0), Max(100)/*, Code_4mA(10923), Code_20mA(54613)*/ {}
 
 		rCmpLREAL Min;               // Значение инж. минимума
 		rCmpLREAL Max;               //
 
-		UINT      Code_4mA;          // Максимальный код АЦП
-		UINT      Code_20mA;         // Минимальный код АЦП
+//		UINT      Code_4mA;          // Максимальный код АЦП
+//		UINT      Code_20mA;         // Минимальный код АЦП
 	};
 
 	rAI(const rStation* owner = nullptr);

@@ -89,7 +89,7 @@ const UDINT  MAX_MBTCP_CLIENT          = 8;
 const UDINT  MAX_MODULE                = 16;
 const UDINT  MAX_MODULE_CHANNEL        = 16;
 const UDINT  MAX_IO_AI                 = 64;
-const UDINT  MAX_IO_AO                 = 32;
+const UDINT  MAX_IO_AO                 = 8;
 const UDINT  MAX_IO_DI                 = 32;
 const UDINT  MAX_IO_DO                 = 32;
 const UDINT  MAX_IO_FI                 = 16;
@@ -340,10 +340,10 @@ enum rTritonn_Error
 	DATACFGERR_IO_RESERV4__________,        //
 	DATACFGERR_IO_RESERV1__________,        // 106
 	DATACFGERR_IO_RESERV2__________,        //
-	DATACFGERR_IO_RESERV3__________,        // 108
-	DATACFGERR_CALC,                        //
-	DATACFGERR_UNKNOWCALC,                  // 110
-	DATACFGERR_AI,                          //
+	DATACFGERR_CALC,                        // 108
+	DATACFGERR_UNKNOWCALC,                  //
+	DATACFGERR_AI,                          // 110
+	DATACFGERR_AO,                          //
 	DATACFGERR_FI,                          // 112
 	DATACFGERR_LINK,                        //
 	DATACFGERR_LINKNF,                      // 114

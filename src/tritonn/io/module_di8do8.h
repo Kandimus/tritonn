@@ -57,12 +57,8 @@ public:
 
 // IOBaseInterface
 public:
-	virtual UDINT getValue(USINT channel, rIOBaseChannel::Type type, UDINT& fault) override;
-	virtual UDINT setValue(USINT channel, rIOBaseChannel::Type type, UDINT  value) override;
-
-public:
-	USINT getValue(USINT id);
-	USINT getState(USINT id);
+	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
 
 private:
 	static rBitsArray m_flagsDOSetup;

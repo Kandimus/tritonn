@@ -361,6 +361,26 @@ CREATE_EID(EID_DO_KEYPAD_OFF          , EMT_WARNING, EVENT_OBJ_DO      ,  13)
 CREATE_EID(EID_DO_MODULE              , EMT_ERROR  , EVENT_OBJ_DO      ,  14)
 CREATE_EID(EID_DO_NEW_SETUP           , EMT_SUCCESS, EVENT_OBJ_DO      ,  15)
 
+//-------------------------------------------------------------------------------------------------
+// AO
+CREATE_EID(EID_AO_NEW_MIN             , EMT_SUCCESS, EVENT_OBJ_AO      ,   1)
+CREATE_EID(EID_AO_NEW_MAX             , EMT_SUCCESS, EVENT_OBJ_AO      ,   2)
+CREATE_EID(EID_AO_SIM_ON              , EMT_WARNING, EVENT_OBJ_AO      ,   3)
+CREATE_EID(EID_AO_SIM_OFF             , EMT_WARNING, EVENT_OBJ_AO      ,   4)
+CREATE_EID(EID_AO_MODULE              , EMT_ERROR  , EVENT_OBJ_AO      ,   5)
+// AO.Limits
+CREATE_EID(EID_AO_NEW_AMIN            , EMT_SUCCESS, EVENT_OBJ_AO      , 100)
+CREATE_EID(EID_AO_NEW_WMIN            , EMT_SUCCESS, EVENT_OBJ_AO      , 101)
+CREATE_EID(EID_AO_NEW_WMAX            , EMT_SUCCESS, EVENT_OBJ_AO      , 102)
+CREATE_EID(EID_AO_NEW_AMAX            , EMT_SUCCESS, EVENT_OBJ_AO      , 103)
+CREATE_EID(EID_AO_NEW_HYST            , EMT_SUCCESS, EVENT_OBJ_AO      , 104)
+CREATE_EID(EID_AO_NEW_SETUP           , EMT_SUCCESS, EVENT_OBJ_AO      , 105)
+CREATE_EID(EID_AO_AMIN                , EMT_ERROR  , EVENT_OBJ_AO      , 110)
+CREATE_EID(EID_AO_WMIN                , EMT_WARNING, EVENT_OBJ_AO      , 111)
+CREATE_EID(EID_AO_AMAX                , EMT_ERROR  , EVENT_OBJ_AO      , 112)
+CREATE_EID(EID_AO_WMAX                , EMT_WARNING, EVENT_OBJ_AO      , 113)
+CREATE_EID(EID_AO_NORMAL              , EMT_SUCCESS, EVENT_OBJ_AO      , 114)
+CREATE_EID(EID_AO_NAN                 , EMT_ERROR  , EVENT_OBJ_AO      , 115)
 
 //-------------------------------------------------------------------------------------------------
 // SAMPLER
@@ -507,3 +527,5 @@ CREATE_EID(EID_DYNVISC_AMAX            , EMT_ERROR  , EVENT_OBJ_DYNVISC, 112)
 CREATE_EID(EID_DYNVISC_WMAX            , EMT_WARNING, EVENT_OBJ_DYNVISC, 113)
 CREATE_EID(EID_DYNVISC_NORMAL          , EMT_SUCCESS, EVENT_OBJ_DYNVISC, 114)
 CREATE_EID(EID_DYNVISC_NAN             , EMT_ERROR  , EVENT_OBJ_DYNVISC, 115)
+
+
