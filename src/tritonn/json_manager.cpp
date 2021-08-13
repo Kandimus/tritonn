@@ -522,7 +522,6 @@ string rJSONManager::Packet_Login(cJSON *root)
 {
 	cJSON     *juser    = cJSON_GetObjectItem(root, JSONSTR_USERNAME);
 	cJSON     *jpwd     = cJSON_GetObjectItem(root, JSONSTR_PWD);
-	UDINT      result   = 0;
 	USINT      pwd[MAX_HASH_SIZE];
 	rActivity  act;
 	// ответ
@@ -546,13 +545,13 @@ string rJSONManager::Packet_Login(cJSON *root)
 	String_ToBuffer(jpwd->valuestring, pwd, MAX_HASH_SIZE);
 
 	// Попытка входа
+	rUser::LoginResult result = rUser::LoginResult::SUCCESS;
 	act.User = rUser::Login(juser->valuestring, pwd, result);
 
 	// Не удачный вход
-	if(nullptr == act.User)
-	{
+	if(!act.User) {
 		cJSON_AddItemToObject(response, JSONSTR_SUCCESS , cJSON_CreateFalse());
-		CreateErrorJSON(response, result == LOGIN_BLOCKED ? JSONERR_LOGIN_BLOCKED : JSONERR_LOGIN_FAULT, "");
+		CreateErrorJSON(response, result == rUser::LoginResult::BLOCKED ? JSONERR_LOGIN_BLOCKED : JSONERR_LOGIN_FAULT, "");
 
 		return JSONtoString(answe, true);
 	}
@@ -572,7 +571,7 @@ string rJSONManager::Packet_Login(cJSON *root)
 	cJSON_AddItemToObject(response, JSONSTR_DATA   , data);
 	cJSON_AddItemToObject(data    , JSONSTR_TOKEN  , cJSON_CreateNumber(act.Token));
 	cJSON_AddItemToObject(data    , JSONSTR_ACCESS , cJSON_CreateNumber(act.User->GetAccess()));
-	cJSON_AddItemToObject(data    , JSONSTR_RESULT , cJSON_CreateNumber(LOGIN_CHANGEPWD == result ? JSONERR_LOGIN_CHANGEPWD : JSONERR_LOGIN_OK));
+	cJSON_AddItemToObject(data    , JSONSTR_RESULT , cJSON_CreateNumber(result == rUser::LoginResult::CHANGEPWD ? JSONERR_LOGIN_CHANGEPWD : JSONERR_LOGIN_OK));
 
 	Activity.push_back(act);
 
@@ -705,15 +704,15 @@ string rJSONManager::Packet_Conf(cJSON */*root*/)
 
 	// Выдаем уровень доступа
 	cJSON_AddItemToObject(response, JSONSTR_SUCCESS, cJSON_CreateTrue());
-	cJSON_AddItemToObject(jver    , JSONSTR_MAJOR  , cJSON_CreateNumber(ver.m_major     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_MINOR  , cJSON_CreateNumber(ver.m_minor     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_BUILD  , cJSON_CreateNumber(ver.m_build     ));
-	cJSON_AddItemToObject(jver    , JSONSTR_HASH   , cJSON_CreateNumber(ver.m_hash     ));
-	cJSON_AddItemToObject(jconf   , JSONSTR_FILE   , cJSON_CreateString(conf.File     ));
-	cJSON_AddItemToObject(jconf   , JSONSTR_NAME   , cJSON_CreateString(conf.Name     ));
-	cJSON_AddItemToObject(jconf   , JSONSTR_VERSION, cJSON_CreateString(conf.Version  ));
-	cJSON_AddItemToObject(jconf   , JSONSTR_DEV    , cJSON_CreateString(conf.Developer));
-	cJSON_AddItemToObject(jconf   , JSONSTR_HASH   , cJSON_CreateString(conf.Hash     ));
+	cJSON_AddItemToObject(jver    , JSONSTR_MAJOR  , cJSON_CreateNumber(ver.m_major));
+	cJSON_AddItemToObject(jver    , JSONSTR_MINOR  , cJSON_CreateNumber(ver.m_minor));
+	cJSON_AddItemToObject(jver    , JSONSTR_BUILD  , cJSON_CreateNumber(ver.m_build));
+	cJSON_AddItemToObject(jver    , JSONSTR_HASH   , cJSON_CreateNumber(ver.m_hash ));
+	cJSON_AddItemToObject(jconf   , JSONSTR_FILE   , cJSON_CreateString(conf.m_filename.c_str() ));
+	cJSON_AddItemToObject(jconf   , JSONSTR_NAME   , cJSON_CreateString(conf.m_name.c_str()     ));
+	cJSON_AddItemToObject(jconf   , JSONSTR_VERSION, cJSON_CreateString(conf.m_version.c_str()  ));
+	cJSON_AddItemToObject(jconf   , JSONSTR_DEV    , cJSON_CreateString(conf.m_developer.c_str()));
+	cJSON_AddItemToObject(jconf   , JSONSTR_HASH   , cJSON_CreateString(conf.m_hash.c_str()     ));
 
 	return JSONtoString(answe, true);
 }

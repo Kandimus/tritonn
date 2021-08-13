@@ -17,36 +17,33 @@
 
 #include "tcp_class.h"
 #include "variable_class.h"
+#include "singlenton.h"
 
-class  rTermClient;
-struct rPacketLoginData;
-struct rPacketSetData;
-struct rPacketGetData;
+class rTermClient;
 
-class rTermManager: public rTCPClass//, public rVariableClass
+namespace TT {
+	class DataMsg;
+}
+
+class rTermManager : public rTCPClass
 {
-public:
-	virtual ~rTermManager();
+	SINGLETON(rTermManager)
 
-// Singleton
-private:
-	rTermManager();
-	rTermManager(const rTermManager &);
-	rTermManager& operator=(rTermManager &);
-
-public:
-	static rTermManager &Instance();
-
+// rTCPClass
 protected:
 	virtual rThreadStatus Proccesing(void);
 	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
 	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 
-	UDINT PacketLogin(rTermClient *client, rPacketLoginData *packet);
-	UDINT PacketSet  (rTermClient *client, rPacketSetData *packet);
-	UDINT PacketGet  (rTermClient *client, rPacketGetData *packet);
+protected:
+	bool packetLogin(rTermClient* client);
+	bool packetData (rTermClient* client);
+	void sendDefaultMessage(rTermClient* client);
 
-private:
+	void addState(TT::DataMsg& msg);
+	void addConfInfo(TT::DataMsg& msg);
+	void addVersion(TT::DataMsg& msg);
+	void addDateTime(TT::DataMsg& msg);
 };
 
 

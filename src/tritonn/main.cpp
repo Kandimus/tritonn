@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 			.addSwitch(rArg::ForceRun , 'f')
 			.addSwitch(rArg::Terminal , 't')
 			.addSwitch(rArg::Simulate , 's')
-			.addSwitch(rArg::NoDump   , 'd')
+			.addSwitch(rArg::NoDump   , 'D')
 			.addOption(rArg::Log      , 'l', "FFFFFFFF")
 			.addOption(rArg::Config   , 'c', "test_sikn.xml");
 
@@ -143,10 +143,10 @@ int main(int argc, char* argv[])
 
 
 	// Терминал
-	rTermManager::Instance().Run(500);
-	rTermManager::Instance().startServer("0.0.0.0", LanPort::PORT_TERM);
+	rTermManager::instance().Run(500);
+	rTermManager::instance().startServer("0.0.0.0", LanPort::PORT_TERM);
 
-	rThreadMaster::instance().add(&rTermManager::Instance(), TMF_NONE, "config");
+	rThreadMaster::instance().add(&rTermManager::instance(), TMF_NONE, "config");
 
 
 	//----------------------------------------------------------------------------------------------

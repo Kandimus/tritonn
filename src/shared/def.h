@@ -57,20 +57,6 @@ const UDINT  MAX_TCP_RECV_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCP_SEND_BUFF         = 16 * 1024;   //
 const UDINT  MAX_TCPCLIENT_BUFF        = 4 * MAX_TCP_RECV_BUFF; // Размер буффера принятых сообщений клиентом TCP
 
-const UDINT  MARKER_PACKET_CMD         = 0x2592E66B;  // Маркер пакета с командой
-const UDINT  MARKER_PACKET_LOGINANSWE  = 0x558CAEAC;  // Маркер пакета с регистрацией пользователя
-const UDINT  MARKER_PACKET_LOGIN       = 0xBF268FA3;  // Маркер пакета с регистрацией пользователя
-const UDINT  MARKER_PACKET_SET         = 0x7281A77D;  // Маркер пакета записи значений переменных
-const UDINT  MARKER_PACKET_SETANSWE    = 0xF8E3C2C1;  // Маркер пакета результата на запись переменных
-const UDINT  MARKER_PACKET_GET         = 0x72703587;  // Маркер пакета чтения переменных
-const UDINT  MARKER_PACKET_GETANSWE    = 0xAF5750CB;  // Маркет пакета результата чтения переменных
-
-const UDINT  MAX_VARIABLE_LENGTH       = 128;         // Предельная длинна имени переменной //TODO Стоит после создания дерева переменных уменьшить данное число до 64. В теории можно пробежаться по всем варам и узнать макс длину
-const UDINT  MAX_VARVALUE_LENGTH       = 32;          // Предельное значение значения переменной
-const UDINT  MAX_PACKET_SET_COUNT      = 32;          // Количество переменных для одновременной записи
-const UDINT  MAX_PACKET_GET_COUNT      = 32;          // Количество переменных для одновременного считывания
-
-
 //-------------------------------------------------------------------------------------------------
 // Логи
 const UDINT  MAX_LOG_TEXT              = 936;         // Общая длина посылки будет максимум 1024 байт
@@ -110,20 +96,11 @@ const UDINT  MAX_DYNVISC               = 8;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
-const UDINT  MAX_CONFIG_NAME           = 128;
-const UDINT  MAX_CFGVER_SIZE           = 17;
 const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH;
 const UDINT  MAX_STRHASH_SIZE          = MAX_HASH_SIZE * 2;
 
 const UDINT  MAX_UNITS_COUNT           = 512;
 
-
-const USINT  AES_KEY[16]               = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-const USINT  AES_IV[16]                = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-
-//-------------------------------------------------------------------------------------------------
-// Вспомогательные константы
 const LREAL  COMPARE_LREAL_PREC        = 1.0E-10;
 const LREAL  COMPARE_REAL_PREC         = 1.0E-7;
 
@@ -163,21 +140,9 @@ const UDINT  TMF_NOTRUN                = 0x00000004;       // Нить еще н
 
 const UINT   REPORT_DEFAULT_STORAGE    = 91;
 
-
-//-------------------------------------------------------------------------------------------------
-//
-const UDINT  LOGIN_OK                  = 0; // Логин успешен
-const UDINT  LOGIN_FAULT               = 1; // Логин или пароль не верен
-const UDINT  LOGIN_BLOCKED             = 2; // Пользователь заблокирован
-const UDINT  LOGIN_CHANGEPWD           = 3; // Пользователю нужно сменить пароль
-
-//
-const USINT  USER_CHANGEPWD            = 0x01;        // Пользователь должен сменить пароль
-const USINT  USER_MASK_BLOCKED         = 0xF0;
-const USINT  USER_BLOCKEDMANUAL        = 0x10;        // Пользователя заблокировал администратор
-const USINT  USER_BLOCKEDAUTOMAT       = 0x20;        // Пользователь заблокирован после 3-х попыток ввода пароля
-
-//
+// encoding / decoding
+const USINT  AES_KEY[16]               = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+const USINT  AES_IV[16]                = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 const std::string USER_PWD_SALT        = "getsystem"; // Соль для пароля пользователя
 const std::string XMLCONFIG_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
 const std::string XMLREPORT_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
@@ -243,6 +208,7 @@ const std::string FILE_SYSTEMEVENT     = DIR_HOME + "systemevent.xml";
 const std::string DIR_HOME             = "./";
 const std::string DIR_CONF             = DIR_HOME + "conf/";
 const std::string DIR_LOG              = DIR_HOME + "log/";
+const std::string DIR_LOG_TERM         = DIR_LOG + "ttterm/";
 const std::string DIR_FTP              = DIR_HOME + "ftp/";
 const std::string DIR_WWW              = DIR_HOME + "www/";
 const std::string DIR_DUMP             = DIR_HOME + "dump/";

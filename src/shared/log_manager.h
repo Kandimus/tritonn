@@ -20,6 +20,8 @@ class rDateTime;
 
 class rLogManager: public rThreadClass
 {
+	typedef void ( *fn_Callback)(const string &);
+
 	enum
 	{
 		MAX_TEXT_BUFF = 4096,
@@ -36,6 +38,7 @@ public:
 	UDINT addLogMask(UDINT lm);     // Добавление маски к уже существующей
 	UDINT removeLogMask(UDINT lm);  // Удаление маски из существующей
 	UDINT setLogMask(UDINT lm);     // Установка новой маски
+	void  setAddCalback(fn_Callback fn);
 	
 	void setDir(const std::string& dir) { m_dir = dir; }
 
@@ -59,6 +62,7 @@ private:
 	std::string         m_dir = "";
 	rTickCount          m_systimer;
 	rSafityValue<UDINT> m_level;         // Текущий уровень логирования
+	fn_Callback         m_fnCalback = nullptr;
 };
 
 

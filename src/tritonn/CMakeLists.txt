@@ -13,12 +13,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${OPENSSL_INCLUDE_DIRS})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tritonn")
 
 # LIBRARIES
+add_lib(proto)
 add_lib(shared)
 add_lib(xml)
 add_lib(simpleargs)
 add_lib(open62541)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread protobuf-lite)
 
 # INSTALL
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})

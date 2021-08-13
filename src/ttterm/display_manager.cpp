@@ -2,7 +2,7 @@
 //===
 //=== display_manager.cpp
 //===
-//=== Copyright (c) 2019 by RangeSoft.
+//=== Copyright (c) 2019-2021 by RangeSoft.
 //=== All rights reserved.
 //===
 //=== Litvinov "VeduN" Vitaliy O.
@@ -14,22 +14,21 @@
 //=================================================================================================
 
 #include <string.h>
+#include "stringex.h"
 #include "safity.h"
 #include "locker.h"
+#include "hash.h"
 #include "log_manager.h"
 #include "tickcount.h"
 #include "simplefile.h"
 #include "tritonn_version.h"
-#include "packet_login.h"
-#include "packet_loginanswe.h"
-#include "packet_set.h"
-#include "packet_setanswe.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
+#include "data_proto.h"
+#include "login_proto.h"
 #include "display_manager.h"
+#include "../tritonn/data_snapshot_item.h"
 
 
-
+extern std::string GetStatusError(rSnapshotItem::Status err, UDINT shortname);
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -50,21 +49,20 @@ rDisplayManager::rDisplayManager()
 	Hide          = false;
 	AutoID        = 0;
 
-	PacketGetCount              = 0;
-	PacketGetAnsweData.UserData = 1;
-	PacketGetAnsweData.Count    = 0;
-	PacketGetData.UserData      = 1;
-	PacketGetData.Count         = 0;
+	pthread_rwlock_init(&m_lockGetData, 0);
+
+	m_msgGetData.set_userdata(USER_PERIODIC);
 
 	//DEBUG
 	InputHistory.push_back("c 127.0.0.1");
-	InputHistory.push_back("l ./test/vars.test");
+	InputHistory.push_back("g io.globaltemp.keypad");
 	InputHistoryPos = InputHistory.size();
 }
 
 
 rDisplayManager::~rDisplayManager()
 {
+	pthread_rwlock_destroy(&m_lockGetData);
 	endwin();
 }
 
@@ -138,10 +136,10 @@ rThreadStatus rDisplayManager::Proccesing()
 		{
 			tperiod.restart();
 
-			if(PacketGetData.Count)
-			{
-				++PacketGetCount;
-				gTritonnManager.SendPacketGet(PacketGetData);
+			rLocker locker(m_lockGetData); locker.Nop();
+
+			if (m_msgGetData.read_size()) {
+				gTritonnManager.sendDataMsg(m_msgGetData);
 			}
 		}
 		
@@ -179,9 +177,11 @@ void rDisplayManager::Draw()
 	{
 		mvwprintw(stdscr, 0, 0/*х*/, "ttterm %i.%i.%i.%x", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 
-		if (TritonnVer.m_build || TritonnVer.m_major || TritonnVer.m_minor || TritonnVer.m_hash) {
-			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%x <%s>", TritonnVer.m_major, TritonnVer.m_minor, TritonnVer.m_build, TritonnVer.m_hash,
-						 TritonnConf.File[0] ? TritonnConf.File : "?");
+		if (m_tritonnVer.m_build || m_tritonnVer.m_major || m_tritonnVer.m_minor || m_tritonnVer.m_hash) {
+			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%x <%s> status: %i",
+					  m_tritonnVer.m_major, m_tritonnVer.m_minor, m_tritonnVer.m_build, m_tritonnVer.m_hash,
+					  TritonnConf.m_filename.c_str(),
+					  static_cast<USINT>(m_state.m_live));
 		}
 		else
 		{
@@ -189,32 +189,33 @@ void rDisplayManager::Draw()
 		}
 		clrtoeol();
 
-		mvwprintw(stdscr, 1, 0/*х*/, "--- Variables ------------------------------------ [%i]---", PacketGetCount); clrtoeol();
+		mvwprintw(stdscr, 1, 0/*х*/, "--- Variables ------------------------------------ [%i]---", m_countGetData); clrtoeol();
 		mvwprintw(stdscr, 2 + MAX_PACKET_GET_COUNT / 2, 0/*х*/, "----------------------------------------------------------"); clrtoeol();
 	}
 
 
 	if(RedrawGet)
 	{
-		mvwprintw(stdscr, 1, 0/*х*/, "--- Variables ------------------------------------ [%i]---", PacketGetCount);
-		for(UDINT ii = 0; ii < MAX_PACKET_GET_COUNT; ++ii)
-		{
+		mvwprintw(stdscr, 1, 0/*х*/, "--- Variables ------------------------------------ [%i]---", m_countGetData);
+
+		rLocker lock(m_lockGetData); lock.Nop();
+
+		for (DINT ii = 0; ii < m_msgGetData.read_size(); ++ii) {
+			auto item = m_msgGetData.read(ii);
+
 			UDINT x = (ii % 2 == 0) ? 0 : MaxCol / 2;
 
-			if(!x)
-			{
+			if(!x) {
 				wmove(stdscr, 2 + (ii / 2), 0);
 				clrtoeol();
 			}
 
-			if(ii < PacketGetAnsweData.Count)
-			{
+			if (item.has_name() && item.has_value() && item.has_result() && static_cast<UDINT>(ii) < MAX_PACKET_GET_COUNT) {
 				mvwprintw(stdscr, 2 + ii / 2, x, "%s = %s (%s)",
-							 PacketGetAnsweData.Name[ii],
-							 PacketGetAnsweData.Result[ii] == 5 ?  PacketGetAnsweData.Value[ii] : "?",
-							 GetStatusError(PacketGetAnsweData.Result[ii], true).c_str());
+						  item.name().c_str(),
+						  item.result() == rSnapshotItem::Status::ASSIGNED ?  item.value().c_str() : "?",
+						  GetStatusError(static_cast<rSnapshotItem::Status>(item.result()), true).c_str());
 			}
-
 		}
 	}
 
@@ -228,6 +229,7 @@ void rDisplayManager::Draw()
 			//mvwprintw(stdscr, MaxRow - 1 - MaxVisibleLog + yy, 0/*х*/, ii->c_str());
 			clrtoeol();
 		}
+		RedrawInput = true;
 	}
 
 	if(RedrawInput)
@@ -260,7 +262,7 @@ void rDisplayManager::Draw()
 		clrtoeol();
 		refresh();
 	}
-	else if(RedrawInput || RedrawLog | RedrawGet)
+	else if(RedrawInput || RedrawLog || RedrawGet || RedrawInfo)
 	{
 		move(MaxRow - 1, InputBeginCur + InputCurPos);
 		refresh();
@@ -278,11 +280,11 @@ void rDisplayManager::Draw()
 // Команда на ввод логина и пароля, и отправку сообщения PacketLogin в тритонн
 void rDisplayManager::ShowLogin()
 {
-	rLocker locker(Mutex);
+	rLocker locker(Mutex); locker.Nop();
 
 	if(LoginName.size() && LoginPwd.size())
 	{
-		SendPacketLogin();
+		sendPacketLogin();
 
 		LoginSrc = LOGIN_NONE;
 	}
@@ -299,7 +301,7 @@ UDINT rDisplayManager::ProccesingLogin(const string &command)
 {
 	if(LOGIN_NAME == LoginSrc)
 	{
-		rLocker locker(Mutex);
+		rLocker locker(Mutex); locker.Nop();
 
 		LoginName   = command;
 		LoginSrc    = LOGIN_PWD;
@@ -310,14 +312,14 @@ UDINT rDisplayManager::ProccesingLogin(const string &command)
 
 	if(LOGIN_PWD == LoginSrc)
 	{
-		rLocker locker(Mutex);
+		rLocker locker(Mutex); locker.Nop();
 
 		LoginPwd    = command;
 		LoginSrc    = LOGIN_NONE;
 		RedrawInput = true;
 
 		// Отослать пакет
-		SendPacketLogin();
+		sendPacketLogin();
 
 		return 1;
 	}
@@ -326,18 +328,12 @@ UDINT rDisplayManager::ProccesingLogin(const string &command)
 }
 
 
-UDINT rDisplayManager::SetAutoLogin(const string &name, const string &pwd)
+void rDisplayManager::setAutoLogin(const string &name, const string &pwd)
 {
 	LoginName = name;
 	LoginPwd  = pwd;
-
-	return 0;
+	LoginSrc  = LOGIN_NONE;
 }
-
-
-
-//-------------------------------------------------------------------------------------------------
-//
 
 
 //-------------------------------------------------------------------------------------------------
@@ -374,27 +370,20 @@ UDINT rDisplayManager::LoadAutoCommand(const string &filename)
 	return 0;
 }
 
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Обработка сетевых протоколов
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//-------------------------------------------------------------------------------------------------
-// Отправка сообщения PacketLogin в тритонн
-UDINT rDisplayManager::SendPacketLogin()
+UDINT rDisplayManager::sendPacketLogin()
 {
-	rPacketLogin packet;
+	TT::LoginMsg msg;
 
-	packet.SetUserName(LoginName);
-	packet.SetUserPwd (LoginPwd);
-	gTritonnManager.Send(&packet.Data, LENGTH_PACKET_LOGIN);
+	USINT hash_login[MAX_HASH_SIZE];
+	USINT hash_pwd  [MAX_HASH_SIZE];
+
+	GetStrHash(LoginName, hash_login);
+	GetStrHash(LoginPwd , hash_pwd);
+
+	msg.set_user(String_FromBuffer(hash_login, MAX_HASH_SIZE));
+	msg.set_pwd (String_FromBuffer(hash_pwd  , MAX_HASH_SIZE));
+
+	gTritonnManager.sendLoginMsg(msg);
 
 	LoginName = "";
 	LoginPwd  = "";
@@ -402,104 +391,121 @@ UDINT rDisplayManager::SendPacketLogin()
 	return 0;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-//
-UDINT rDisplayManager::CallbackLoginAnswe(rPacketLoginAnsweData *data)
+void rDisplayManager::CallbackLogin(TT::LoginMsg* msg)
 {
-	rLocker locker(Mutex);
+	rLocker locker(Mutex); locker.Nop();
 
-	if(data)
-	{
-		LoginOK     = data->Access;
-		TritonnVer  = data->Version;
-		TritonnConf = data->Config;
-		RedrawInfo  = true;
-	}
-	else
-	{
-		memset(&TritonnVer, 0, sizeof(TritonnVer));
-		RedrawInfo = true;
+	if (msg) {
+		LoginOK = msg->access();
+	} else {
+		LoginOK = 0;
+		memset(&m_tritonnVer, 0, sizeof(m_tritonnVer));
 	}
 
-	return 0;
+	RedrawInfo  = true;
 }
 
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rDisplayManager::CallbackSetAnswe(rPacketSetAnsweData *data)
+void rDisplayManager::CallbackData(TT::DataMsg* msg)
 {
-	for(UDINT ii = 0; ii < data->Count; ++ii)
-	{
-		if(data->Result[ii] == 7)
-		{
-			TRACEI(LogMask, String_format("Variable '%s' set as '%s'.", data->Name[ii], data->Value[ii]).c_str());
-		}
-		else
-		{
-			TRACEW(LogMask, "Variable '%s' setting failed. Error: %s", data->Name[ii], GetStatusError(data->Result[ii], false).c_str());
-		}
+	if (!msg) {
+		return;
 	}
 
-	WaitingAnswe.Set(WAITTING_NONE);
-
-	return 0;
-}
-
-
-//
-UDINT rDisplayManager::CallbackGetAnswe(rPacketGetAnsweData *data)
-{
-	switch(data->UserData)
-	{
-		case USER_PERIODIC:
+	if (isReadDataMsg(*msg)) {
+		switch(msg->userdata())
 		{
-			rLocker lock(MutexPacket);
-
-			PacketGetAnsweData = *data;
-			RedrawGet          = 1;
-
-			break;
-		}
-
-		case USER_DUMP:
-		{
-			FILE *file = fopen(DumpFileName.c_str(), "at");
-
-			if(nullptr == file)
+			case USER_PERIODIC:
 			{
-				TRACEP(LOG::TERMINAL, "Can't open dump file!");
+				rLocker locker(m_lockGetData, rLocker::TYPELOCK::WRITE); locker.Nop();
+
+				m_msgGetData.mutable_read()->Clear();
+				m_msgGetData.mutable_read()->CopyFrom(msg->read());
+				RedrawGet = true;
+				++m_countGetData;
+
 				break;
 			}
 
-			for(UDINT ii = 0; ii < data->Count; ++ii)
+			case USER_DUMP:
 			{
-				fprintf(file, "%s = %s (%s)\n", data->Name[ii], data->Value[ii], GetStatusError(data->Result[ii], true).c_str());
-			}
-			fclose(file);
+				FILE *file = fopen(DumpFileName.c_str(), "at");
 
-			break;
+				if (!file) {
+					TRACEP(LOG::TERMINAL, "Can't open dump file!");
+					break;
+				}
+
+				for (DINT ii = 0; ii < msg->read_size(); ++ii) {
+					auto item = msg->read(ii);
+					fprintf(file, "%s = %s (%s)\n",
+							item.name().c_str(),
+							item.value().c_str(),
+							GetStatusError(static_cast<rSnapshotItem::Status>(item.result()), true).c_str());
+				}
+				fclose(file);
+
+				break;
+			}
+
+			default:
+				for (DINT ii = 0; ii < msg->read_size(); ++ii) {
+					auto item = msg->read(ii);
+
+					if (item.result() == rSnapshotItem::Status::ASSIGNED) {
+						TRACEI(LogMask, "Variable '%s' = '%s'.", item.name().c_str(), item.value().c_str());
+					} else {
+						TRACEW(LogMask, "Variable '%s' getting failed. Error: %s",
+							   item.name().c_str(),
+							   GetStatusError(static_cast<rSnapshotItem::Status>(item.result()), false).c_str());
+					}
+				}
+				break;
 		}
+	}
 
-		default:
-			for(UDINT ii = 0; ii < data->Count; ++ii)
-			{
-				if(data->Result[ii] == 5)
-				{
-					TRACEI(LogMask, String_format("Variable '%s' = '%s'.", data->Name[ii], data->Value[ii]).c_str());
-				}
-				else
-				{
-					TRACEW(LogMask, "Variable '%s' getting failed. Error: %s", data->Name[ii], GetStatusError(data->Result[ii], false).c_str());
-				}
+	if (isWriteDataMsg(*msg)) {
+		for (DINT ii = 0; ii < msg->write_size(); ++ii)
+		{
+			auto item = msg->write(ii);
+
+			if (item.has_result()) {
+				TRACEI(LogMask, "Variable '%s' set as '%s'.", item.name().c_str(), item.value().c_str());
+			} else {
+				TRACEW(LogMask, "Variable '%s' setting failed. Error: %s",
+					   item.name().c_str(),
+					   GetStatusError(static_cast<rSnapshotItem::Status>(item.result()), false).c_str());
 			}
-			break;
+		}
+	}
+
+	if (msg->has_version()) {
+		m_tritonnVer.m_build = msg->version().build();
+		m_tritonnVer.m_hash  = msg->version().hash();
+		m_tritonnVer.m_major = msg->version().major();
+		m_tritonnVer.m_minor = msg->version().minor();
+		RedrawInfo  = true;
+	}
+
+	if (msg->has_state()) {
+		m_state.m_eventAlarm  = msg->state().eventalarm();
+		m_state.m_isSimulate  = msg->state().issimulate();
+		m_state.m_live        = static_cast<Live>(msg->state().live());
+		m_state.m_startReason = msg->state().startreason();
+	}
+
+	if (msg->has_confinfo()) {
+		TritonnConf.m_developer = msg->confinfo().developer();
+		TritonnConf.m_filename = msg->confinfo().filename();
+		TritonnConf.m_hash = msg->confinfo().hash();
+		TritonnConf.m_name = msg->confinfo().name();
+		TritonnConf.m_version = msg->confinfo().version();
+		RedrawInfo  = true;
 	}
 
 	WaitingAnswe.Set(WAITTING_NONE);
-
-	return 0;
 }
 
 

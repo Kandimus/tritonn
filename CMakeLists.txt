@@ -10,10 +10,7 @@ set(PROJECT_NAME_PREFIX TT_)
 option(TRITONN_TESTS "Make tests" ON)
 option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
-
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
-	add_compile_definitions(TRITONN_YOCTO)
-endif()
+option(PROTOBUF_FULL_LIB "Uses full proto lib" OFF)
 
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)
@@ -38,8 +35,8 @@ include(UsefulMacros)
 #
 set(CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED YES)
-set(CMAKE_CXX_FLAGS "-lstdc++ -std=c++14 -Wall -Wfloat-conversion")
-set(CMAKE_C_FLAGS "-std=c99")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lstdc++ -std=c++14 -Wall -Wfloat-conversion -no-pie")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -no-pie")
 
 if(${CMAKE_SIZEOF_VOID_P} STREQUAL 8)
 	if(NOT TRITONN_X64)
@@ -56,8 +53,9 @@ endif()
 #generate version
 set_project_version("src/tritonn_version.h.in")
 include_directories("${CMAKE_BINARY_DIR}/src")
+
 #
-add_subdirectory(src)
+find_package(Protobuf REQUIRED)
 
 # Библиотеки PThread и OpenSSL
 #set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -75,6 +73,9 @@ if (NOT (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm"))
 		return()
 	endif()
 endif()
+
+#
+add_subdirectory(src)
 
 message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")

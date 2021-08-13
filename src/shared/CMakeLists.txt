@@ -7,5 +7,7 @@ file(GLOB_RECURSE files_h ${PROJECT_SOURCE_DIR}/*.h)
 
 add_library(${PROJECT_NAME} STATIC ${files_cpp} ${files_c} ${files_h})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread)
+add_lib(proto)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ${${PROTOBUF_LIB_NAME}})
 

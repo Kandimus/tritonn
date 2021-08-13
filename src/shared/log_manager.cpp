@@ -89,6 +89,10 @@ void rLogManager::add(UDINT mask, const char* filesource, UDINT lineno, const ch
 	delete[] buff;
 
 	outTerminal(mask, fulltext);
+
+	if (m_fnCalback) {
+		m_fnCalback(fulltext);
+	}
 }
 
 UDINT rLogManager::addLogMask(UDINT lm)
@@ -172,4 +176,9 @@ std::string rLogManager::saveLogText(UDINT mask, const rDateTime& timestamp, con
 	}
 
 	return fulltext;
+}
+
+void rLogManager::setAddCalback(fn_Callback fn)
+{
+	m_fnCalback = fn;
 }

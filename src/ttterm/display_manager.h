@@ -19,20 +19,20 @@
 #include <list>
 #include <ncurses.h>
 #include "def.h"
+#include "locker.h"
 #include "thread_class.h"
 #include "structures.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
+#include "data_proto.h"
 #include "tritonn_manager.h"
 
 using std::vector;
 using std::list;
 
 
-struct rPacketLoginAnsweData;
-struct rPacketSetAnsweData;
-
-
+namespace TT {
+	class LoginMsg;
+	class DataMsg;
+}
 
 
 // Этапы ввода логина и пароля
@@ -49,7 +49,8 @@ const UDINT USER_DUMP     = 2;
 const UDINT WAITTING_NONE  = 0;
 const UDINT WAITTING_ANSWE = 1;
 
-
+const UDINT  MAX_PACKET_SET_COUNT = 32;
+const UDINT  MAX_PACKET_GET_COUNT = 32;
 
 //-------------------------------------------------------------------------------------------------
 //
@@ -64,14 +65,13 @@ public:
 	UDINT AddPeriodicGet(vector<string> &varname);
 	UDINT DelPeriodicGet(vector<string> &varname);
 
-	void  ShowLogin();
-	UDINT SetAutoLogin(const string &name, const string &pwd);
+	void ShowLogin();
+	void setAutoLogin(const string &name, const string &pwd);
 
 	UDINT LoadAutoCommand(const string &filename);
 
-	UDINT CallbackLoginAnswe(rPacketLoginAnsweData *data);
-	UDINT CallbackSetAnswe  (rPacketSetAnsweData   *data);
-	UDINT CallbackGetAnswe  (rPacketGetAnsweData   *data);
+	void CallbackLogin(TT::LoginMsg* msg);
+	void CallbackData(TT::DataMsg* msg);
 
 protected:
 	virtual rThreadStatus Proccesing();
@@ -81,7 +81,7 @@ protected:
 	void   Draw();
 	void   AddToHistory(const string &str);
 
-	UDINT SendPacketLogin();
+	UDINT sendPacketLogin();
 	UDINT ProccesingLogin(const string &command);
 
 	UDINT RunCmd       (vector<string> &args);
@@ -125,8 +125,9 @@ private:
 
 	rSafityValue<UDINT> WaitingAnswe;
 
-	rVersion            TritonnVer;
+	rVersion            m_tritonnVer;
 	rConfigInfo         TritonnConf;
+	rState              m_state;
 
 	UDINT               Auto;
 	UDINT               Hide;
@@ -134,17 +135,14 @@ private:
 	string              DumpFileName;
 	vector<string>      AutoCommands;
 
-	pthread_mutex_t     MutexPacket;
-	UDINT               PacketGetCount;
-	rPacketGetAnsweData PacketGetAnsweData;
-	rPacketGetData      PacketGetData;
+	pthread_rwlock_t    m_lockGetData;
+	UDINT               m_countGetData = 0;
+	TT::DataMsg         m_msgGetData;
 
 };
 
 extern rTritonnManager     gTritonnManager;
 extern rSafityValue<UDINT> gExit;
 
-
-extern string GetStatusError(USINT err, UDINT shortname);
 extern vector<string> &split(const string &s, char delim, vector<string> &elems);
 extern vector<string> split(const string &s, char delim);

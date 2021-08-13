@@ -19,12 +19,11 @@
 #include "packet_client.h"
 #include "display_manager.h"
 #include "tritonn_manager.h"
-#include "packet_login.h"
-#include "packet_loginanswe.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
-#include "packet_set.h"
-#include "packet_setanswe.h"
+#include "tritonn_manager.h"
+#include "login_proto.h"
+#include "data_proto.h"
+#include "../tritonn/users.h"
+#include "stringex.h"
 
 extern rDisplayManager gDisplayManager;
 
@@ -84,23 +83,16 @@ rThreadStatus rTritonnManager::Proccesing()
 
 //-------------------------------------------------------------------------------------------------
 //
-UDINT rTritonnManager::SendPacketSet(rPacketSetData &data)
+UDINT rTritonnManager::sendDataMsg(TT::DataMsg& msg)
 {
-	rPacketSet packet(data);
-	UDINT      result = Send(&packet.Data, packet.Data.Size);
-
-//	printf("Send SET ok (%i)\n", result);
-
-	return result;
+	rPacketClient* client = dynamic_cast<rPacketClient*>(Client);
+	return client->send(msg);
 }
 
-
-
-UDINT rTritonnManager::SendPacketGet(rPacketGetData &data)
+UDINT rTritonnManager::sendLoginMsg(TT::LoginMsg& msg)
 {
-	rPacketGet packet(data);
-
-	return Send(&packet.Data, packet.Data.Size);
+	rPacketClient* client = dynamic_cast<rPacketClient*>(Client);
+	return client->send(msg);
 }
 
 
@@ -109,98 +101,99 @@ UDINT rTritonnManager::SendPacketGet(rPacketGetData &data)
 //
 UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 {
-	rPacketClient *client = (rPacketClient *)Client;
-	USINT         *data   = client->Recv(buff, size);
-	UDINT          result = 0;
+	auto client = dynamic_cast<rPacketClient*>(Client);
+	auto data   = client->Recv(buff, size);
 
-//	printf("recv size %i\n", size);
+	do {
+		if (TERMCLNT_RECV_ERROR == data) {
+			return 1;
+		}
 
-	if(TERMCLNT_RECV_ERROR == data)
-	{
-		return 1;
-	}
+		// Посылку считали не полностью
+		if(!data) {
+			return 0;
+		}
 
-	// Посылку считали не полностью
-	if(nullptr == data)
-	{
-		return 0;
-	}
+		if (client->getHeader().m_magic != TT::DataMagic &&
+			client->getHeader().m_magic != TT::LoginMagic) {
 
-	// Проверка на то, что принимаемая посылка из перечня допустимых
-	if((client->Marker == MARKER_PACKET_LOGINANSWE && client->Length == LENGTH_PACKET_LOGINANSWE) ||
-		(client->Marker == MARKER_PACKET_SETANSWE   && client->Length == LENGTH_PACKET_SETANSWE  ) ||
-		(client->Marker == MARKER_PACKET_GETANSWE   && client->Length == LENGTH_PACKET_GETANSWE  ))
-	{
-		//printf("recv packet %i, lenght %i\n", client->Marker, client->Length);
-		;
-	}
-	else
-	{
-		TRACEW(LogMask, "Server send unknow packet. Marker %#X, length %u", client->Marker, client->Length);
+			TRACEW(LogMask, "Server send unknow packet (magic 0x%X, length %u).", client->getHeader().m_magic, client->getHeader().m_dataSize);
 
-		return 2; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
-	}
+			return 2;
+		}
 
-	// Получаем посылку
-	switch(client->Marker)
-	{
-		case MARKER_PACKET_LOGINANSWE: result = PacketLoginAnswe((rPacketLoginAnsweData *)data); break;
-		case MARKER_PACKET_SETANSWE  : result = PacketSetAnswe  ((rPacketSetAnsweData   *)data); break;
-		case MARKER_PACKET_GETANSWE  : result = PacketGetAnswe  ((rPacketGetAnsweData   *)data); break;
+		bool result  = 0;
+		switch (client->getHeader().m_magic) {
+			case TT::LoginMagic: result = PacketLogin(client); break;
+			case TT::DataMagic:  result = PacketData(client); break;
+			default: return true;
+		}
 
-		default:	result = 0; // Как мы тут оказались не понятно ))) Но клиента отключим
-	}
+		if (!result) {
+			return result;
+		}
 
-	client->PopBuff(client->Length);
+		client->clearPacket();
 
-	return 0;
+		data = client->checkBuffer();
+	} while (true);
+
+	return false;
 }
 
 
-UDINT rTritonnManager::PacketLoginAnswe(rPacketLoginAnsweData *data)
+bool rTritonnManager::PacketLogin(rPacketClient* client)
 {
-	if(!data->Access)
-	{
-		TRACEA(LogMask, "Unknow user name or password.");
-		return 0;
+	if (!client) {
+		TRACEW(LogMask, "Client is NULL!");
+		return false;
 	}
 
-	Access = data->Access;
-	gDisplayManager.CallbackLoginAnswe(data);
+	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff(), client->getHeader().m_dataSize);
 
-	TRACEI(LogMask, "Login is OK.");
+	if (!isCorrectLoginMsg(msg) || !msg.has_result() || !msg.has_access()) {
+		TRACEW(LogMask, "Login message deserialize is fault. reason %i%i%i", !isCorrectLoginMsg(msg), !msg.has_result(), !msg.has_access());
+		return false;
+	}
 
-	return 1;
+	UDINT result = msg.result();
+	if (static_cast<rUser::LoginResult>(result) != rUser::LoginResult::SUCCESS &&
+		static_cast<rUser::LoginResult>(result) != rUser::LoginResult::CHANGEPWD) {
+		TRACEA(LogMask, "Unknow user name or password. Result %i", result);
+		return false;
+	}
+
+//TRACEI(LogMask, "LoginMsg <- [%s]", String_FromBuffer(client->getBuff().data(), client->getHeader().m_dataSize).c_str());
+	Access = msg.access();
+	gDisplayManager.CallbackLogin(&msg);
+
+	TRACEI(LogMask, "Login is OK. Access %08X", Access);
+
+	return true;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-UDINT rTritonnManager::PacketSetAnswe(rPacketSetAnsweData *data)
+bool rTritonnManager::PacketData(rPacketClient* client)
 {
-	if(!Access)
-	{
+	if (!client) {
+		TRACEW(LogMask, "Client is NULL!");
+		return false;
+	}
+
+	if(!Access) {
 		TRACEA(LogMask, "Receive packet, but not authorized.");
-		return 0;
+		return false;
 	}
 
-//	printf("Set answe\n");
-	gDisplayManager.CallbackSetAnswe(data);
+	TT::DataMsg msg = deserialize_DataMsg(client->getBuff(), client->getHeader().m_dataSize);
 
-	return 1;
-}
-
-
-//-------------------------------------------------------------------------------------------------
-UDINT rTritonnManager::PacketGetAnswe(rPacketGetAnsweData *data)
-{
-	if(!Access)
-	{
-		TRACEA(LogMask, "Receive packet 'get', but not authorized.");
-		return 0;
+	if (!isCorrectDataMsg(msg)) {
+		TRACEW(LogMask, "Data message deserialize is fault.");
+		return false;
 	}
 
-	gDisplayManager.CallbackGetAnswe(data);
+	gDisplayManager.CallbackData(&msg);
 
-	return 1;
+	return true;
 }
-

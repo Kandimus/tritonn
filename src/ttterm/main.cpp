@@ -8,21 +8,18 @@
 #include "simpleargs.h"
 #include "log_manager.h"
 #include "packet_client.h"
-#include "packet_set.h"
-#include "packet_get.h"
 #include "tritonn_manager.h"
 #include "display_manager.h"
+#include "../tritonn/data_snapshot_item.h"
 
 namespace Args
 {
-
+const char* AUTO     = "autotest";
 const char* USER     = "user";
 const char* PASSWORD = "password";
 const char* HOST     = "host";
 const char* PORT     = "port";
-
 }
-
 
 rPacketClient       gTritonnClient;
 rTritonnManager     gTritonnManager(gTritonnClient);
@@ -31,20 +28,13 @@ rSafityValue<UDINT> gExit;
 pthread_t*          gInfo_Tritonn;
 pthread_t*          gInfo_Display;
 pthread_t*          gInfo_Log;
-//rPacketSetData      gPeriodicSetData;
-//rPacketGetData      gPeriodicGetData;
-
 
 extern void  LogCallback(const string &text);
-extern UDINT PeriodicSetAdd(rPacketSetData &pset, const string &name, const string &val);
-
-
-
 
 int main(int argc, const char **argv)
 {
 	rSimpleArgs::instance()
-			.addOption("autotest"    , 'a', "")
+			.addOption(Args::AUTO    , 'a', "")
 			.addOption(Args::USER    , 'U', "")
 			.addOption(Args::PASSWORD, 'P', "")
 			.addOption(Args::HOST    , 'h', "127.0.0.1")
@@ -52,23 +42,24 @@ int main(int argc, const char **argv)
 
 	rSimpleArgs::instance().parse(argc, argv);
 
+	rLogManager::instance().setDir(DIR_LOG + "ttterm/");  // Запрещаем вывод в терминал
 	rLogManager::instance().m_terminal.Set(false);  // Запрещаем вывод в терминал
 	rLogManager::instance().m_enable.Set(true);     // Запрещаем вещание по TCP
-//	rLogManager::instance().setAddCalback(LogCallback);
+	rLogManager::instance().setAddCalback(LogCallback);
 	rLogManager::instance().Run(16);
 	gInfo_Log = rLogManager::instance().GetThread();
+
+	TRACEI(LOG::TERMINAL, "------------------------------------");
 
 	//
 	gTritonnManager.Run(16);
 	gInfo_Tritonn = gTritonnManager.GetThread();
 
-	if(rSimpleArgs::instance().getOption(Args::USER).size())
-	{
-		gDisplayManager.SetAutoLogin(rSimpleArgs::instance().getOption(Args::USER), rSimpleArgs::instance().getOption(Args::PASSWORD));
+	if(rSimpleArgs::instance().getOption(Args::USER).size() && rSimpleArgs::instance().getOption(Args::PASSWORD).size()) {
+		gDisplayManager.setAutoLogin(rSimpleArgs::instance().getOption(Args::USER), rSimpleArgs::instance().getOption(Args::PASSWORD));
 	}
 
-	if(rSimpleArgs::instance().getOption(Args::HOST).size() && rSimpleArgs::instance().getOption(Args::PORT).size())
-	{
+	if (rSimpleArgs::instance().isSet(Args::AUTO)) {
 		UINT port = atol(rSimpleArgs::instance().getOption(Args::PORT).c_str());
 		gTritonnManager.Connect(rSimpleArgs::instance().getOption(Args::HOST), port);
 	}
@@ -101,24 +92,6 @@ int main(int argc, const char **argv)
    return 0;
 }
 
-
-UDINT PeriodicSetAdd(rPacketSetData &pset, const std::string& name, const std::string& val)
-{
-	if(pset.Count >= MAX_PACKET_SET_COUNT)
-	{
-		LogCallback("Error: maximum of set variables reached.");
-		return 1;
-	}
-
-	strncpy(pset.Name [pset.Count], name.c_str(), MAX_VARIABLE_LENGTH);
-	strncpy(pset.Value[pset.Count],  val.c_str(), MAX_VARVALUE_LENGTH);
-
-	++pset.Count;
-
-	return 0;
-}
-
-
 //-------------------------------------------------------------------------------------------------
 // Получение логов от LogManager'а
 void LogCallback(const std::string &text)
@@ -129,17 +102,19 @@ void LogCallback(const std::string &text)
 
 //-------------------------------------------------------------------------------------------------
 //
-std::string GetStatusError(USINT err, UDINT shortname)
+std::string GetStatusError(rSnapshotItem::Status err, UDINT shortname)
 {
 	switch(err)
 	{
-		case 3: return shortname ? "AD" : "Access denied";
-		case 5: return shortname ? "OK" : "Assign";
-		case 8: return shortname ? "ER" : "Error";
-		case 1: return shortname ? "NF" : "Variable not found";
-		case 2: return shortname ? "RO" : "Variable is readonly";
-		case 0: return shortname ? "UE" : "Undefined error";
-		case 7: return shortname ? "OK" : "writed";
+		case rSnapshotItem::Status::ACCESSDENIED: return shortname ? "AD" : "Access denied";
+		case rSnapshotItem::Status::ASSIGNED    : return shortname ? "OK" : "Assign";
+		case rSnapshotItem::Status::TOASSIGN    : return shortname ? "Asg" : "To assign";
+		case rSnapshotItem::Status::ERROR       : return shortname ? "ER" : "Error";
+		case rSnapshotItem::Status::NOTFOUND    : return shortname ? "NF" : "Variable not found";
+		case rSnapshotItem::Status::READONLY    : return shortname ? "RO" : "Variable is readonly";
+		case rSnapshotItem::Status::UNDEF       : return shortname ? "UE" : "Undefined error";
+		case rSnapshotItem::Status::WRITED      : return shortname ? "OK" : "writed";
+		case rSnapshotItem::Status::TOWRITE     : return shortname ? "Wrt" : "To write";
 	}
 
 	return shortname? "??" : "<?>";
@@ -164,11 +139,3 @@ std::vector<std::string> split(const string &s, char delim)
 	 split(s, delim, elems);
 	 return elems;
 }
-
-
-//================================================================================================
-//
-//
-//
-
-
