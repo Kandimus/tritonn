@@ -12,6 +12,8 @@
 #include "display_manager.h"
 #include "../tritonn/data_snapshot_item.h"
 
+#include "stringex.h"
+
 namespace Args
 {
 const char* AUTO     = "autotest";
@@ -38,6 +40,31 @@ extern void  LogCallback(const string &text);
 
 int main(int argc, const char **argv)
 {
+	std::vector<USINT> arr_bad;
+	std::vector<USINT> arr_good;
+
+	arr_bad.resize(15);
+	arr_good.resize(15);
+	String_ToBuffer("180120FFFFFFFFFFFFFFFFFF010000", arr_bad.data() , arr_bad.size() );
+	String_ToBuffer("180020FFFFFFFFFFFFFFFFFF010000", arr_good.data(), arr_good.size());
+
+	TT::LoginMsg msg_bad  = deserialize_LoginMsg(arr_bad);
+	TT::LoginMsg msg_good = deserialize_LoginMsg(arr_good);
+
+	bool  has_acc_bad = msg_bad.has_access();
+	bool  has_res_bad = msg_bad.has_result();
+	UDINT access_bad  = msg_bad.access();
+	UDINT result_bad  = msg_bad.result();
+
+	bool  has_acc_good = msg_good.has_access();
+	bool  has_res_good = msg_good.has_result();
+	UDINT access_good  = msg_good.access();
+	UDINT result_good  = msg_good.result();
+
+	printf("bad  = %i: %i, %i: 0x%08X\n", has_res_bad , result_bad , has_acc_bad , access_bad);
+	printf("good = %i: %i, %i: 0x%08X\n", has_res_good, result_good, has_acc_good, access_good);
+
+
 	rSimpleArgs::instance()
 			.addOption(Args::AUTO    , 'a', "")
 			.addOption(Args::USER    , 'U', "")

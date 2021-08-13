@@ -22,24 +22,11 @@
 #include "data_snapshot.h"
 #include "login_proto.h"
 #include "data_proto.h"
-#include "packet_get.h"
-#include "packet_getanswe.h"
-#include "packet_login.h"
-#include "packet_loginanswe.h"
-#include "packet_set.h"
-#include "packet_setanswe.h"
 #include "term_client.h"
 #include "term_manager.h"
 #include "stringex.h"
 
 
-
-extern rVariable *gVariable;
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// КОНСТРУКТОРЫ И ДЕСТРУКТОР
 rTermManager::rTermManager()
 	: rTCPClass("0.0.0.0", LanPort::PORT_TERM, 1)
 {
@@ -82,39 +69,46 @@ rClientTCP *rTermManager::NewClient(SOCKET socket, sockaddr_in *addr)
 
 UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 {
-	auto  tclient = dynamic_cast<rTermClient*>(client);
-	auto  data    = tclient->Recv(buff, size);
-	UDINT result  = 0;
+	auto tclient = dynamic_cast<rTermClient*>(client);
+	auto data    = tclient->Recv(buff, size);
 
-	if (TERMCLNT_RECV_ERROR == data) {
-		return 0;
-	}
+	do {
+		if (TERMCLNT_RECV_ERROR == data) {
+			return 0;
+		}
 
-   // Посылку считали не полностью
-	if (nullptr == data) {
-		return 1;
-	}
+		if (!data) {
+			return 1;
+		}
 
-	if (tclient->getHeader().m_magic != TT::DataMagic &&
-		tclient->getHeader().m_magic != TT::LoginMagic) {
+		if (tclient->getHeader().m_magic != TT::DataMagic &&
+			tclient->getHeader().m_magic != TT::LoginMagic) {
 
-		unsigned char *ip = (unsigned char *)&client->Addr.sin_addr.s_addr;
+			unsigned char *ip = (unsigned char *)&client->Addr.sin_addr.s_addr;
 
-		TRACEW(LogMask, "Client [%i.%i.%i.%i] send unknow packet (magic 0x%X, length %u).",
-			   ip[0], ip[1], ip[2], ip[3], tclient->getHeader().m_magic, tclient->getHeader().m_dataSize);
+			TRACEW(LogMask, "Client [%i.%i.%i.%i] send unknow packet (magic 0x%X, length %u).",
+				   ip[0], ip[1], ip[2], ip[3], tclient->getHeader().m_magic, tclient->getHeader().m_dataSize);
 
-		return 0; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
-	}
+			return 0; // Все плохо, пришла не понятная нам посылка, нужно отключение клиента
+		}
 
-	switch(tclient->getHeader().m_magic) {
-		case TT::LoginMagic: result = PacketLogin(tclient); break;
-		case TT::DataMagic:  result = PacketData (tclient); break;
-		default:             result = 0; break;
-	}
+		bool result  = 0;
+		switch(tclient->getHeader().m_magic) {
+			case TT::LoginMagic: result = PacketLogin(tclient); break;
+			case TT::DataMagic:  result = PacketData (tclient); break;
+			default:             return false;
+		}
 
-	tclient->clearPacket();
+		if (!result) {
+			return result;
+		}
 
-	return result;
+		tclient->clearPacket();
+
+		data = tclient->checkBuffer();
+	} while (true);
+
+	return true;
 }
 
 
@@ -133,7 +127,7 @@ bool rTermManager::PacketLogin(rTermClient* client)
 		return false;
 	}
 
-	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff());
+	TT::LoginMsg msg = deserialize_LoginMsg(client->getPacket());
 
 	if (!isCorrectLoginMsg(msg)) {
 		TRACEW(LogMask, "Login message deserialize is fault.");
@@ -194,7 +188,7 @@ bool rTermManager::PacketData(rTermClient* client)
 		return false;
 	}
 
-	TT::DataMsg msg = deserialize_DataMsg(client->getBuff());
+	TT::DataMsg msg = deserialize_DataMsg(client->getPacket());
 
 	if (!isCorrectDataMsg(msg)) {
 		TRACEW(LogMask, "Data message deserialize is fault.");

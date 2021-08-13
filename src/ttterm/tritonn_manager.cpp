@@ -101,9 +101,8 @@ UDINT rTritonnManager::sendLoginMsg(TT::LoginMsg& msg)
 //
 UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 {
-	rPacketClient* client = (rPacketClient *)Client;
-	USINT*         data   = client->Recv(buff, size);
-	UDINT          result = 0;
+	auto client = dynamic_cast<rPacketClient*>(Client);
+	auto data   = client->Recv(buff, size);
 
 	do {
 		if (TERMCLNT_RECV_ERROR == data) {
@@ -123,9 +122,15 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 			return 2;
 		}
 
+		bool result  = 0;
 		switch (client->getHeader().m_magic) {
 			case TT::LoginMagic: result = PacketLogin(client); break;
 			case TT::DataMagic:  result = PacketData(client); break;
+			default: return true;
+		}
+
+		if (!result) {
+			return result;
 		}
 
 		client->clearPacket();
@@ -133,7 +138,7 @@ UDINT rTritonnManager::RecvFromServer(USINT *buff, UDINT size)
 		data = client->checkBuffer();
 	} while (true);
 
-	return 0;
+	return false;
 }
 
 
@@ -144,11 +149,12 @@ bool rTritonnManager::PacketLogin(rPacketClient* client)
 		return false;
 	}
 
-	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff());
+	TT::LoginMsg msg = deserialize_LoginMsg(client->getPacket());
 
 	if (!isCorrectLoginMsg(msg) || !msg.has_result() || !msg.has_access()) {
 		TRACEW(LogMask, "Login message deserialize is fault. reason %i%i%i", !isCorrectLoginMsg(msg), !msg.has_result(), !msg.has_access());
 		TRACEW(LogMask, "result: %u,  access 0x%08X", msg.result(), msg.access());
+		TRACEI(LogMask, "LoginMsg [%s]", String_FromBuffer(client->getBuff().data(), client->getHeader().m_dataSize).c_str());
 		return false;
 	}
 
@@ -182,7 +188,7 @@ bool rTritonnManager::PacketData(rPacketClient* client)
 		return false;
 	}
 
-	TT::DataMsg msg = deserialize_DataMsg(client->getBuff());
+	TT::DataMsg msg = deserialize_DataMsg(client->getPacket());
 
 	if (!isCorrectDataMsg(msg)) {
 		TRACEW(LogMask, "Data message deserialize is fault.");

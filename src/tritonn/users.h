@@ -28,10 +28,11 @@ class rUser
 public:
 	enum class LoginResult : UDINT
 	{
-		SUCCESS = 0, // Логин успешен
-		FAULT, // Логин или пароль не верен
-		BLOCKED,  // Пользователь заблокирован
-		CHANGEPWD,  // Пользователю нужно сменить пароль
+		UNDEF = 0,
+		SUCCESS,
+		FAULT,
+		BLOCKED,
+		CHANGEPWD,
 	};
 
 	enum UserFlags : USINT

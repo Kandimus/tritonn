@@ -43,9 +43,11 @@ public:
 	void clearPacket();
 	const std::vector<USINT>& getBuff()   { return m_buff;   }
 	const rPacketHeader&      getHeader() { return m_header; }
+	std::vector<USINT>  getPacket();
 
 protected:
 	void clearHeader();
+	bool serialize_Header(rPacketHeader& hdr, std::vector<USINT>& arr);
 
 protected:
 	std::vector<USINT> m_buff;

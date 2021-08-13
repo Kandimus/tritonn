@@ -139,7 +139,6 @@ rThreadStatus rDisplayManager::Proccesing()
 			rLocker locker(m_lockGetData); locker.Nop();
 
 			if (m_msgGetData.read_size()) {
-				++m_countGetData;
 				gTritonnManager.sendDataMsg(m_msgGetData);
 			}
 		}
@@ -195,9 +194,9 @@ void rDisplayManager::Draw()
 
 	if(RedrawGet)
 	{
-		mvwprintw(stdscr, 1, 0/*х*/, "--- Variables ------------------------------------ [%i]---", m_msgGetData.read_size());
+		mvwprintw(stdscr, 1, 0/*х*/, "--- Variables ------------------------------------ [%i]---", m_countGetData);
 
-		rLocker lock(m_lockGetData);
+		rLocker lock(m_lockGetData); lock.Nop();
 
 		for (DINT ii = 0; ii < m_msgGetData.read_size(); ++ii) {
 			auto item = m_msgGetData.read(ii);
@@ -424,6 +423,7 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 				m_msgGetData.mutable_read()->Clear();
 				m_msgGetData.mutable_read()->CopyFrom(msg->read());
 				RedrawGet = true;
+				++m_countGetData;
 
 				break;
 			}
