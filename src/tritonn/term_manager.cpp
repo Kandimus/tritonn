@@ -94,8 +94,8 @@ UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 
 		bool result  = 0;
 		switch(tclient->getHeader().m_magic) {
-			case TT::LoginMagic: result = PacketLogin(tclient); break;
-			case TT::DataMagic:  result = PacketData (tclient); break;
+			case TT::LoginMagic: result = packetLogin(tclient); break;
+			case TT::DataMagic:  result = packetData (tclient); break;
 			default:             return false;
 		}
 
@@ -114,20 +114,19 @@ UDINT rTermManager::ClientRecv(rClientTCP *client, USINT *buff, UDINT size)
 
 //-------------------------------------------------------------------------------------------------
 //
-bool rTermManager::PacketLogin(rTermClient* client)
+bool rTermManager::packetLogin(rTermClient* client)
 {
 	if (!client) {
 		TRACEW(LogMask, "Client is NULL!");
 		return false;
 	}
 
-	//NOTE может не отключать пользователя?
-	if(nullptr != client->User) {
+	if(client->m_user) {
 		TRACEW(LogMask, "Re-authorization. Client disconnected.");
 		return false;
 	}
 
-	TT::LoginMsg msg = deserialize_LoginMsg(client->getPacket());
+	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff(), client->getHeader().m_dataSize);
 
 	if (!isCorrectLoginMsg(msg)) {
 		TRACEW(LogMask, "Login message deserialize is fault.");
@@ -141,8 +140,8 @@ bool rTermManager::PacketLogin(rTermClient* client)
 	String_ToBuffer(msg.pwd().c_str() , pwd_hash , MAX_HASH_SIZE);
 
 	rUser::LoginResult result;
-	client->User = rUser::LoginHash(user_hash, pwd_hash, result);
-	if (!client->User) {
+	client->m_user = rUser::LoginHash(user_hash, pwd_hash, result);
+	if (!client->m_user) {
 		TRACEW(LogMask, "Unknow authorization. Cilent disconnected.");
 		return false;
 	}
@@ -151,10 +150,10 @@ bool rTermManager::PacketLogin(rTermClient* client)
 		TRACEW(LogMask, "Fault authorization. Cilent disconnected.");
 		return false;
 
-	} else if(client->User->GetAccess() & ACCESS_SA) {
+	} else if(client->m_user->GetAccess() & ACCESS_SA) {
 		TRACEW(LogMask, "SA is authorized.");
 
-	} else if(client->User->GetAccess() & ACCESS_ADMIN) {
+	} else if(client->m_user->GetAccess() & ACCESS_ADMIN) {
 		TRACEW(LogMask, "Administrator is authorized.");
 
 	} else {
@@ -165,7 +164,7 @@ bool rTermManager::PacketLogin(rTermClient* client)
 	TT::LoginMsg answe;
 
 	answe.set_result(static_cast<UDINT>(result));
-	answe.set_access(client->User->GetAccess());
+	answe.set_access(client->m_user->GetAccess());
 
 	client->send(answe);
 
@@ -176,19 +175,19 @@ bool rTermManager::PacketLogin(rTermClient* client)
 
 //-------------------------------------------------------------------------------------------------
 //
-bool rTermManager::PacketData(rTermClient* client)
+bool rTermManager::packetData(rTermClient* client)
 {
 	if (!client) {
 		TRACEW(LogMask, "Client is NULL!");
 		return false;
 	}
 
-	if (!client->User) {
+	if (!client->m_user) {
 		TRACEW(LogMask, "Client is not authorized. Client disconnected.");
 		return false;
 	}
 
-	TT::DataMsg msg = deserialize_DataMsg(client->getPacket());
+	TT::DataMsg msg = deserialize_DataMsg(client->getBuff(), client->getHeader().m_dataSize);
 
 	if (!isCorrectDataMsg(msg)) {
 		TRACEW(LogMask, "Data message deserialize is fault.");
@@ -202,7 +201,7 @@ bool rTermManager::PacketData(rTermClient* client)
 	}
 
 	if (isWriteDataMsg(msg)) {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
+		rSnapshot ss(rDataManager::instance().getVariableClass(), client->m_user->GetAccess());
 
 		for (auto ii = 0; ii < msg.write_size(); ++ii) {
 			auto item       = msg.write(ii);
@@ -225,7 +224,7 @@ bool rTermManager::PacketData(rTermClient* client)
 	}
 
 	if (isReadDataMsg(msg)) {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), client->User->GetAccess());
+		rSnapshot ss(rDataManager::instance().getVariableClass(), client->m_user->GetAccess());
 
 		for (auto ii = 0; ii < msg.read_size(); ++ii) {
 			auto item       = msg.read(ii);
@@ -254,13 +253,15 @@ bool rTermManager::PacketData(rTermClient* client)
 		addVersion(answe);
 	}
 
-	rState state;
-	rSystemVariable::instance().getState(state);
+	if (isNeedDateTimeDataMsg(msg)) {
+		addDateTime(answe);
+	}
 
-	answe.mutable_state()->set_eventalarm(state.m_eventAlarm);
-	answe.mutable_state()->set_issimulate(state.m_isSimulate);
-	answe.mutable_state()->set_live(state.m_live);
-	answe.mutable_state()->set_startreason(state.m_startReason);
+	if (isUploadConfDataMsg(msg)) {
+		TRACEI(LOG::PACKET, "Upload config is not implemented!");
+	}
+
+	addState(answe);
 
 	client->send(answe);
 
@@ -273,8 +274,20 @@ void rTermManager::sendDefaultMessage(rTermClient* client)
 
 	addConfInfo(msg);
 	addVersion(msg);
+	addState(msg);
 
 	client->send(msg);
+}
+
+void rTermManager::addState(TT::DataMsg& msg)
+{
+	rState state;
+	rSystemVariable::instance().getState(state);
+
+	msg.mutable_state()->set_eventalarm(state.m_eventAlarm);
+	msg.mutable_state()->set_issimulate(state.m_isSimulate);
+	msg.mutable_state()->set_live(state.m_live);
+	msg.mutable_state()->set_startreason(state.m_startReason);
 }
 
 void rTermManager::addConfInfo(TT::DataMsg& msg)
@@ -302,3 +315,16 @@ void rTermManager::addVersion(TT::DataMsg& msg)
 	msg.mutable_version()->set_minor(ver.m_minor);
 }
 
+void rTermManager::addDateTime(TT::DataMsg& msg)
+{
+	tm sdt;
+
+	rSystemVariable::instance().getTime(sdt);
+
+	msg.mutable_datetime()->set_year (sdt.tm_year + 1900);
+	msg.mutable_datetime()->set_month(sdt.tm_mon + 1);
+	msg.mutable_datetime()->set_day  (sdt.tm_mday);
+	msg.mutable_datetime()->set_hour (sdt.tm_hour);
+	msg.mutable_datetime()->set_min  (sdt.tm_min);
+	msg.mutable_datetime()->set_sec  (sdt.tm_sec);
+}

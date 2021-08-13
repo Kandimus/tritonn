@@ -1,33 +1,25 @@
-//=================================================================================================
-//===
-//=== term_client.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Клиент для класса-потока терминала
-//===
-//=================================================================================================
+/*
+ *
+ * term_client.cpp
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include <string.h>
-#include "packet_login.h"
 #include "term_client.h"
-
-
 
 rTermClient::rTermClient(SOCKET socket, sockaddr_in *addr) : rPacketClient(socket, addr)
 {
-	User = nullptr;
+	m_user = nullptr;
 }
-
 
 rTermClient::~rTermClient()
 {
-	User = nullptr;
+	m_user = nullptr;
 }
 
 

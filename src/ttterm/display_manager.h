@@ -127,6 +127,7 @@ private:
 
 	rVersion            m_tritonnVer;
 	rConfigInfo         TritonnConf;
+	rState              m_state;
 
 	UDINT               Auto;
 	UDINT               Hide;

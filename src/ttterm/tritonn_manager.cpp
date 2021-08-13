@@ -149,12 +149,10 @@ bool rTritonnManager::PacketLogin(rPacketClient* client)
 		return false;
 	}
 
-	TT::LoginMsg msg = deserialize_LoginMsg(client->getPacket());
+	TT::LoginMsg msg = deserialize_LoginMsg(client->getBuff(), client->getHeader().m_dataSize);
 
 	if (!isCorrectLoginMsg(msg) || !msg.has_result() || !msg.has_access()) {
 		TRACEW(LogMask, "Login message deserialize is fault. reason %i%i%i", !isCorrectLoginMsg(msg), !msg.has_result(), !msg.has_access());
-		TRACEW(LogMask, "result: %u,  access 0x%08X", msg.result(), msg.access());
-		TRACEI(LogMask, "LoginMsg [%s]", String_FromBuffer(client->getBuff().data(), client->getHeader().m_dataSize).c_str());
 		return false;
 	}
 
@@ -188,7 +186,7 @@ bool rTritonnManager::PacketData(rPacketClient* client)
 		return false;
 	}
 
-	TT::DataMsg msg = deserialize_DataMsg(client->getPacket());
+	TT::DataMsg msg = deserialize_DataMsg(client->getBuff(), client->getHeader().m_dataSize);
 
 	if (!isCorrectDataMsg(msg)) {
 		TRACEW(LogMask, "Data message deserialize is fault.");

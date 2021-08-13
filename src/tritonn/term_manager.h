@@ -19,30 +19,31 @@
 #include "variable_class.h"
 #include "singlenton.h"
 
-class  rTermClient;
-struct rPacketLoginData;
-struct rPacketSetData;
-struct rPacketGetData;
+class rTermClient;
 
 namespace TT {
 	class DataMsg;
 }
 
-class rTermManager : public rTCPClass//, public rVariableClass
+class rTermManager : public rTCPClass
 {
 	SINGLETON(rTermManager)
 
+// rTCPClass
 protected:
 	virtual rThreadStatus Proccesing(void);
 	virtual rClientTCP*   NewClient (SOCKET socket, sockaddr_in *addr);
 	virtual UDINT         ClientRecv(rClientTCP *client, USINT *buff, UDINT size);
 
-	bool PacketLogin(rTermClient* client);
-	bool PacketData (rTermClient* client);
+protected:
+	bool packetLogin(rTermClient* client);
+	bool packetData (rTermClient* client);
 	void sendDefaultMessage(rTermClient* client);
 
+	void addState(TT::DataMsg& msg);
 	void addConfInfo(TT::DataMsg& msg);
 	void addVersion(TT::DataMsg& msg);
+	void addDateTime(TT::DataMsg& msg);
 };
 
 

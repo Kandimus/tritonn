@@ -96,20 +96,11 @@ const UDINT  MAX_DYNVISC               = 8;
 
 const LREAL  MAX_TOTAL_LIMIT           = 9999999999.99999;
 
-const UDINT  MAX_CONFIG_NAME           = 128;
-const UDINT  MAX_CFGVER_SIZE           = 17;
 const UDINT  MAX_HASH_SIZE             = SHA_DIGEST_LENGTH;
 const UDINT  MAX_STRHASH_SIZE          = MAX_HASH_SIZE * 2;
 
 const UDINT  MAX_UNITS_COUNT           = 512;
 
-
-const USINT  AES_KEY[16]               = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-const USINT  AES_IV[16]                = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-
-//-------------------------------------------------------------------------------------------------
-// Вспомогательные константы
 const LREAL  COMPARE_LREAL_PREC        = 1.0E-10;
 const LREAL  COMPARE_REAL_PREC         = 1.0E-7;
 
@@ -149,9 +140,9 @@ const UDINT  TMF_NOTRUN                = 0x00000004;       // Нить еще н
 
 const UINT   REPORT_DEFAULT_STORAGE    = 91;
 
-
-//-------------------------------------------------------------------------------------------------
-//
+// encoding / decoding
+const USINT  AES_KEY[16]               = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+const USINT  AES_IV[16]                = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 const std::string USER_PWD_SALT        = "getsystem"; // Соль для пароля пользователя
 const std::string XMLCONFIG_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";
 const std::string XMLREPORT_HASH_SALT  = "0123456789abcdefghijklmnoABCDEFGHIJKLMNO";

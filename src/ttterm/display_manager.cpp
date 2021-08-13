@@ -178,8 +178,10 @@ void rDisplayManager::Draw()
 		mvwprintw(stdscr, 0, 0/*х*/, "ttterm %i.%i.%i.%x", TRITONN_VERSION_MAJOR, TRITONN_VERSION_MINOR, TRITONN_VERSION_BUILD, TRITONN_VERSION_HASH);
 
 		if (m_tritonnVer.m_build || m_tritonnVer.m_major || m_tritonnVer.m_minor || m_tritonnVer.m_hash) {
-			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%x <%s>", m_tritonnVer.m_major, m_tritonnVer.m_minor, m_tritonnVer.m_build, m_tritonnVer.m_hash,
-						 TritonnConf.m_filename.c_str());
+			mvwprintw(stdscr, 0, MaxCol / 2/*х*/, "tritonn %i.%i.%i.%x <%s> status: %i",
+					  m_tritonnVer.m_major, m_tritonnVer.m_minor, m_tritonnVer.m_build, m_tritonnVer.m_hash,
+					  TritonnConf.m_filename.c_str(),
+					  static_cast<USINT>(m_state.m_live));
 		}
 		else
 		{
@@ -413,7 +415,6 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (isReadDataMsg(*msg)) {
-		TRACEI(LOG::TERMINAL, "Recv DataMsg Read");
 		switch(msg->userdata())
 		{
 			case USER_PERIODIC:
@@ -466,7 +467,6 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (isWriteDataMsg(*msg)) {
-		TRACEI(LOG::TERMINAL, "Recv DataMsg Write");
 		for (DINT ii = 0; ii < msg->write_size(); ++ii)
 		{
 			auto item = msg->write(ii);
@@ -482,7 +482,6 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (msg->has_version()) {
-		TRACEI(LOG::TERMINAL, "Recv DataMsg Version");
 		m_tritonnVer.m_build = msg->version().build();
 		m_tritonnVer.m_hash  = msg->version().hash();
 		m_tritonnVer.m_major = msg->version().major();
@@ -491,11 +490,13 @@ void rDisplayManager::CallbackData(TT::DataMsg* msg)
 	}
 
 	if (msg->has_state()) {
-
+		m_state.m_eventAlarm  = msg->state().eventalarm();
+		m_state.m_isSimulate  = msg->state().issimulate();
+		m_state.m_live        = static_cast<Live>(msg->state().live());
+		m_state.m_startReason = msg->state().startreason();
 	}
 
 	if (msg->has_confinfo()) {
-		TRACEI(LOG::TERMINAL, "Recv DataMsg ConfigInfo");
 		TritonnConf.m_developer = msg->confinfo().developer();
 		TritonnConf.m_filename = msg->confinfo().filename();
 		TritonnConf.m_hash = msg->confinfo().hash();
