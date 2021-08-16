@@ -128,8 +128,6 @@ UDINT rIOAIChannel::simulate()
 {
 	m_hardState = false;
 
-	++m_pullingCount;
-
 	switch(m_simType) {
 		case SimType::NONE:
 			break;

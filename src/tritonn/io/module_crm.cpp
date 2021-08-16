@@ -101,20 +101,55 @@ UDINT rModuleCRM::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleCRM::getPulling()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
 
-rIOBaseChannel* rModuleCRM::getChannel(USINT num, rIOBaseChannel::Type type)
+UDINT rModuleCRM::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	if (num >= CHANNEL_DI_COUNT + 1) {
-		return nullptr;
+		fault = DATACFGERR_REALTIME_CHANNELLINK;
+		return 0;
+	}
+
+	if (num < CHANNEL_DI_COUNT) {
+		if (m_channelDI[num]->m_type != type) {
+			fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+			return 0;
+		}
+
+		rLocker lock(m_rwlock); lock.Nop();
+
+		return m_channelDI[num]->m_value;
+	}
+
+	if (m_channelFI->m_type != type) {
+		fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+		return 0;
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
 
-	if (num < CHANNEL_DI_COUNT) {
-		return (m_channelDI[num]->getType() == type) ? new rIODIChannel(*m_channelDI[num]) : nullptr;
-	}
+	return m_channelFI->m_counter;
+}
 
-	return (m_channelFI->getType() == type) ? new rIOFIChannel(*m_channelFI) : nullptr;
+UDINT rModuleCRM::setValue(USINT num, rIOBaseChannel::Type type, UDINT  value)
+{
+	UNUSED(num);
+	UNUSED(type);
+	UNUSED(value);
+
+	return DATACFGERR_REALTIME_WRONGCHANNEL;
+}
+
+UINT rModuleCRM::getDetectors() const
+{
+	return ((m_channelDI[0]->getValue() != 0) << Detector::Det1) |
+		   ((m_channelDI[1]->getValue() != 0) << Detector::Det2) |
+		   ((m_channelDI[2]->getValue() != 0) << Detector::Det3) |
+		   ((m_channelDI[3]->getValue() != 0) << Detector::Det4);
 }
 
 LREAL rModuleCRM::getFreq() const
@@ -125,15 +160,6 @@ LREAL rModuleCRM::getFreq() const
 UDINT rModuleCRM::getCounter() const
 {
 	return m_channelFI->getCounter();
-}
-
-UINT rModuleCRM::getDetectors() const
-{
-	return ((m_channelDI[0]->getValue() != 0) << Detector::Det1) |
-		   ((m_channelDI[1]->getValue() != 0) << Detector::Det2) |
-		   ((m_channelDI[2]->getValue() != 0) << Detector::Det3) |
-		   ((m_channelDI[3]->getValue() != 0) << Detector::Det4);
-
 }
 
 UDINT rModuleCRM::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

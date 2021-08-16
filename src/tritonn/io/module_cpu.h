@@ -14,13 +14,14 @@
 #include <vector>
 #include "def.h"
 #include "basemodule.h"
+#include "baseinterface.h"
 
 class rIOManager;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rModuleCPU : public rIOBaseModule
+class rModuleCPU : public rIOBaseModule, public rIOBaseInterface
 {
 friend class rIOManager;
 
@@ -31,19 +32,20 @@ public:
 
 	static std::string getRTTI() { return "cpu"; }
 	
-	// Виртуальные функции от rBaseModule
+// rBaseModule
 public:
 	virtual std::string getModuleType() override { return rModuleCPU::getRTTI(); }
 	virtual UDINT processing(USINT issim) override;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
-	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override { return nullptr; }
-	virtual rIOBaseModule*  getModulePtr() override { return nullptr; }
+	virtual rIOBaseInterface* getModuleInterface() override { return dynamic_cast<rIOBaseInterface*>(this); }
 
+// rIOBaseInterface
 public:
-
-private:
+	virtual UDINT getPulling() override;
+	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
 };
 
 

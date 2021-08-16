@@ -100,6 +100,12 @@ UDINT rModuleAI6p::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleAI6p::getPulling()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
+
 UDINT rModuleAI6p::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	fault = checkChannelAccess(num, type);
@@ -192,21 +198,6 @@ UDINT rModuleAI6p::checkChannelAccess(USINT num, rIOBaseChannel::Type type)
 	}
 
 	return TRITONN_RESULT_OK;
-}
-
-rIOBaseChannel* rModuleAI6p::getChannel(USINT num, rIOBaseChannel::Type type)
-{
-	if (num >= CHANNEL_COUNT) {
-		return nullptr;
-	}
-
-	if (m_channel[num]->getType() != type) {
-		return nullptr;
-	}
-
-	rLocker lock(m_rwlock); lock.Nop();
-
-	return new rIOAIChannel(*m_channel[num]);
 }
 
 K19_AI6p_ChType rModuleAI6p::getHardwareModuleChType(UDINT index)

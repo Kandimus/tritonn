@@ -64,30 +64,7 @@ rIOManager::~rIOManager()
 	m_modules.clear();
 }
 
-
-rIOBaseChannel* rIOManager::getChannel(USINT module, rIOBaseChannel::Type type, USINT channel)
-{
-	if (module >= m_modules.size()) {
-		return nullptr;
-	}
-
-	return m_modules[module]->getChannel(channel, type);
-}
-
-rIOBaseModule* rIOManager::getModule(USINT module, rIOBaseModule::Type type)
-{
-	if (module >= m_modules.size()) {
-		return nullptr;
-	}
-
-	if (m_modules[module]->getType() != type && type != rIOBaseModule::Type::UNDEF) {
-		return nullptr;
-	}
-
-	return m_modules[module]->getModulePtr();
-}
-
-rIOBaseInterface* rIOManager::getModuleInterface(USINT module, rIOBaseModule::Type type)
+rIOBaseInterface* rIOManager::getModuleInterface(USINT module, rIOBaseModule::Type type) const
 {
 	if (module >= m_modules.size()) {
 		return nullptr;

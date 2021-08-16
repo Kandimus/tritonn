@@ -19,6 +19,7 @@ public:
 	rIOBaseInterface() = default;
 	virtual ~rIOBaseInterface() = default;
 
+	virtual UDINT getPulling() = 0;
 	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) = 0;
 	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) = 0;
 };

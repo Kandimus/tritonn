@@ -79,6 +79,12 @@ UDINT rModuleDO16::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleDO16::getPulling()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
+
 UDINT rModuleDO16::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	if (num >= CHANNEL_COUNT) {
@@ -111,21 +117,6 @@ UDINT rModuleDO16::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
 
 	m_channel[num]->m_value = (value != 0);
 	return TRITONN_RESULT_OK;
-}
-
-rIOBaseChannel* rModuleDO16::getChannel(USINT num, rIOBaseChannel::Type type)
-{
-	if (num >= CHANNEL_COUNT) {
-		return nullptr;
-	}
-
-	if (m_channel[num]->getType() != type) {
-		return nullptr;
-	}
-
-	rLocker lock(m_rwlock); lock.Nop();
-
-	return new rIODOChannel(*m_channel[num]);
 }
 
 UDINT rModuleDO16::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

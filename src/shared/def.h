@@ -339,7 +339,7 @@ enum rTritonn_Error
 	DATACFGERR_IO,                          // 104
 	DATACFGERR_IO_RESERV4__________,        //
 	DATACFGERR_IO_RESERV1__________,        // 106
-	DATACFGERR_IO_RESERV2__________,        //
+	DATACFGERR_SCALE,                       //
 	DATACFGERR_CALC,                        // 108
 	DATACFGERR_UNKNOWCALC,                  //
 	DATACFGERR_AI,                          // 110

@@ -69,9 +69,7 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) = 0; //TODO delete
-	virtual rIOBaseModule*  getModulePtr() = 0; // TODO delete
-	virtual rIOBaseInterface* getModuleInterface() { return nullptr; } //TODO = 0;
+	virtual rIOBaseInterface* getModuleInterface() = 0;
 
 	virtual std::string getAlias() const { return m_alias; }
 	virtual std::string getName()  const { return m_name;  }
@@ -97,7 +95,8 @@ public:
 	static rBitsArray m_flagsShortType;
 
 protected:
-	Type m_type            = Type::UNDEF;
+	UDINT m_pulling        = 0;
+	Type  m_type           = Type::UNDEF;
 	USINT m_ID             = 0xFF;
 	void* m_dataPtr        = nullptr;
 	UDINT m_moduleReadAll  = 0;

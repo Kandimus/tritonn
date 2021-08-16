@@ -20,16 +20,14 @@
 #include "basechannel.h"
 #include "tickcount.h"
 
-class rModuleDI16;
-class rModuleDI8DO8;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
 class rIODIChannel : public rIOBaseChannel
 {
-friend rModuleDI16;
-friend rModuleDI8DO8;
+friend class rModuleDI16;
+friend class rModuleDI8DO8;
+friend class rModuleCRM;
 
 public:
 	enum SimType

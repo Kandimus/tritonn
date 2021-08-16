@@ -39,6 +39,28 @@ UDINT rModuleCPU::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleCPU::getPulling()
+{
+	return 0;
+}
+
+UDINT rModuleCPU::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	UNUSED(num);
+	UNUSED(type);
+
+	fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+	return 0;
+}
+
+UDINT rModuleCPU::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	UNUSED(num);
+	UNUSED(type);
+	UNUSED(value);
+
+	return DATACFGERR_REALTIME_WRONGCHANNEL;
+}
 
 UDINT rModuleCPU::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {

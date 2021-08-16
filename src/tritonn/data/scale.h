@@ -15,6 +15,11 @@
 #include "../compared_values.h"
 
 class rVariableList;
+class rError;
+
+namespace tinyxml2 {
+	class XMLElement;
+}
 
 class rScale
 {
@@ -22,7 +27,9 @@ public:
 	rScale() : m_min(0), m_max(100) {}
 	virtual ~rScale() = default;
 
-	void generateVars(rVariableList& list, const std::string& alias, STRID unit);
+	void  generateVars(rVariableList& list, const std::string& alias, STRID unit);
+	LREAL getRange() const { return m_max.Value - m_min.Value; }
+	void  loadFromXml(tinyxml2::XMLElement* root, rError& err);
 
 public:
 	rCmpLREAL m_min;

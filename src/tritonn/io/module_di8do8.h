@@ -52,11 +52,9 @@ public:
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
 	virtual rIOBaseInterface* getModuleInterface() override { return dynamic_cast<rIOBaseInterface*>(this); }
 
-	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override;
-	virtual rIOBaseModule*  getModulePtr() override { return new rModuleDI8DO8(this); }
-
 // IOBaseInterface
 public:
+	virtual UDINT getPulling() override;
 	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
 

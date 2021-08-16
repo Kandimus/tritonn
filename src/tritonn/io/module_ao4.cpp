@@ -86,6 +86,12 @@ UDINT rModuleAO4::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleAO4::getPulling()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
+
 UDINT rModuleAO4::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	fault = checkChannelAccess(num, type);
@@ -159,21 +165,6 @@ UDINT rModuleAO4::checkChannelAccess(USINT num, rIOBaseChannel::Type type)
 	}
 
 	return TRITONN_RESULT_OK;
-}
-
-rIOBaseChannel* rModuleAO4::getChannel(USINT num, rIOBaseChannel::Type type)
-{
-	if (num >= CHANNEL_COUNT) {
-		return nullptr;
-	}
-
-	if (m_channel[num]->getType() != type) {
-		return nullptr;
-	}
-
-	rLocker lock(m_rwlock); lock.Nop();
-
-	return new rIOAOChannel(*m_channel[num]);
 }
 
 UDINT rModuleAO4::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

@@ -24,6 +24,9 @@
 //
 class rIOFIChannel : public rIOBaseChannel
 {
+friend class rModuleFI4;
+friend class rModuleCRM;
+
 public:
 	enum SimType
 	{

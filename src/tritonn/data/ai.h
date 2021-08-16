@@ -1,25 +1,22 @@
-﻿//=================================================================================================
-//===
-//=== data_ai.h
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс аналового входного сигнала (AI)
-//===
-//=================================================================================================
+﻿/*
+ *
+ * data/ai.h
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
-#include "data_source.h"
-#include "data_module.h"
 #include "bits_array.h"
-#include "compared_values.h"
-#include "data_link.h"
+#include "../data_source.h"
+#include "../data_module.h"
+#include "../compared_values.h"
+#include "../data_link.h"
+#include "scale.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,17 +52,6 @@ public:
 		MKEYPAD           = 1,          // Ручное переключение на симуляцию
 		LASTGOOD          = 2,          // Используется последнее хорошее значение
 		AKEYPAD           = 4,          // Автоматическое переключение на симуляцию
-	};
-
-	struct rScale
-	{
-		rScale() : Min(0), Max(100)/*, Code_4mA(10923), Code_20mA(54613)*/ {}
-
-		rCmpLREAL Min;               // Значение инж. минимума
-		rCmpLREAL Max;               //
-
-//		UINT      Code_4mA;          // Максимальный код АЦП
-//		UINT      Code_20mA;         // Минимальный код АЦП
 	};
 
 	rAI(const rStation* owner = nullptr);

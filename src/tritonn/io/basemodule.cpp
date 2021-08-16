@@ -80,6 +80,8 @@ void rIOBaseModule::setModule(void* data, ModuleInfo_str* info, ModuleSysData_st
 
 UDINT rIOBaseModule::processing(USINT issim)
 {
+	++m_pulling;
+
 	if(issim || m_isFault) {
 		return TRITONN_RESULT_OK;
 	}

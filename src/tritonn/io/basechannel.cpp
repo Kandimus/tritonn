@@ -19,11 +19,6 @@
 #include "../units.h"
 
 
-UDINT rIOBaseChannel::getPullingCount()
-{
-	return m_pullingCount;
-}
-
 UDINT rIOBaseChannel::processing()
 {
 	return TRITONN_RESULT_OK;

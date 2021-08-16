@@ -81,8 +81,6 @@ UDINT rIOFIChannel::simulate()
 		return TRITONN_RESULT_OK;
 	}
 
-	++m_pullingCount;
-
 	switch(m_simType) {
 		case SimType::NONE: {
 			m_counter = 0;

@@ -123,22 +123,70 @@ K19_FIO_OutType rModuleFI4::getOutType()
 	}
 }
 
-
-rIOBaseChannel* rModuleFI4::getChannel(USINT num, rIOBaseChannel::Type type)
+UDINT rModuleFI4::getPulling()
 {
-	if (num >= CHANNEL_COUNT) {
-		return nullptr;
-	}
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
 
-	if (m_channel[num]->getType() != type) {
-		return nullptr;
+UDINT rModuleFI4::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
 
-	return new rIOFIChannel(*m_channel[num]);
+	return m_channel[num]->m_counter;
 }
 
+UDINT rModuleFI4::setValue(USINT num, rIOBaseChannel::Type type, UDINT  value)
+{
+	UNUSED(num);
+	UNUSED(type);
+	UNUSED(value);
+
+	return DATACFGERR_REALTIME_WRONGCHANNEL;
+}
+
+LREAL rModuleFI4::getFreq(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	fault = checkChannelAccess(num, type);
+	if (fault != TRITONN_RESULT_OK) {
+		return true;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channel[num]->m_freq;
+}
+
+UDINT rModuleFI4::setOut(USINT num)
+{
+	if (num >= CHANNEL_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	m_outtype = static_cast<OutType>(num + 1);
+
+	return TRITONN_RESULT_OK;
+}
+
+UDINT rModuleFI4::checkChannelAccess(USINT num, rIOBaseChannel::Type type)
+{
+	if (num >= CHANNEL_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	if (m_channel[num]->m_type != type) {
+		return DATACFGERR_REALTIME_WRONGCHANNEL;
+	}
+
+	return TRITONN_RESULT_OK;
+}
 
 UDINT rModuleFI4::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {

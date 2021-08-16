@@ -185,17 +185,15 @@ UDINT rAO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 		return err.set(DATACFGERR_AO, element->GetLineNum(), "fault load attributes");
 	}
 
-	m_scale.m_min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement(XmlName::LOW) , 0.0, fault));
-	m_scale.m_max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement(XmlName::HIGH), 100.0, fault));
-
-	if (fault) {
-		return err.set(DATACFGERR_AO, element->GetLineNum(), "fault load scales");
-	}
-
 	STRID unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, fault);
 
 	if (fault) {
 		return err.set(DATACFGERR_AO, element->GetLineNum(), "units");
+	}
+
+	m_scale.loadFromXml(element, err);
+	if (err.getError()) {
+		return err.getError();
 	}
 
 	m_present.m_unit = unit;

@@ -50,7 +50,6 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate() = 0;
-	virtual UDINT getPullingCount();
 	virtual rBitsArray& getFlagsSetup() = 0;
 
 public:
@@ -60,7 +59,6 @@ public:
 	std::string m_comment = "";
 
 protected:
-	UDINT m_pullingCount = 0;
 	Type  m_type = Type::UNDEF;
 };
 

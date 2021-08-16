@@ -122,6 +122,12 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleDI8DO8::getPulling()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
+
 UDINT rModuleDI8DO8::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
@@ -165,23 +171,6 @@ UDINT rModuleDI8DO8::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
 
 	m_channelDO[num]->m_value = (value != 0);
 	return TRITONN_RESULT_OK;
-}
-
-rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num, rIOBaseChannel::Type type)
-{
-	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
-		return nullptr;
-	}
-
-	rLocker lock(m_rwlock); lock.Nop();
-
-	if (num < CHANNEL_DI_COUNT) {
-		return (m_channelDI[num]->getType() == type) ? new rIODIChannel(*m_channelDI[num]) : nullptr;
-	}
-
-	USINT num_do = num - CHANNEL_DI_COUNT;
-
-	return (m_channelDO[num_do]->getType() == type) ? new rIODOChannel(*m_channelDO[num_do]) : nullptr;
 }
 
 UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

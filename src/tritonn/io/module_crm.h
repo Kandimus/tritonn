@@ -20,15 +20,16 @@
 #include "bits_array.h"
 #include "basemodule.h"
 #include "basechannel.h"
+#include "crminterface.h"
 #include "fi_channel.h"
 #include "di_channel.h"
 
-class rIOManager;
+//class rIOManager;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
-class rModuleCRM : public rIOBaseModule
+class rModuleCRM : public rIOBaseModule, public rIOCRMInterface
 {
 friend class rIOManager;
 
@@ -50,21 +51,26 @@ public:
 
 	static std::string getRTTI() { return "crm"; }
 	
-	// Виртуальные функции от rBaseModule
+// rBaseModule
 public:
 	virtual std::string getModuleType() override { return rModuleCRM::getRTTI(); }
 	virtual UDINT processing(USINT issim) override;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
 	virtual UDINT generateMarkDown(rGeneratorMD& md) override;
-	virtual rIOBaseChannel* getChannel(USINT channel, rIOBaseChannel::Type type) override;
-	virtual rIOBaseModule*  getModulePtr() override { return new rModuleCRM(this); }
+	virtual rIOBaseInterface* getModuleInterface() override { return dynamic_cast<rIOCRMInterface*>(this); }
+
+// rIOFIInterface
+public:
+	virtual UDINT getPulling() override;
+	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
+	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
+	virtual UINT getDetectors() const override;
 
 public:
 	UDINT start();
 	USINT abort();
 	LREAL getFreq() const;
-	UINT  getDetectors() const;
 	UDINT getCounter() const;
 
 private:

@@ -1,36 +1,31 @@
-//=================================================================================================
-//===
-//=== data_ai.cpp
-//===
-//=== Copyright (c) 2019-2021 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс аналового входного сигнала (AI)
-//===
-//=================================================================================================
+/*
+ *
+ * data/ai.cpp
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include <vector>
 #include <limits>
 #include <cmath>
 #include <string.h>
-#include "tinyxml2.h"
-#include "event/eid.h"
-#include "text_id.h"
-#include "event/manager.h"
-#include "data_manager.h"
-#include "error.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "io/manager.h"
-#include "io/aiinterface.h"
 #include "xml_util.h"
-#include "data_ai.h"
-#include "generator_md.h"
-#include "comment_defines.h"
+#include "../error.h"
+#include "../text_id.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../data_manager.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../io/manager.h"
+#include "../io/aiinterface.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
+#include "ai.h"
 
 const UDINT AI_LE_SIM_AUTO   = 0x00000002;
 const UDINT AI_LE_SIM_MANUAL = 0x00000004;
@@ -104,25 +99,8 @@ UDINT rAI::initLimitEvent(rLink& link)
 	return 0;
 }
 
-//-------------------------------------------------------------------------------------------------
-//
-//UDINT rAI::GetFault(void)
-//{
-//	if(Setup.Value & AISETUP_VIRTUAL)
-//	{
-//		return 0;
-//	}
-	
-//	// Нужно получить значения статуса модуля и канала
-//	return 0; //TODO доделалать
-//}
-
-
-//-------------------------------------------------------------------------------------------------
-//
 UDINT rAI::calculate()
 {
-	LREAL  Range     = 0; // Значение "чистого" диапазона от Min до Max
 	Status oldStatus = m_status;
 	rEvent event_s;
 	rEvent event_f;
@@ -141,15 +119,12 @@ UDINT rAI::calculate()
 
 	//-------------------------------------------------------------------------------------------
 	// Обработка ввода пользователя
-	m_scale.Min.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MIN)      << m_present.m_unit);
-	m_scale.Max.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MAX)      << m_present.m_unit);
-	m_keypad.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_SIMULATE) << m_present.m_unit);
+	m_scale.m_min.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MIN)      << m_present.m_unit);
+	m_scale.m_max.Compare(COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_MAX)      << m_present.m_unit);
+	m_keypad.Compare     (COMPARE_LREAL_PREC, reinitEvent(EID_AI_NEW_SIMULATE) << m_present.m_unit);
 	m_setup.Compare(reinitEvent(EID_AI_NEW_SETUP));
 	// Сообщения об изменении Mode формируем в ручную
 	
-	// Вычисляем диапазон по инж. величинам (для ускорения расчетов). Вычисляем тут, потому-что это значение еще пригодится при расчете шума
-	Range = m_scale.Max.Value - m_scale.Min.Value;
-
 	m_status = rAI::Status::UNDEF;
 
 	//-------------------------------------------------------------------------------------------
@@ -169,7 +144,7 @@ UDINT rAI::calculate()
 		UINT  rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
 		UINT  minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
 
-		m_phValue.m_value = m_scale.Min.Value + static_cast<LREAL>(Range / rangeADC) * static_cast<LREAL>(adc - minADC);
+		m_phValue.m_value = m_scale.m_min.Value + static_cast<LREAL>(m_scale.getRange() / rangeADC) * static_cast<LREAL>(adc - minADC);
 		m_current.m_value = interface->getCurrent(m_channel, rIOBaseChannel::Type::AI, fault);
 
 		if (fault != TRITONN_RESULT_OK) {
@@ -269,15 +244,15 @@ UDINT rAI::calculate()
 		//TODO перенести в Module
 		if(m_setup.Value & Setup::NOICE)
 		{
-			LREAL d = 2.0 * Range / 100.0; // 2% зона нечуствительности
+			LREAL d = 2.0 * m_scale.getRange() / 100.0; // 2% зона нечуствительности
 
-			if(m_phValue.m_value < m_scale.Min.Value && m_present.m_value >= m_scale.Min.Value - d)
+			if(m_phValue.m_value < m_scale.m_min.Value && m_present.m_value >= m_scale.m_min.Value - d)
 			{
-				m_present.m_value = m_scale.Min.Value;
+				m_present.m_value = m_scale.m_min.Value;
 			}
-			if(m_phValue.m_value > m_scale.Max.Value && m_present.m_value <= m_scale.Max.Value + d)
+			if(m_phValue.m_value > m_scale.m_max.Value && m_present.m_value <= m_scale.m_max.Value + d)
 			{
-				m_present.m_value = m_scale.Max.Value;
+				m_present.m_value = m_scale.m_max.Value;
 			}
 		}
 	}
@@ -289,17 +264,17 @@ UDINT rAI::calculate()
 		// Если значение больше чем инж. максимум
 		// ИЛИ
 		// Значение больше чем инж. максимум минус дельта И статус уже равен выходу за инж. максимум  (нужно что бы на гестерезисе попасть в эту ветку, а не поймать AMAX)
-		if (m_present.m_value > m_scale.Max.Value) {
+		if (m_present.m_value > m_scale.m_max.Value) {
 			if (oldStatus != Status::MAX) {
-				rEventManager::instance().add(reinitEvent(EID_AI_MAX) << m_present.m_unit << m_present.m_value << m_scale.Max.Value);
+				rEventManager::instance().add(reinitEvent(EID_AI_MAX) << m_present.m_unit << m_present.m_value << m_scale.m_max.Value);
 			}
 
 			m_status = Status::MAX;
 		}
 		// Инженерный минимум
-		else if (m_present.m_value < m_scale.Min.Value) {
+		else if (m_present.m_value < m_scale.m_min.Value) {
 			if(oldStatus != Status::MIN) {
-				rEventManager::instance().add(reinitEvent(EID_AI_MIN) << m_present.m_unit << m_present.m_value << m_scale.Min.Value);
+				rEventManager::instance().add(reinitEvent(EID_AI_MIN) << m_present.m_unit << m_present.m_value << m_scale.m_min.Value);
 			}
 
 			m_status = Status::MIN;
@@ -341,10 +316,10 @@ UDINT rAI::generateVars(rVariableList& list)
 {
 	rSource::generateVars(list);
 
+	m_scale.generateVars(list, m_alias, m_present.m_unit);
+
 	// Variables
 	list.add(m_alias + ".keypad"    ,             rVariable::Flags::___D, &m_keypad.Value   , m_present.m_unit, ACCESS_KEYPAD, COMMENT::KEYPAD);
-	list.add(m_alias + ".scales.low",             rVariable::Flags::___D, &m_scale.Min.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного минимума");
-	list.add(m_alias + ".scales.high",            rVariable::Flags::___D, &m_scale.Max.Value, m_present.m_unit, ACCESS_SCALES, "Значение инженерного максимума");
 	list.add(m_alias + ".setup"     , TYPE::UINT, rVariable::Flags::RS__, &m_setup.Value    , U_DIMLESS       , ACCESS_SA    , COMMENT::SETUP + m_flagsSetup.getInfo());
 	list.add(m_alias + ".mode"      , TYPE::UINT, rVariable::Flags::___D, &m_mode           , U_DIMLESS       , ACCESS_KEYPAD, COMMENT::MODE + m_flagsMode.getInfo(true));
 	list.add(m_alias + ".status"    , TYPE::UINT, rVariable::Flags::R___, &m_status         , U_DIMLESS       , 0            , COMMENT::STATUS + m_flagsStatus.getInfo());
@@ -385,21 +360,21 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	UDINT fault = 0;
+	STRID Unit  = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, fault);
+
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));
-
 	m_setup.Init(m_flagsSetup.getValue(strSetup, fault));
-
 	m_keypad.Init(XmlUtils::getTextLREAL(element->FirstChildElement(XmlName::KEYPAD) , 0.0, fault));
-	m_scale.Min.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::LOW), 0.0, fault));
-	m_scale.Max.Init(XmlUtils::getTextLREAL(xml_scale->FirstChildElement  (XmlName::HIGH), 0.0, fault));
-
-	STRID Unit = XmlUtils::getTextUDINT(element->FirstChildElement(XmlName::UNIT), U_any, fault);
 
 	if (fault) {
-		return err.set(DATACFGERR_AI, element->GetLineNum(), "");
+		return err.set(DATACFGERR_AI, element->GetLineNum(), "error in mode or setup or keypad");
 	}
 
-	// Подправляем единицы измерения, исходя из конфигурации AI
+	m_scale.loadFromXml(element, err);
+	if (err.getError()) {
+		return err.getError();
+	}
+
 	m_present.m_unit = Unit;
 	m_phValue.m_unit = Unit;
 
@@ -420,8 +395,8 @@ UDINT rAI::generateMarkDown(rGeneratorMD& md)
 			.addXml(XmlName::UNIT  , static_cast<UDINT>(U_any))
 			.addXml(XmlName::KEYPAD, m_keypad.Value)
 			.addXml("<" + std::string(XmlName::SCALE) + ">")
-			.addXml(XmlName::MIN, m_scale.Min.Value, false, "\t")
-			.addXml(XmlName::MAX, m_scale.Max.Value, false, "\t")
+			.addXml(XmlName::MIN, m_scale.m_min.Value, false, "\t")
+			.addXml(XmlName::MAX, m_scale.m_max.Value, false, "\t")
 			.addXml("</" + std::string(XmlName::SCALE) + ">");
 
 	return TRITONN_RESULT_OK;

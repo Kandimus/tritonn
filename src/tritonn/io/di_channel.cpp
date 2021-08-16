@@ -103,8 +103,6 @@ UDINT rIODIChannel::processing()
 
 UDINT rIODIChannel::simulate()
 {
-	++m_pullingCount;
-
 	switch(m_simType) {
 		case SimType::NONE:
 			break;

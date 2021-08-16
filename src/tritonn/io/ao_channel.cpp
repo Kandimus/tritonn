@@ -67,8 +67,6 @@ UINT rIOAOChannel::getRange() const
 
 UDINT rIOAOChannel::simulate()
 {
-	++m_pullingCount;
-
 	return TRITONN_RESULT_OK;
 }
 
