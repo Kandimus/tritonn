@@ -96,7 +96,7 @@ UDINT rModuleAI6p::processing(USINT issim)
 
 		channel->processing();
 	}
-
+printf("AI6p[0] curr %.1f, type %i\n", m_data.Read.Data[0], m_data.Read.ChType[0]);
 	return TRITONN_RESULT_OK;
 }
 

@@ -29,6 +29,7 @@ void rScale::loadFromXml(tinyxml2::XMLElement* root, rError& err)
 	auto xml_scale = root->FirstChildElement(XmlName::SCALE);
 
 	if (!xml_scale) {
+		err.set(DATACFGERR_SCALE, xml_scale->GetLineNum(), "cant found scale");
 		return;
 	}
 

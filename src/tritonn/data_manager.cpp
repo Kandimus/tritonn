@@ -324,16 +324,34 @@ ttt.start(2000);
 //		Unlock();
 
 		if (ttt.isFinished()) {
-			static int aaa = 1;
+			static int do_value = 1;
+			static LREAL ao_value = 4.0;
 			rSnapshot ss(getVariableClass());
+			rSnapshot sg(getVariableClass());
 
-			ss.add("io.test_do.present.value", aaa);
+			ss.add("io.test_do.present.value", do_value);
+			ss.add("io.test_ao.present.value", ao_value);
 			ss.set();
 
+			sg.add("io.test_ai.present.value");
+			sg.get();
+
 			if (ss("io.test_do.present.value")) {
-				TRACEI(LOG::DATAMGR, "io.test_do.present.value = %i", aaa);
+				TRACEI(LOG::DATAMGR, "io.test_do.present.value = %i", do_value);
 			}
-			aaa = !aaa;
+
+			if (ss("io.test_ao.present.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_ao.present.value = %.1f", ao_value);
+			}
+
+			if (sg("io.test_ai.present.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_ai.present.value = %.1f", sg("io.test_ai.present.value")->getValueLREAL());
+			}
+
+			do_value = !do_value;
+			ao_value += 0.5;
+
+			if (ao_value > 20) ao_value = 4.0;
 			ttt.restart();
 		}
 

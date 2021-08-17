@@ -181,7 +181,7 @@ UDINT rProve::calculate()
 		m_moduleCount = interface->getValue(4, rIOBaseChannel::Type::FI, fault);
 
 		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module << m_channel);
+			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
 			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
 			return fault;
 		}

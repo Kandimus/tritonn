@@ -48,7 +48,7 @@ rAO::rAO(const rStation* owner) : rSource(owner), m_setup(0)
 	m_mode    = Mode::PHIS;
 
 	//NOTE Единицы измерения добавим после загрузки сигнала
-	initLink(rLink::Setup::INPUT, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INPUT | rLink::Setup::WRITABLE, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 }
 
 
@@ -162,9 +162,7 @@ UDINT rAO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	tinyxml2::XMLElement* xml_module = element->FirstChildElement(XmlName::IOLINK);
-	tinyxml2::XMLElement* xml_limits = element->FirstChildElement(XmlName::LIMITS);
 	tinyxml2::XMLElement* xml_unit   = element->FirstChildElement(XmlName::UNIT);
-	tinyxml2::XMLElement* xml_scale  = element->FirstChildElement(XmlName::SCALE);
 
 	if (xml_module) {
 		if (rDataModule::loadFromXML(xml_module, err) != TRITONN_RESULT_OK) {
@@ -172,8 +170,8 @@ UDINT rAO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 		}
 	}
 
-	if (!xml_limits || !xml_unit || !xml_scale) {
-		return err.set(DATACFGERR_AO, element->GetLineNum(), "cant found limits or unit or scale");
+	if (!xml_unit) {
+		return err.set(DATACFGERR_AO, element->GetLineNum(), "cant found unit");
 	}
 
 	UDINT fault = 0;

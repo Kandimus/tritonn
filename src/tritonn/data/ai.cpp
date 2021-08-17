@@ -342,11 +342,8 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 	}
 
 	tinyxml2::XMLElement* xml_module = element->FirstChildElement(XmlName::IOLINK);
-	tinyxml2::XMLElement* xml_limits = element->FirstChildElement(XmlName::LIMITS); // Limits считываем только для проверки
 	tinyxml2::XMLElement* xml_unit   = element->FirstChildElement(XmlName::UNIT);
-	tinyxml2::XMLElement* xml_scale  = element->FirstChildElement(XmlName::SCALE);
 
-	// Если аналоговый сигнал не привязан к каналу, то разрешаем менять его значение
 	if (xml_module) {
 		if (rDataModule::loadFromXML(xml_module, err) != TRITONN_RESULT_OK) {
 			return err.getError();
@@ -355,8 +352,8 @@ UDINT rAI::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 		m_present.m_setup |= rLink::Setup::WRITABLE;
 	}
 
-	if (!xml_limits || !xml_unit || !xml_scale) {
-		return err.set(DATACFGERR_AI, element->GetLineNum(), "cant found limits or unit or scale");
+	if (!xml_unit) {
+		return err.set(DATACFGERR_AI, element->GetLineNum(), "cant found unit");
 	}
 
 	UDINT fault = 0;
