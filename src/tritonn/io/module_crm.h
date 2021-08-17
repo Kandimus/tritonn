@@ -1,17 +1,14 @@
-﻿//=================================================================================================
-//===
-//=== module_crm.h
-//===
-//=== Copyright (c) 2021 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс модуля поверочной установки (CRM)
-//===
-//=================================================================================================
+﻿/*
+ *
+ * io/module_crm.h
+ *
+ * Copyright (c) 2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
+
 
 #pragma once
 
@@ -24,11 +21,6 @@
 #include "fi_channel.h"
 #include "di_channel.h"
 
-//class rIOManager;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
 class rModuleCRM : public rIOBaseModule, public rIOCRMInterface
 {
 friend class rIOManager;
@@ -65,17 +57,22 @@ public:
 	virtual UDINT getPulling() override;
 	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
-	virtual UINT getDetectors() const override;
+	virtual LREAL getFreq() override;
+	virtual UINT  getDetectors() override;
+	virtual State getState(USINT idx) override;
+	virtual LREAL getTime(USINT idx) override;
+	virtual LREAL getImp(USINT idx) override;
+	virtual bool  start() override;
+	virtual bool  abort() override;
 
-public:
-	UDINT start();
-	USINT abort();
-	LREAL getFreq() const;
-	UDINT getCounter() const;
+private:
+	rIOCRMInterface::State convertState(USINT state);
 
 private:
 	std::vector<rIODIChannel*> m_channelDI;
 	rIOFIChannel* m_channelFI;
+
+	K19_CRM_str m_data;
 
 	static rBitsArray m_flagsSetup;
 };

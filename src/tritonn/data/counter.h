@@ -79,7 +79,7 @@ protected:
 	static rBitsArray m_flagsSetup;
 	bool  m_isInit = false;
 	UDINT m_countPrev = 0;
-	UDINT m_tickPrev  = 0;
+//	UDINT m_tickPrev  = 0;
 	UDINT m_pullingCount = 0;
 };
 

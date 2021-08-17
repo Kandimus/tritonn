@@ -57,7 +57,7 @@ rModuleDO16::~rModuleDO16()
 
 UDINT rModuleDO16::processing(USINT issim)
 {
-	rLocker lock(m_rwlock); lock.Nop();
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {

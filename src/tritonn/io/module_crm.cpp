@@ -1,17 +1,13 @@
-﻿//=================================================================================================
-//===
-//=== module_crm.cpp
-//===
-//=== Copyright (c) 2021 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс модуля поверочной установки (CRM)
-//===
-//=================================================================================================
+﻿/*
+ *
+ * io/module_crm.cpp
+ *
+ * Copyright (c) 2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include "module_crm.h"
 #include "locker.h"
@@ -39,6 +35,9 @@ rModuleCRM::rModuleCRM(UDINT id) : rIOBaseModule(id)
 	m_channelFI->m_canIdx = 0;
 
 	m_listChannel.push_back(m_channelFI);
+
+	memset(&m_data, 0, sizeof(m_data));
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_CRM_ModuleReadAll, _K19_CRM_ModuleExchange);
 }
 
 rModuleCRM::rModuleCRM(const rModuleCRM* crm)  : rIOBaseModule(crm)
@@ -74,17 +73,26 @@ rModuleCRM::~rModuleCRM()
 
 UDINT rModuleCRM::processing(USINT issim)
 {
-	rLocker lock(m_rwlock); lock.Nop();
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
 	rIOBaseModule::processing(issim);
 
 	for (auto channel : m_channelDI) {
+		USINT idx = channel->m_canIdx;
+
 		if (channel->isOff()) {
 			continue;
 		}
 
 		if (issim) {
 			channel->simulate();
+		} else {
+			switch(idx) {
+				case 0: channel->m_phValue = m_data.Read.DIStat.Ch1Stat; break;
+				case 1: channel->m_phValue = m_data.Read.DIStat.Ch2Stat; break;
+				case 2: channel->m_phValue = m_data.Read.DIStat.Ch3Stat; break;
+				case 3: channel->m_phValue = m_data.Read.DIStat.Ch4Stat; break;
+			}
 		}
 
 		channel->processing();
@@ -93,6 +101,10 @@ UDINT rModuleCRM::processing(USINT issim)
 	if (!(m_channelFI->m_setup & rIOFIChannel::Setup::OFF)) {
 		if (issim) {
 			m_channelFI->simulate();
+		} else {
+			m_channelFI->m_freq    = m_data.Read.Frequency;
+			m_channelFI->m_filter  = m_data.Read.Filter;
+			m_channelFI->m_counter = 0;
 		}
 
 		m_channelFI->processing();
@@ -144,22 +156,84 @@ UDINT rModuleCRM::setValue(USINT num, rIOBaseChannel::Type type, UDINT  value)
 	return DATACFGERR_REALTIME_WRONGCHANNEL;
 }
 
-UINT rModuleCRM::getDetectors() const
+LREAL rModuleCRM::getFreq()
 {
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channelFI->getFreq();
+}
+
+UINT rModuleCRM::getDetectors()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+
 	return ((m_channelDI[0]->getValue() != 0) << Detector::Det1) |
 		   ((m_channelDI[1]->getValue() != 0) << Detector::Det2) |
 		   ((m_channelDI[2]->getValue() != 0) << Detector::Det3) |
 		   ((m_channelDI[3]->getValue() != 0) << Detector::Det4);
 }
 
-LREAL rModuleCRM::getFreq() const
+rIOCRMInterface::State rModuleCRM::getState(USINT idx)
 {
-	return m_channelFI->getFreq();
+	rLocker lock(m_rwlock); lock.Nop();
+	return convertState((!idx) ? m_data.Read.MeasureState[0] : m_data.Read.MeasureState[1]);
 }
 
-UDINT rModuleCRM::getCounter() const
+LREAL rModuleCRM::getTime(USINT idx)
 {
-	return m_channelFI->getCounter();
+	rLocker lock(m_rwlock); lock.Nop();
+	return (!idx) ? m_data.Read.MeasureTimeUs[0] : m_data.Read.MeasureTimeUs[1];
+}
+
+LREAL rModuleCRM::getImp(USINT idx)
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return (!idx) ? m_data.Read.MeasureImpulseNmb[0] : m_data.Read.MeasureImpulseNmb[1];
+}
+
+bool rModuleCRM::start()
+{
+#ifdef TRITONN_YOCTO
+	rLocker lock(m_rwlock); lock.Nop();
+
+	if (m_moduleInfo->InWork) {
+		candrv_cmd(_K19_CRM_MeasureStart, m_ID, m_dataPtr);
+		return true;
+	}
+
+	return false;
+#else
+	return true; //TODO сюда добавить симуляцию поверки
+#endif
+}
+
+bool rModuleCRM::abort()
+{
+#ifdef TRITONN_YOCTO
+	rLocker lock(m_rwlock); lock.Nop();
+
+	if (m_moduleInfo->InWork) {
+		candrv_cmd(_K19_CRM_MeasureStop, m_ID, m_dataPtr);
+		return true;
+	}
+
+	return false;
+#else
+	return true; //TODO сюда добавить симуляцию поверки
+#endif
+}
+
+rIOCRMInterface::State rModuleCRM::convertState(USINT state)
+{
+	switch(state)
+	{
+		case K19_CRM_Meas_Idle:          return rIOCRMInterface::State::IDLE;
+		case K19_CRM_Meas_WaitForFirst:  return rIOCRMInterface::State::WAIT_1;
+		case K19_CRM_Meas_WaitForSecond: return rIOCRMInterface::State::WAIT_2;
+		case K19_CRM_Meas_Finished:      return rIOCRMInterface::State::FINISH;
+		case K19_CRM_Meas_Timeout:       return rIOCRMInterface::State::TIMEOUT;
+		default:                         return rIOCRMInterface::State::IDLE;
+	}
 }
 
 UDINT rModuleCRM::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

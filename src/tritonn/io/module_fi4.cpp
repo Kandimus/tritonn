@@ -85,7 +85,7 @@ rModuleFI4::~rModuleFI4()
 
 UDINT rModuleFI4::processing(USINT issim)
 {
-	rLocker lock(m_rwlock); lock.Nop();
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {

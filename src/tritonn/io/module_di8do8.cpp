@@ -84,7 +84,7 @@ rModuleDI8DO8::~rModuleDI8DO8()
 
 UDINT rModuleDI8DO8::processing(USINT issim)
 {
-	rLocker lock(m_rwlock); lock.Nop();
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {

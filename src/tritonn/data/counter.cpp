@@ -41,7 +41,6 @@ rCounter::rCounter(const rStation* owner) : rSource(owner), m_setup(Setup::OFF)
 
 	m_lockErr   = 0;
 	m_countPrev = 0;
-	m_tickPrev  = 0;
 
 	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT, m_impulse, U_imp  , SID::IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT, m_freq   , U_Hz   , SID::FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
@@ -74,16 +73,12 @@ UDINT rCounter::initLimitEvent(rLink &link)
 //
 UDINT rCounter::calculate()
 {
-	rEvent event_f;
-	rEvent event_s;
-	
 	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
 	}
 
 	// Если сигнал выключен, то выходим
 	if (m_setup.Value & Setup::OFF) {
-		//lStatusCh = OFAISTATUSCH_OK;		
 		m_count           = 0;
 		m_isInit          = false;
 		m_freq.m_value    = 0.0;
@@ -109,10 +104,9 @@ UDINT rCounter::calculate()
 		UDINT fault = 0;
 		UDINT count = interface->getValue(m_channel, rIOBaseChannel::Type::FI, fault);
 		LREAL freq  = interface->getFreq (m_channel, rIOBaseChannel::Type::FI, fault);
-		UDINT tick  = rTickCount::SysTick();
 
 		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module << m_channel);
+			rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
 			return fault;
 		}
@@ -122,17 +116,15 @@ UDINT rCounter::calculate()
 			m_freq.m_value    = 0.0;
 			m_period.m_value  = 0.0;
 			m_countPrev       = count;
-			m_tickPrev        = tick;
 			m_isInit          = true;
 		} else {
-			UDINT curpulling = interface->getPulling(); //TODO это делать только в симуляторе
+			UDINT curpulling = interface->getPulling(); //TODO это делать только в симуляторе?
 
 			if (m_pullingCount != curpulling) {
 				m_impulse.m_value = count - m_countPrev;
 				m_freq.m_value    = freq;
 				m_period.m_value  = getPeriod();
 				m_countPrev       = count;
-				m_tickPrev        = tick;
 				m_pullingCount    = curpulling;
 			}
 		}

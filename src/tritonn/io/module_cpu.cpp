@@ -32,7 +32,7 @@ rModuleCPU::rModuleCPU(const rModuleCPU* cpu) : rIOBaseModule(cpu)
 
 UDINT rModuleCPU::processing(USINT issim)
 {
-	rLocker lock(m_rwlock); lock.Nop();
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
 	rIOBaseModule::processing(issim);
 
