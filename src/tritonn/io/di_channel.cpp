@@ -147,3 +147,8 @@ UDINT rIODIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 	return TRITONN_RESULT_OK;
 }
+
+std::string rIODIChannel::getMarkDownFlags() const
+{
+	return m_flagsSetup.getMarkDown(getStrType() + " setup");
+}

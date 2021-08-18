@@ -47,7 +47,6 @@ rAO::rAO(const rStation* owner) : rSource(owner), m_setup(0)
 	m_setup   = Setup::OFF;
 	m_mode    = Mode::PHIS;
 
-	//NOTE Единицы измерения добавим после загрузки сигнала
 	initLink(rLink::Setup::INPUT | rLink::Setup::WRITABLE, m_present, U_any, SID::PRESENT , XmlName::PRESENT , rLink::SHADOW_NONE);
 }
 

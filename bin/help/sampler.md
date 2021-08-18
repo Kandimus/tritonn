@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # sampler
-> 0.19.156.28f9fa2c
+> 0.19.165.ba8170a6
 ## XML
 ````xml
 <sampler name="valid object name" description="string index" method="text value | text value | ... | text value" setup="text value | text value | ... | text value" >

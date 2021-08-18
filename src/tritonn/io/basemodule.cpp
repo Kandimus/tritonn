@@ -147,14 +147,14 @@ UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list
 	std::string p = m_alias + ".";
 
 	list.add(p + "type"        , TYPE::UINT, rVariable::Flags::R___, &m_type             , U_DIMLESS , 0, "Тип модуля:<br>" + m_flagsType.getInfo(true));
-	list.add(p + "node"        ,             rVariable::Flags::R___, &m_module.NodeID    , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "vendor"      ,             rVariable::Flags::R___, &m_module.IDVendor  , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "productCode" ,             rVariable::Flags::R___, &m_module.IDProdCode, U_DIMLESS , 0, "Нет данных");
-	list.add(p + "revision"    ,             rVariable::Flags::R___, &m_module.IDRevision, U_DIMLESS , 0, "Нет данных");
-	list.add(p + "serialNumber",             rVariable::Flags::R___, &m_module.IDSerial  , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "can"         ,             rVariable::Flags::R___, &m_status.m_CAN     , U_DIMLESS , 0, "Нет данных");
-	list.add(p + "firmware"    ,             rVariable::Flags::R___, &m_status.m_firmware, U_DIMLESS , 0, "Нет данных");
-	list.add(p + "hardware"    ,             rVariable::Flags::R___, &m_status.m_hardware, U_DIMLESS , 0, "Нет данных");
+	list.add(p + "node"        ,             rVariable::Flags::R___, &m_module.NodeID    , U_DIMLESS , 0, "Уникальный номер");
+	list.add(p + "vendor"      ,             rVariable::Flags::R___, &m_module.IDVendor  , U_DIMLESS , 0, "Код производителя");
+	list.add(p + "productCode" ,             rVariable::Flags::R___, &m_module.IDProdCode, U_DIMLESS , 0, "Код устройства");
+	list.add(p + "revision"    ,             rVariable::Flags::R___, &m_module.IDRevision, U_DIMLESS , 0, "Версия сетевого драйвера");
+	list.add(p + "serialNumber",             rVariable::Flags::R___, &m_module.IDSerial  , U_DIMLESS , 0, "Серийный номер нижнего уровня");
+	list.add(p + "can"         ,             rVariable::Flags::R___, &m_status.m_CAN     , U_DIMLESS , 0, "Состояние обмена данными");
+	list.add(p + "firmware"    ,             rVariable::Flags::R___, &m_status.m_firmware, U_DIMLESS , 0, "Версия ПО модуля");
+	list.add(p + "hardware"    ,             rVariable::Flags::R___, &m_status.m_hardware, U_DIMLESS , 0, "Версия модуля");
 
 	return TRITONN_RESULT_OK;
 }
@@ -183,7 +183,9 @@ std::string rIOBaseModule::getXmlChannels()
 
 	for (auto channel : m_listChannel) {
 		result += "\t<channel number=\"" + String_format("%u", channel->m_index);
-		result += "\" setup=\"" + channel->getStrType() + " setup flags\" />\n";
+		result += "\" setup=\"" + channel->getStrType() + " setup flags\"";
+		result += channel->getXmlAttribute();
+		result += " />\n";
 	}
 
 	return result;
@@ -208,7 +210,7 @@ std::string rIOBaseModule::getMarkDown()
 	for (auto channel : m_listChannel) {
 
 		if (std::find(ch_names.begin(), ch_names.end(), channel->getStrType()) == ch_names.end()) {
-			result += channel->getFlagsSetup().getMarkDown(channel->getStrType() + " setup");
+			result += channel->getMarkDownFlags();//.getMarkDown(channel->getStrType() + " setup");
 			ch_names.push_back(channel->getStrType());
 		}
 

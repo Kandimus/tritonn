@@ -1,17 +1,13 @@
-﻿//=================================================================================================
-//===
-//=== fi_channel.h
-//===
-//=== Copyright (c) 2020 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс частотного канала
-//===
-//=================================================================================================
+﻿/*
+ *
+ * io/fi_channel.h
+ *
+ * Copyright (c) 2020-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
@@ -19,9 +15,6 @@
 #include "basechannel.h"
 #include "bits_array.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
 class rIOFIChannel : public rIOBaseChannel
 {
 friend class rModuleFI4;
@@ -58,7 +51,7 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
 	virtual UDINT simulate() override;
-	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
+	virtual std::string getMarkDownFlags() const override;
 
 public:
 	UINT  m_setup   = 0;             // Настройка канала

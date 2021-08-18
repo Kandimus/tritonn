@@ -50,7 +50,8 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate() = 0;
-	virtual rBitsArray& getFlagsSetup() = 0;
+	virtual std::string getMarkDownFlags() const = 0;
+	virtual std::string getXmlAttribute() const { return ""; }
 
 public:
 	USINT       m_simType = 0;

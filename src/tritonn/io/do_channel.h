@@ -20,16 +20,10 @@
 #include "basechannel.h"
 #include "tickcount.h"
 
-class rModuleDO16;
-class rModuleDI8DO8;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
 class rIODOChannel : public rIOBaseChannel
 {
-friend rModuleDO16;
-friend rModuleDI8DO8;
+friend class rModuleDO16;
+friend class rModuleDI8DO8;
 
 public:
 	enum Setup : UINT
@@ -51,7 +45,7 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
 	virtual UDINT simulate() override;
-	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
+	virtual std::string getMarkDownFlags() const override;
 
 protected:
 	UINT  m_setup    = 0;             // Настройка канала

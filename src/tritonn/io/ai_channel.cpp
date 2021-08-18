@@ -23,8 +23,8 @@
 #include "../comment_defines.h"
 
 rBitsArray rIOAIChannel::m_flagsSetup;
-rBitsArray rIOAIChannel::m_flagsTypeA;
-rBitsArray rIOAIChannel::m_flagsTypeP;
+rBitsArray rIOAIChannel::m_flagsModeA;
+rBitsArray rIOAIChannel::m_flagsModeP;
 rBitsArray rIOAIChannel::m_flagsSimType;
 
 rIOAIChannel::rIOAIChannel(USINT index, bool isActive, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::AI, index, comment)
@@ -37,18 +37,18 @@ rIOAIChannel::rIOAIChannel(USINT index, bool isActive, const std::string& commen
 				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Усреднение значения");
 	}
 
-	if (m_flagsTypeA.empty()) {
-		m_flagsTypeA
-				.add("", static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
-				.add("", static_cast<UINT>(Mode::mA_4_20) , "4..40мА");
+	if (m_flagsModeA.empty()) {
+		m_flagsModeA
+				.add("mA_0_20", static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
+				.add("mA_4_20", static_cast<UINT>(Mode::mA_4_20) , "4..40мА");
 	}
 
-	if (m_flagsTypeP.empty()) {
-		m_flagsTypeP
-				.add("", static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
-				.add("", static_cast<UINT>(Mode::mA_4_20) , "4..40мА")
-				.add("", static_cast<UINT>(Mode::V_m10_10), "-10..+10V")
-				.add("", static_cast<UINT>(Mode::V_0_10)  , "0..+10V");
+	if (m_flagsModeP.empty()) {
+		m_flagsModeP
+				.add("mA_0_20" , static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
+				.add("mA_4_20" , static_cast<UINT>(Mode::mA_4_20) , "4..40мА")
+				.add("V_m10_10", static_cast<UINT>(Mode::V_m10_10), "-10..+10V")
+				.add("V_0_10"  , static_cast<UINT>(Mode::V_0_10)  , "0..+10V");
 	}
 
 	if (m_flagsSimType.empty()) {
@@ -192,7 +192,7 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 	list.add(p + "adc"        ,              rVariable::Flags::R___, &m_ADC    , U_DIMLESS, 0, "Текущий код АЦП");
 	list.add(p + "current"    ,              rVariable::Flags::R___, &m_current, U_DIMLESS, 0, "Текущее значение тока" + std::string(m_isActive ? "" : "/напряжения"));
 	list.add(p + "state"      ,              rVariable::Flags::R___, &m_state  , U_DIMLESS, 0, "Статус канала");
-	list.add(p + "mode"       , TYPE::USINT, rVariable::Flags::____, &m_mode   , U_DIMLESS, 0, "Режим канала:<br/>" + ((m_isActive) ? m_flagsTypeA.getInfo(true) : m_flagsTypeP.getInfo(true)));
+	list.add(p + "mode"       , TYPE::USINT, rVariable::Flags::____, &m_mode   , U_DIMLESS, 0, "Режим канала:<br/>" + ((m_isActive) ? m_flagsModeA.getInfo(true) : m_flagsModeP.getInfo(true)));
 
 	if (issimulate) {
 		list.add(p + "simulate.max"  , rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MAX);
@@ -206,14 +206,37 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 UDINT rIOAIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP , "");
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, "");
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsModeA.getNameByValue(static_cast<UINT>(Mode::mA_4_20)));
 	UDINT       fault    = 0;
 
 	m_setup = m_flagsSetup.getValue(strSetup, fault);
-
 	if (fault) {
 		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalid setup");
 	}
 
+	m_mode  = static_cast<Mode>(m_isActive ? m_flagsModeA.getBit(strMode , fault) : m_flagsModeP.getBit(strMode , fault));
+	if (fault) {
+		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalid mode");
+	}
+
 	return TRITONN_RESULT_OK;
+}
+
+std::string rIOAIChannel::getXmlAttribute() const
+{
+	return "mode=\"AI mode flag\"";
+}
+
+std::string rIOAIChannel::getMarkDownFlags() const
+{
+	std::string result = m_flagsSetup.getMarkDown(getStrType() + " setup");
+
+	if (m_isActive) {
+		result += "\n" + m_flagsModeA.getMarkDown(getStrType() + " mode");
+	} else {
+		result += "\n" + m_flagsModeP.getMarkDown(getStrType() + " mode");
+	}
+
+	return result;
 }

@@ -100,3 +100,8 @@ UDINT rIODOChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 
 	return TRITONN_RESULT_OK;
 }
+
+std::string rIODOChannel::getMarkDownFlags() const
+{
+	return m_flagsSetup.getMarkDown(getStrType() + " setup");
+}

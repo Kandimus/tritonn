@@ -15,14 +15,9 @@
 #include "bits_array.h"
 #include "basechannel.h"
 
-class rModuleAO4;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
 class rIOAOChannel : public rIOBaseChannel
 {
-friend rModuleAO4;
+friend class rModuleAO4;
 public:
 
 	enum class Mode : UINT
@@ -52,7 +47,7 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
 	virtual UDINT simulate() override;
-	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
+	virtual std::string getMarkDownFlags() const override;
 
 protected:
 	UINT getMinValue() const;
@@ -63,9 +58,10 @@ public:
 	UINT m_setup = 0;             // Настройка канала
 
 	// hardware
-	Mode   m_mode   = Mode::ACTIVE;
-	UINT   m_ADC    = 0;             // Текущий код ацп
-	Regime m_regime = Regime::REDUCED_DAC;
+	Mode   m_mode    = Mode::ACTIVE;
+	UINT   m_ADC     = 0;
+	LREAL  m_current = 0;
+	Regime m_regime  = Regime::REDUCED_DAC;
 
 private:
 	static rBitsArray m_flagsSetup;

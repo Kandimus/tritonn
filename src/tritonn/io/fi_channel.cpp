@@ -1,22 +1,17 @@
-﻿//=================================================================================================
-//===
-//=== fi_channel.cpp
-//===
-//=== Copyright (c) 2020 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс частотного канала
-//===
-//=================================================================================================
+﻿/*
+ *
+ * io/fi_channel.cpp
+ *
+ * Copyright (c) 2020-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include "fi_channel.h"
 #include <math.h>
 #include "xml_util.h"
-#include "../variable_item.h"
 #include "../variable_list.h"
 #include "../units.h"
 #include "tickcount.h"
@@ -151,4 +146,9 @@ UDINT rIOFIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+std::string rIOFIChannel::getMarkDownFlags() const
+{
+	return m_flagsSetup.getMarkDown(getStrType() + " setup");
 }

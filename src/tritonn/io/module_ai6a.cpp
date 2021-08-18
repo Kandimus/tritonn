@@ -89,7 +89,7 @@ UDINT rModuleAI6a::processing(USINT issim)
 			channel->m_stateRedLED = m_data.Read.StateRedLED[idx] == K19_AI6a_StateRedLED_ON;
 
 			m_data.Write.ChType[idx]       = getHardwareModuleChType(idx);
-			m_data.Write.OutADCType[idx]   = K19_AI6a_OutType_TrueADC;
+			m_data.Write.OutADCType[idx]   = K19_AI6a_OutType_ReducedADC;
 			m_data.Write.OutDataType[idx]  = K19_AI6a_OutType_ReducedData;
 			m_data.Write.RedLEDAction[idx] = (channel->m_setup & rIOAIChannel::Setup::OFF) ? K19_AI6a_RedLEDBlocked : K19_AI6a_RedLEDNormal;
 		}

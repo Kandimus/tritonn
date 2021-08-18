@@ -79,7 +79,8 @@ UDINT rIOAOChannel::generateVars(const std::string& name, rVariableList& list, b
 	rIOBaseChannel::generateVars(name, list, false);
 
 	list.add(p + "setup"  , TYPE::UINT, rVariable::Flags::RS__, &m_setup  , U_DIMLESS, 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "current",             rVariable::Flags::____, &m_ADC    , U_mkA    , 0, "Выдаваемый ток");
+	list.add(p + "adc"    ,             rVariable::Flags::_SH_, &m_ADC    , U_DIMLESS, 0, "Код АЦП");
+	list.add(p + "current",             rVariable::Flags::R___, &m_current, U_mA     , 0, "Выдаваемый ток");
 	list.add(p + "mode"   , TYPE::UINT, rVariable::Flags::R___, &m_mode   , U_DIMLESS, 0, "Тип канала:<br/>" + m_flagsMode.getInfo(true));
 	list.add(p + "regime" , TYPE::UINT, rVariable::Flags::RSH_, &m_regime , U_DIMLESS, 0, "Режим канала:<br/>0 : код АЦП<br/>1 : значение в мкА");
 
@@ -98,4 +99,9 @@ UDINT rIOAOChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+std::string rIOAOChannel::getMarkDownFlags() const
+{
+	return m_flagsSetup.getMarkDown(getStrType() + "setup");
 }

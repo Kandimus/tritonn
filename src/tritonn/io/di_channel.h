@@ -20,9 +20,6 @@
 #include "basechannel.h"
 #include "tickcount.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
 class rIODIChannel : public rIOBaseChannel
 {
 friend class rModuleDI16;
@@ -63,7 +60,7 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
 	virtual UDINT simulate() override;
-	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
+	virtual std::string getMarkDownFlags() const override;
 
 public:
 	static rBitsArray m_flagsSimType;

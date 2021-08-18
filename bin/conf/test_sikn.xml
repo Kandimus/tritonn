@@ -4,7 +4,7 @@
 	<hardware>
 		<module name="cpu" type="cpu" />              <!-- 0 -->
 		<module name="ai6_1" type="ai6p">             <!-- 1 -->
-			<channel number="0" setup="AVERAGE" />
+			<channel number="0" setup="AVERAGE" mode="mA_0_20"/>
 		</module>
 		<module name="di16_1" type="di16"/>           <!-- 2 -->
 		<module name="di8do8_1" type="di8do8">        <!-- 3 -->

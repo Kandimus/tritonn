@@ -23,8 +23,8 @@ class rModuleAI6a;
 //
 class rIOAIChannel : public rIOBaseChannel
 {
-friend rModuleAI6p;
-friend rModuleAI6a;
+friend class rModuleAI6p;
+friend class rModuleAI6a;
 
 public:
 	enum class Mode : USINT
@@ -87,7 +87,8 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
 	virtual UDINT simulate() override;
-	virtual rBitsArray& getFlagsSetup() override { return m_flagsSetup; }
+	virtual std::string getMarkDownFlags() const override;
+	virtual std::string getXmlAttribute() const override;
 
 protected:
 	UINT getMinValue() const;
@@ -116,11 +117,10 @@ public:
 	static rBitsArray m_flagsSimType;
 
 private:
-
 	std::list<UINT> m_average;
 
 	static rBitsArray m_flagsSetup;
-	static rBitsArray m_flagsTypeA;
-	static rBitsArray m_flagsTypeP;
+	static rBitsArray m_flagsModeA;
+	static rBitsArray m_flagsModeP;
 };
 

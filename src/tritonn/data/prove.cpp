@@ -175,7 +175,6 @@ UDINT rProve::calculate()
 		}
 
 		UDINT fault = 0;
-//		m_moduleName  = interface->getAlias();
 		m_moduleFreq  = interface->getFreq();
 		m_moduleDet   = interface->getDetectors();
 		m_moduleCount = interface->getValue(4, rIOBaseChannel::Type::FI, fault);
