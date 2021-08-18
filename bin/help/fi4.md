@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # fi4
-> 0.19.165.ba8170a6
+> 0.19.169.7aedcf1b
 ## XML
 ````xml
 <module type="fi4" name="valid object name" description="string index" >
@@ -29,14 +29,14 @@ Number | Type | Comment
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
 fi4.type | uint |  | 512 | Yes |   | Тип модуля:<br>0: Модуль не определен<br/>1: Базовый модуль ЦПУ<br/>2: Модуль AI6a<br/>3: Модуль AI6p<br/>4: Модуль FI4<br/>5: Модуль DI8DO8<br/>6: Модуль DI16<br/>7: Модуль DO16<br/>8: Модуль CRM<br/>9: Модуль AO4<br/>
-fi4.node | uint |  | 512 | Yes |   | Нет данных
-fi4.vendor | udint |  | 512 | Yes |   | Нет данных
-fi4.productcode | udint |  | 512 | Yes |   | Нет данных
-fi4.revision | udint |  | 512 | Yes |   | Нет данных
-fi4.serialnumber | udint |  | 512 | Yes |   | Нет данных
-fi4.can | uint |  | 512 | Yes |   | Нет данных
-fi4.firmware | uint |  | 512 | Yes |   | Нет данных
-fi4.hardware | uint |  | 512 | Yes |   | Нет данных
+fi4.node | uint |  | 512 | Yes |   | Уникальный номер
+fi4.vendor | udint |  | 512 | Yes |   | Код производителя
+fi4.productcode | udint |  | 512 | Yes |   | Код устройства
+fi4.revision | udint |  | 512 | Yes |   | Версия сетевого драйвера
+fi4.serialnumber | udint |  | 512 | Yes |   | Серийный номер нижнего уровня
+fi4.can | uint |  | 512 | Yes |   | Состояние обмена данными
+fi4.firmware | uint |  | 512 | Yes |   | Версия ПО модуля
+fi4.hardware | uint |  | 512 | Yes |   | Версия модуля
 fi4.out | usint |  | 512 |  |   | Привязка выходной частоты:<br>0: выходной канал отключен<br/>1: на выходной канал транслируется канал 1<br/>2: на выходной канал транслируется канал 2<br/>3: на выходной канал транслируется канал 3<br/>4: на выходной канал транслируется канал 4<br/>
 fi4.ch_00.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 fi4.ch_00.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Усреднять значение частоты<br/>

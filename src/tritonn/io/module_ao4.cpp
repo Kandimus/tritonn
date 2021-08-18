@@ -85,6 +85,8 @@ UDINT rModuleAO4::processing(USINT issim)
 		channel->processing();
 	}
 
+//printf("AO[2]   adc: %i, *current %.1f\n", m_channel[2]->m_ADC, m_channel[2]->m_current);
+
 	return TRITONN_RESULT_OK;
 }
 

@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # crm
-> 0.19.165.ba8170a6
+> 0.19.169.7aedcf1b
 ## XML
 ````xml
 <module type="crm" name="valid object name" description="string index" >
@@ -36,14 +36,14 @@ Number | Type | Comment
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
 crm.type | uint |  | 512 | Yes |   | Тип модуля:<br>0: Модуль не определен<br/>1: Базовый модуль ЦПУ<br/>2: Модуль AI6a<br/>3: Модуль AI6p<br/>4: Модуль FI4<br/>5: Модуль DI8DO8<br/>6: Модуль DI16<br/>7: Модуль DO16<br/>8: Модуль CRM<br/>9: Модуль AO4<br/>
-crm.node | uint |  | 512 | Yes |   | Нет данных
-crm.vendor | udint |  | 512 | Yes |   | Нет данных
-crm.productcode | udint |  | 512 | Yes |   | Нет данных
-crm.revision | udint |  | 512 | Yes |   | Нет данных
-crm.serialnumber | udint |  | 512 | Yes |   | Нет данных
-crm.can | uint |  | 512 | Yes |   | Нет данных
-crm.firmware | uint |  | 512 | Yes |   | Нет данных
-crm.hardware | uint |  | 512 | Yes |   | Нет данных
+crm.node | uint |  | 512 | Yes |   | Уникальный номер
+crm.vendor | udint |  | 512 | Yes |   | Код производителя
+crm.productcode | udint |  | 512 | Yes |   | Код устройства
+crm.revision | udint |  | 512 | Yes |   | Версия сетевого драйвера
+crm.serialnumber | udint |  | 512 | Yes |   | Серийный номер нижнего уровня
+crm.can | uint |  | 512 | Yes |   | Состояние обмена данными
+crm.firmware | uint |  | 512 | Yes |   | Версия ПО модуля
+crm.hardware | uint |  | 512 | Yes |   | Версия модуля
 crm.ch_01.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 crm.ch_01.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 crm.ch_01.value | usint |  | 512 | Yes |   | Текущее значение

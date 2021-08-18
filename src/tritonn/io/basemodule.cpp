@@ -82,7 +82,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 {
 	++m_pulling;
 
-	if(issim || m_isFault) {
+	if(issim || m_type == Type::CPU || m_isFault) {
 		return TRITONN_RESULT_OK;
 	}
 
@@ -94,12 +94,14 @@ UDINT rIOBaseModule::processing(USINT issim)
 	}
 
 #ifdef TRITONN_YOCTO
+	int result = 0;
 	if (!m_moduleInfo->InWork) {
-		candrv_cmd(m_moduleReadAll, m_ID, m_dataPtr);
+		result = candrv_cmd(m_moduleReadAll, m_ID, m_dataPtr);
 	}
 	if (m_moduleInfo->InWork) {
-		candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
+		result = candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
 	} else {
+//printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
 		m_isFault = true;
 		rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_FAULT) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
 		//NOTE убрать!!!

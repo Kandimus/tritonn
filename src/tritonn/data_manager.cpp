@@ -333,7 +333,7 @@ ttt.start(2000);
 			ss.add("io.test_ao.present.value", ao_value);
 			ss.set();
 
-			sg.add("io.test_ai.present.value");
+			sg.add("io.test_ai.physical.value");
 			sg.get();
 
 			if (ss("io.test_do.present.value")) {
@@ -344,14 +344,14 @@ ttt.start(2000);
 				TRACEI(LOG::DATAMGR, "io.test_ao.present.value = %.1f", ao_value);
 			}
 
-			if (sg("io.test_ai.present.value")) {
-				TRACEI(LOG::DATAMGR, "io.test_ai.present.value = %.1f", sg("io.test_ai.present.value")->getValueLREAL());
+			if (sg("io.test_ai.physical.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_ai.physical.value = %.1f", sg("io.test_ai.physical.value")->getValueLREAL());
 			}
 
 			do_value = !do_value;
-			ao_value += 0.5;
+			ao_value += 1;
 
-			if (ao_value > 20) ao_value = 4.0;
+			if (ao_value > 24) ao_value = 0.0;
 			ttt.restart();
 		}
 

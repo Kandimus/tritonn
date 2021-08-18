@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # sysvar
-> 0.19.165.ba8170a6
+> 0.19.169.7aedcf1b
 
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment

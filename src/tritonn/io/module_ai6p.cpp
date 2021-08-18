@@ -89,14 +89,14 @@ UDINT rModuleAI6p::processing(USINT issim)
 			channel->m_stateRedLED = m_data.Read.StateRedLED[idx] == K19_AI6p_StateRedLED_ON;
 
 			m_data.Write.ChType[idx]       = getHardwareModuleChType(idx);
-			m_data.Write.OutADCType[idx]   = K19_AI6p_OutType_ReducedADC;
+			m_data.Write.OutADCType[idx]   = K19_AI6p_OutType_TrueADC;
 			m_data.Write.OutDataType[idx]  = K19_AI6p_OutType_ReducedData;
 			m_data.Write.RedLEDAction[idx] = (channel->m_setup & rIOAIChannel::Setup::OFF) ? K19_AI6p_RedLEDBlocked : K19_AI6p_RedLEDNormal;
 		}
 
 		channel->processing();
 	}
-printf("AI6p[0] curr %.1f, type %i\n", m_data.Read.Data[0], m_data.Read.ChType[0]);
+//printf("AI6p[0] adc: %i,  current: %.1f, type %i, state: %i\n", m_channel[0]->m_ADC, m_channel[0]->m_current, m_data.Read.ChType[0], m_channel[0]->m_hardState);
 	return TRITONN_RESULT_OK;
 }
 

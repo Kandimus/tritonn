@@ -140,11 +140,11 @@ UDINT rAI::calculate()
 
 		UDINT fault    = TRITONN_RESULT_OK;
 		USINT state    = interface->getState   (m_channel, rIOBaseChannel::Type::AI, fault);
-		UDINT adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
-		UINT  rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
-		UINT  minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
+		LREAL adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
+		LREAL rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
+		LREAL minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
 
-		m_phValue.m_value = m_scale.m_min.Value + static_cast<LREAL>(m_scale.getRange() / rangeADC) * static_cast<LREAL>(adc - minADC);
+		m_phValue.m_value = m_scale.m_min.Value + static_cast<LREAL>(m_scale.getRange()) / rangeADC * (adc - minADC);
 		m_current.m_value = interface->getCurrent(m_channel, rIOBaseChannel::Type::AI, fault);
 
 		if (fault != TRITONN_RESULT_OK) {
@@ -301,9 +301,7 @@ UDINT rAI::calculate()
 //
 UDINT rAI::setFault()
 {
-	m_phValue.m_value = std::numeric_limits<LREAL>::quiet_NaN();
 	m_present.m_value = std::numeric_limits<LREAL>::quiet_NaN();
-	m_current.m_value = std::numeric_limits<LREAL>::quiet_NaN();
 	m_status          = Status::FAULT;
 	m_fault           = 1;
 
