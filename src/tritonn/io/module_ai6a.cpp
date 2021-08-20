@@ -17,8 +17,17 @@
 #include "../error.h"
 #include "../generator_md.h"
 
+rBitsArray rModuleAI6a::m_flagsCorrect;
+
 rModuleAI6a::rModuleAI6a(UDINT id) : rIOBaseModule(id)
 {
+	if (m_flagsCorrect.empty()) {
+		m_flagsCorrect
+				.add("", static_cast<UINT>(ModuleCorrectPoint::NONE)        , "Нет действий")
+				.add("", static_cast<UINT>(ModuleCorrectPoint::SAVE_POINTS) , "Сохранить калибровки для всех каналов")
+				.add("", static_cast<UINT>(ModuleCorrectPoint::CLEAR_POINTS), "Сбросить не сохранненые калибровки для всех каналов");
+	}
+
 	m_type    = Type::AI6a;
 	m_comment = "Module 6 current/voltage active channels";
 	m_name    = "ai6a";
@@ -92,6 +101,8 @@ UDINT rModuleAI6a::processing(USINT issim)
 			m_data.Write.OutADCType[idx]   = K19_AI6a_OutType_ReducedADC;
 			m_data.Write.OutDataType[idx]  = K19_AI6a_OutType_ReducedData;
 			m_data.Write.RedLEDAction[idx] = (channel->m_setup & rIOAIChannel::Setup::OFF) ? K19_AI6a_RedLEDBlocked : K19_AI6a_RedLEDNormal;
+
+			checkCorrectPoint(idx);
 		}
 
 		channel->processing();
@@ -209,12 +220,61 @@ K19_AI6a_ChType rModuleAI6a::getHardwareModuleChType(UDINT index)
 	}
 }
 
+void rModuleAI6a::checkCorrectPoint(USINT idx)
+{
+	KXX_str setting;
+
+	switch (m_channel[idx]->m_correct) {
+		case rIOAIChannel::CorrectPoint::POINT_4mA:
+			setting.ch  = idx;
+			setting.dot = 0;
+			sendCanCommand(_K19_AI6a_CorrSetDot, m_ID, &setting);
+			m_channel[idx]->m_correct = rIOAIChannel::CorrectPoint::NONE;
+			break;
+
+		case rIOAIChannel::CorrectPoint::POINT_12mA:
+			setting.ch  = idx;
+			setting.dot = 1;
+			sendCanCommand(_K19_AI6a_CorrSetDot, m_ID, &setting);
+			m_channel[idx]->m_correct = rIOAIChannel::CorrectPoint::NONE;
+			break;
+
+		case rIOAIChannel::CorrectPoint::POINT_20mA:
+			setting.ch  = idx;
+			setting.dot = 2;
+			sendCanCommand(_K19_AI6a_CorrSetDot, m_ID, &setting);
+			m_channel[idx]->m_correct = rIOAIChannel::CorrectPoint::NONE;
+			break;
+
+		default:
+			m_channel[idx]->m_correct = rIOAIChannel::CorrectPoint::NONE;
+			break;
+	}
+
+	switch (m_correct) {
+		case ModuleCorrectPoint::SAVE_POINTS:
+			sendCanCommand(_K19_AI6a_CorrSave, m_ID, &m_data);
+			m_correct = ModuleCorrectPoint::NONE;
+			break;
+
+		case ModuleCorrectPoint::CLEAR_POINTS:
+			sendCanCommand(_K19_AI6a_CorrClear, m_ID, &m_data);
+			m_correct = ModuleCorrectPoint::NONE;
+			break;
+
+		default:
+			m_correct = ModuleCorrectPoint::NONE;
+			break;
+	}
+}
+
 UDINT rModuleAI6a::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
 	rIOBaseModule::generateVars(prefix, list, issimulate);
 
 	std::string p = m_alias + ".";
-	list.add(p + "temperature", rVariable::Flags::R___, &m_data.Read.Temp, U_C, 0, "Температура модуля в гр.С.");
+	list.add(p + "temperature",             rVariable::Flags::R___, &m_data.Read.Temp, U_C      ,             0, "Температура модуля в гр.С.");
+	list.add(p + "correct"    , TYPE::UINT ,rVariable::Flags::____, &m_correct       , U_DIMLESS, ACCESS_SCALES, "Калибровка каналов:<br/>" + m_flagsCorrect.getInfo(true));
 
 	for (auto channel : m_channel) {
 		std::string p = prefix + m_name + ".ch_" + String_format("%02i", channel->m_index);

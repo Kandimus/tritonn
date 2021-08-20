@@ -59,6 +59,14 @@ public:
 		Max = 62556,
 	};
 
+	enum class CorrectPoint : UINT
+	{
+		NONE = 0,
+		POINT_4mA,
+		POINT_12mA,
+		POINT_20mA,
+	};
+
 	enum SimType
 	{
 		NONE = 0,
@@ -108,6 +116,8 @@ public:
 	USINT   m_stateRedLED  = 0;             // Статус красного диода
 	USINT   m_actionRedLED = 0;             // Управление касным диодом
 
+	CorrectPoint m_correct = CorrectPoint::NONE;
+
 	// simulate
 	UINT    m_simMax       = 65535;
 	UINT    m_simMin       = 0;
@@ -122,5 +132,6 @@ private:
 	static rBitsArray m_flagsSetup;
 	static rBitsArray m_flagsModeA;
 	static rBitsArray m_flagsModeP;
+	static rBitsArray m_flagsCorrect;
 };
 

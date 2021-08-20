@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # masswater
-> 0.19.169.7aedcf1b
+> 0.19.170.15f6f81c
 ## XML
 ````xml
 <masswater name="valid object name" description="string index" setup="text value" >

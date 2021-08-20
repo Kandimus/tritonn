@@ -80,6 +80,14 @@ UDINT rModuleAO4::processing(USINT issim)
 			m_data.Write.DataSetType[idx] = (channel->m_regime == rIOAOChannel::Regime::REDUCED_DAC) ? K19_AO4_DST_ReducedDAC : K19_AO4_DST_TrueUA;
 
 			channel->m_current = 24.0 / 65535.0 * channel->m_ADC;
+
+			if (channel->m_current < 4.0) {
+				channel->m_current = 4.0;
+			}
+
+			if (channel->m_current > 20.0) {
+				channel->m_current = 20.0;
+			}
 		}
 
 		channel->processing();

@@ -12,7 +12,7 @@
 #pragma once
 
 #include <vector>
-#include "def.h"
+#include "correctpoint.h"
 #include "basemodule.h"
 #include "aiinterface.h"
 #include "basechannel.h"
@@ -39,7 +39,7 @@ public:
 	
 // rBaseModule
 public:
-	virtual std::string getModuleType() override { return rModuleAI6a::getRTTI(); }
+	virtual std::string getModuleType() override { return getRTTI(); }
 	virtual UDINT processing(USINT issim) override;
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate) override;
@@ -57,15 +57,18 @@ public:
 	virtual UINT  getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UINT  getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 
-protected:
-	K19_AI6a_ChType getHardwareModuleChType(UDINT index);
-
 private:
+	K19_AI6a_ChType getHardwareModuleChType(UDINT index);
 	UDINT checkChannelAccess(USINT num, rIOBaseChannel::Type type);
+	void  checkCorrectPoint(USINT idx);
 
 private:
 	std::vector<rIOAIChannel*> m_channel;
 	K19_AI6a_str m_data;
+
+	ModuleCorrectPoint m_correct = ModuleCorrectPoint::NONE;
+
+	static rBitsArray m_flagsCorrect;
 };
 
 

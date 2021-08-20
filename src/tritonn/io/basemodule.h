@@ -90,6 +90,8 @@ protected:
 	void setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, void* status, UDINT readAll, UDINT exchange);
 	void printModuleInfo();
 
+	int sendCanCommand(UDINT func, DINT idx, void* data);
+
 public:
 	static rBitsArray m_flagsType;
 	static rBitsArray m_flagsShortType;

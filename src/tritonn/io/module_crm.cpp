@@ -10,8 +10,10 @@
  */
 
 #include "module_crm.h"
+#include "simpleargs.h"
 #include "locker.h"
 #include "xml_util.h"
+#include "../def_arguments.h"
 #include "../error.h"
 #include "../generator_md.h"
 
@@ -193,34 +195,34 @@ LREAL rModuleCRM::getImp(USINT idx)
 
 bool rModuleCRM::start()
 {
-#ifdef TRITONN_YOCTO
+	if (rSimpleArgs::instance().isSet(rArg::Simulate)) {
+		return true;
+	}
+
 	rLocker lock(m_rwlock); lock.Nop();
 
 	if (m_moduleInfo->InWork) {
-		candrv_cmd(_K19_CRM_MeasureStart, m_ID, m_dataPtr);
+		sendCanCommand(_K19_CRM_MeasureStart, m_ID, m_dataPtr);
 		return true;
 	}
 
 	return false;
-#else
-	return true; //TODO сюда добавить симуляцию поверки
-#endif
 }
 
 bool rModuleCRM::abort()
 {
-#ifdef TRITONN_YOCTO
+	if (rSimpleArgs::instance().isSet(rArg::Simulate)) {
+		return true;
+	}
+
 	rLocker lock(m_rwlock); lock.Nop();
 
 	if (m_moduleInfo->InWork) {
-		candrv_cmd(_K19_CRM_MeasureStop, m_ID, m_dataPtr);
+		sendCanCommand(_K19_CRM_MeasureStop, m_ID, m_dataPtr);
 		return true;
 	}
 
 	return false;
-#else
-	return true; //TODO сюда добавить симуляцию поверки
-#endif
 }
 
 rIOCRMInterface::State rModuleCRM::convertState(USINT state)

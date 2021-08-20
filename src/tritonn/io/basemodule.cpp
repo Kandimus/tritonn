@@ -78,6 +78,19 @@ void rIOBaseModule::setModule(void* data, ModuleInfo_str* info, ModuleSysData_st
 	m_moduleExchange = exchange;
 }
 
+int rIOBaseModule::sendCanCommand(UDINT func, DINT idx, void* data)
+{
+#ifdef TRITONN_YOCTO
+	return candrv_cmd(func, idx, data);
+#else
+	UNUSED(func);
+	UNUSED(idx);
+	UNUSED(data);
+
+	return 0;
+#endif
+}
+
 UDINT rIOBaseModule::processing(USINT issim)
 {
 	++m_pulling;
@@ -93,13 +106,12 @@ UDINT rIOBaseModule::processing(USINT issim)
 		return DATACFGERR_HARDWARE_MODULEISNULL;
 	}
 
-#ifdef TRITONN_YOCTO
 	int result = 0;
 	if (!m_moduleInfo->InWork) {
-		result = candrv_cmd(m_moduleReadAll, m_ID, m_dataPtr);
+		result = sendCanCommand(m_moduleReadAll, m_ID, m_dataPtr);
 	}
 	if (m_moduleInfo->InWork) {
-		result = candrv_cmd(m_moduleExchange, m_ID, m_dataPtr);
+		result = sendCanCommand(m_moduleExchange, m_ID, m_dataPtr);
 	} else {
 //printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
 		m_isFault = true;
@@ -107,7 +119,6 @@ UDINT rIOBaseModule::processing(USINT issim)
 		//NOTE убрать!!!
 		;//return DATACFGERR_HARDWARE_MODULEFAULT;
 	}
-	#endif
 
 	// copy system data
 	m_module = *m_moduleSysData;
