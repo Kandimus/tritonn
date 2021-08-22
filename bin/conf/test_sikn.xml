@@ -4,7 +4,7 @@
 	<hardware>
 		<module name="cpu" type="cpu" />              <!-- 0 -->
 		<module name="ai6_1" type="ai6p">             <!-- 1 -->
-			<channel number="0" setup="AVERAGE" mode="mA_4_20"/>
+			<channel number="0" setup="" mode="mA_4_20"/>
 		</module>
 		<module name="di16_1" type="di16"/>           <!-- 2 -->
 		<module name="di8do8_1" type="di8do8">        <!-- 3 -->
@@ -15,7 +15,7 @@
 		</module>
 		<module name="do16_1" type="do16"/>           <!-- 4 -->
 		<module name="ai6_2" type="ai6a">             <!-- 5 -->
-			<channel number="0" setup="AVERAGE" />
+			<channel number="0" setup="" mode="mA_4_20"/>
 		</module>
 		<module name="ao4_1"  type="ao4"/>            <!-- 6 -->
 		<module name="fi4_1" type="fi4">              <!-- 7 -->
@@ -75,6 +75,15 @@
 				<io_link module="1" channel="0"/>
 				<unit>515</unit>
 				<keypad>9.9</keypad>
+				<scale>
+					<low>4</low>
+					<high>20</high>
+				</scale>
+			</ai>
+			<ai name="test_aia" mode="PHIS" setup="KEYPAD" description="4005">
+				<io_link module="5" channel="0"/>
+				<unit>515</unit>
+				<keypad>9.7</keypad>
 				<scale>
 					<low>4</low>
 					<high>20</high>

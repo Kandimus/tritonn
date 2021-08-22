@@ -325,7 +325,7 @@ ttt.start(2000);
 
 		if (ttt.isFinished()) {
 			static int do_value = 1;
-			static LREAL ao_value = 4.0;
+			static LREAL ao_value = 2.0;
 			rSnapshot ss(getVariableClass());
 			rSnapshot sg(getVariableClass());
 
@@ -334,6 +334,7 @@ ttt.start(2000);
 			ss.set();
 
 			sg.add("io.test_ai.physical.value");
+			sg.add("io.test_aia.physical.value");
 			sg.get();
 
 			if (ss("io.test_do.present.value")) {
@@ -348,8 +349,12 @@ ttt.start(2000);
 				TRACEI(LOG::DATAMGR, "io.test_ai.physical.value = %.1f", sg("io.test_ai.physical.value")->getValueLREAL());
 			}
 
+			if (sg("io.test_aia.physical.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_aia.physical.value = %.1f", sg("io.test_aia.physical.value")->getValueLREAL());
+			}
+
 			do_value = !do_value;
-			ao_value += 1;
+//			ao_value += 1;
 
 			if (ao_value > 24) ao_value = 0.0;
 			ttt.restart();
