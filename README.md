@@ -26,13 +26,11 @@ Copy text to clipboard, open github.com, click on **settings** -> **SSH and GPG 
     # ./tritonn
 
 ## Command line ##
->--force-run
->-f
+>--force-run | -f
 
 Ignore cold-restart
 
->--terminal
->-t
+>--terminal | -t
 
 Out logs end events to terminal
 
@@ -40,13 +38,11 @@ Out logs end events to terminal
 
 Set log mask as *hex*
 
->--simulate
->-s
+>--simulate | -s
 
 Simulate IO modules
 
->--no-dump
->-D
+>--no-dump | -D
 
 Don't load dump files
 
@@ -54,10 +50,12 @@ Don't load dump files
 
 Force load config file <file>
 
->--no-set-IP
->-I
+>--no-set-IP | -I
 
 Disable set IP addressed from config file
-    
+
+## run triton on PC (linux) ##
+> ./tritonn -fstDI
+
 ## 3thparty libs ##
     sudo apt install libncurses5-dev
