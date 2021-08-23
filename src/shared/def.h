@@ -475,6 +475,11 @@ extern UINT        DayInMonthShift(UINT year, UINT month);
 extern UINT        IsLeapYear(UINT year);
 extern UINT        WeekNumber(tm &curtm);
 
+extern bool isValidDelim(LREAL value);
+extern bool isValidDelim(REAL  value);
+extern bool isValid(LREAL value);
+extern bool isValid(REAL  value);
+
 extern void        Event_ID          (UDINT eid, UDINT id);
 extern void        Event_ID_UINT     (UDINT eid, UDINT id, UINT val);
 extern void        Event_ID_UDINT    (UDINT eid, UDINT id, UDINT val);

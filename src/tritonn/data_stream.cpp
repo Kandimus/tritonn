@@ -414,31 +414,32 @@ LREAL rStream::calcualateKF()
 
 void rStream::calcTotal()
 {
-	if (m_maintenance) {
-		m_total.m_inc.Count    = 0;
-		m_total.m_inc.Mass     = 0;
-		m_total.m_inc.Volume   = 0;
-		m_total.m_inc.Volume15 = 0;
-		m_total.m_inc.Volume20 = 0;
-		return;
-	}
+	m_total.m_inc.Count    = 0;
+	m_total.m_inc.Mass     = 0;
+	m_total.m_inc.Volume   = 0;
+	m_total.m_inc.Volume15 = 0;
+	m_total.m_inc.Volume20 = 0;
 
-	if (m_flowmeter == Type::CORIOLIS) {
-		m_total.m_inc.Mass     = m_total.m_inc.Count  / m_curKF          * m_curFactor.KeypadMF.Value;
-		m_total.m_inc.Volume   = m_total.m_inc.Mass   / m_dens.m_value   * 1000.0;
-		m_total.m_inc.Volume15 = m_total.m_inc.Mass   / m_dens15.m_value * 1000.0;
-		m_total.m_inc.Volume20 = m_total.m_inc.Mass   / m_dens20.m_value * 1000.0;
-	} else {
-		m_total.m_inc.Volume   = m_total.m_inc.Count  / m_curKF        * m_curFactor.KeypadMF.Value;
-		m_total.m_inc.Mass     = m_total.m_inc.Volume * m_dens.m_value                    / 1000.0;
-		m_total.m_inc.Volume15 = m_total.m_inc.Volume * m_dens.m_value / m_dens15.m_value / 1000.0;
-		m_total.m_inc.Volume20 = m_total.m_inc.Volume * m_dens.m_value / m_dens20.m_value / 1000.0;
-	}
+	if (!m_maintenance) {
+		if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) && isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
+			if (m_flowmeter == Type::CORIOLIS) {
+				m_total.m_inc.Mass     = m_total.m_inc.Count  / m_curKF          * m_curFactor.KeypadMF.Value;
+				m_total.m_inc.Volume   = m_total.m_inc.Mass   / m_dens.m_value   * 1000.0;
+				m_total.m_inc.Volume15 = m_total.m_inc.Mass   / m_dens15.m_value * 1000.0;
+				m_total.m_inc.Volume20 = m_total.m_inc.Mass   / m_dens20.m_value * 1000.0;
+			} else {
+				m_total.m_inc.Volume   = m_total.m_inc.Count  / m_curKF        * m_curFactor.KeypadMF.Value;
+				m_total.m_inc.Mass     = m_total.m_inc.Volume * m_dens.m_value                    / 1000.0;
+				m_total.m_inc.Volume15 = m_total.m_inc.Volume * m_dens.m_value / m_dens15.m_value / 1000.0;
+				m_total.m_inc.Volume20 = m_total.m_inc.Volume * m_dens.m_value / m_dens20.m_value / 1000.0;
+			}
 
-	m_total.m_inc.Mass     = Round(m_total.m_inc.Mass    , 5);
-	m_total.m_inc.Volume   = Round(m_total.m_inc.Volume  , 5);
-	m_total.m_inc.Volume15 = Round(m_total.m_inc.Volume15, 5);
-	m_total.m_inc.Volume20 = Round(m_total.m_inc.Volume20, 5);
+			m_total.m_inc.Mass     = Round(m_total.m_inc.Mass    , 5);
+			m_total.m_inc.Volume   = Round(m_total.m_inc.Volume  , 5);
+			m_total.m_inc.Volume15 = Round(m_total.m_inc.Volume15, 5);
+			m_total.m_inc.Volume20 = Round(m_total.m_inc.Volume20, 5);
+		}
+	}
 
 	m_total.Calculate(m_station->getUnit());
 }

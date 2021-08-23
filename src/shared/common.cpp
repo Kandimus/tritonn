@@ -164,4 +164,23 @@ UINT WeekNumber(tm &curtm)
 	return wk;
 }
 
+bool isValidDelim(LREAL value)
+{
+	return isValid(value) && std::fabs(value) > COMPARE_LREAL_PREC;
+}
+
+bool isValidDelim(REAL  value)
+{
+	return isValid(value) && std::fabs(value) > COMPARE_REAL_PREC;
+}
+
+bool isValid(LREAL value)
+{
+	return std::isfinite(value);
+}
+
+bool isValid(REAL  value)
+{
+	return std::isfinite(value);
+}
 
