@@ -101,31 +101,31 @@ UDINT rCounter::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		UDINT fault = 0;
-		UDINT count = interface->getValue(m_channel, rIOBaseChannel::Type::FI, fault);
-		LREAL freq  = interface->getFreq (m_channel, rIOBaseChannel::Type::FI, fault);
+		if (!interface->isFault()) {
+			UDINT fault = 0;
+			UDINT count = interface->getValue(m_channel, rIOBaseChannel::Type::FI, fault);
 
-		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-			return fault;
-		}
+			m_freq.m_value   = interface->getFreq (m_channel, rIOBaseChannel::Type::FI, fault);
+			m_period.m_value = getPeriod();
 
-		if (!m_isInit) {
-			m_impulse.m_value = 0;
-			m_freq.m_value    = 0.0;
-			m_period.m_value  = 0.0;
-			m_countPrev       = count;
-			m_isInit          = true;
-		} else {
-			UDINT curpulling = interface->getPulling(); //TODO это делать только в симуляторе?
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 
-			if (m_pullingCount != curpulling) {
-				m_impulse.m_value = count - m_countPrev;
-				m_freq.m_value    = freq;
-				m_period.m_value  = getPeriod();
+			if (!m_isInit) {
+				m_impulse.m_value = 0;
 				m_countPrev       = count;
-				m_pullingCount    = curpulling;
+				m_isInit          = true;
+			} else {
+				UDINT curpulling = interface->getPulling(); //TODO это делать только в симуляторе?
+
+				if (m_pullingCount != curpulling) {
+					m_impulse.m_value = count - m_countPrev;
+					m_countPrev       = count;
+					m_pullingCount    = curpulling;
+				}
 			}
 		}
 	}
@@ -201,5 +201,5 @@ UDINT rCounter::generateMarkDown(rGeneratorMD& md)
 
 LREAL rCounter::getPeriod()
 {
-	return m_freq.m_value > 0.1 ? 1000000.0 / m_freq.m_value : 0.0;
+	return m_freq.m_value > 0.01 ? 1000000.0 / m_freq.m_value : 0.0;
 }

@@ -107,24 +107,26 @@ UDINT rAO::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		UDINT fault    = TRITONN_RESULT_OK;
-		LREAL range    = m_scale.m_max.Value - m_scale.m_min.Value;
-		UINT  minDAC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AO, fault);
-		UINT  rangeDAC = interface->getRange   (m_channel, rIOBaseChannel::Type::AO, fault);
+		if (!interface->isFault()) {
+			UDINT fault    = TRITONN_RESULT_OK;
+			LREAL range    = m_scale.m_max.Value - m_scale.m_min.Value;
+			UINT  minDAC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AO, fault);
+			UINT  rangeDAC = interface->getRange   (m_channel, rIOBaseChannel::Type::AO, fault);
 
-		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_AO_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-			return fault;
-		}
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_AO_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 
-		m_phValue = minDAC + static_cast<UINT>((rangeDAC / range) * (m_present.m_value - m_scale.m_min.Value));
-		fault = interface->setValue(m_channel, rIOBaseChannel::Type::AO, m_phValue);
+			m_phValue = minDAC + static_cast<UINT>((rangeDAC / range) * (m_present.m_value - m_scale.m_min.Value));
+			fault = interface->setValue(m_channel, rIOBaseChannel::Type::AO, m_phValue);
 
-		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_AO_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-			return fault;
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_AO_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 		}
 	}	
 	

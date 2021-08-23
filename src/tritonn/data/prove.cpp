@@ -174,15 +174,18 @@ UDINT rProve::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		UDINT fault = 0;
-		m_moduleFreq  = interface->getFreq();
-		m_moduleDet   = interface->getDetectors();
-		m_moduleCount = interface->getValue(4, rIOBaseChannel::Type::FI, fault);
+		if (!interface->isFault()) {
+			UDINT fault = 0;
 
-		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
-			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-			return fault;
+			m_moduleFreq  = interface->getFreq();
+			m_moduleDet   = interface->getDetectors();
+			m_moduleCount = interface->getValue(4, rIOBaseChannel::Type::FI, fault);
+
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 		}
 	}
 

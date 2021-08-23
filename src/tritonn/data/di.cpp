@@ -118,39 +118,20 @@ UDINT rDI::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		UDINT fault = TRITONN_RESULT_OK;
+		if (!interface->isFault()) {
+			UDINT fault = TRITONN_RESULT_OK;
 
-		m_physical.m_value = interface->getValue(m_channel, rIOBaseChannel::Type::DI, fault);
-		m_status           = Status::NORMAL;
+			m_physical.m_value = interface->getValue(m_channel, rIOBaseChannel::Type::DI, fault);
+			m_status           = Status::NORMAL;
 
-		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-			return fault;
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 		}
-
-//		rEvent event_s;
-//		rEvent event_f;
-//		checkExpr(channel->m_state, DI_LE_CODE_FAULT,
-//				  event_f.reinit(EID_DI_CH_FAULT) << m_ID << m_descr,
-//				  event_s.reinit(EID_DI_CH_OK)    << m_ID << m_descr);
-
-//		if (channel->m_state) {
-//			m_fault = true;
-//			if (m_mode == Mode::PHIS) {
-//				// если симуляция разрешена, то симулируем этот сигнал
-//				if (m_setup.Value & Setup::ERR_KEYPAD) {
-//					m_mode = Mode::KEYPAD;
-//				}
-//				m_status = Status::FAULT; // выставляем флаг ошибки
-//			}
-//			setFault();
-//		}
 	}
 
-	//---------------------------------------------------------------------------------------------
-	// РЕЖИМЫ РАБОТЫ
-	
 	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
 	// можно сделать через m_oldMode, но это не красиво
 	if (m_mode == Mode::KEYPAD && !(m_lockErr & DI_LE_KEYPAD_ON)) {

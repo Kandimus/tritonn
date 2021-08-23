@@ -114,18 +114,15 @@ UDINT rDO::calculate()
 				return DATACFGERR_REALTIME_MODULELINK;
 			}
 
-			UDINT fault = interface->setValue(m_channel, rIOBaseChannel::Type::DO, static_cast<UDINT>(m_present.m_value));
-			if (fault != TRITONN_RESULT_OK) {
-				rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
-				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-				return fault;
-			}
+			if (!interface->isFault()) {
+				UDINT fault = interface->setValue(m_channel, rIOBaseChannel::Type::DO, static_cast<UDINT>(m_present.m_value));
 
-//			rEvent event_s;
-//			rEvent event_f;
-//			checkExpr(channel->m_state, DO_LE_CODE_FAULT,
-//					  event_f.reinit(EID_DO_CH_FAULT) << m_ID << m_descr,
-//					  event_s.reinit(EID_DO_CH_OK)    << m_ID << m_descr);
+				if (fault != TRITONN_RESULT_OK) {
+					rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
+					rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+					return fault;
+				}
+			}
 		}
 	}
 

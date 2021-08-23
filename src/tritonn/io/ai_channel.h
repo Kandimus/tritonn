@@ -104,17 +104,17 @@ protected:
 	UINT getRange() const;
 
 public:
-	UINT    m_setup        = 0;             // Настройка канала
+	UINT    m_setup        = 0;
 	USINT   m_state        = 0;             // Статус канала (0 - норма)
 	bool    m_isActive     = false;
 
 	// hardware
-	Mode    m_mode         = Mode::mA_4_20; //
-	UINT    m_ADC          = 0;             // Текущий код ацп
-	REAL    m_current      = 0;             // Текущие амперы/вольты
-	USINT   m_hardState    = 0;             // Статус канала с модуля
-	USINT   m_stateRedLED  = 0;             // Статус красного диода
-	USINT   m_actionRedLED = 0;             // Управление касным диодом
+	Mode    m_mode         = Mode::mA_4_20;
+	UINT    m_ADC          = 0;
+	REAL    m_current      = 0;
+	USINT   m_hardState    = 0;
+	USINT   m_stateRedLED  = 0;
+	USINT   m_actionRedLED = 0;
 
 	CorrectPoint m_correct = CorrectPoint::NONE;
 
@@ -134,4 +134,3 @@ private:
 	static rBitsArray m_flagsModeP;
 	static rBitsArray m_flagsCorrect;
 };
-

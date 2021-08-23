@@ -127,8 +127,6 @@ UDINT rAI::calculate()
 	
 	m_status = rAI::Status::UNDEF;
 
-	//-------------------------------------------------------------------------------------------
-	// Преобразуем код АЦП в значение
 	if (isSetModule()) {
 		auto interface = dynamic_cast<rIOAIInterface*>(rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF));
 
@@ -138,19 +136,23 @@ UDINT rAI::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		UDINT fault    = TRITONN_RESULT_OK;
-		USINT state    = interface->getState   (m_channel, rIOBaseChannel::Type::AI, fault);
-		LREAL adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
-		LREAL rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
-		LREAL minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
+		USINT state = true;
 
-		m_phValue.m_value = m_scale.m_min.Value + static_cast<LREAL>(m_scale.getRange()) / rangeADC * (adc - minADC);
-		m_current.m_value = interface->getCurrent(m_channel, rIOBaseChannel::Type::AI, fault);
+		if (!interface->isFault()) {
+			UDINT fault    = TRITONN_RESULT_OK;
+			LREAL adc      = interface->getValue   (m_channel, rIOBaseChannel::Type::AI, fault);
+			LREAL rangeADC = interface->getRange   (m_channel, rIOBaseChannel::Type::AI, fault);
+			LREAL minADC   = interface->getMinValue(m_channel, rIOBaseChannel::Type::AI, fault);
 
-		if (fault != TRITONN_RESULT_OK) {
-			rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
-			return fault;
+			state             = interface->getState   (m_channel, rIOBaseChannel::Type::AI, fault);
+			m_phValue.m_value = m_scale.m_min.Value + static_cast<LREAL>(m_scale.getRange()) / rangeADC * (adc - minADC);
+			m_current.m_value = interface->getCurrent(m_channel, rIOBaseChannel::Type::AI, fault);
+
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_AI_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 		}
 
 		checkExpr(state, AI_LE_CODE_FAULT,
@@ -168,24 +170,13 @@ UDINT rAI::calculate()
 					m_mode = Mode::LASTGOOD;
 				}
 
-				m_status = Status::FAULT; // выставляем флаг ошибки
+				m_status = Status::FAULT;
 			}
 
 			setFault();
 		}
 	}
-	else //if !virtual
-	{
-		//aidata->StatusCh = OFAISTATUSCH_OK;
-		//SetFault();
-	}
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	// РЕЖИМЫ РАБОТЫ
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	
 	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
 	// можно сделать через m_oldMode, но это не красиво
 	if(m_mode == Mode::MKEYPAD && !(m_lockErr & AI_LE_SIM_MANUAL))

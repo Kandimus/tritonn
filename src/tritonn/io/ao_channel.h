@@ -55,7 +55,7 @@ protected:
 	UINT getRange() const;
 
 public:
-	UINT m_setup = 0;             // Настройка канала
+	UINT m_setup = 0;
 
 	// hardware
 	Mode   m_mode    = Mode::ACTIVE;

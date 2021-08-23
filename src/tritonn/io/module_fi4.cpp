@@ -154,7 +154,7 @@ LREAL rModuleFI4::getFreq(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	fault = checkChannelAccess(num, type);
 	if (fault != TRITONN_RESULT_OK) {
-		return true;
+		return 0;
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();

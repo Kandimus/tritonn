@@ -95,14 +95,16 @@ UDINT rIOBaseModule::processing(USINT issim)
 {
 	++m_pulling;
 
-	if(issim || m_type == Type::CPU || m_isFault) {
+	if(issim || m_type == Type::CPU) {
 		return TRITONN_RESULT_OK;
 	}
 
-	if (!m_moduleInfo || !m_dataPtr || !m_moduleStatus)
-	{
-		m_isFault = true;
-		rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_ISNULL) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
+	if (!m_moduleInfo || !m_dataPtr || !m_moduleStatus) {
+		if (!m_isFault) {
+			m_isFault = true;
+			rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_ISNULL) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
+		}
+
 		return DATACFGERR_HARDWARE_MODULEISNULL;
 	}
 
@@ -111,16 +113,16 @@ UDINT rIOBaseModule::processing(USINT issim)
 		result = sendCanCommand(m_moduleReadAll, m_ID, m_dataPtr);
 	}
 	if (m_moduleInfo->InWork) {
-		result = sendCanCommand(m_moduleExchange, m_ID, m_dataPtr);
+		result    = sendCanCommand(m_moduleExchange, m_ID, m_dataPtr);
+		m_isFault = false;
 	} else {
 //printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
-		m_isFault = true;
-		rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_FAULT) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
-		//NOTE убрать!!!
-		;//return DATACFGERR_HARDWARE_MODULEFAULT;
+		if (!m_isFault) {
+			m_isFault = true;
+			rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_FAULT) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
+		}
 	}
 
-	// copy system data
 	m_module = *m_moduleSysData;
 	m_status = *m_moduleStatus;
 

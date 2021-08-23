@@ -49,6 +49,7 @@ public:
 // IOAIInterface
 public:
 	virtual UDINT getPulling() override;
+	virtual bool  isFault() const override { return m_isFault; }
 	virtual USINT getState(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UDINT getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault) override;
 	virtual UDINT setValue(USINT num, rIOBaseChannel::Type type, UDINT  value) override;
