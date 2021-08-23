@@ -27,26 +27,26 @@ Copy text to clipboard, open github.com, click on **settings** -> **SSH and GPG 
 
 ## Command line ##
 >--force-run
+>-f
 
 Ignore cold-restart
 
 >--terminal
+>-t
 
 Out logs end events to terminal
-
->--force-conf *filename*
-
-Open config ./conf/*filename*
 
 >--log *hex*
 
 Set log mask as *hex*
 
 >--simulate
+>-s
 
 Simulate IO modules
 
 >--no-dump
+>-D
 
 Don't load dump files
 
@@ -54,5 +54,10 @@ Don't load dump files
 
 Force load config file <file>
 
+>--no-set-IP
+>-I
+
+Disable set IP addressed from config file
+    
 ## 3thparty libs ##
     sudo apt install libncurses5-dev
