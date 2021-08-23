@@ -61,7 +61,8 @@ public:
 private:
 	K19_AI6a_ChType getHardwareModuleChType(UDINT index);
 	UDINT checkChannelAccess(USINT num, rIOBaseChannel::Type type);
-	void  checkCorrectPoint(USINT idx);
+	void  checkChannelCorrectPoint(USINT idx);
+	void  checkCorrectPoint();
 
 private:
 	std::vector<rIOAIChannel*> m_channel;

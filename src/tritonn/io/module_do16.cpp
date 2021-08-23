@@ -58,9 +58,11 @@ rModuleDO16::~rModuleDO16()
 UDINT rModuleDO16::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -76,12 +78,14 @@ UDINT rModuleDO16::processing(USINT issim)
 		channel->processing();
 	}
 
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleDO16::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -93,12 +97,15 @@ UDINT rModuleDO16::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	if (m_channel[num]->m_type != type) {
 		fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+		printf("<-- UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 		return false;
 	}
 
+	printf("<-- UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_value;
 }
 
@@ -110,12 +117,15 @@ UDINT rModuleDO16::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--> LOCK   %s/%i setValue\n", getRTTI().c_str(), m_ID);
 
 	if (m_channel[num]->m_type != type) {
+		printf("<-- UNLOCK %s/%i setValue\n", getRTTI().c_str(), m_ID);
 		return DATACFGERR_REALTIME_WRONGCHANNEL;
 	}
 
 	m_channel[num]->m_value = (value != 0);
+	printf("<-- UNLOCK %s/%i setValue\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 

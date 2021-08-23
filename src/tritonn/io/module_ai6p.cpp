@@ -71,9 +71,11 @@ rModuleAI6p::~rModuleAI6p()
 UDINT rModuleAI6p::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -97,12 +99,14 @@ UDINT rModuleAI6p::processing(USINT issim)
 		channel->processing();
 	}
 //printf("AI6p[0] adc: %i,  current: %.1f, type %i, state: %i\n", m_channel[0]->m_ADC, m_channel[0]->m_current, m_data.Read.ChType[0], m_channel[0]->m_hardState);
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleAI6p::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -114,7 +118,7 @@ UDINT rModuleAI6p::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_ADC;
 }
 
@@ -135,7 +139,7 @@ REAL rModuleAI6p::getCurrent(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getCurrent\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_current;
 }
 
@@ -147,7 +151,7 @@ UINT rModuleAI6p::getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getMinValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getMinValue();
 }
 
@@ -159,7 +163,7 @@ UINT rModuleAI6p::getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getMaxValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getMaxValue();
 }
 
@@ -171,7 +175,7 @@ UINT rModuleAI6p::getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getRange\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getRange();
 }
 
@@ -183,7 +187,7 @@ USINT rModuleAI6p::getState(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getState\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_state;
 }
 

@@ -80,9 +80,11 @@ rModuleAI6a::~rModuleAI6a()
 UDINT rModuleAI6a::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -102,18 +104,22 @@ UDINT rModuleAI6a::processing(USINT issim)
 			m_data.Write.OutDataType[idx]  = K19_AI6a_OutType_ReducedData;
 			m_data.Write.RedLEDAction[idx] = (channel->m_setup & rIOAIChannel::Setup::OFF) ? K19_AI6a_RedLEDBlocked : K19_AI6a_RedLEDNormal;
 
-			checkCorrectPoint(idx);
+			checkChannelCorrectPoint(idx);
 		}
 
 		channel->processing();
 	}
 
+	checkCorrectPoint();
+
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleAI6a::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -125,7 +131,7 @@ UDINT rModuleAI6a::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_ADC;
 }
 
@@ -146,7 +152,7 @@ REAL rModuleAI6a::getCurrent(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getCurrent\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_current;
 }
 
@@ -158,7 +164,7 @@ UINT rModuleAI6a::getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getMinValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getMinValue();
 }
 
@@ -170,7 +176,7 @@ UINT rModuleAI6a::getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getMaxValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getMaxValue();
 }
 
@@ -182,7 +188,7 @@ UINT rModuleAI6a::getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getRange\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getRange();
 }
 
@@ -194,7 +200,7 @@ USINT rModuleAI6a::getState(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getState\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_state;
 }
 
@@ -220,7 +226,7 @@ K19_AI6a_ChType rModuleAI6a::getHardwareModuleChType(UDINT index)
 	}
 }
 
-void rModuleAI6a::checkCorrectPoint(USINT idx)
+void rModuleAI6a::checkChannelCorrectPoint(USINT idx)
 {
 	KXX_str setting;
 
@@ -250,14 +256,19 @@ void rModuleAI6a::checkCorrectPoint(USINT idx)
 			m_channel[idx]->m_correct = rIOAIChannel::CorrectPoint::NONE;
 			break;
 	}
+}
 
+void rModuleAI6a::checkCorrectPoint()
+{
 	switch (m_correct) {
 		case ModuleCorrectPoint::SAVE_POINTS:
+			printf("--- SAVE POINTS %s/%i\n", getRTTI().c_str(), m_ID);
 			sendCanCommand(_K19_AI6a_CorrSave, m_ID, &m_data);
 			m_correct = ModuleCorrectPoint::NONE;
 			break;
 
 		case ModuleCorrectPoint::CLEAR_POINTS:
+			printf("--- CLEAR POINTS %s/%i\n", getRTTI().c_str(), m_ID);
 			sendCanCommand(_K19_AI6a_CorrClear, m_ID, &m_data);
 			m_correct = ModuleCorrectPoint::NONE;
 			break;

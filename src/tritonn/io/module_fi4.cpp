@@ -86,9 +86,11 @@ rModuleFI4::~rModuleFI4()
 UDINT rModuleFI4::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -108,6 +110,7 @@ UDINT rModuleFI4::processing(USINT issim)
 
 	m_data.Write.OutType = getOutType();
 
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
@@ -126,6 +129,7 @@ K19_FIO_OutType rModuleFI4::getOutType()
 UDINT rModuleFI4::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -137,6 +141,7 @@ UDINT rModuleFI4::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 
 	return m_channel[num]->m_counter;
 }
@@ -169,6 +174,8 @@ UDINT rModuleFI4::setOut(USINT num)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
+
+	printf("--- LOCK/UNLOCK %s/%i setOut\n", getRTTI().c_str(), m_ID);
 
 	m_outtype = static_cast<OutType>(num + 1);
 

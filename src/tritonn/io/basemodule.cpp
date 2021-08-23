@@ -116,7 +116,7 @@ UDINT rIOBaseModule::processing(USINT issim)
 		result    = sendCanCommand(m_moduleExchange, m_ID, m_dataPtr);
 		m_isFault = false;
 	} else {
-//printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
+printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
 		if (!m_isFault) {
 			m_isFault = true;
 			rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_FAULT) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);

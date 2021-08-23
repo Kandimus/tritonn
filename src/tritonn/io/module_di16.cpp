@@ -60,9 +60,11 @@ rModuleDI16::~rModuleDI16()
 UDINT rModuleDI16::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -80,12 +82,14 @@ UDINT rModuleDI16::processing(USINT issim)
 
 	m_data.Write.Filter = 0;
 
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleDI16::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -102,7 +106,7 @@ UDINT rModuleDI16::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_value;
 }
 

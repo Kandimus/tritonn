@@ -326,16 +326,22 @@ ttt.start(2000);
 		if (ttt.isFinished()) {
 			static int do_value = 1;
 			static LREAL ao_value = 2.0;
-			rSnapshot ss(getVariableClass());
-			rSnapshot sg(getVariableClass());
+			static int ai6a_correct = 0;
+			rSnapshot ss(getVariableClass(), ACCESS_MASK_SYSTEM);
+			rSnapshot sg(getVariableClass(), ACCESS_MASK_SYSTEM);
 
 			ss.add("io.test_do.present.value", do_value);
 			ss.add("io.test_ao.present.value", ao_value);
+			ss.add("hardware.ai6_2.correct", 2);
 			ss.set();
 
 			sg.add("io.test_ai.physical.value");
 			sg.add("io.test_aia.physical.value");
 			sg.get();
+
+			if (ss("hardware.ai6_2.correct")) {
+				TRACEI(LOG::DATAMGR, "hardware.ai6_2.correct set");
+			}
 
 			if (ss("io.test_do.present.value")) {
 				TRACEI(LOG::DATAMGR, "io.test_do.present.value = %i", do_value);

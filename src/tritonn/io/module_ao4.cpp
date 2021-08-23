@@ -62,9 +62,11 @@ rModuleAO4::~rModuleAO4()
 UDINT rModuleAO4::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -94,13 +96,14 @@ UDINT rModuleAO4::processing(USINT issim)
 	}
 
 //printf("AO[2]   adc: %i, *current %.1f\n", m_channel[2]->m_ADC, m_channel[2]->m_current);
-
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleAO4::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -112,7 +115,7 @@ UDINT rModuleAO4::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->m_ADC;
 }
 
@@ -124,7 +127,7 @@ UDINT rModuleAO4::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i setValue\n", getRTTI().c_str(), m_ID);
 	m_channel[num]->m_ADC = static_cast<UINT>(value);
 
 	return TRITONN_RESULT_OK;
@@ -138,7 +141,7 @@ UINT rModuleAO4::getMinValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getMinValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getMinValue();
 }
 
@@ -150,7 +153,7 @@ UINT rModuleAO4::getMaxValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getMaxValue\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getMaxValue();
 }
 
@@ -162,7 +165,7 @@ UINT rModuleAO4::getRange(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getRange\n", getRTTI().c_str(), m_ID);
 	return m_channel[num]->getRange();
 }
 

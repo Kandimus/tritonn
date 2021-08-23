@@ -85,9 +85,11 @@ rModuleDI8DO8::~rModuleDI8DO8()
 UDINT rModuleDI8DO8::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	printf("--> LOCK   %s/%i\n", getRTTI().c_str(), m_ID);
 
 	UDINT result = rIOBaseModule::processing(issim);
 	if (result != TRITONN_RESULT_OK) {
+		printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 		return result;
 	}
 
@@ -119,12 +121,14 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 
 	m_data.Write.DIFilter = 0;
 
+	printf("<-- UNLOCK %s/%i\n", getRTTI().c_str(), m_ID);
 	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleDI8DO8::getPulling()
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	printf("--- LOCK/UNLOCK %s/%i getPulling\n", getRTTI().c_str(), m_ID);
 	return m_pulling;
 }
 
@@ -141,7 +145,7 @@ UDINT rModuleDI8DO8::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault
 			return false;
 		}
 		rLocker lock(m_rwlock); lock.Nop();
-
+		printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 		return m_channelDI[num]->m_value;
 	}
 
@@ -152,7 +156,7 @@ UDINT rModuleDI8DO8::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i getValue\n", getRTTI().c_str(), m_ID);
 	return m_channelDO[num]->m_value;
 }
 
@@ -168,7 +172,7 @@ UDINT rModuleDI8DO8::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	printf("--- LOCK/UNLOCK %s/%i setValue\n", getRTTI().c_str(), m_ID);
 	m_channelDO[num]->m_value = (value != 0);
 	return TRITONN_RESULT_OK;
 }
