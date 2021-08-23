@@ -18,9 +18,11 @@
 #include <memory>
 #include "def.h"
 #include <vector>
+#include "basechannel.h"
+#include "rpmsg_connector.h"
 #include "bits_array.h"
 
-class rIOBaseChannel;
+class rIOBaseInterface;
 class rDataConfig;
 class rVariableList;
 class rError;
@@ -30,6 +32,13 @@ namespace tinyxml2 {
 class XMLElement;
 }
 
+struct rModuleStatus
+{
+	UINT m_CAN      = 0;
+	UINT m_firmware = 0;
+	UINT m_hardware = 0;
+};
+
 class rIOBaseModule
 {
 public:
@@ -38,10 +47,14 @@ public:
 	{
 		UNDEF  = 0,     //
 		CPU    = 1,
-		AI6    = 2,     //
-		DI8DO8 = 3,
+		AI6a   = 2,     //
+		AI6p   = 3,     //
 		FI4    = 4,
-		CRM    = 5,
+		DI8DO8 = 5,
+		DI16   = 6,
+		DO16   = 7,
+		CRM    = 8,
+		AO4    = 9,
 	};
 
 	rIOBaseModule(UDINT id);
@@ -56,51 +69,56 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err);
 	virtual UDINT generateVars(const std::string& prefix, rVariableList& list, bool issimulate);
 	virtual UDINT generateMarkDown(rGeneratorMD& md);
-	virtual rIOBaseChannel* getChannel(USINT channel) = 0;
-	virtual rIOBaseModule*  getModulePtr() = 0;
+	virtual rIOBaseInterface* getModuleInterface() = 0;
+
 	virtual std::string getAlias() const { return m_alias; }
 	virtual std::string getName()  const { return m_name;  }
 	virtual STRID       getDescr() const { return m_descr; }
 	virtual UDINT       getID()    const { return m_ID;    }
 	virtual Type        getType()  const { return m_type;  }
 
-/*
-	Type  getType()         { return m_type; }
-	UINT  getNodeID()       { return m_nodeID; }
-	UDINT getVendorID()     { return m_vendorID; }
-	UDINT getProductCode()  { return m_productCode; }
-	UDINT getRevision()     { return m_revision; }
-	UDINT getSerialNumber() { return m_serialNumber; }
-
-	REAL  getTemperature()  { return m_temperature; }
-	UINT  getCAN()          { return m_CAN; }
-	UINT  getFirmware()     { return m_firmware; }
-	UINT  getHardware()     { return m_hardware; }
-*/
-public:
-	Type  m_type;
-	UINT  m_nodeID;
-	UDINT m_vendorID;
-	UDINT m_productCode;
-	UDINT m_revision;
-	UDINT m_serialNumber;
-
-	REAL  m_temperature;
-	UINT  m_CAN;
-	UINT  m_firmware;
-	UINT  m_hardware;
-
-	static rBitsArray m_flagsType;
+	virtual UINT  getModuleNodeID()     const { return m_module.NodeID; }
+	virtual UDINT getModuleIDVendor()   const { return m_module.IDVendor; }
+	virtual UDINT getModuleIDProdCode() const { return m_module.IDProdCode; }
+	virtual UDINT getModuleIDRevision() const { return m_module.IDRevision; }
+	virtual UDINT getModuleIDSerial()   const { return m_module.IDSerial; }
+	virtual UDINT getCAN()              const { return m_status.m_CAN; }
+	virtual UDINT getFirmware()         const { return m_status.m_firmware; }
+	virtual UDINT getHardware()         const { return m_status.m_hardware; }
 
 protected:
-	UDINT           m_ID;
-	pthread_mutex_t m_mutex;
-	std::string     m_name  = "";
-	std::string     m_alias = "";
-	STRID           m_descr = 0;
+	void setModule(void* data, ModuleInfo_str* info, ModuleSysData_str* sysdata, void* status, UDINT readAll, UDINT exchange);
+	void printModuleInfo();
+
+	int sendCanCommand(UDINT func, DINT idx, void* data);
+
+public:
+	static rBitsArray m_flagsType;
+	static rBitsArray m_flagsShortType;
+
+protected:
+	UDINT m_pulling        = 0;
+	Type  m_type           = Type::UNDEF;
+	USINT m_ID             = 0xFF;
+	void* m_dataPtr        = nullptr;
+	UDINT m_moduleReadAll  = 0;
+	UDINT m_moduleExchange = 0;
+
+	ModuleSysData_str  m_module;
+	rModuleStatus      m_status;
+	rModuleStatus*     m_moduleStatus = nullptr;
+	ModuleInfo_str*    m_moduleInfo    = nullptr;
+	ModuleSysData_str* m_moduleSysData = nullptr;
+
+	std::string     m_name    = "";
+	std::string     m_alias   = "";
+	STRID           m_descr   = 0;
 	std::string     m_comment = "";
+	bool            m_isFault = false;
 
 	std::vector<rIOBaseChannel*> m_listChannel;
+
+	pthread_rwlock_t m_rwlock;
 };
 
 

@@ -1,34 +1,30 @@
-//=================================================================================================
-//===
-//=== data_di.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс дискретного входного сигнала (DI)
-//===
-//=================================================================================================
+/*
+ *
+ * data/do.cpp
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
-#include "data_do.h"
+#include "do.h"
 #include <string.h>
 #include "tinyxml2.h"
-#include "event/eid.h"
-#include "event/manager.h"
-#include "text_id.h"
-#include "data_manager.h"
-#include "data_snapshot.h"
-#include "data_config.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "io/manager.h"
-#include "io/do_channel.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../text_id.h"
+#include "../data_manager.h"
+#include "../data_snapshot.h"
+#include "../data_config.h"
+#include "../variable_item.h"
+#include "../variable_list.h"
+#include "../io/manager.h"
+#include "../io/baseinterface.h"
 #include "xml_util.h"
-#include "generator_md.h"
-#include "comment_defines.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
 
 const UDINT DO_LE_KEYPAD_ON  = 0x00000001;
 const UDINT DO_LE_KEYPAD_OFF = 0x00000002;
@@ -95,7 +91,6 @@ UDINT rDO::calculate()
 
 	// Если аналоговый сигнал выключен, то выходим
 	if (m_setup.Value & Setup::OFF) {
-		m_physical        = 0;
 		m_present.m_value = 0;
 		m_mode            = Mode::PHIS;
 		m_status          = Status::UNDEF;
@@ -106,42 +101,27 @@ UDINT rDO::calculate()
 	// Обработка ввода пользователя
 	m_setup.Compare(reinitEvent(EID_DO_NEW_SETUP));
 	// Сообщения об изменении Mode формируем в ручную
-	
+
 	m_status = Status::NORMAL;
 
 	if (m_mode == Mode::PHIS) {
 		if (isSetModule()) {
-			auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-			auto channel     = static_cast<rIODOChannel*>(channel_ptr);
+			auto interface = rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF);
 
-			if (channel == nullptr) {
+			if (!interface) {
 				rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
-				rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 				return DATACFGERR_REALTIME_MODULELINK;
 			}
 
-			rEvent event_s;
-			rEvent event_f;
-			checkExpr(channel->m_state, DO_LE_CODE_FAULT,
-					  event_f.reinit(EID_DO_CH_FAULT) << m_ID << m_descr,
-					  event_s.reinit(EID_DO_CH_OK)    << m_ID << m_descr);
+			if (!interface->isFault()) {
+				UDINT fault = interface->setValue(m_channel, rIOBaseChannel::Type::DO, static_cast<UDINT>(m_present.m_value));
 
-			if (channel->m_state) {
-				m_fault  = true;
-				m_status = Status::FAULT; // выставляем флаг ошибки
-			} else {
-				if (m_oldvalue != m_present.m_value) {
-					auto module = rIOManager::instance().getModule(m_module);
-					rSnapshot ss(rDataManager::instance().getVariableClass());
-
-					m_physical = static_cast<USINT>(m_present.m_value);
-					ss.add(module->getAlias() + String_format(".ch_%u.value", channel->m_index), m_physical);
-					ss.set();
+				if (fault != TRITONN_RESULT_OK) {
+					rEventManager::instance().add(reinitEvent(EID_DO_MODULE) << m_module << m_channel);
+					rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+					return fault;
 				}
-			}
-
-			if (channel_ptr) {
-				delete channel_ptr;
 			}
 		}
 	}
@@ -237,7 +217,7 @@ UDINT rDO::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std::st
 
 	UDINT fault = 0;
 
-	m_physical = XmlUtils::getTextUSINT(element->FirstChildElement(XmlName::VALUE), 0, fault);
+	m_present.m_value = XmlUtils::getTextUSINT(element->FirstChildElement(XmlName::VALUE), 0, fault);
 	fault      = 0;
 
 	m_mode = static_cast<Mode>(m_flagsMode.getValue(strMode, fault));

@@ -58,6 +58,7 @@ const char ADDRESSMAP[]    = "addressmap";
 const char AI[]            = "ai";
 const char ALIAS[]         = "alias";
 const char ANONYMOUS[]     = "anonymous";
+const char AO[]            = "ao";
 const char AVERAGE[]       = "average";
 const char B[]             = "b";
 const char B15[]           = "b15";

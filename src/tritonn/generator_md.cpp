@@ -273,7 +273,7 @@ std::string rGeneratorMD::rItem::save()
 	result += "## XML\n````xml\n";
 
 	if (isHarware()) {
-		result += "<" + std::string(XmlName::MODULE) + " name=\"" + m_name + "\" ";
+		result += "<" + std::string(XmlName::MODULE) + " type=\"" + m_name + "\" name=\"valid object name\" ";
 	} else {
 		result += "<" + m_name + " name=\"valid object name\" ";
 	}

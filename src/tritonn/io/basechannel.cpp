@@ -19,11 +19,6 @@
 #include "../units.h"
 
 
-UDINT rIOBaseChannel::getPullingCount()
-{
-	return m_pullingCount;
-}
-
 UDINT rIOBaseChannel::processing()
 {
 	return TRITONN_RESULT_OK;
@@ -48,6 +43,7 @@ std::string rIOBaseChannel::getStrType() const
 		case Type::DI:    return "DI";
 		case Type::DO:    return "DO";
 		case Type::FI:    return "FI";
+		case Type::AO:    return "AO";
 		default: return "ERROR";
 	}
 }

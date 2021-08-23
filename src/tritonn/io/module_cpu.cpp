@@ -32,13 +32,35 @@ rModuleCPU::rModuleCPU(const rModuleCPU* cpu) : rIOBaseModule(cpu)
 
 UDINT rModuleCPU::processing(USINT issim)
 {
-	rLocker lock(m_mutex); UNUSED(lock);
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
 	rIOBaseModule::processing(issim);
 
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleCPU::getPulling()
+{
+	return 0;
+}
+
+UDINT rModuleCPU::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
+{
+	UNUSED(num);
+	UNUSED(type);
+
+	fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+	return 0;
+}
+
+UDINT rModuleCPU::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	UNUSED(num);
+	UNUSED(type);
+	UNUSED(value);
+
+	return DATACFGERR_REALTIME_WRONGCHANNEL;
+}
 
 UDINT rModuleCPU::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)
 {
@@ -61,14 +83,4 @@ UDINT rModuleCPU::generateMarkDown(rGeneratorMD& md)
 	md.add(this);
 
 	return TRITONN_RESULT_OK;
-}
-
-rIOBaseChannel* rModuleCPU::getChannel(USINT channel)
-{
-	return nullptr;
-}
-
-rIOBaseModule* rModuleCPU::getModulePtr()
-{
-	return nullptr;
 }

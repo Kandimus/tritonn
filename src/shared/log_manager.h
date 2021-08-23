@@ -47,7 +47,7 @@ protected:
 
 private:
 	bool        check(UDINT mask);
-	std::string saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text);
+	std::string saveLogText(UDINT mask, const rDateTime& timestamp, const std::string& source, UDINT lineno, const std::string& text, bool isshort);
 	void        outTerminal(UDINT mask, const std::string& text);
 
 public:

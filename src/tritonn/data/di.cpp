@@ -1,33 +1,29 @@
-//=================================================================================================
-//===
-//=== data_di.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс дискретного входного сигнала (DI)
-//===
-//=================================================================================================
+/*
+ *
+ * data/di.cpp
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
-#include "data_di.h"
 #include <string.h>
 #include "tinyxml2.h"
-#include "event/eid.h"
-#include "event/manager.h"
-#include "text_id.h"
-#include "data_manager.h"
-#include "data_config.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "io/manager.h"
-#include "io/di_channel.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../text_id.h"
+#include "../data_manager.h"
+#include "../data_config.h"
+#include "../variable_list.h"
+#include "../io/di_channel.h"
+#include "../io/manager.h"
+#include "../io/baseinterface.h"
 #include "xml_util.h"
-#include "generator_md.h"
-#include "comment_defines.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
+#include "di.h"
 
 const UDINT DI_LE_KEYPAD_ON  = 0x00000001;
 const UDINT DI_LE_KEYPAD_OFF = 0x00000002;
@@ -36,7 +32,6 @@ const UDINT DI_LE_CODE_FAULT = 0x00000004;
 rBitsArray rDI::m_flagsMode;
 rBitsArray rDI::m_flagsSetup;
 rBitsArray rDI::m_flagsStatus;
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -115,47 +110,28 @@ UDINT rDI::calculate()
 	//-------------------------------------------------------------------------------------------
 	// Преобразуем код АЦП в значение
 	if (isSetModule()) {
-		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-		auto channel     = static_cast<rIODIChannel*>(channel_ptr);
+		auto interface = rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF);
 
-		if (channel == nullptr) {
+		if (!interface) {
 			rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		rEvent event_s;
-		rEvent event_f;
-		checkExpr(channel->m_state, DI_LE_CODE_FAULT,
-				  event_f.reinit(EID_DI_CH_FAULT) << m_ID << m_descr,
-				  event_s.reinit(EID_DI_CH_OK)    << m_ID << m_descr);
+		if (!interface->isFault()) {
+			UDINT fault = TRITONN_RESULT_OK;
 
-		m_physical.m_value = channel->getValue();
-		m_status           = Status::NORMAL;
+			m_physical.m_value = interface->getValue(m_channel, rIOBaseChannel::Type::DI, fault);
+			m_status           = Status::NORMAL;
 
-		if (channel->m_state) {
-			m_fault = true;
-
-			if (m_mode == Mode::PHIS) {
-				// если симуляция разрешена, то симулируем этот сигнал
-				if (m_setup.Value & Setup::ERR_KEYPAD) {
-					m_mode = Mode::KEYPAD;
-				}
-
-				m_status = Status::FAULT; // выставляем флаг ошибки
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_DI_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
 			}
-
-			setFault();
-		}
-
-		if (channel_ptr) {
-			delete channel_ptr;
 		}
 	}
 
-	//---------------------------------------------------------------------------------------------
-	// РЕЖИМЫ РАБОТЫ
-	
 	// Через oldmode делать нельзя, так как нам нужно поймать и ручное переключение
 	// можно сделать через m_oldMode, но это не красиво
 	if (m_mode == Mode::KEYPAD && !(m_lockErr & DI_LE_KEYPAD_ON)) {
@@ -171,13 +147,6 @@ UDINT rDI::calculate()
 		
 		rEventManager::instance().add(reinitEvent(EID_DI_KEYPAD_OFF));
 	}
-	
-	
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	// ВЫХОДНОЕ ЗНАЧЕНИЕ
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	LREAL oldvalue = m_present.m_value;
 

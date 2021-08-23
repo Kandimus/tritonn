@@ -23,8 +23,8 @@
 #include "../variable_class.h"
 #include "thread_class.h"
 #include "basemodule.h"
+#include "basechannel.h"
 
-class rDataConfig;
 class rIOBaseChannel;
 class rError;
 class rGeneratorMD;
@@ -34,7 +34,7 @@ class rGeneratorMD;
 //
 class rIOManager : public rThreadClass, public rVariableClass
 {
-	friend rDataConfig;
+friend class rDataConfig;
 
 	SINGLETON(rIOManager)
 
@@ -45,8 +45,7 @@ public:
 	UDINT LoadFromXML(tinyxml2::XMLElement* element, rError& err);
 	UDINT generateVars(rVariableClass* parent);
 
-	rIOBaseChannel* getChannel(USINT module, USINT channel);
-	rIOBaseModule*  getModule(USINT module);
+	rIOBaseInterface* getModuleInterface(USINT module, rIOBaseModule::Type type) const;
 	std::string getModuleAlias(USINT module) const;
 
 	bool checkListOfModules() const;

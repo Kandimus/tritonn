@@ -18,6 +18,7 @@
 #include "xml_util.h"
 #include "../error.h"
 #include "../generator_md.h"
+	#include "log_manager.h"
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
@@ -29,15 +30,24 @@ rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channelDI.size()));
+
+		ch_di->m_canIdx = m_channelDI.size();
+
 		m_channelDI.push_back(ch_di);
 		m_listChannel.push_back(ch_di);
 	}
 
 	while(m_channelDO.size() < CHANNEL_DO_COUNT) {
 		auto ch_do = new rIODOChannel(static_cast<USINT>(CHANNEL_DI_COUNT + m_channelDO.size()));
+
+		ch_do->m_canIdx = m_channelDO.size();
+
 		m_channelDO.push_back(ch_do);
 		m_listChannel.push_back(ch_do);
 	}
+
+	memset(&m_data, 0, sizeof(m_data));
+	setModule(&m_data, &m_data.ModuleInfo, &m_data.System, &m_data.Read.Status, _K19_DIDO8_ModuleReadAll, _K19_DIDO8_ModuleExchange);
 }
 
 rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8)
@@ -63,52 +73,104 @@ rModuleDI8DO8::rModuleDI8DO8(const rModuleDI8DO8* di8do8) : rIOBaseModule(di8do8
 
 rModuleDI8DO8::~rModuleDI8DO8()
 {
-	for (auto channel : m_channelDI) {
+	for (auto channel : m_listChannel) {
 		if (channel) {
 			delete channel;
 		}
 	}
 	m_channelDI.clear();
-
-	for (auto channel : m_channelDO) {
-		if (channel) {
-			delete channel;
-		}
-	}
 	m_channelDO.clear();
 }
 
 UDINT rModuleDI8DO8::processing(USINT issim)
 {
-	rLocker lock(m_mutex); UNUSED(lock);
+	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
 
-	rIOBaseModule::processing(issim);
+	UDINT result = rIOBaseModule::processing(issim);
+	if (result != TRITONN_RESULT_OK) {
+		return result;
+	}
 
-	for (auto channel : m_listChannel) {
+	for (auto channel : m_channelDI) {
+		USINT idx = channel->m_canIdx;
+
 		if (issim) {
 			channel->simulate();
+		} else {
+			channel->m_phValue = m_data.Read.DI[idx] == UL_K19_DIDO8_ChStHigh;
 		}
 
 		channel->processing();
+//		if (idx == 0) TRACEI(LOG::CANIO, "DI8DO8 set di[%i] is %i (ph %i)", channel->m_index, channel->m_value, channel->m_phValue);
 	}
+
+	for (auto channel : m_channelDO) {
+		USINT idx = channel->m_canIdx;
+
+		channel->processing();
+
+		if (issim) {
+			channel->simulate();
+		} else {
+			m_data.Write.DO[idx] = channel->m_phValue ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
+//			if (idx == 0) TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i (ph %i)", channel->m_index, channel->m_phValue, channel->m_value);
+		}
+	}
+
+	m_data.Write.DIFilter = 0;
 
 	return TRITONN_RESULT_OK;
 }
 
+UDINT rModuleDI8DO8::getPulling()
+{
+	rLocker lock(m_rwlock); lock.Nop();
+	return m_pulling;
+}
 
-rIOBaseChannel* rModuleDI8DO8::getChannel(USINT num)
+UDINT rModuleDI8DO8::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 {
 	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT) {
-		return nullptr;
+		fault = DATACFGERR_REALTIME_CHANNELLINK;
+		return false;
 	}
-
-	rLocker lock(m_mutex); UNUSED(lock);
 
 	if (num < CHANNEL_DI_COUNT) {
-		return new rIODIChannel(*m_channelDI[num]);
+		if (m_channelDI[num]->m_type != type) {
+			fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+			return false;
+		}
+		rLocker lock(m_rwlock); lock.Nop();
+
+		return m_channelDI[num]->m_value;
 	}
 
-	return new rIODOChannel(*m_channelDO[num - CHANNEL_DI_COUNT]);
+	num -= CHANNEL_DI_COUNT;
+	if (m_channelDO[num]->m_type != type) {
+		fault = DATACFGERR_REALTIME_WRONGCHANNEL;
+		return false;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	return m_channelDO[num]->m_value;
+}
+
+UDINT rModuleDI8DO8::setValue(USINT num, rIOBaseChannel::Type type, UDINT value)
+{
+	if (num >= CHANNEL_DI_COUNT + CHANNEL_DO_COUNT || num < CHANNEL_DI_COUNT) {
+		return DATACFGERR_REALTIME_CHANNELLINK;
+	}
+
+	num -= CHANNEL_DI_COUNT;
+	if (m_channelDO[num]->m_type != type) {
+		return DATACFGERR_REALTIME_WRONGCHANNEL;
+	}
+
+	rLocker lock(m_rwlock); lock.Nop();
+
+	m_channelDO[num]->m_value = (value != 0);
+	return TRITONN_RESULT_OK;
 }
 
 UDINT rModuleDI8DO8::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

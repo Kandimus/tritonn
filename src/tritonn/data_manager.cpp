@@ -70,14 +70,16 @@ Live rDataManager::getLiveStatus()
 }
 
 
-void rDataManager::DoHalt(UDINT reason)
+void rDataManager::DoHalt(HaltReason hr, UDINT reason)
 {
 	if(Halt.Get()) return;
 
 	Halt.Set(true);
 	m_live.Set(Live::HALT);
 
-	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, reason);
+	UDINT code = static_cast<UDINT>(hr) | reason;
+	rEventManager::instance().addEventUDINT(EID_SYSTEM_HALT, code);
+	TRACEP(LOG::DATAMGR, "Critical HALT %u (reason 0x%08X, error %u)", code, static_cast<UDINT>(hr), reason);
 
 	simpleFileSave(FILE_RESTART, "cold");
 }
@@ -231,7 +233,11 @@ UDINT rDataManager::LoadConfig()
 		setLiveStatus(Live::RUNNING);
 	}
 
-	rSystemVariable::instance().applyEthernet();
+	if (!rSimpleArgs::instance().isSet(rArg::NoSetIP)) {
+		rSystemVariable::instance().applyEthernet();
+	} else {
+		TRACEI(LOG::DATAMGR, "Don't load IP addresses");
+	}
 
 	return result;
 }
@@ -253,15 +259,18 @@ rThreadStatus rDataManager::Proccesing()
 
 	m_timerTotal.start(1000);
 
+rTickCount ttt;
+ttt.start(2000);
+
 	while(true)
 	{
-		// Обработка команд нити
 		thread_status = rThreadClass::Proccesing();
 		if (!THREAD_IS_WORK(thread_status)) {
 			return thread_status;
 		}
 
 
+		{
 		//Lock();
 		rLocker lock(rVariableClass::m_mutex); lock.Nop();
 
@@ -281,32 +290,75 @@ rThreadStatus rDataManager::Proccesing()
 
 			// Основной расчет всех объектов
 			for (auto item : m_listSource) {
+				if (m_live.Get() != Live::RUNNING) break;
 				item->calculate();
 			}
 
 			// Пердвычисления для отчетов
 			for (auto item : m_listReport) {
+				if (m_live.Get() != Live::RUNNING) break;
 				item->preCalculate();
 			}
 
 			// Основной расчет отчетов
 			for (auto item : m_listReport) {
+				if (m_live.Get() != Live::RUNNING) break;
 				item->calculate();
 			}
 
-			if (m_doSaveVars.Get()) {
-				saveDataVariables();
-			}
+			if (m_live.Get() == Live::RUNNING) {
+				if (m_doSaveVars.Get()) {
+					saveDataVariables();
+				}
 
-			if (m_timerTotal.isFinished()) {
-				#ifndef TRITONN_TEST
-				saveDataTotals();
-				#endif
-				m_timerTotal.restart();
+				if (m_timerTotal.isFinished()) {
+					#ifndef TRITONN_TEST
+					saveDataTotals();
+					#endif
+					m_timerTotal.restart();
+				}
 			}
 		}
 
+		}
 //		Unlock();
+
+		if (ttt.isFinished()) {
+			static int do_value = 1;
+			static LREAL ao_value = 2.0;
+			rSnapshot ss(getVariableClass());
+			rSnapshot sg(getVariableClass());
+
+			ss.add("io.test_do.present.value", do_value);
+			ss.add("io.test_ao.present.value", ao_value);
+			ss.set();
+
+			sg.add("io.test_ai.physical.value");
+			sg.add("io.test_aia.physical.value");
+			sg.get();
+
+			if (ss("io.test_do.present.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_do.present.value = %i", do_value);
+			}
+
+			if (ss("io.test_ao.present.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_ao.present.value = %.1f", ao_value);
+			}
+
+			if (sg("io.test_ai.physical.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_ai.physical.value = %.1f", sg("io.test_ai.physical.value")->getValueLREAL());
+			}
+
+			if (sg("io.test_aia.physical.value")) {
+				TRACEI(LOG::DATAMGR, "io.test_aia.physical.value = %.1f", sg("io.test_aia.physical.value")->getValueLREAL());
+			}
+
+			do_value = !do_value;
+//			ao_value += 1;
+
+			if (ao_value > 24) ao_value = 0.0;
+			ttt.restart();
+		}
 
 		rVariableClass::processing();
 		rThreadClass::EndProccesing();
@@ -320,9 +372,9 @@ UDINT rDataManager::CreateHaltEvent(rError& err)
 {
 	rEvent event(EID_SYSTEM_CFGERROR);
 
-	rEventManager::instance().add(event << (HALT_REASON_CONFIGFILE | err.getError()) << err.getLineno());
+	rEventManager::instance().add(event << (static_cast<UDINT>(HaltReason::CONFIGFILE) | err.getError()) << err.getLineno());
 
-	DoHalt(HALT_REASON_CONFIGFILE | err.getError());
+	DoHalt(HaltReason::CONFIGFILE, err.getError());
 
 	TRACEP(LOG::DATAMGR, "Can't load conf file '%s'. Error ID: %i. Line %i. Error string '%s'.",
 			   rDataConfig::instance().m_fileName.c_str(), err.getError(), err.getLineno(), err.getText().c_str());
@@ -401,9 +453,9 @@ UDINT rDataManager::getConfFile(std::string& conf)
 
 	result = simpleFileLoad(FILE_CONF, conf);
 	if(TRITONN_RESULT_OK != result) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_CFGERROR, HALT_REASON_CONFIGFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_CFGERROR, static_cast<UDINT>(HaltReason::CONFIGFILE) | result);
 
-		DoHalt(HALT_REASON_CONFIGFILE | result);
+		DoHalt(HaltReason::CONFIGFILE, result);
 
 		TRACEP(LOG::DATAMGR, "Can't load file '%s'. Error ID: %i", FILE_CONF.c_str(), result);
 

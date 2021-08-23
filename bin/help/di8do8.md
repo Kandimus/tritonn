@@ -1,10 +1,10 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # di8do8
-> 0.19.132.77cddc06
+> 0.19.172.60e8d27e
 ## XML
 ````xml
-<module name="di8do8" description="string index" >
+<module type="di8do8" name="valid object name" description="string index" >
 	<channel number="0" setup="DI setup flags" />
 	<channel number="1" setup="DI setup flags" />
 	<channel number="2" setup="DI setup flags" />
@@ -47,106 +47,106 @@ Number | Type | Comment
 
 #### DI setup
 * _OFF_  - Выключен и не обрабатывается
-* _BOUNCE_  - Устранение дребезга
+* _FILTER_  - Устранение дребезга
 * _INVERSED_  - Инверсия значения
 
 #### DO setup
 * _OFF_  - Выключен и не обрабатывается
+* _PULSE_  - Выдать одиночный импульс
 * _INVERSED_  - Инверсия значения
 
 ## Variable
 Variable | Type | Unit | Unit ID | Readonly | Access | Comment
 :-- |:--:|:--:|:--:|:--:|:-- |:--
-di8do8.type | uint |  | 512 | Yes |   | Нет данных
-di8do8.node | uint |  | 512 | Yes |   | Нет данных
-di8do8.vendor | udint |  | 512 | Yes |   | Нет данных
-di8do8.productcode | udint |  | 512 | Yes |   | Нет данных
-di8do8.revision | udint |  | 512 | Yes |   | Нет данных
-di8do8.serialnumber | udint |  | 512 | Yes |   | Нет данных
-di8do8.temperature | real |  | 512 | Yes |   | Нет данных
-di8do8.can | uint |  | 512 | Yes |   | Нет данных
-di8do8.firmware | uint |  | 512 | Yes |   | Нет данных
-di8do8.hardware | uint |  | 512 | Yes |   | Нет данных
+di8do8.type | uint |  | 512 | Yes |   | Тип модуля:<br>0: Модуль не определен<br/>1: Базовый модуль ЦПУ<br/>2: Модуль AI6a<br/>3: Модуль AI6p<br/>4: Модуль FI4<br/>5: Модуль DI8DO8<br/>6: Модуль DI16<br/>7: Модуль DO16<br/>8: Модуль CRM<br/>9: Модуль AO4<br/>
+di8do8.node | uint |  | 512 | Yes |   | Уникальный номер
+di8do8.vendor | udint |  | 512 | Yes |   | Код производителя
+di8do8.productcode | udint |  | 512 | Yes |   | Код устройства
+di8do8.revision | udint |  | 512 | Yes |   | Версия сетевого драйвера
+di8do8.serialnumber | udint |  | 512 | Yes |   | Серийный номер нижнего уровня
+di8do8.can | uint |  | 512 | Yes |   | Состояние обмена данными
+di8do8.firmware | uint |  | 512 | Yes |   | Версия ПО модуля
+di8do8.hardware | uint |  | 512 | Yes |   | Версия модуля
 di8do8.ch_00.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_00.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_00.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_00.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_00.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_00.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_00.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_00.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_00.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_01.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_01.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_01.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_01.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_01.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_01.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_01.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_01.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_01.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_02.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_02.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_02.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_02.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_02.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_02.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_02.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_02.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_02.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_03.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_03.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_03.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_03.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_03.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_03.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_03.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_03.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_03.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_04.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_04.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_04.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_04.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_04.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_04.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_04.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_04.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_04.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_05.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_05.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_05.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_05.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_05.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_05.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_05.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_05.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_05.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_06.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_06.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_06.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_06.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_06.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_06.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_06.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_06.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_06.simulate.blink | udint | мс | 210 |  |   | Период мигания
 di8do8.ch_07.simulate.type | usint |  | 512 |  |   | Тип симуляции (зависит от типа канала) [^simtype]
 di8do8.ch_07.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Устранение дребезга<br/>0x0004: Инверсия значения<br/>
 di8do8.ch_07.value | usint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_07.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_07.bounce | udint | мс | 210 |  |   | Значение таймера антидребезга
+di8do8.ch_07.phvalue | usint |  | 512 | Yes |   | Значение сигнала на модуле
+di8do8.ch_07.filter | udint | мс | 210 |  |   | Значение таймера фильтрации
 di8do8.ch_07.simulate.value | uint |  | 512 |  |   | Значение симулированного значения
 di8do8.ch_07.simulate.blink | udint | мс | 210 |  |   | Период мигания
-di8do8.ch_08.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_08.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_08.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_09.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_09.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_09.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_10.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_10.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_10.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_11.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_11.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_11.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_12.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_12.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_12.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_13.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_13.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_13.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_14.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_14.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_14.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
-di8do8.ch_15.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0004: Инверсия значения<br/>
-di8do8.ch_15.value | uint |  | 512 | Yes |   | Текущее значение
-di8do8.ch_15.state | usint |  | 512 | Yes |   | Статус:<br/>Нет данных
+di8do8.ch_08.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_08.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_08.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_09.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_09.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_09.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_10.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_10.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_10.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_11.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_11.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_11.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_12.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_12.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_12.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_13.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_13.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_13.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_14.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_14.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_14.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
+di8do8.ch_15.setup | uint |  | 512 | Yes |   | Настройка:<br/>0x0001: Выключен и не обрабатывается<br/>0x0002: Выдать одиночный импульс<br/>0x0004: Инверсия значения<br/>
+di8do8.ch_15.value | uint |  | 512 |  |   | Текущее значение
+di8do8.ch_15.pulse | udint | мс | 210 |  |   | Длина одиночного импульса
 
 
 [^simtype]: **Тип симуляции DI:**<br/>0: Симуляция отключена<br/>1: Константное значение<br/>2: Пульсация сигнала<br/>3: Случайное значение<br/><br/>

@@ -79,13 +79,14 @@ const UINT EVENT_OBJ_MASWTR   = 0x0014;
 const UINT EVENT_OBJ_VOLWTR   = 0x0015;
 const UINT EVENT_OBJ_CINVISC  = 0x0016;
 const UINT EVENT_OBJ_DYNVISC  = 0x0017;
-const UINT EVENT_OBJ__END     = 0x0018;
+const UINT EVENT_OBJ_HARWARE  = 0x0018;
+const UINT EVENT_OBJ__END     = 0x0019;
 const UINT EVENT_OBJ_MAX      = 0x003F;
 
 const string EVENT_OBJ_DESC[EVENT_OBJ__END + 1] = {"UNDEF", "SYSTEM", "TCP", "LOG", "EVENT", "SELECTOR", "AI", "FI",
 												   "DENSSOL", "REDUCEDDENS", "STREAM", "STATION", "TEST", "REPORT", "VARIABLES", "DI",
 												   "DO", "AO", "SAMPLER", "PROVE", "MASSWATER", "VOLUMEWATER",
-												   "CINEMATICVISCOSITY", "DYNAMICVISCOSITY",
+												   "CINEMATICVISCOSITY", "DYNAMICVISCOSITY", "HARDWARE",
 												   "USER"};
 
 
@@ -111,6 +112,11 @@ CREATE_EID(EID_SYSTEM_RESTART_WARM    , EMT_WARNING, EVENT_OBJ_SYSTEM  , 30)  //
 CREATE_EID(EID_SYSTEM_RESTART_COLD    , EMT_WARNING, EVENT_OBJ_SYSTEM  , 31)  // Команда "Cold-restart"
 CREATE_EID(EID_SYSTEM_RESTART_UNKNOW  , EMT_ERROR  , EVENT_OBJ_SYSTEM  , 32)  // Неизвестная команда перезагрузки
 
+
+//-------------------------------------------------------------------------------------------------
+// Hardware
+CREATE_EID(EID_HARDWARE_MODULE_ISNULL , EMT_ERROR  , EVENT_OBJ_HARWARE , 1)  // Внутренняя ошибка при обработке модуля
+CREATE_EID(EID_HARDWARE_MODULE_FAULT  , EMT_ERROR  , EVENT_OBJ_HARWARE , 2)  // Внутренняя ошибка модуля или его отсутствие
 
 //-------------------------------------------------------------------------------------------------
 // Selector
@@ -355,6 +361,26 @@ CREATE_EID(EID_DO_KEYPAD_OFF          , EMT_WARNING, EVENT_OBJ_DO      ,  13)
 CREATE_EID(EID_DO_MODULE              , EMT_ERROR  , EVENT_OBJ_DO      ,  14)
 CREATE_EID(EID_DO_NEW_SETUP           , EMT_SUCCESS, EVENT_OBJ_DO      ,  15)
 
+//-------------------------------------------------------------------------------------------------
+// AO
+CREATE_EID(EID_AO_NEW_MIN             , EMT_SUCCESS, EVENT_OBJ_AO      ,   1)
+CREATE_EID(EID_AO_NEW_MAX             , EMT_SUCCESS, EVENT_OBJ_AO      ,   2)
+CREATE_EID(EID_AO_SIM_ON              , EMT_WARNING, EVENT_OBJ_AO      ,   3)
+CREATE_EID(EID_AO_SIM_OFF             , EMT_WARNING, EVENT_OBJ_AO      ,   4)
+CREATE_EID(EID_AO_MODULE              , EMT_ERROR  , EVENT_OBJ_AO      ,   5)
+// AO.Limits
+CREATE_EID(EID_AO_NEW_AMIN            , EMT_SUCCESS, EVENT_OBJ_AO      , 100)
+CREATE_EID(EID_AO_NEW_WMIN            , EMT_SUCCESS, EVENT_OBJ_AO      , 101)
+CREATE_EID(EID_AO_NEW_WMAX            , EMT_SUCCESS, EVENT_OBJ_AO      , 102)
+CREATE_EID(EID_AO_NEW_AMAX            , EMT_SUCCESS, EVENT_OBJ_AO      , 103)
+CREATE_EID(EID_AO_NEW_HYST            , EMT_SUCCESS, EVENT_OBJ_AO      , 104)
+CREATE_EID(EID_AO_NEW_SETUP           , EMT_SUCCESS, EVENT_OBJ_AO      , 105)
+CREATE_EID(EID_AO_AMIN                , EMT_ERROR  , EVENT_OBJ_AO      , 110)
+CREATE_EID(EID_AO_WMIN                , EMT_WARNING, EVENT_OBJ_AO      , 111)
+CREATE_EID(EID_AO_AMAX                , EMT_ERROR  , EVENT_OBJ_AO      , 112)
+CREATE_EID(EID_AO_WMAX                , EMT_WARNING, EVENT_OBJ_AO      , 113)
+CREATE_EID(EID_AO_NORMAL              , EMT_SUCCESS, EVENT_OBJ_AO      , 114)
+CREATE_EID(EID_AO_NAN                 , EMT_ERROR  , EVENT_OBJ_AO      , 115)
 
 //-------------------------------------------------------------------------------------------------
 // SAMPLER
@@ -501,3 +527,5 @@ CREATE_EID(EID_DYNVISC_AMAX            , EMT_ERROR  , EVENT_OBJ_DYNVISC, 112)
 CREATE_EID(EID_DYNVISC_WMAX            , EMT_WARNING, EVENT_OBJ_DYNVISC, 113)
 CREATE_EID(EID_DYNVISC_NORMAL          , EMT_SUCCESS, EVENT_OBJ_DYNVISC, 114)
 CREATE_EID(EID_DYNVISC_NAN             , EMT_ERROR  , EVENT_OBJ_DYNVISC, 115)
+
+

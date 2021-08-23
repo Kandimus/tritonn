@@ -1,37 +1,30 @@
-//=================================================================================================
-//===
-//=== data_counter.cpp
-//===
-//=== Copyright (c) 2019-2021 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс частотного входного сигнала (FI)
-//===
-//=================================================================================================
+/*
+ *
+ * data/counter.cpp
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
-#include "data_counter.h"
 #include <vector>
 #include <limits>
 #include <string.h>
-#include "tinyxml2.h"
-#include "error.h"
-#include "data_selector.h"
-#include "event/eid.h"
-#include "event/manager.h"
-#include "text_id.h"
-#include "data_manager.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "io/manager.h"
-#include "io/fi_channel.h"
 #include "tickcount.h"
 #include "xml_util.h"
-#include "generator_md.h"
-#include "comment_defines.h"
+#include "../error.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../text_id.h"
+#include "../data_manager.h"
+#include "../variable_list.h"
+#include "../io/manager.h"
+#include "../io/fiinterface.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
+#include "counter.h"
 
 const UDINT FI_LE_CODE_FAULT = 0x00000001;
 
@@ -48,7 +41,6 @@ rCounter::rCounter(const rStation* owner) : rSource(owner), m_setup(Setup::OFF)
 
 	m_lockErr   = 0;
 	m_countPrev = 0;
-	m_tickPrev  = 0;
 
 	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT, m_impulse, U_imp  , SID::IMPULSE  , XmlName::IMPULSE, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::OUTPUT | rLink::Setup::MUSTVIRT, m_freq   , U_Hz   , SID::FREQUENCY, XmlName::FREQ   , rLink::SHADOW_NONE);
@@ -81,16 +73,12 @@ UDINT rCounter::initLimitEvent(rLink &link)
 //
 UDINT rCounter::calculate()
 {
-	rEvent event_f;
-	rEvent event_s;
-	
 	if (rSource::calculate()) {
 		return TRITONN_RESULT_OK;
 	}
 
 	// Если сигнал выключен, то выходим
 	if (m_setup.Value & Setup::OFF) {
-		//lStatusCh = OFAISTATUSCH_OK;		
 		m_count           = 0;
 		m_isInit          = false;
 		m_freq.m_value    = 0.0;
@@ -105,52 +93,40 @@ UDINT rCounter::calculate()
 	m_fault = false;
 
 	if(isSetModule()) {
-		auto channel_ptr = rIOManager::instance().getChannel(m_module, m_channel);
-		auto channel     = static_cast<rIOFIChannel*>(channel_ptr);
+		auto interface = dynamic_cast<rIOFIInterface*>(rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::UNDEF));
 
-		if (channel == nullptr) {
+		if (!interface) {
 			rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
-			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		checkExpr(channel->m_state, FI_LE_CODE_FAULT,
-				  event_f.reinit(EID_COUNTER_CH_FAULT) << m_ID << m_descr,
-				  event_s.reinit(EID_COUNTER_CH_OK)    << m_ID << m_descr);
+		if (!interface->isFault()) {
+			UDINT fault = 0;
+			UDINT count = interface->getValue(m_channel, rIOBaseChannel::Type::FI, fault);
 
-		m_fault = channel->m_state;
+			m_freq.m_value   = interface->getFreq (m_channel, rIOBaseChannel::Type::FI, fault);
+			m_period.m_value = getPeriod();
 
-		if (channel->m_state) {
-			m_period.m_value  = std::numeric_limits<LREAL>::quiet_NaN();
-			m_freq.m_value    = std::numeric_limits<LREAL>::quiet_NaN();
-			m_impulse.m_value = std::numeric_limits<LREAL>::quiet_NaN();
-
-		} else {
-			UDINT count = channel->getValue();
-			LREAL freq  = channel->getFreq();
-			UDINT tick  = rTickCount::SysTick();
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 
 			if (!m_isInit) {
 				m_impulse.m_value = 0;
-				m_freq.m_value    = 0.0;
-				m_period.m_value  = 0.0;
 				m_countPrev       = count;
-				m_tickPrev        = tick;
 				m_isInit          = true;
 			} else {
-				if (m_pullingCount != channel->getPullingCount()) {
+				UDINT curpulling = interface->getPulling(); //TODO это делать только в симуляторе?
+
+				if (m_pullingCount != curpulling) {
 					m_impulse.m_value = count - m_countPrev;
-					m_freq.m_value    = freq;
-					m_period.m_value  = getPeriod();
 					m_countPrev       = count;
-					m_tickPrev        = tick;
-					m_pullingCount    = channel->getPullingCount();
+					m_pullingCount    = curpulling;
 				}
 			}
-		}
-
-		if (channel_ptr) {
-			delete channel_ptr;
 		}
 	}
 
@@ -225,5 +201,5 @@ UDINT rCounter::generateMarkDown(rGeneratorMD& md)
 
 LREAL rCounter::getPeriod()
 {
-	return m_freq.m_value > 0.1 ? 1000000.0 / m_freq.m_value : 0.0;
+	return m_freq.m_value > 0.01 ? 1000000.0 / m_freq.m_value : 0.0;
 }

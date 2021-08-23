@@ -148,6 +148,7 @@ rOPCUAManager::rOPCUAManager(bool createopcua)
 	OPCServer = nullptr;
 
 	memset(&Logins, 0, sizeof(Logins));
+	memset(&OPCServerConf, 0, sizeof(OPCServerConf));
 	LoginsCount    = 0;
 	LoginAnonymous = 0;
 
@@ -239,7 +240,7 @@ UDINT rOPCUAManager::startServer()
 	if(retval != UA_STATUSCODE_GOOD)
 	{
 		//TODO Event
-		rDataManager::instance().DoHalt(HALT_REASON_OPC | retval);
+		rDataManager::instance().DoHalt(HaltReason::OPC, retval);
 		return retval;
 	}
 
@@ -254,8 +255,8 @@ UDINT rOPCUAManager::startServer()
 	result = AddAllVariables();
 
 	if (result != TRITONN_RESULT_OK) {
-		rDataManager::instance().DoHalt(HALT_REASON_OPC | retval);
-		return retval;
+		rDataManager::instance().DoHalt(HaltReason::OPC, result);
+		return result;
 	}
 
 	// Запускаем OPC сервер
@@ -265,9 +266,9 @@ UDINT rOPCUAManager::startServer()
 		UA_Server_delete(OPCServer);
 		OPCServer = nullptr;
 
-		rDataManager::instance().DoHalt(HALT_REASON_OPC | result);
+		rDataManager::instance().DoHalt(HaltReason::OPC, result);
 
-		return retval;
+		return result;
 	}
 
 	rThreadClass::Run(300);

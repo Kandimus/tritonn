@@ -1,27 +1,22 @@
-﻿//=================================================================================================
-//===
-//=== data_counter.h
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс частотного входного сигнала (FI)
-//===
-//=================================================================================================
+﻿/*
+ *
+ * data/counter.h
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
-#include "data_source.h"
-#include "data_module.h"
 #include <list>
 #include "bits_array.h"
-#include "compared_values.h"
-#include "data_link.h"
-
+#include "../data_source.h"
+#include "../data_module.h"
+#include "../data_link.h"
+#include "../compared_values.h"
 
 // Внутренние флаги
 const UDINT COUNTER_LE_CODE_FAULT = 0x00000001;
@@ -84,9 +79,7 @@ protected:
 	static rBitsArray m_flagsSetup;
 	bool  m_isInit = false;
 	UDINT m_countPrev = 0;
-	UDINT m_tickPrev  = 0;
+//	UDINT m_tickPrev  = 0;
 	UDINT m_pullingCount = 0;
 };
-
-
 

@@ -33,10 +33,11 @@
 #include "io/defines.h"
 #include "data_manager.h"
 #include "data_link.h"
-#include "data_ai.h"
-#include "data_di.h"
-#include "data_do.h"
-#include "data_counter.h"
+#include "data/ai.h"
+#include "data/ao.h"
+#include "data/di.h"
+#include "data/do.h"
+#include "data/counter.h"
 #include "data_denssol.h"
 #include "data_reduceddensity.h"
 #include "data_report.h"
@@ -309,12 +310,13 @@ UDINT rDataConfig::loadIO(tinyxml2::XMLElement* root, cJSON* jroot, rStation* ow
 
 		//TODO реализовать как в модулях IO
 		if (XmlName::AI == name) { if(m_max[name] >= MAX_IO_AI) return m_error.set(DATACFGERR_MAX_AI, 0); source = dynamic_cast<rSource*>(new rAI(owner));      }
+		if (XmlName::AO == name) { if(m_max[name] >= MAX_IO_AO) return m_error.set(DATACFGERR_MAX_AO, 0); source = dynamic_cast<rSource*>(new rAO(owner));      }
 		if (XmlName::FI == name) { if(m_max[name] >= MAX_IO_FI) return m_error.set(DATACFGERR_MAX_FI, 0); source = dynamic_cast<rSource*>(new rCounter(owner)); }
 		if (XmlName::DI == name) { if(m_max[name] >= MAX_IO_DI) return m_error.set(DATACFGERR_MAX_DI, 0); source = dynamic_cast<rSource*>(new rDI(owner));      }
 		if (XmlName::DO == name) { if(m_max[name] >= MAX_IO_DO) return m_error.set(DATACFGERR_MAX_DO, 0); source = dynamic_cast<rSource*>(new rDO(owner));      }
 
 		if (!source) {
-			return m_error.set(DATACFGERR_UNKNOWIO, obj->GetLineNum());
+			return m_error.set(DATACFGERR_CALC_UNKNOWIO, obj->GetLineNum());
 		}
 
 		source->m_ID = m_max[name]++;
@@ -976,10 +978,10 @@ void rDataConfig::saveWeb()
 	free(str);
 	if(TRITONN_RESULT_OK != result)
 	{
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 		TRACEP(LOG::CONFIG, "Can't save json tree");
 
-		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+		rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 		return;
 	}
 
@@ -993,10 +995,10 @@ void rDataConfig::saveWeb()
 
 	result = simpleFileSave(FILE_WWW_PRECISION, text);
 	if (TRITONN_RESULT_OK != result) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 		TRACEP(LOG::CONFIG, "Can't save precision file");
 
-		rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+		rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 		return;
 	}
 
@@ -1022,10 +1024,10 @@ void rDataConfig::saveWeb()
 		std::string filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_LANG;
 		result = simpleFileSave(filename, text);
 		if (TRITONN_RESULT_OK != result) {
-			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 			TRACEP(LOG::CONFIG, "Can't save sid file");
 
-			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+			rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 			return;
 		}
 
@@ -1038,10 +1040,10 @@ void rDataConfig::saveWeb()
 		filename = DIR_WWW_LANG + lang + "/" + FILE_WWW_EVENT;
 		result = simpleFileSave(filename, text);
 		if(TRITONN_RESULT_OK != result) {
-			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, HALT_REASON_WEBFILE | result);
+			rEventManager::instance().addEventUDINT(EID_SYSTEM_FILEIOERROR, static_cast<UDINT>(HaltReason::WEBFILE) | result);
 			TRACEP(LOG::CONFIG, "Can't save event file");
 
-			rDataManager::instance().DoHalt(HALT_REASON_WEBFILE | result);
+			rDataManager::instance().DoHalt(HaltReason::WEBFILE, result);
 			return;
 		}
 	}

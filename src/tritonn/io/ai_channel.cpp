@@ -23,23 +23,41 @@
 #include "../comment_defines.h"
 
 rBitsArray rIOAIChannel::m_flagsSetup;
-rBitsArray rIOAIChannel::m_flagsType;
+rBitsArray rIOAIChannel::m_flagsModeA;
+rBitsArray rIOAIChannel::m_flagsModeP;
 rBitsArray rIOAIChannel::m_flagsSimType;
+rBitsArray rIOAIChannel::m_flagsCorrect;
 
-rIOAIChannel::rIOAIChannel(USINT index, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::AI, index, comment)
+rIOAIChannel::rIOAIChannel(USINT index, bool isActive, const std::string& comment) : rIOBaseChannel(rIOBaseChannel::Type::AI, index, comment)
 {
+	m_isActive = isActive;
+
 	if (m_flagsSetup.empty()) {
 		m_flagsSetup
 				.add("OFF"    , static_cast<UINT>(Setup::OFF)    , COMMENT::SETUP_OFF)
 				.add("AVERAGE", static_cast<UINT>(Setup::AVERAGE), "Усреднение значения");
 	}
 
-	if (m_flagsType.empty()) {
-		m_flagsType
-				.add("", static_cast<UINT>(Type::mA_0_20) , "0..20мА")
-				.add("", static_cast<UINT>(Type::mA_4_20) , "4..40мА")
-				.add("", static_cast<UINT>(Type::V_m10_10), "-10..+10V")
-				.add("", static_cast<UINT>(Type::V_0_10)  , "0..+10V");
+	if (m_flagsModeA.empty()) {
+		m_flagsModeA
+				.add("mA_0_20", static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
+				.add("mA_4_20", static_cast<UINT>(Mode::mA_4_20) , "4..40мА");
+	}
+
+	if (m_flagsModeP.empty()) {
+		m_flagsModeP
+				.add("mA_0_20" , static_cast<UINT>(Mode::mA_0_20) , "0..20мА")
+				.add("mA_4_20" , static_cast<UINT>(Mode::mA_4_20) , "4..40мА")
+				.add("V_m10_10", static_cast<UINT>(Mode::V_m10_10), "-10..+10V")
+				.add("V_0_10"  , static_cast<UINT>(Mode::V_0_10)  , "0..+10V");
+	}
+
+	if (m_flagsCorrect.empty()) {
+		m_flagsCorrect
+				.add("", static_cast<UINT>(CorrectPoint::NONE), "нет действий")
+				.add("", static_cast<UINT>(CorrectPoint::POINT_4mA), "Корректировка 1 точки (4 мА)")
+				.add("", static_cast<UINT>(CorrectPoint::POINT_12mA), "Корректировка 2 точки (12 мА)")
+				.add("", static_cast<UINT>(CorrectPoint::POINT_20mA), "Корректировка 3 точки (20 мА)");
 	}
 
 	if (m_flagsSimType.empty()) {
@@ -54,22 +72,22 @@ rIOAIChannel::rIOAIChannel(USINT index, const std::string& comment) : rIOBaseCha
 
 UINT rIOAIChannel::getMinValue() const
 {
-	switch(m_type) {
-		case Type::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Min);
-		case Type::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Min);
-		case Type::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Min);
-		case Type::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Min);
+	switch(m_mode) {
+		case Mode::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Min);
+		case Mode::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Min);
+		case Mode::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Min);
+		case Mode::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Min);
 	}
 	return 0;
 }
 
 UINT rIOAIChannel::getMaxValue() const
 {
-	switch(m_type) {
-		case Type::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Max);
-		case Type::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Max);
-		case Type::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Max);
-		case Type::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Max);
+	switch(m_mode) {
+		case Mode::mA_0_20:  return static_cast<UINT>(Scale_mA_0_20::Max);
+		case Mode::mA_4_20:  return static_cast<UINT>(Scale_mA_4_20::Max);
+		case Mode::V_m10_10: return static_cast<UINT>(Scale_V_m10_10::Max);
+		case Mode::V_0_10:   return static_cast<UINT>(Scale_V_0_10::Max);
 	}
 	return 0;
 }
@@ -119,8 +137,6 @@ UDINT rIOAIChannel::simulate()
 {
 	m_hardState = false;
 
-	++m_pullingCount;
-
 	switch(m_simType) {
 		case SimType::NONE:
 			break;
@@ -165,11 +181,11 @@ UDINT rIOAIChannel::simulate()
 	}
 
 	// simulate current value
-	switch (m_type) {
-		case Type::mA_0_20:  m_current = 20.0f / getRange() * static_cast<REAL>(m_ADC); break;
-		case Type::mA_4_20:  m_current = 4.0f + 16.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
-		case Type::V_m10_10: m_current = -10.0f + 20.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
-		case Type::V_0_10:   m_current = 10.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
+	switch (m_mode) {
+		case Mode::mA_0_20:  m_current = 20.0f / getRange() * static_cast<REAL>(m_ADC); break;
+		case Mode::mA_4_20:  m_current = 4.0f + 16.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
+		case Mode::V_m10_10: m_current = -10.0f + 20.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
+		case Mode::V_0_10:   m_current = 10.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
 	}
 
 	return TRITONN_RESULT_OK;
@@ -181,11 +197,12 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
-	list.add(p + "setup"  , TYPE::UINT , rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "adc"    ,              rVariable::Flags::R___, &m_ADC    , U_DIMLESS , 0, "Текущий код АЦП");
-	list.add(p + "current",              rVariable::Flags::R___, &m_current, U_DIMLESS , 0, "Текущее значение тока/напряжения");
-	list.add(p + "state"  ,              rVariable::Flags::R___, &m_state  , U_DIMLESS , 0, "Статус канала");
-	list.add(p + "type"   , TYPE::USINT, rVariable::Flags::____, &m_type   , U_DIMLESS , 0, "Тип канала:<br/>" + m_flagsType.getInfo(true));
+	list.add(p + "setup"  , TYPE::UINT ,rVariable::Flags::RS__, &m_setup  , U_DIMLESS,             0, COMMENT::SETUP + m_flagsSetup.getInfo());
+	list.add(p + "adc"    ,             rVariable::Flags::R___, &m_ADC    , U_DIMLESS,             0, "Текущий код АЦП");
+	list.add(p + "current",             rVariable::Flags::R___, &m_current, U_DIMLESS,             0, "Текущее значение тока" + std::string(m_isActive ? "" : "/напряжения"));
+	list.add(p + "state"  ,             rVariable::Flags::R___, &m_state  , U_DIMLESS,             0, "Статус канала");
+	list.add(p + "mode"   , TYPE::USINT,rVariable::Flags::____, &m_mode   , U_DIMLESS, ACCESS_SCALES, "Режим канала:<br/>" + ((m_isActive) ? m_flagsModeA.getInfo(true) : m_flagsModeP.getInfo(true)));
+	list.add(p + "correct", TYPE::UINT ,rVariable::Flags::____, &m_correct, U_DIMLESS, ACCESS_SCALES, "Калибровка канала:<br/>" + m_flagsCorrect.getInfo(true));
 
 	if (issimulate) {
 		list.add(p + "simulate.max"  , rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0, COMMENT::ADC + COMMENT::SIMULATE_MAX);
@@ -199,14 +216,37 @@ UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, b
 
 UDINT rIOAIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 {
-	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP , "");
+	std::string strSetup = XmlUtils::getAttributeString(element, XmlName::SETUP, "");
+	std::string strMode  = XmlUtils::getAttributeString(element, XmlName::MODE , m_flagsModeA.getNameByValue(static_cast<UINT>(Mode::mA_4_20)));
 	UDINT       fault    = 0;
 
 	m_setup = m_flagsSetup.getValue(strSetup, fault);
-
 	if (fault) {
 		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalid setup");
 	}
 
+	m_mode  = static_cast<Mode>(m_isActive ? m_flagsModeA.getBit(strMode , fault) : m_flagsModeP.getBit(strMode , fault));
+	if (fault) {
+		return err.set(DATACFGERR_IO_CHANNEL, element->GetLineNum(), "invalid mode");
+	}
+
 	return TRITONN_RESULT_OK;
+}
+
+std::string rIOAIChannel::getXmlAttribute() const
+{
+	return "mode=\"AI mode flag\"";
+}
+
+std::string rIOAIChannel::getMarkDownFlags() const
+{
+	std::string result = m_flagsSetup.getMarkDown(getStrType() + " setup");
+
+	if (m_isActive) {
+		result += "\n" + m_flagsModeA.getMarkDown(getStrType() + " mode");
+	} else {
+		result += "\n" + m_flagsModeP.getMarkDown(getStrType() + " mode");
+	}
+
+	return result;
 }

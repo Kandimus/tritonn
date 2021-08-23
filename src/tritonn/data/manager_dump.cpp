@@ -36,7 +36,7 @@ UDINT rDumpFile::checkFile(const std::string& filename, const std::string& hash)
 	if (m_result != TRITONN_RESULT_OK) {
 		m_xmlDoc.Clear();
 
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, static_cast<UDINT>(HaltReason::DUMP) | m_result);
 		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i", m_filename.c_str(), m_result);
 
 		return m_result;
@@ -68,9 +68,9 @@ UDINT rDataManager::saveDataVariables()
 	UDINT result = simpleFileSave(FILE_DUMP_VARIABLES, text);
 
 	if (result != TRITONN_RESULT_OK) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, static_cast<UDINT>(HaltReason::DUMP) | result);
 
-		DoHalt(HALT_REASON_DUMP | result);
+		DoHalt(HaltReason::DUMP, result);
 
 		TRACEP(LOG::DATAMGR, "Can't save variable dump file. Error ID: %i", result);
 	}
@@ -105,9 +105,9 @@ void rDataManager::loadDumps()
 
 	} else {
 		simpleFileDelete(m_dumpTotals.getStrFilename());
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpTotals.getResult());
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, static_cast<UDINT>(HaltReason::DUMP) | m_dumpTotals.getResult());
 
-		DoHalt(HALT_REASON_CONFIGFILE | m_dumpTotals.getResult());
+		DoHalt(HaltReason::CONFIGFILE, m_dumpTotals.getResult());
 
 		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i. Dump file was delete",
 			   m_dumpTotals.getFilename(), m_dumpTotals.getResult());
@@ -129,9 +129,9 @@ void rDataManager::loadDumps()
 
 	} else {
 		simpleFileDelete(m_dumpVars.getStrFilename());
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | m_dumpVars.getResult());
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, static_cast<UDINT>(HaltReason::DUMP) | m_dumpVars.getResult());
 
-		DoHalt(HALT_REASON_CONFIGFILE | m_dumpVars.getResult());
+		DoHalt(HaltReason::DUMP, m_dumpVars.getResult());
 
 		TRACEP(LOG::DATAMGR, "Can't load dump file '%s'. Error ID: %i. Dump file was delete",
 			   m_dumpVars.getFilename(), m_dumpVars.getResult());
@@ -163,9 +163,9 @@ UDINT rDataManager::saveDataTotals()
 	UDINT result = simpleFileSave(FILE_DUMP_TOTALS, text);
 
 	if (result != TRITONN_RESULT_OK) {
-		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, HALT_REASON_DUMP | result);
+		rEventManager::instance().addEventUDINT(EID_SYSTEM_DUMPERROR, static_cast<UDINT>(HaltReason::DUMP) | result);
 
-		DoHalt(HALT_REASON_DUMP | result);
+		DoHalt(HaltReason::DUMP, result);
 
 		TRACEP(LOG::DATAMGR, "Can't save totals dump file. Error ID: %i", result);
 	}

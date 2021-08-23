@@ -1,22 +1,25 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="00112233445566778899aabbccddeeff00112233" version="test">
 	<hardware>
-		<module ver="1.0" name="cpu" type="cpu" />
-		<module ver="1.0" name="ai6_1" type="AI6">
-			<channel number="0" setup="AVERAGE" />
+		<module name="cpu" type="cpu" />              <!-- 0 -->
+		<module name="ai6_1" type="ai6p">             <!-- 1 -->
+			<channel number="0" setup="" mode="mA_4_20"/>
 		</module>
-		<module type="di8do8" name="di8do8_1">
+		<module name="di16_1" type="di16"/>           <!-- 2 -->
+		<module name="di8do8_1" type="di8do8">        <!-- 3 -->
 			<channel number="0" setup=""/>
 			<channel number="1" setup="INVERSED"/>
 			<channel number="8" setup=""/>
 			<channel number="9" setup="INVERSED"/>
 		</module>
-		<module type="fi4" name="fi4_1">
+		<module name="do16_1" type="do16"/>           <!-- 4 -->
+		<module name="ai6_2" type="ai6a">             <!-- 5 -->
+			<channel number="0" setup="" mode="mA_4_20"/>
 		</module>
-		<module type="crm" name="crm_1">
+		<module name="ao4_1"  type="ao4"/>            <!-- 6 -->
+		<module name="fi4_1" type="fi4">              <!-- 7 -->
 		</module>
-		<module type="ai6" name="ai6_2" >
-			<channel number="0" setup="AVERAGE" />
+		<module name="crm_1" type="crm">              <!-- 8 -->
 		</module>
 	</hardware>
 	<config>
@@ -51,6 +54,39 @@
 						<hysteresis>0.1</hysteresis>
 					</limit>
 				</limits>
+			</ai>
+			<do name="test_do" mode="PHIS" setup="" description="4001">
+				<io_link module="4" channel="0"/>
+			</do>
+			<di name="test_di" mode="PHIS" setup="" description="4002">
+				<io_link module="3" channel="0"/>
+				<keypad>0</keypad>
+			</di>
+			<ao name="test_ao" mode="PHIS" setup="" description="4003">
+				<io_link module="6" channel="2"/>
+				<unit>515</unit>
+				<scale>
+					<low>0</low>
+					<high>24</high>
+				</scale>
+			</ao>
+			<ai name="test_ai" mode="PHIS" setup="KEYPAD" description="4004">
+				<io_link module="1" channel="0"/>
+				<unit>515</unit>
+				<keypad>9.9</keypad>
+				<scale>
+					<low>4</low>
+					<high>20</high>
+				</scale>
+			</ai>
+			<ai name="test_aia" mode="PHIS" setup="KEYPAD" description="4005">
+				<io_link module="5" channel="0"/>
+				<unit>515</unit>
+				<keypad>9.7</keypad>
+				<scale>
+					<low>4</low>
+					<high>20</high>
+				</scale>
 			</ai>
 		</io>
 		<stations>
@@ -118,7 +154,7 @@
 								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4203">
-								<io_link module="3" channel="0"/>
+								<io_link module="7" channel="0"/>
 							</counter>
 						</io>
 						<calculate>
@@ -275,7 +311,7 @@
 								</limits>
 							</ai>
 							<ai name="water1"  mode="PHIS" setup="NOICE | LASTGOOD" description="4403">
-								<_io_link module="3" channel="0"/>
+								<_io_link module="" channel=""/>
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -293,7 +329,7 @@
 								</limits>
 							</ai>
 							<ai name="water2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4404">
-								<_io_link module="3" channel="1"/>
+								<_io_link module="" channel=""/>
 								<unit>520</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -311,7 +347,7 @@
 								</limits>
 							</ai>
 							<ai name="visc" mode="PHIS" setup="NOICE | LASTGOOD" description="4405">
-								<_io_link module="3" channel="2"/>
+								<_io_link module="" channel=""/>
 								<unit>64</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -329,7 +365,7 @@
 								</limits>
 							</ai>
 							<ai name="pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4406">
-								<_io_link module="3" channel="3"/>
+								<_io_link module="" channel=""/>
 								<unit>32</unit>
 								<keypad>0.5</keypad>
 								<scale>
@@ -419,18 +455,18 @@
 						</limits>
 					</ai>
 					<di name="valve_opened" mode="PHIS" setup="" description="4104">
-						<io_link module="2" channel="0"/>
+						<io_link module="3" channel="0"/>
 						<keypad>0</keypad>
 					</di>
 					<di name="valve_closed" mode="PHIS" setup="" description="4105">
-						<io_link module="2" channel="0"/>
+						<io_link module="3" channel="1"/>
 						<keypad>0</keypad>
 					</di>
 					<do name="valve_open" mode="PHIS" setup="" description="4106">
-						<io_link module="2" channel="8"/>
+						<io_link module="3" channel="8"/>
 					</do>
 					<do name="valve_close" mode="PHIS" setup="" description="4107">
-						<io_link module="2" channel="8"/>
+						<io_link module="3" channel="9"/>
 						<value>1</value>
 					</do>
 				</io>
@@ -440,7 +476,7 @@
 						<density><link alias="sikn_123.obj.stndenstemp:dens"/></density>
 					</kinviscosity>
 					<prove name="prove" setup="STABILIZATION | BOUNCE" description="4111">
-						<io_link module="4" />
+						<io_link module="8" />
 						<temperature><link alias="sikn_123.obj.avr_temp_tpu" /></temperature>
 						<pressure><link alias="sikn_123.io.pres_tpu" /></pressure>
 						<density><link alias="sikn_123.obj.stndenstemp:dens" /></density>
@@ -684,7 +720,7 @@
 				</streams>
 				<io>
 					<ai name="temp" mode="PHIS" setup="NOICE | LASTGOOD" description="4501">
-						<_io_link module="3" channel="3"/>
+						<_io_link module="" channel=""/>
 						<unit>16</unit>
 						<keypad>12.5</keypad>
 						<scale>
@@ -702,7 +738,7 @@
 						</limits>
 					</ai>
 					<ai name="Pres" mode="PHIS" setup="NOICE | LASTGOOD" description="4502">
-						<_io_link module="3" channel="4"/>
+						<_io_link module="" channel=""/>
 						<unit>33</unit>
 						<keypad>0.5</keypad>
 						<scale>
@@ -869,6 +905,10 @@
 		<strings>
 			<lang value="ru">
 			<str id="4000">Температура глобальная</str>
+			<str id="4001">Тестовый дискреный выход</str>
+			<str id="4002">Тестовый дискреный вход</str>
+			<str id="4003">Тестовый аналоговый активный выход</str>
+			<str id="4004">Тестовый аналоговый активный вход</str>
 			<str id="4100">СИКН 1</str>
 			<str id="4101">СИКН 1. Температура входа ТПУ</str>
 			<str id="4102">СИКН 1. Температура выхода ТПУ</str>

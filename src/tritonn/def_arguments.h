@@ -25,4 +25,5 @@ namespace rArg
 	const std::string Simulate = "simulate";
 	const std::string Config   = "config";
 	const std::string NoDump   = "no-dump";
+	const std::string NoSetIP  = "no-set-ip";
 }

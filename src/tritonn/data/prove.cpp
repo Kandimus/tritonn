@@ -26,12 +26,13 @@
 #include "../data_manager.h"
 #include "../data_station.h"
 #include "../data_stream.h"
-#include "../data_ai.h"
+#include "ai.h"
 #include "../error.h"
 #include "../variable_item.h"
 #include "../variable_list.h"
 #include "../data_snapshot.h"
 #include "../io/manager.h"
+#include "../io/crminterface.h"
 #include "../io/module_crm.h"
 #include "../generator_md.h"
 #include "../comment_defines.h"
@@ -165,22 +166,26 @@ UDINT rProve::calculate()
 	}
 
 	if (isSetModule()) {
-		auto module_ptr = rIOManager::instance().getModule(m_module);
-		auto module     = dynamic_cast<rModuleCRM*>(module_ptr);
+		auto interface = dynamic_cast<rIOCRMInterface*>(rIOManager::instance().getModuleInterface(m_module, rIOBaseModule::Type::CRM));
 
-		if (!module) {
+		if (!interface) {
 			rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
-			rDataManager::instance().DoHalt(HALT_REASON_RUNTIME | DATACFGERR_REALTIME_MODULELINK);
+			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
-		m_moduleName  = module->getAlias();
-		m_moduleFreq  = module->getFreq();
-		m_moduleDet   = module->getDetectors();
-		m_moduleCount = module->getCounter();
+		if (!interface->isFault()) {
+			UDINT fault = 0;
 
-		if (module_ptr) {
-			delete module_ptr;
+			m_moduleFreq  = interface->getFreq();
+			m_moduleDet   = interface->getDetectors();
+			m_moduleCount = interface->getValue(4, rIOBaseChannel::Type::FI, fault);
+
+			if (fault != TRITONN_RESULT_OK) {
+				rEventManager::instance().add(reinitEvent(EID_PROVE_MODULE) << m_module);
+				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+				return fault;
+			}
 		}
 	}
 

@@ -12,6 +12,11 @@ option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
 option(PROTOBUF_FULL_LIB "Uses full proto lib" OFF)
 
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
+	set(CMAKE_TRITONN_YOCTO 1)
+	add_compile_definitions(TRITONN_YOCTO)
+endif()
+
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)
 	set(PROJECT_VERSION_MAJOR 0)
@@ -78,6 +83,7 @@ endif()
 add_subdirectory(src)
 
 message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Yocto: ${CMAKE_TRITONN_YOCTO}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "Version: ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH} ${PROJECT_VERSION_DATE} ${PROJECT_VERSION_TIME} (${PROJECT_VERSION_UNIXTIME})")

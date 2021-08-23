@@ -75,7 +75,7 @@ const UDINT  MAX_MBTCP_CLIENT          = 8;
 const UDINT  MAX_MODULE                = 16;
 const UDINT  MAX_MODULE_CHANNEL        = 16;
 const UDINT  MAX_IO_AI                 = 64;
-const UDINT  MAX_IO_AO                 = 32;
+const UDINT  MAX_IO_AO                 = 8;
 const UDINT  MAX_IO_DI                 = 32;
 const UDINT  MAX_IO_DO                 = 32;
 const UDINT  MAX_IO_FI                 = 16;
@@ -123,13 +123,16 @@ const USINT  RESTART_COLD              = 2;
 const USINT  RESTART_DEBUG             = 3;
 
 // Причина возникновения Halt, в старшем слове причина, в младшее нужно положить код ошибки
-const UDINT  HALT_REASON_CONFIGFILE    = 0x00010000;
-const UDINT  HALT_REASON_WEBFILE       = 0x00020000;
-const UDINT  HALT_REASON_HARDWARE      = 0x00030000;
-const UDINT  HALT_REASON_REPORT        = 0x00040000;
-const UDINT  HALT_REASON_OPC           = 0x00050000;
-const UDINT  HALT_REASON_RUNTIME       = 0x00060000;
-const UDINT  HALT_REASON_DUMP          = 0x00070000;
+enum class HaltReason : UDINT
+{
+	CONFIGFILE    = 0x00010000,
+	WEBFILE       = 0x00020000,
+	HARDWARE      = 0x00030000,
+	REPORT        = 0x00040000,
+	OPC           = 0x00050000,
+	RUNTIME       = 0x00060000,
+	DUMP          = 0x00070000,
+};
 
 //THREADMASTER_FLAGS
 const UDINT  TMF_NONE                  = 0x00000000;
@@ -298,126 +301,136 @@ enum rTritonn_Error
 	DATACFGERR_STRUCT         = 100,        // 100
 	DATACFGERR_NOTFOUND_HARDWARE,           //
 	DATACFGERR_CONFIG,                      // 102
-	DATACFGERR_IO,
-	DATACFGERR_UNKNOWIO,                    // 104
-	DATACFGERR_CALC,
-	DATACFGERR_UNKNOWCALC,                  // 106
-	DATACFGERR_AI,
-	DATACFGERR_FI,                          // 108
-	DATACFGERR_LINK,
-	DATACFGERR_LINKNF,                      // 110
-	DATACFGERR_STATIONS,
-	DATACFGERR_STATIONSNF,                  // 112
-	DATACFGERR_STATION,
-	DATACFGERR_STATION_UNITS,               // 114
+	DATACFGERR_CALC_UNKNOWIO,               //
+	DATACFGERR_IO,                          // 104
+	DATACFGERR_IO_RESERV4__________,        //
+	DATACFGERR_IO_RESERV1__________,        // 106
+	DATACFGERR_SCALE,                       //
+	DATACFGERR_CALC,                        // 108
+	DATACFGERR_UNKNOWCALC,                  //
+	DATACFGERR_AI,                          // 110
+	DATACFGERR_AO,                          //
+	DATACFGERR_FI,                          // 112
+	DATACFGERR_LINK,                        //
+	DATACFGERR_LINKNF,                      // 114
+	DATACFGERR_STATIONS,                    //
+	DATACFGERR_STATIONSNF,                  // 116
+	DATACFGERR_STATION,                     //
+	DATACFGERR_STATION_UNITS,               // 118
 	DATACFGERR_STATION_WRONGSTREAM,         //
-	DATACFGERR_STREAMS,                     // 116
+	DATACFGERR_STREAMS,                     // 120
 	DATACFGERR_STREAMSNF,                   //
-	DATACFGERR_STREAM,                      // 118
+	DATACFGERR_STREAM,                      // 122
 	DATACFGERR_STREAM_NOSTN,                //
-	DATACFGERR_STREAM_TOMANYPOINTS,         // 120
+	DATACFGERR_STREAM_TOMANYPOINTS,         // 124
 	DATACFGERR_STREAM_FACTORS,              //
-	DATACFGERR_STREAM_NOFREQCHANNEL,        // 122
+	DATACFGERR_STREAM_NOFREQCHANNEL,        // 126
 	DATACFGERR_DENSSOL,                     //
-	DATACFGERR_DENSSOL_NOSTN,               // 124
+	DATACFGERR_DENSSOL_NOSTN,               // 128
 	DATACFGERR_SELECTOR,                    //
-	DATACFGERR_REDUCEDDENS,                 // 126
+	DATACFGERR_REDUCEDDENS,                 // 130
 	DATACFGERR_RESOLVELINK,                 //
-	DATACFGERR_CHECKLINK,                   // 128
+	DATACFGERR_CHECKLINK,                   // 132
 	DATACFGERR_MAX_AI,                      //
-	DATACFGERR_MAX_AO,                      // 130
+	DATACFGERR_MAX_AO,                      // 134
 	DATACFGERR_MAX_FI,                      //
-	DATACFGERR_MAX_DI,                      // 132
+	DATACFGERR_MAX_DI,                      // 136
 	DATACFGERR_MAX_DO,                      //
-	DATACFGERR_MAX_DENSSOL,                 // 134
+	DATACFGERR_MAX_DENSSOL,                 // 138
 	DATACFGERR_MAX_RDCDENS,                 //
-	DATACFGERR_MAX_SELECTOR,                // 136
+	DATACFGERR_MAX_SELECTOR,                // 140
 	DATACFGERR_MAX_STREAM,                  //
-	DATACFGERR_MAX_STATION,                 // 138
+	DATACFGERR_MAX_STATION,                 // 142
 	DATACFGERR_MAX_SAMPLER,                 //
-	DATACFGERR_MAX_PROVE,                   // 140
+	DATACFGERR_MAX_PROVE,                   // 144
 	DATACFGERR_MAX_AVERAGE,                 //
-	DATACFGERR_MAX_MASSWATER,               // 142
+	DATACFGERR_MAX_MASSWATER,               // 146
 	DATACFGERR_MAX_VOLWATER,                //
-	DATACFGERR_MAX_KINVISC,                 // 144
+	DATACFGERR_MAX_KINVISC,                 // 148
 	DATACFGERR_MAX_DYNVISC,                 //
-	DATACFGERR_MAX_RESERV1________,         // 146
+	DATACFGERR_MAX_RESERV1________,         // 150
 	DATACFGERR_LIMIT,                       //
-	DATACFGERR_REPORT,                      // 148
+	DATACFGERR_REPORT,                      // 152
 	DATACFGERR_NOREPORTS,                   //
-	DATACFGERR_REPORT_RESOLVETOTAL,         // 150
+	DATACFGERR_REPORT_RESOLVETOTAL,         // 154
 	DATACFGERR_REPORT_TOTALS_IS_NULL,       //
-	DATACFGERR_VAR,                         // 152
+	DATACFGERR_VAR,                         // 156
 	DATACFGERR_VAR_SETUP,                   //
-	DATACFGERR_VAR_DEFAULT,                 // 154
+	DATACFGERR_VAR_DEFAULT,                 // 158
 	DATACFGERR_VAR_LINK,                    //
-	DATACFGERR_VAR_UNIT,                    // 156
+	DATACFGERR_VAR_UNIT,                    // 160
 	DATACFGERR_RESERV3____________,         //
-	DATACFGERR_USERS_NF,                    // 158     Not Found Template BLOCKS
+	DATACFGERR_USERS_NF,                    // 162     Not Found Template BLOCKS
 	DATACFGERR_INTERNAL,                    //
-	DATACFGERR_USERS_PARSE,                 // 160
+	DATACFGERR_USERS_PARSE,                 // 164
 	DATACFGERR_INTERFACES_NF_TBLOKS,        //
-	DATACFGERR_INTERFACES_NF_BLOCKS,        // 162
+	DATACFGERR_INTERFACES_NF_BLOCKS,        // 166
 	DATACFGERR_INTERFACES_BAD_ADDR,         //
-	DATACFGERR_INTERFACES_BAD_BLOCK,        // 164
+	DATACFGERR_INTERFACES_BAD_BLOCK,        // 168
 	DATACFGERR_INTERFACES_BAD_VAR,          //
-	DATACFGERR_INTERFACES_NF_VAR,           // 166
+	DATACFGERR_INTERFACES_NF_VAR,           // 170
 	DATACFGERR_INTERFACES_ADDR_OVERFLOW,    //
-	DATACFGERR_INTERFACES_NF_STD_VAR,       // 168
+	DATACFGERR_INTERFACES_NF_STD_VAR,       // 172
 	DATACFGERR_INTERFACES_BAD_STD_ADDR,     //
-	DATACFGERR_INTERFACES_BAD_WS,           // 170
+	DATACFGERR_INTERFACES_BAD_WS,           // 174
 	DATACFGERR_INTERFACES_UNKNOW_VAR,       //
-	DATACFGERR_INTERFACES_BAD_COVERT,       // 172
+	DATACFGERR_INTERFACES_BAD_COVERT,       // 176
 	DATACFGERR_RESERV4____________,         //
-	DATACFGERR_INCORRECT_IP,                // 174
+	DATACFGERR_INCORRECT_IP,                // 178
 	DATACFGERR_SECURITY_PARSE,              //
-	DATACFGERR_SECURITY_DESCRYPT,           // 176
+	DATACFGERR_SECURITY_DESCRYPT,           // 180
 	DATACFGERR_SECURITY_NF,                 //
-	DATACFGERR_OPCUA_USER_NF,               // 178
+	DATACFGERR_OPCUA_USER_NF,               // 182
 	DATACFGERR_OPCUA_BAD_USER,              //
-	DATACFGERR_OPCUA_VAR_NF,                // 180
-	DATACFGERR_UNKNOWN_MODULE,              //
-	DATACFGERR_HARDWARE_CPU_FAULT,          // 182
+	DATACFGERR_OPCUA_VAR_NF,                // 184
+	DATACFGERR_HARDWARE_UNKNOWNMODULE,      //
+	DATACFGERR_HARDWARE_CPU_FAULT,          // 186
 	DATACFGERR_HARDWARE_MODULE_IS_EMPTY,    //
-	DATACFGERR_HARDWARE_CPU_NF,             // 184
-	DATACFGERR_RESERV5_______________,      //
-	DATACFGERR_IO_CHANNEL,                  // 186
+	DATACFGERR_HARDWARE_CPU_NF,             // 188
+	DATACFGERR_HARDWARE_MODULEFAULT,        //
+	DATACFGERR_HARDWARE_MODULEISNULL,       // 190
+	DATACFGERR_HARDWARE_RESERVE1_______,    //
+	DATACFGERR_HARDWARE_RESERVE2_______,    // 192
+	DATACFGERR_HARDWARE_RESERVE3_______,    //
+	DATACFGERR_IO_CHANNEL,                  // 194
 	DATACFGERR_INVALID_NAME,                //
-	DATACFGERR_INVALID_MODULELINK,          // 188
+	DATACFGERR_INVALID_MODULELINK,          // 196
 	DATACFGERR_REALTIME_MODULELINK,         //
-	DATACFGERR_NOTSYSTEXTFILE,              // 190
+	DATACFGERR_REALTIME_CHANNELLINK,        // 198
+	DATACFGERR_REALTIME_WRONGCHANNEL,       //
+	DATACFGERR_NOTSYSTEXTFILE,              // 200
 	DATACFGERR_INTERFACES_BADNAME,          //
-	DATACFGERR_DI,                          // 192
+	DATACFGERR_DI,                          // 202
 	DATACFGERR_DO,                          //
-	DATACFGERR_SAMPLER_TOTALS,              // 194
+	DATACFGERR_SAMPLER_TOTALS,              // 204
 	DATACFGERR_SAMPLER_CAN,                 //
-	DATACFGERR_SAMPLER_METHOD,              // 196
+	DATACFGERR_SAMPLER_METHOD,              // 206
 	DATACFGERR_SAMPLER_SETUP,               //
-	DATACFGERR_SAMPLER_RESERVE,             // 198
+	DATACFGERR_SAMPLER_RESERVE,             // 208
 	DATACFGERR_SAMPLER_RESERVE_NF,          //
-	DATACFGERR_OBJECT_UNITS,                // 200
+	DATACFGERR_OBJECT_UNITS,                // 210
 	DATACFGERR_PORVE_MISSINGMODULE,         //
-	DATACFGERR_AVERAGE_NOINPUT,             // 202
+	DATACFGERR_AVERAGE_NOINPUT,             // 212
 	DATACFGERR_AVERAGE_TOOMANYINPUT,        //
-	DATACFGERR_AVERAGE_TOOFEWINPUT,         // 204
+	DATACFGERR_AVERAGE_TOOFEWINPUT,         // 214
 	DATACFGERR_AVERAGE_DIFFUNITS,           //
-	DATACFGERR_AVERAGE_DIFFFAULTS,          // 206
+	DATACFGERR_AVERAGE_DIFFFAULTS,          // 216
 	DATACFGERR_AVERAGE_TOOMANYFAULTS,       //
-	DATACFGERR_AVERAGE_SETUP,               // 208
+	DATACFGERR_AVERAGE_SETUP,               // 218
 	DATACFGERR_MASSWATER_SETUP,             //
-	DATACFGERR_MASSWATER_NOVOLWATER,        // 210
+	DATACFGERR_MASSWATER_NOVOLWATER,        // 220
 	DATACFGERR_MASSWATER_NODENSITY,         //
-	DATACFGERR_MASSWATER_NOTEMPERATURE,     // 212
+	DATACFGERR_MASSWATER_NOTEMPERATURE,     // 222
 	DATACFGERR_VOLWATER_SETUP,              //
-	DATACFGERR_VOLWATER_NOMASSWATER,        // 214
+	DATACFGERR_VOLWATER_NOMASSWATER,        // 224
 	DATACFGERR_VOLWATER_NODENSITY,          //
-	DATACFGERR_VOLWATER_NOTEMPERATURE,      // 216
+	DATACFGERR_VOLWATER_NOTEMPERATURE,      // 226
 	DATACFGERR_KINVISC_NODYNVISC,           //
-	DATACFGERR_KINVISC_NODENSITY,           // 218
+	DATACFGERR_KINVISC_NODENSITY,           // 228
 	DATACFGERR_DYNVISC_NOKINVISC,           //
-	DATACFGERR_DYNVISC_NODENSITY,           // 220
+	DATACFGERR_DYNVISC_NODENSITY,           // 230
 	DATACFGERR_EHTERNET_LOAD_FAULT,         //
-	DATACFGERR_EHTERNET_APPLY_FAULT,        // 222
+	DATACFGERR_EHTERNET_APPLY_FAULT,        // 232
 
 	DATACFGERR_LANG_STRUCT = 500,           // 500
 	DATACFGERR_LANG_UNKNOW,                 //

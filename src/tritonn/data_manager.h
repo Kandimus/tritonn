@@ -47,7 +47,7 @@ public:
 	Live  getLiveStatus();
 
 	// Перезагрузка
-	void  DoHalt(UDINT reason);
+	void  DoHalt(HaltReason hr, UDINT reason);
 	UDINT Restart(USINT restart, const string &filename);
 
 	// Конфигурация

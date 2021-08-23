@@ -24,10 +24,11 @@
 #include "../data_selector.h"
 #include "../data_denssol.h"
 #include "../data_reduceddensity.h"
-#include "../data_ai.h"
-#include "../data_di.h"
-#include "../data_do.h"
-#include "../data_counter.h"
+#include "ai.h"
+#include "ao.h"
+#include "di.h"
+#include "do.h"
+#include "counter.h"
 #include "../data_report.h"
 #include "../data_rvar.h"
 #include "../data_sampler.h"
@@ -38,8 +39,12 @@
 #include "kinematicviscosity.h"
 #include "dynamicviscosity.h"
 #include "../io/manager.h"
-#include "../io/module_ai6.h"
+#include "../io/module_ai6a.h"
+#include "../io/module_ai6p.h"
+#include "../io/module_ao4.h"
 #include "../io/module_crm.h"
+#include "../io/module_di16.h"
+#include "../io/module_do16.h"
 #include "../io/module_di8do8.h"
 #include "../io/module_fi4.h"
 #include "../interface/modbustcpslave_manager.h"
@@ -54,12 +59,14 @@ UDINT rDataManager::saveMarkDown()
 
 	// io
 	rAI          ai;
+	rAO          ao;
 	rCounter     fi;
 	rDI          di;
 	rDO          do_;
 	rProve       prove;
 
 	ai.generateMarkDown(md);
+	ao.generateMarkDown(md);
 	fi.generateMarkDown(md);
 	di.generateMarkDown(md);
 	do_.generateMarkDown(md);
@@ -101,13 +108,21 @@ UDINT rDataManager::saveMarkDown()
 
 	// Hardware
 	UDINT moduleID = 0;
-	rModuleAI6 ai6(moduleID);
-	rModuleCRM crm(moduleID);
+	rModuleAI6a ai6a(moduleID);
+	rModuleAI6p ai6p(moduleID);
+	rModuleAO4  ao4(moduleID);
+	rModuleCRM  crm(moduleID);
+	rModuleDI16 di16(moduleID);
+	rModuleDO16 do16(moduleID);
 	rModuleDI8DO8 di8do8(moduleID);
-	rModuleFI4 fi4(moduleID);
+	rModuleFI4  fi4(moduleID);
 
-	ai6.generateMarkDown(md);
+	ai6a.generateMarkDown(md);
+	ai6p.generateMarkDown(md);
+	ao4.generateMarkDown(md);
 	crm.generateMarkDown(md);
+	di16.generateMarkDown(md);
+	do16.generateMarkDown(md);
 	di8do8.generateMarkDown(md);
 	fi4.generateMarkDown(md);
 

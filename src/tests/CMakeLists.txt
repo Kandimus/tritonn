@@ -8,6 +8,8 @@ file(GLOB_RECURSE files_h   ${CMAKE_SOURCE_DIR}/src/tritonn/*.h)
 
 add_executable(${PROJECT_NAME} ${files_cpp} ${files_h})
 
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src/candrv")
+
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_SOURCE_DIR}/bin/conf/test.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/conf)
 

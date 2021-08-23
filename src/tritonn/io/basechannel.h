@@ -36,8 +36,8 @@ public:
 		FI,
 		DI,
 		DO,
+		AO,
 	};
-
 
 	rIOBaseChannel(Type type, USINT index, const std::string& comment = "")
 		: m_index(index), m_comment(comment), m_type(type) {}
@@ -50,16 +50,16 @@ public:
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
 	virtual UDINT simulate() = 0;
-	virtual UDINT getPullingCount();
-	virtual rBitsArray& getFlagsSetup() = 0;
+	virtual std::string getMarkDownFlags() const = 0;
+	virtual std::string getXmlAttribute() const { return ""; }
 
 public:
 	USINT       m_simType = 0;
 	USINT       m_index   = 0xFF;
+	USINT       m_canIdx  = 0xFF;
 	std::string m_comment = "";
 
 protected:
-	UDINT m_pullingCount = 0;
 	Type  m_type = Type::UNDEF;
 };
 

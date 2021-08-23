@@ -1,22 +1,17 @@
-﻿//=================================================================================================
-//===
-//=== fi_channel.cpp
-//===
-//=== Copyright (c) 2020 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс частотного канала
-//===
-//=================================================================================================
+﻿/*
+ *
+ * io/fi_channel.cpp
+ *
+ * Copyright (c) 2020-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include "fi_channel.h"
 #include <math.h>
 #include "xml_util.h"
-#include "../variable_item.h"
 #include "../variable_list.h"
 #include "../units.h"
 #include "tickcount.h"
@@ -52,16 +47,6 @@ rIOFIChannel::rIOFIChannel(USINT index, const std::string& comment)
 
 UDINT rIOFIChannel::processing()
 {
-	m_state = false;
-
-	// Изменяем статус
-	if (m_hardState) {
-		m_state = true;
-		m_average.clear();
-
-		return TRITONN_RESULT_OK;
-	}
-
 	if (m_setup & AVERAGE) {
 		m_average.push_back(m_freq);
 
@@ -85,19 +70,16 @@ UDINT rIOFIChannel::processing()
 UDINT rIOFIChannel::simulate()
 {
 	UDINT count = 0;
-	m_hardState = false;
 
 	UDINT timer = rTickCount::SysTick();
 	if (timer - m_simTimer < 1000) {
 		return TRITONN_RESULT_OK;
 	}
 
-	++m_pullingCount;
-
 	switch(m_simType) {
 		case SimType::NONE: {
-			m_value = 0;
-			m_freq  = 0;
+			m_counter = 0;
+			m_freq    = 0;
 			return TRITONN_RESULT_OK;
 		}
 
@@ -125,7 +107,7 @@ UDINT rIOFIChannel::simulate()
 		}
 	}
 
-	m_value   += count;
+	m_counter += count;
 	m_freq     = m_simValue;
 	m_simTimer = timer;
 
@@ -139,9 +121,8 @@ UDINT rIOFIChannel::generateVars(const std::string& name, rVariableList& list, b
 	rIOBaseChannel::generateVars(name, list, issimulate);
 
 	list.add(p + "setup"   , TYPE::UINT, rVariable::Flags::RS__, &m_setup  , U_DIMLESS , 0, COMMENT::SETUP + m_flagsSetup.getInfo());
-	list.add(p + "count"   ,             rVariable::Flags::R___, &m_value  , U_DIMLESS , 0, "Количество накопленных импульсов");
+	list.add(p + "count"   ,             rVariable::Flags::R___, &m_counter, U_imp     , 0, "Количество накопленных импульсов");
 	list.add(p + "frequecy",             rVariable::Flags::R___, &m_freq   , U_Hz      , 0, "Частота");
-	list.add(p + "state"   ,             rVariable::Flags::R___, &m_state  , U_DIMLESS , 0, COMMENT::STATUS + "Нет данных");
 
 	if (issimulate) {
 		list.add(p + "simulate.max"  , rVariable::Flags::____, &m_simMax  , U_DIMLESS , 0, COMMENT::IMP_SIM + COMMENT::SIMULATE_MAX);
@@ -165,4 +146,9 @@ UDINT rIOFIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)
 	}
 
 	return TRITONN_RESULT_OK;
+}
+
+std::string rIOFIChannel::getMarkDownFlags() const
+{
+	return m_flagsSetup.getMarkDown(getStrType() + " setup");
 }
