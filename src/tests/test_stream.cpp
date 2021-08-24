@@ -2,24 +2,24 @@
 #include <cmath>
 #include "../catchtest/catch.hpp"
 #include "test.h"
-#include "data/ai.h"
+#include "io/fi_channel.h"
 #include "data_manager.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 
-TEST_CASE("testing masswater and volwater.", "[MassWater]")
+TEST_CASE("testing stream calc.", "[Stream]")
 {
-	SECTION("Check calculating masswater and volwater") {
+	SECTION("Check calculating flowrate") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
-		ss.add("var.testdens.value"        , 880.0);
-		ss.add("sikn1.bik.io.water1.mode"  ,  static_cast<UINT>(rAI::Mode::MKEYPAD));
-		ss.add("sikn1.bik.io.water1.keypad", 0.2);
-		ss.add("sikn1.bik.io.temp1.mode"   ,  static_cast<UINT>(rAI::Mode::MKEYPAD));
-		ss.add("sikn1.bik.io.temp1.keypad" ,  15.7);
+		ss.add("hardware.fi4_1.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
+		ss.add("hardware.fi4_1.ch_00.simulate.value", 350.0);
+		ss.add("var.testdens.value"                 , 880.0);
+		ss.add("sikn1.line2.io.temp.present.value"  , 30);
+		ss.add("sikn1.line2.io.press.present.value" , 1.4);
 		ss.set();
 
-		mSleep(rTest::sleepValue);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("var.testdens.value");

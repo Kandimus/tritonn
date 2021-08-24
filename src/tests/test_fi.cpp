@@ -2,11 +2,11 @@
 #include <cmath>
 #include "../catchtest/catch.hpp"
 #include "test.h"
-#include "data_counter.h"
-#include "data_manager.h"
-#include "data_snapshot_item.h"
-#include "data_snapshot.h"
 #include "io/fi_channel.h"
+#include "data/counter.h"
+#include "data_manager.h"
+#include "data_snapshot.h"
+#include "data_snapshot_item.h"
 
 // Set mode
 
