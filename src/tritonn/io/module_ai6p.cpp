@@ -77,11 +77,13 @@ UDINT rModuleAI6p::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channel) {
 		USINT idx = channel->m_canIdx;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			channel->m_ADC         = m_data.Read.Adc[idx];
 			channel->m_current     = m_data.Read.Data[idx];
@@ -96,6 +98,11 @@ UDINT rModuleAI6p::processing(USINT issim)
 
 		channel->processing();
 	}
+
+	if (need_pulling) {
+		++m_pulling;
+	}
+
 //printf("AI6p[0] adc: %i,  current: %.1f, type %i, state: %i\n", m_channel[0]->m_ADC, m_channel[0]->m_current, m_data.Read.ChType[0], m_channel[0]->m_hardState);
 	return TRITONN_RESULT_OK;
 }

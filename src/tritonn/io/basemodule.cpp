@@ -93,8 +93,6 @@ int rIOBaseModule::sendCanCommand(UDINT func, DINT idx, void* data)
 
 UDINT rIOBaseModule::processing(USINT issim)
 {
-	++m_pulling;
-
 	if(issim || m_type == Type::CPU) {
 		return TRITONN_RESULT_OK;
 	}
@@ -115,6 +113,8 @@ UDINT rIOBaseModule::processing(USINT issim)
 	if (m_moduleInfo->InWork) {
 		result    = sendCanCommand(m_moduleExchange, m_ID, m_dataPtr);
 		m_isFault = false;
+
+		++m_pulling;
 	} else {
 //printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
 		if (!m_isFault) {

@@ -49,7 +49,7 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) = 0;
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate);
 	virtual UDINT processing();
-	virtual UDINT simulate() = 0;
+	virtual bool  simulate() = 0;
 	virtual std::string getMarkDownFlags() const = 0;
 	virtual std::string getXmlAttribute() const { return ""; }
 

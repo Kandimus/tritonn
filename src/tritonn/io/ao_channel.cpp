@@ -65,9 +65,9 @@ UINT rIOAOChannel::getRange() const
 	return getMaxValue() - getMinValue();
 }
 
-UDINT rIOAOChannel::simulate()
+bool rIOAOChannel::simulate()
 {
-	return TRITONN_RESULT_OK;
+	return true;
 }
 
 UDINT rIOAOChannel::generateVars(const std::string& name, rVariableList& list, bool issimulate)

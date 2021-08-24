@@ -91,11 +91,13 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channelDI) {
 		USINT idx = channel->m_canIdx;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			channel->m_phValue = m_data.Read.DI[idx] == UL_K19_DIDO8_ChStHigh;
 		}
@@ -110,7 +112,7 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 		channel->processing();
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			m_data.Write.DO[idx] = channel->m_phValue ? UL_K19_DIDO8_ChStHigh : UL_K19_DIDO8_ChStLow;
 //			if (idx == 0) TRACEI(LOG::CANIO, "DI8DO8 set do[%i] is %i (ph %i)", channel->m_index, channel->m_phValue, channel->m_value);
@@ -118,6 +120,10 @@ UDINT rModuleDI8DO8::processing(USINT issim)
 	}
 
 	m_data.Write.DIFilter = 0;
+
+	if (need_pulling) {
+		++m_pulling;
+	}
 
 	return TRITONN_RESULT_OK;
 }

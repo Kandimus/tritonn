@@ -86,11 +86,13 @@ UDINT rModuleAI6a::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channel) {
 		USINT idx = channel->m_index;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			channel->m_ADC         = m_data.Read.Adc[idx];
 			channel->m_current     = m_data.Read.Data[idx];
@@ -106,6 +108,10 @@ UDINT rModuleAI6a::processing(USINT issim)
 		}
 
 		channel->processing();
+	}
+
+	if (need_pulling) {
+		++m_pulling;
 	}
 
 	return TRITONN_RESULT_OK;

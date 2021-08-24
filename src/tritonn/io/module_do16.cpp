@@ -64,16 +64,22 @@ UDINT rModuleDO16::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channel) {
 		USINT idx = channel->m_canIdx;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			m_data.Write.Out[idx] = channel->m_value ? UL_K19_DO16_OutHigh : UL_K19_DO16_OutLow;
 		}
 
 		channel->processing();
+	}
+
+	if (need_pulling) {
+		++m_pulling;
 	}
 
 	return TRITONN_RESULT_OK;

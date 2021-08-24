@@ -92,11 +92,13 @@ UDINT rModuleFI4::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto& channel : m_channel) {
 		USINT idx = channel->m_canIdx;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			channel->m_freq    = m_data.Read.Frequency[idx];
 			channel->m_counter = m_data.Read.Counter[idx];
@@ -107,6 +109,10 @@ UDINT rModuleFI4::processing(USINT issim)
 	}
 
 	m_data.Write.OutType = getOutType();
+
+	if (need_pulling) {
+		++m_pulling;
+	}
 
 	return TRITONN_RESULT_OK;
 }

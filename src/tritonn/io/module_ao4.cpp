@@ -68,11 +68,13 @@ UDINT rModuleAO4::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channel) {
 		USINT idx = channel->m_canIdx;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			channel->m_mode = (m_data.Read.ChType[idx] == K19_AO4_CT_Active) ? rIOAOChannel::Mode::ACTIVE : rIOAOChannel::Mode::PASSIVE;
 
@@ -93,8 +95,11 @@ UDINT rModuleAO4::processing(USINT issim)
 		channel->processing();
 	}
 
-//printf("AO[2]   adc: %i, *current %.1f\n", m_channel[2]->m_ADC, m_channel[2]->m_current);
+	if (need_pulling) {
+		++m_pulling;
+	}
 
+//printf("AO[2]   adc: %i, *current %.1f\n", m_channel[2]->m_ADC, m_channel[2]->m_current);
 	return TRITONN_RESULT_OK;
 }
 

@@ -66,11 +66,13 @@ UDINT rModuleDI16::processing(USINT issim)
 		return result;
 	}
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channel) {
 		USINT idx = channel->m_canIdx;
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			channel->m_phValue = m_data.Read.In[idx] == UL_K19_DI16_ChStHigh;
 		}
@@ -79,6 +81,10 @@ UDINT rModuleDI16::processing(USINT issim)
 	}
 
 	m_data.Write.Filter = 0;
+
+	if (need_pulling) {
+		++m_pulling;
+	}
 
 	return TRITONN_RESULT_OK;
 }
