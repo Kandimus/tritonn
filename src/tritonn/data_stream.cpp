@@ -30,7 +30,7 @@
 #include "io/defines.h"
 #include "generator_md.h"
 #include "comment_defines.h"
-
+#include "log_manager.h"
 
 const UDINT STREAM_LE_ACCOUNTING = 0x00000002;
 const UDINT STREAM_LE_KEYPADKF   = 0x00000004;
@@ -134,28 +134,30 @@ UDINT rStream::calculate()
 			  event_f.reinit(EID_STREAM_KEYPADKF_OFF) << m_ID << m_descr,
 			  event_s.reinit(EID_STREAM_KEYPADKF_ON ) << m_ID << m_descr);
 
-	// Ввод новых коэф-тов
 	if (m_acceptKF) {
 		m_curFactor = m_setFactor;
 		m_acceptKF  = 0;
 		rEventManager::instance().add(reinitEvent(EID_STREAM_ACCEPT));
 	}
 
-	//-------------------------------------------------------------------------------------------
-	// Расчет текущего коэф-та
 	m_curKF = m_linearization ? calcualateKF() : m_curFactor.KeypadKF.Value;
 
-	// Нарастающие и расход
-	// Увеличим глобальный счетчик
 	calcTotal();
 
-	// Расчитаем расход исходя из частоты
 	if (m_flowmeter == Type::CORIOLIS) {
-		m_flowMass.m_value   = m_freq.m_value     / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
-		m_flowVolume.m_value = m_flowMass.m_value / m_dens.m_value * 1000.0 * m_curFactor.KeypadMF.Value;
+		if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value)) {
+			m_flowMass.m_value   = m_freq.m_value     / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
+			m_flowVolume.m_value = m_flowMass.m_value / m_dens.m_value * 1000.0 * m_curFactor.KeypadMF.Value;
+		}
 	} else {
-		m_flowVolume.m_value = m_freq.m_value       / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
-		m_flowMass.m_value   = m_flowVolume.m_value * m_dens.m_value / 1000.0 * m_curFactor.KeypadMF.Value;
+		if (isValidDelim(m_curKF)) {
+			m_flowVolume.m_value = m_freq.m_value       / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
+			m_flowMass.m_value   = m_flowVolume.m_value * m_dens.m_value / 1000.0 * m_curFactor.KeypadMF.Value;
+		}
+	}
+
+	if (m_ID == 0) {
+		TRACEI(LOG::DATAMGR, "Line %i, KF %.5f, freq %.2f, dens %.2f", m_ID, m_curKF, m_freq.m_value, m_dens.m_value);
 	}
 
 	return TRITONN_RESULT_OK;
@@ -406,7 +408,6 @@ LREAL rStream::calcualateKF()
 		}
 	}
 
-	// Ушли за максимум, при полностью заполенной таблице
 	return m_curFactor.m_point.back().Kf.Value;
 }
 
@@ -421,24 +422,27 @@ void rStream::calcTotal()
 	m_total.m_inc.Volume20 = 0;
 
 	if (!m_maintenance) {
-		if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) && isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
-			if (m_flowmeter == Type::CORIOLIS) {
-				m_total.m_inc.Mass     = m_total.m_inc.Count  / m_curKF          * m_curFactor.KeypadMF.Value;
+		if (m_flowmeter == Type::CORIOLIS) {
+			if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) &&
+				isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
+				m_total.m_inc.Mass     = m_total.m_inc.Count  / m_curKF * m_curFactor.KeypadMF.Value;
 				m_total.m_inc.Volume   = m_total.m_inc.Mass   / m_dens.m_value   * 1000.0;
 				m_total.m_inc.Volume15 = m_total.m_inc.Mass   / m_dens15.m_value * 1000.0;
 				m_total.m_inc.Volume20 = m_total.m_inc.Mass   / m_dens20.m_value * 1000.0;
-			} else {
-				m_total.m_inc.Volume   = m_total.m_inc.Count  / m_curKF        * m_curFactor.KeypadMF.Value;
+			}
+		} else {
+			if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) && isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
+				m_total.m_inc.Volume   = m_total.m_inc.Count  / m_curKF * m_curFactor.KeypadMF.Value;
 				m_total.m_inc.Mass     = m_total.m_inc.Volume * m_dens.m_value                    / 1000.0;
 				m_total.m_inc.Volume15 = m_total.m_inc.Volume * m_dens.m_value / m_dens15.m_value / 1000.0;
 				m_total.m_inc.Volume20 = m_total.m_inc.Volume * m_dens.m_value / m_dens20.m_value / 1000.0;
 			}
-
-			m_total.m_inc.Mass     = Round(m_total.m_inc.Mass    , 5);
-			m_total.m_inc.Volume   = Round(m_total.m_inc.Volume  , 5);
-			m_total.m_inc.Volume15 = Round(m_total.m_inc.Volume15, 5);
-			m_total.m_inc.Volume20 = Round(m_total.m_inc.Volume20, 5);
 		}
+
+//		m_total.m_inc.Mass     = Round(m_total.m_inc.Mass    , 5);
+//		m_total.m_inc.Volume   = Round(m_total.m_inc.Volume  , 5);
+//		m_total.m_inc.Volume15 = Round(m_total.m_inc.Volume15, 5);
+//		m_total.m_inc.Volume20 = Round(m_total.m_inc.Volume20, 5);
 	}
 
 	m_total.Calculate(m_station->getUnit());

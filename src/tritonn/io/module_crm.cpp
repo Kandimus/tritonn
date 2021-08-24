@@ -79,6 +79,8 @@ UDINT rModuleCRM::processing(USINT issim)
 
 	rIOBaseModule::processing(issim);
 
+	bool need_pulling = false;
+
 	for (auto channel : m_channelDI) {
 		USINT idx = channel->m_canIdx;
 
@@ -87,7 +89,7 @@ UDINT rModuleCRM::processing(USINT issim)
 		}
 
 		if (issim) {
-			channel->simulate();
+			need_pulling |= channel->simulate();
 		} else {
 			switch(idx) {
 				case 0: channel->m_phValue = m_data.Read.DIStat.Ch1Stat; break;
@@ -102,7 +104,7 @@ UDINT rModuleCRM::processing(USINT issim)
 
 	if (!(m_channelFI->m_setup & rIOFIChannel::Setup::OFF)) {
 		if (issim) {
-			m_channelFI->simulate();
+			need_pulling |= m_channelFI->simulate();
 		} else {
 			m_channelFI->m_freq    = m_data.Read.Frequency;
 			m_channelFI->m_filter  = m_data.Read.Filter;
@@ -110,6 +112,10 @@ UDINT rModuleCRM::processing(USINT issim)
 		}
 
 		m_channelFI->processing();
+	}
+
+	if (need_pulling) {
+		++m_pulling;
 	}
 
 	return TRITONN_RESULT_OK;

@@ -67,26 +67,24 @@ UDINT rIOFIChannel::processing()
 }
 
 
-UDINT rIOFIChannel::simulate()
+bool rIOFIChannel::simulate()
 {
 	UDINT count = 0;
 
 	UDINT timer = rTickCount::SysTick();
 	if (timer - m_simTimer < 1000) {
-		return TRITONN_RESULT_OK;
+		return false;
 	}
 
 	switch(m_simType) {
-		case SimType::NONE: {
+		case SimType::NONE:
 			m_counter = 0;
 			m_freq    = 0;
-			return TRITONN_RESULT_OK;
-		}
+			return true;
 
-		case SimType::CONST: {
+		case SimType::CONST:
 			count = m_simValue;
 			break;
-		}
 
 		case SimType::SINUS: {
 			m_simValue += m_simSpeed;
@@ -111,7 +109,7 @@ UDINT rIOFIChannel::simulate()
 	m_freq     = m_simValue;
 	m_simTimer = timer;
 
-	return TRITONN_RESULT_OK;
+	return true;
 }
 
 UDINT rIOFIChannel::generateVars(const std::string& name, rVariableList& list, bool issimulate)

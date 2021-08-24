@@ -133,7 +133,7 @@ UDINT rIOAIChannel::processing()
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rIOAIChannel::simulate()
+bool rIOAIChannel::simulate()
 {
 	m_hardState = false;
 
@@ -188,7 +188,7 @@ UDINT rIOAIChannel::simulate()
 		case Mode::V_0_10:   m_current = 10.0f / getRange() * static_cast<REAL>(m_ADC - getMinValue()); break;
 	}
 
-	return TRITONN_RESULT_OK;
+	return true;
 }
 
 UDINT rIOAIChannel::generateVars(const std::string& name, rVariableList& list, bool issimulate)

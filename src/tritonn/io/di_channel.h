@@ -59,7 +59,7 @@ public:
 	virtual UDINT loadFromXML(tinyxml2::XMLElement* element, rError& err) override;
 	virtual UDINT generateVars(const std::string& name, rVariableList& list, bool issimulate) override;
 	virtual UDINT processing() override;
-	virtual UDINT simulate() override;
+	virtual bool  simulate() override;
 	virtual std::string getMarkDownFlags() const override;
 
 public:

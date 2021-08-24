@@ -101,8 +101,8 @@
 				</units>
 				<streams>
 					<stream name="Line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4200">
-						<impulse><link alias="SIKN_123.Line1.IO.Counter:impulse"/></impulse>
-						<temperature><link alias="SIKN_123.Line1.IO.Temp"/></temperature>
+						<impulse><link alias="sikn_123.line1.io.counter:impulse"/></impulse>
+						<temperature><link alias="sikn_123.line1.io.temp"/></temperature>
 						<pressure><link alias="SIKN_123.Line1.IO.Pres"/></pressure>
 						<density><link alias="SIKN_123.Line1.Obj.StnDens:density"/></density>
 						<factors>
@@ -908,7 +908,8 @@
 			<str id="4001">Тестовый дискреный выход</str>
 			<str id="4002">Тестовый дискреный вход</str>
 			<str id="4003">Тестовый аналоговый активный выход</str>
-			<str id="4004">Тестовый аналоговый активный вход</str>
+			<str id="4004">Тестовый аналоговый пассивный вход</str>
+			<str id="4005">Тестовый аналоговый активный вход</str>
 			<str id="4100">СИКН 1</str>
 			<str id="4101">СИКН 1. Температура входа ТПУ</str>
 			<str id="4102">СИКН 1. Температура выхода ТПУ</str>

@@ -101,16 +101,15 @@ UDINT rIODIChannel::processing()
 	return TRITONN_RESULT_OK;
 }
 
-UDINT rIODIChannel::simulate()
+bool rIODIChannel::simulate()
 {
 	switch(m_simType) {
 		case SimType::NONE:
 			break;
 
-		case SimType::CONST: {
+		case SimType::CONST:
 			m_phValue = m_simValue;
 			break;
-		}
 
 		case SimType::PULSE: {
 			if (rTickCount::SysTick() - m_simTimer >= m_simBlink) {
@@ -121,17 +120,16 @@ UDINT rIODIChannel::simulate()
 			break;
 		}
 
-		case SimType::RANDOM: {
+		case SimType::RANDOM:
 			if (rTickCount::SysTick() - m_simTimer >= m_simBlink) {
 				m_simValue = true == (rand() & 1);
 				m_phValue  = m_simValue;
 				m_simTimer = rTickCount::SysTick();
 			}
 			break;
-		}
 	}
 
-	return TRITONN_RESULT_OK;
+	return true;
 }
 
 UDINT rIODIChannel::loadFromXML(tinyxml2::XMLElement* element, rError& err)

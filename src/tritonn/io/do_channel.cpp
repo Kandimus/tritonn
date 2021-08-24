@@ -67,9 +67,9 @@ void rIODOChannel::setValue(bool value)
 	m_value = value;
 }
 
-UDINT rIODOChannel::simulate()
+bool rIODOChannel::simulate()
 {
-	return TRITONN_RESULT_OK;
+	return true;
 }
 
 
