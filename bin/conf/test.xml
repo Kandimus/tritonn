@@ -224,12 +224,12 @@
 							</limit>
 						</limits>
 					</stream>
-					<stream name="Line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
+					<stream name="line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
 						<impulse><link alias="io.fi00:impulse"/></impulse>
-						<temperature><link alias="sikn1.line2.io.temp"/></temperature>
-						<pressure><link alias="sikn1.line2.io.pres"/></pressure>
-						<!-- <density><link alias="sikn1.line1.obj.stn_dens:density"/></density> -->
-						<density><link alias="var.testdens"/></density>
+						<temperature><link alias="var.test_temp"/></temperature>
+						<pressure><link alias="var.test_pres"/></pressure>
+						<density><link alias="sikn1.line1.obj.stn_dens:density"/></density>
+						<!-- <density><link alias="var.test_dens"/></density> -->
 						<factors>
 							<keypad_mf>1</keypad_mf>
 							<keypad_kf>36000</keypad_kf>
@@ -261,9 +261,10 @@
 						</io>
 						<calculate>
 							<reduceddens name="stn_dens" description="4011">
-								<temperature><link alias="sikn1.obj.StnDensTemp:temp"/></temperature>
-								<pressure>   <link alias="sikn1.bik.io.Pres"/></pressure>
-								<density15>  <link alias="sikn1.obj.StnDensTemp:dens15"/></density15>
+								<temperature><link alias="var.test_temp"/></temperature>
+								<pressure>   <link alias="var.test_pres"/></pressure>
+								<density15>  <link alias="var.test_dens15"/></density15>
+								<b15>        <link alias="var.test_b15"/></b15>
 								<limits>
 									<limit name="density" setup="hihi | hi | lo | lolo">
 										<hihi>900</hihi>
@@ -364,20 +365,20 @@
 				<calculate>
 					<kinviscosity name="kinvisc" description="">
 						<dynviscosity><link alias="sikn1.bik.io.visc"/></dynviscosity>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 					</kinviscosity>
 					<dynviscosity name="dynvisc" description="">
 						<kinviscosity><link alias="sikn1.obj.kinvisc:result"/></kinviscosity>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 					</dynviscosity>
 					<masswater name="masswater" description="4000" setup="">
 						<volwater><link alias="sikn1.bik.io.water1"/></volwater>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
 					</masswater>
 					<volwater name="volwater" description="4000" setup="">
 						<masswater><link alias="sikn1.obj.masswater:result"/></masswater>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
 					</volwater>
 					<average name="avr_temp" description="0">
@@ -428,15 +429,6 @@
 							<k21a>1.98986000E-01</k21a>
 							<k21b>-3.19623000E-03</k21b>
 						</factors>
-						<limits>
-							<limit name="density" setup="hihi | hi | lo | lolo">
-								<hihi>900</hihi>
-								<hi>880</hi>
-								<lo>810</lo>
-								<lolo>800</lolo>
-								<hysteresis>0.5</hysteresis>
-							</limit>
-						</limits>
 					</densitometer>
 					<multiselector name="StnDensTemp" setup="" mode="NEXT" select="0" description="4024">
 						<names>
@@ -548,17 +540,25 @@
 				<default>33.33</default>
 				<unit>512</unit>
 			</variable>
-			<variable name="testdens" setup="" description="0">
+			<variable name="test_dens" setup="" description="0">
 				<default>880.0</default>
 				<unit>48</unit>
 			</variable>
-			<variable name="testdens15" setup="" description="0">
+			<variable name="test_dens15" setup="" description="0">
 				<default>880.0</default>
 				<unit>48</unit>
 			</variable>
-			<variable name="testdens20" setup="" description="0">
+			<variable name="test_b15" setup="" description="0">
 				<default>880.0</default>
-				<unit>48</unit>
+				<unit>517</unit>
+			</variable>
+			<variable name="test_temp" setup="" description="0">
+				<default>880.0</default>
+				<unit>16</unit>
+			</variable>
+			<variable name="test_pres" setup="" description="0">
+				<default>880.0</default>
+				<unit>32</unit>
 			</variable>
 			<variable name="linkvar2" setup="LINK" description="0">
 				<value><link alias="var.var2"/></value>

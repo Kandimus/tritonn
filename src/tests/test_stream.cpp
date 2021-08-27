@@ -14,7 +14,8 @@ TEST_CASE("testing stream calc.", "[Stream]")
 
 		ss.add("hardware.fi4_1.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
 		ss.add("hardware.fi4_1.ch_00.simulate.value", 350.0);
-		ss.add("var.testdens.value"                 , 880.0);
+		ss.add("var.test_dens15.value"              , 880.0);
+		ss.add("var.test_b15.value"                 , 880.0);
 		ss.add("sikn1.line2.io.temp.present.value"  , 30);
 		ss.add("sikn1.line2.io.press.present.value" , 1.4);
 		ss.set();
