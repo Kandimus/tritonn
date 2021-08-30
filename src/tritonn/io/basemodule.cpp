@@ -116,17 +116,17 @@ UDINT rIOBaseModule::processing(USINT issim)
 		result    = sendCanCommand(m_moduleExchange, m_ID, m_dataPtr);
 		m_isFault = false;
 	} else {
-//printf(">>>>>>>>>>>>>> RESULT: %i, InWork: %i\n", result, m_moduleInfo->InWork);
 		if (!m_isFault) {
 			m_isFault = true;
 			rEventManager::instance().add(rEvent(EID_HARDWARE_MODULE_FAULT) << STRID(static_cast<UDINT>(m_type) + SID::HARWARE_SHORT_UNKNOW) << m_ID);
 		}
 	}
+	fprintf(stderr, "    can result: %i, InWork: %i\n", result, m_moduleInfo->InWork);
 
 	m_module = *m_moduleSysData;
 	m_status = *m_moduleStatus;
 
-//	printModuleInfo();
+	printModuleInfo();
 
 	return TRITONN_RESULT_OK;
 }
@@ -137,20 +137,20 @@ void rIOBaseModule::printModuleInfo()
 		return;
 	}
 
-	printf("Module type %s[%i]:\n", m_flagsType.getNameByValue(static_cast<UINT>(m_type)).c_str(), m_ID);
-	printf("\tNodeID ....... %i\n", m_module.NodeID);
-	printf("\tIDVendor ..... %i\n", m_module.IDVendor);
-	printf("\tIDProdCode ... %i\n", m_module.IDProdCode);
-	printf("\tIDRevision ... %i\n", m_module.IDRevision);
-	printf("\tIDSerial ..... %i\n", m_module.IDSerial);
-	printf("\tHeatrbeatState %i\n", m_module.HeatrbeatState);
-	printf("\tHeatrbeatFl .. %i\n", m_module.HeatrbeatFl);
-	printf("\tPDOCounter ... %i\n", m_module.PDOCounter);
-	printf("\tPDOCycle ..... %i\n", m_module.PDOCycle);
+	fprintf(stderr, "Module type %s[%i]:\n", m_flagsType.getNameByValue(static_cast<UINT>(m_type)).c_str(), m_ID);
+	fprintf(stderr, "\tNodeID ....... %i\n", m_module.NodeID);
+	fprintf(stderr, "\tIDVendor ..... %i\n", m_module.IDVendor);
+	fprintf(stderr, "\tIDProdCode ... %i\n", m_module.IDProdCode);
+	fprintf(stderr, "\tIDRevision ... %i\n", m_module.IDRevision);
+	fprintf(stderr, "\tIDSerial ..... %i\n", m_module.IDSerial);
+	fprintf(stderr, "\tHeatrbeatState %i\n", m_module.HeatrbeatState);
+	fprintf(stderr, "\tHeatrbeatFl .. %i\n", m_module.HeatrbeatFl);
+	fprintf(stderr, "\tPDOCounter ... %i\n", m_module.PDOCounter);
+	fprintf(stderr, "\tPDOCycle ..... %i\n", m_module.PDOCycle);
 
-	printf("\tCAN .......... %i\n", m_status.m_CAN);
-	printf("\tFirmware ..... %i\n", m_status.m_firmware);
-	printf("\tHardware ..... %i\n", m_status.m_hardware);
+	fprintf(stderr, "\tCAN .......... %i\n", m_status.m_CAN);
+	fprintf(stderr, "\tFirmware ..... %i\n", m_status.m_firmware);
+	fprintf(stderr, "\tHardware ..... %i\n", m_status.m_hardware);
 }
 
 UDINT rIOBaseModule::generateVars(const std::string& prefix, rVariableList& list, bool issimulate)

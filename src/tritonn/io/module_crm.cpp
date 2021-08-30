@@ -76,8 +76,13 @@ rModuleCRM::~rModuleCRM()
 UDINT rModuleCRM::processing(USINT issim)
 {
 	rLocker lock(m_rwlock, rLocker::TYPELOCK::WRITE); lock.Nop();
+	fprintf(stderr, "[   lock   CRM/%i\n", m_ID);
 
-	rIOBaseModule::processing(issim);
+	UDINT result = rIOBaseModule::processing(issim);
+	if (result != TRITONN_RESULT_OK) {
+		fprintf(stderr, "  ] unlock CRM/%i\n", m_ID);
+		return result;
+	}
 
 	for (auto channel : m_channelDI) {
 		USINT idx = channel->m_canIdx;
@@ -112,6 +117,7 @@ UDINT rModuleCRM::processing(USINT issim)
 		m_channelFI->processing();
 	}
 
+	fprintf(stderr, "  ] unlock CRM/%i\n", m_ID);
 	return TRITONN_RESULT_OK;
 }
 
@@ -135,7 +141,7 @@ UDINT rModuleCRM::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 		}
 
 		rLocker lock(m_rwlock); lock.Nop();
-
+		fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 		return m_channelDI[num]->m_value;
 	}
 
@@ -145,7 +151,7 @@ UDINT rModuleCRM::getValue(USINT num, rIOBaseChannel::Type type, UDINT& fault)
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 	return m_channelFI->m_counter;
 }
 
@@ -161,14 +167,14 @@ UDINT rModuleCRM::setValue(USINT num, rIOBaseChannel::Type type, UDINT  value)
 LREAL rModuleCRM::getFreq()
 {
 	rLocker lock(m_rwlock); lock.Nop();
-
+	fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 	return m_channelFI->getFreq();
 }
 
 UINT rModuleCRM::getDetectors()
 {
 	rLocker lock(m_rwlock); lock.Nop();
-
+	fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 	return ((m_channelDI[0]->getValue() != 0) << Detector::Det1) |
 		   ((m_channelDI[1]->getValue() != 0) << Detector::Det2) |
 		   ((m_channelDI[2]->getValue() != 0) << Detector::Det3) |
@@ -178,18 +184,21 @@ UINT rModuleCRM::getDetectors()
 rIOCRMInterface::State rModuleCRM::getState(USINT idx)
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 	return convertState((!idx) ? m_data.Read.MeasureState[0] : m_data.Read.MeasureState[1]);
 }
 
 LREAL rModuleCRM::getTime(USINT idx)
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 	return (!idx) ? m_data.Read.MeasureTimeUs[0] : m_data.Read.MeasureTimeUs[1];
 }
 
 LREAL rModuleCRM::getImp(USINT idx)
 {
 	rLocker lock(m_rwlock); lock.Nop();
+	fprintf(stderr, "[ ] lock   CRM/%i\n", m_ID);
 	return (!idx) ? m_data.Read.MeasureImpulseNmb[0] : m_data.Read.MeasureImpulseNmb[1];
 }
 
@@ -200,12 +209,14 @@ bool rModuleCRM::start()
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	fprintf(stderr, "[   lock   CRM/%i start\n", m_ID);
 	if (m_moduleInfo->InWork) {
 		sendCanCommand(_K19_CRM_MeasureStart, m_ID, m_dataPtr);
+		fprintf(stderr, "  ] unlock CRM/%i start\n", m_ID);
 		return true;
 	}
 
+	fprintf(stderr, "  ] unlock CRM/%i start\n", m_ID);
 	return false;
 }
 
@@ -216,12 +227,14 @@ bool rModuleCRM::abort()
 	}
 
 	rLocker lock(m_rwlock); lock.Nop();
-
+	fprintf(stderr, "[   lock   CRM/%i abort\n", m_ID);
 	if (m_moduleInfo->InWork) {
 		sendCanCommand(_K19_CRM_MeasureStop, m_ID, m_dataPtr);
+		fprintf(stderr, "  ] unlock CRM/%i abort\n", m_ID);
 		return true;
 	}
 
+	fprintf(stderr, "  ] unlock CRM/%i abort\n", m_ID);
 	return false;
 }
 

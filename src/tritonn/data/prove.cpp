@@ -174,6 +174,8 @@ UDINT rProve::calculate()
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
+		interface->start();
+
 		if (!interface->isFault()) {
 			UDINT fault = 0;
 
