@@ -21,7 +21,6 @@ rModuleCRM::rModuleCRM(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::CRM;
 	m_comment = "Module of prove";
-	m_name    = "crm";
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(m_channelDI.size(), String_format("Детектор %u", m_channelDI.size() + 1));

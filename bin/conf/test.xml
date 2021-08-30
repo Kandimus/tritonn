@@ -2,7 +2,7 @@
 <tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
-		<module name="cpu" type="cpu" />
+		<module type="cpu" name="cpu" />
 		<module type="ai6p" name="ai6_1">         <!-- 1 -->
 			<channel number="0" setup=""/>
 			<channel number="1" setup="AVERAGE"/>
@@ -228,7 +228,7 @@
 						<impulse><link alias="io.fi00:impulse"/></impulse>
 						<temperature><link alias="var.test_temp"/></temperature>
 						<pressure><link alias="var.test_pres"/></pressure>
-						<density><link alias="sikn1.line1.obj.stn_dens:density"/></density>
+						<density><link alias="sikn1.line2.obj.stn_dens:density"/></density>
 						<!-- <density><link alias="var.test_dens"/></density> -->
 						<factors>
 							<keypad_mf>1</keypad_mf>
@@ -265,15 +265,6 @@
 								<pressure>   <link alias="var.test_pres"/></pressure>
 								<density15>  <link alias="var.test_dens15"/></density15>
 								<b15>        <link alias="var.test_b15"/></b15>
-								<limits>
-									<limit name="density" setup="hihi | hi | lo | lolo">
-										<hihi>900</hihi>
-										<hi>880</hi>
-										<lo>810</lo>
-										<lolo>800</lolo>
-										<hysteresis>0.5</hysteresis>
-									</limit>
-								</limits>
 							</reduceddens>
 						</calculate>
 						<limits>

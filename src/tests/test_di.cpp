@@ -38,7 +38,7 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 		ss.add("io.di00.mode"                          , static_cast<UINT>(rDI::Mode::PHIS));
 		ss.set();
 
-		mSleep(rTest::sleepValue);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.di00.present.value");
@@ -53,7 +53,7 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 		ss.add("hardware.di8do8_1.ch_00.simulate.value", sim_val);
 		ss.set();
 
-		mSleep(rTest::sleepValue);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.di00.present.value");

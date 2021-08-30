@@ -33,12 +33,12 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		LREAL min_val = -10.0;
 
-		ss.add("hardware.ai6_1.ch_00.type"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
+		ss.add("hardware.ai6_1.ch_00.mode"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
 		ss.add("hardware.ai6_1.ch_00.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
 		ss.add("hardware.ai6_1.ch_00.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.low"                 , min_val);
 		ss.add("io.ai00.scales.high"                , 100.0);
-		REQUIRE(ss("hardware.ai6_1.ch_00.type"));
+		REQUIRE(ss("hardware.ai6_1.ch_00.mode"));
 		REQUIRE(ss("hardware.ai6_1.ch_00.simulate.type"));
 		REQUIRE(ss("hardware.ai6_1.ch_00.simulate.value"));
 		REQUIRE(ss("io.ai00.scales.low"));
@@ -55,7 +55,7 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		mSleep(rTest::sleepValue);
 
 		ss.clear();
-		ss.add("hardware.ai6_1.ch_00.type");
+		ss.add("hardware.ai6_1.ch_00.mode");
 		ss.add("hardware.ai6_1.ch_00.simulate.value");
 		ss.add("io.ai00.present.value");
 		ss.add("io.ai00.mode");
@@ -192,9 +192,9 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
 		// LOLO
-		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
-		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
-		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 2);
+		ss.add("hardware.ai6_1.ch_00.mode"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
+		ss.add("hardware.ai6_1.ch_00.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
+		ss.add("hardware.ai6_1.ch_00.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 2);
 		ss.add("io.ai00.scales.low"  , 4.0);
 		ss.add("io.ai00.scales.high" , 20.0);
 		ss.add("io.ai00.current.lolo", 8.0);
@@ -212,7 +212,7 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 
 		// HIHI
 		ss.clear();
-		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Max) - 2);
+		ss.add("hardware.ai6_1.ch_00.simulate.value", static_cast<UINT>(rIOAIChannel::Scale_mA_4_20::Max) - 2);
 		ss.set();
 
 		mSleep(rTest::sleepValue * 2);
@@ -229,9 +229,9 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 	SECTION("test error -> keypad") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 
-		ss.add("hardware.ai6_1.ch_01.type"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
-		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
-		ss.add("hardware.ai6_1.ch_01.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 100);
+		ss.add("hardware.ai6_1.ch_00.mode"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
+		ss.add("hardware.ai6_1.ch_00.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
+		ss.add("hardware.ai6_1.ch_00.simulate.value", static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 100);
 		ss.add("io.ai00.scales.low"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai00.scales.high"                , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Max));
 		ss.add("io.ai00.keypad"                     , 50.0);
@@ -249,7 +249,7 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		CHECK  (ss("io.ai00.mode")->getValueUINT()   == static_cast<UINT>(rAI::Mode::PHIS));
 		CHECK  (ss("io.ai00.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
-		ss.add("hardware.ai6_1.ch_01.simulate.value", 0);
+		ss.add("hardware.ai6_1.ch_00.simulate.value", 0);
 		ss.set();
 		mSleep(rTest::sleepValue * 2);
 
@@ -270,9 +270,9 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
 		UINT test_val = static_cast<UINT> (rIOAIChannel::Scale_mA_4_20::Min) + 100;
 
-		ss.add("hardware.ai6_1.ch_02.type"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
-		ss.add("hardware.ai6_1.ch_02.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
-		ss.add("hardware.ai6_1.ch_02.simulate.value", test_val);
+		ss.add("hardware.ai6_1.ch_01.mode"          , static_cast<USINT>(rIOAIChannel::Mode::mA_4_20));
+		ss.add("hardware.ai6_1.ch_01.simulate.type" , static_cast<USINT>(rIOAIChannel::SimType::CONST));
+		ss.add("hardware.ai6_1.ch_01.simulate.value", test_val);
 		ss.add("io.ai01.scales.low"                 , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Min));
 		ss.add("io.ai01.scales.high"                , static_cast<LREAL>(rIOAIChannel::Scale_mA_4_20::Max));
 		ss.add("io.ai01.keypad"                     , 50.0);
@@ -284,7 +284,7 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		ss.add("io.ai01.mode"                       , static_cast<UINT>(rAI::Mode::PHIS));
 		ss.set();
 
-		mSleep(rTest::sleepValue * 3);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.ai01.status");
@@ -296,7 +296,7 @@ TEST_CASE("testing analog input. IO simulate", "[io_ai]")
 		CHECK  (ss("io.ai01.mode")->getValueUINT()   == static_cast<UINT>(rAI::Mode::PHIS));
 		CHECK  (ss("io.ai01.status")->getValueUINT() == static_cast<UINT>(rAI::Status::NORMAL));
 
-		ss.add("hardware.ai6_1.ch_02.simulate.value", 0);
+		ss.add("hardware.ai6_1.ch_01.simulate.value", 0);
 		ss.set();
 		mSleep(rTest::sleepValue * 2);
 

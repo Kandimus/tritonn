@@ -18,7 +18,6 @@
 #include "xml_util.h"
 #include "../error.h"
 #include "../generator_md.h"
-	#include "log_manager.h"
 
 rBitsArray rModuleDI8DO8::m_flagsDOSetup;
 
@@ -26,7 +25,6 @@ rModuleDI8DO8::rModuleDI8DO8(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::DI8DO8;
 	m_comment = "Module with 8 discrete input and 8 discrete output";
-	m_name    = "di8do8";
 
 	while(m_channelDI.size() < CHANNEL_DI_COUNT) {
 		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channelDI.size()));

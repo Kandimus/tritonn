@@ -200,8 +200,8 @@ UDINT rDensSol::calculate()
 	limit = rDensity::Limit[0][product_id] <= m_dens15.m_value && m_dens15.m_value < rDensity::Limit[1][product_id];
 
 	if(checkExpr(!limit, DENSSOL_LE_VALUE,
-				 reinitEvent(event_f, EID_DENSSOL_FAULT_VALUE) << m_dens15.m_value,
-				 reinitEvent(event_s, EID_DENSSOL_GOOD_VALUE ) << m_dens15.m_value)) {
+				 reinitEvent(event_f, EID_DENSSOL_FAULT_VALUE) << m_dens15.m_value << m_dens15.m_unit,
+				 reinitEvent(event_s, EID_DENSSOL_GOOD_VALUE ) << m_dens15.m_value << m_dens15.m_unit)) {
 
 		m_fault = 1;
 	}

@@ -167,7 +167,7 @@ rGeneratorMD::rItem::rItem(rSource* source, bool isstdinput, Type type)
 rGeneratorMD::rItem::rItem(rIOBaseModule* module)
 {
 	m_module   = module;
-	m_name     = module->getName();
+	m_name     = module->getModuleType();
 	m_filename = m_name;
 	m_type     = Type::HARWARE;
 }

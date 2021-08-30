@@ -185,9 +185,9 @@
 		<!-- EID_DENSSOL_GOOD_PERIOD - $1 ID, $2 Descr -->
 		<str id="537395215">$2. Значение периода в допустимом диапазоне</str>
 		<!-- EID_DENSSOL_FAULT_VALUE -->
-		<str id="-536346608"/>
+		<str id="-536346608">$2. Значение плотности при 15 гр.С ($3 $4) вышло за границы типа продукта.</str>
 		<!-- EID_DENSSOL_GOOD_VALUE -->
-		<str id="537395217"/>
+		<str id="537395217">$2. Значение плотности при 15 гр.С ($3 $4) находится в границах типа продукта.</str>
 		<!-- EID_DENSSOL_FAULT_ITERATION -->
 		<str id="-536346606"/>
 		<!-- EID_DENSSOL_GOOD_ITERATION -->
