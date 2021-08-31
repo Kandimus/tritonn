@@ -125,6 +125,10 @@ UDINT rCounter::calculate()
 					m_impulse.m_value = count - m_countPrev;
 					m_countPrev       = count;
 					m_pullingCount    = curpulling;
+
+if (m_alias == "io.fi00") {
+	printf("FI count = %.0f (%i), freq = %.2f, pulling = %i\n", m_impulse.m_value, count, m_freq.m_value, m_pullingCount);
+}
 				}
 			}
 		}
