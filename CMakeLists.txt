@@ -12,11 +12,6 @@ option(SIMPLETEST_USING_SIMPLEARGS "Simpletest using SimpleArgs" ON)
 option(TRITONN_X64 "Make 64 bits version" OFF)
 option(PROTOBUF_FULL_LIB "Uses full proto lib" OFF)
 
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
-	set(CMAKE_TRITONN_YOCTO 1)
-	add_compile_definitions(TRITONN_YOCTO)
-endif()
-
 #
 if(NOT DEFINED PROJECT_VERSION_MAJOR)
 	set(PROJECT_VERSION_MAJOR 0)
@@ -68,7 +63,13 @@ find_package(Protobuf REQUIRED)
 #target_link_libraries(${TARGET} PRIVATE Threads::Threads)
 # -lpthread
 
-if (NOT (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm"))
+if(${SPEC} STREQUAL "arm")
+	set(CMAKE_TRITONN_YOCTO 1)
+	add_compile_definitions(TRITONN_YOCTO)
+endif()
+
+
+if (NOT (${SPEC} STREQUAL "arm"))
 	find_package(OpenSSL REQUIRED)
 	if(OPENSSL_FOUND)
 		message(STATUS "Using OpenSSL ver ${OPENSSL_VERSION} in '${OPENSSL_INCLUDE_DIR}'")
@@ -82,7 +83,9 @@ endif()
 #
 add_subdirectory(src)
 
-message(STATUS "Host: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Host: ${HOST}")
+message(STATUS "Spec: ${SPEC}")
 message(STATUS "Yocto: ${CMAKE_TRITONN_YOCTO}")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")
