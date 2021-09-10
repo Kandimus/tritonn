@@ -15,8 +15,18 @@
 #include "eid.h"
 #include "datetime.h"
 #include "container.h"
+#include <string.h>
 
-#define EVENT_ADDDATA(x, y)       {if(m_size + getTypeSize(x) + 1 >= DATA_SIZE) return 1; m_data[m_size++] = static_cast<unsigned char>(x); *(y *)(m_data + m_size) = val; m_size += getTypeSize(x); return 0; }
+#define EVENT_ADDDATA(x)		{ \
+									UDINT ts = getTypeSize(x); \
+									if (m_size + ts >= DATA_SIZE) { \
+										return false; \
+									} \
+									m_data[m_size++] = static_cast<unsigned char>(x); \
+									memcpy(m_data + m_size, &val, ts); \
+									m_size += ts; \
+									return true; \
+								}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -59,16 +69,15 @@ struct rEvent
 	std::string toString() const;
 	const void* getRaw() const { return &m_magic; }
 
-	// Функции для добавления параметров события, в случае переполнения буффера возвращают 1, в случае успеха - 0
-	UDINT addSINT (SINT  val) { EVENT_ADDDATA(TYPE::SINT ,  SINT); }
-	UDINT addUSINT(USINT val) { EVENT_ADDDATA(TYPE::USINT, USINT); }
-	UDINT addINT  (INT   val) { EVENT_ADDDATA(TYPE::INT  ,   INT); }
-	UDINT addUINT (UINT  val) { EVENT_ADDDATA(TYPE::UINT ,  UINT); }
-	UDINT addDINT (DINT  val) { EVENT_ADDDATA(TYPE::DINT ,  DINT); }
-	UDINT addUDINT(UDINT val) { EVENT_ADDDATA(TYPE::UDINT, UDINT); }
-	UDINT addREAL (REAL  val) { EVENT_ADDDATA(TYPE::REAL ,  REAL); }
-	UDINT addLREAL(LREAL val) { EVENT_ADDDATA(TYPE::LREAL, LREAL); }
-	UDINT addSTR  (STRID val) { EVENT_ADDDATA(TYPE::STRID, UDINT); }
+	bool addSINT (SINT  val) { EVENT_ADDDATA(TYPE::SINT ); }
+	bool addUSINT(USINT val) { EVENT_ADDDATA(TYPE::USINT); }
+	bool addINT  (INT   val) { EVENT_ADDDATA(TYPE::INT  ); }
+	bool addUINT (UINT  val) { EVENT_ADDDATA(TYPE::UINT ); }
+	bool addDINT (DINT  val) { EVENT_ADDDATA(TYPE::DINT ); }
+	bool addUDINT(UDINT val) { EVENT_ADDDATA(TYPE::UDINT); }
+	bool addREAL (REAL  val) { EVENT_ADDDATA(TYPE::REAL ); }
+	bool addLREAL(LREAL val) { EVENT_ADDDATA(TYPE::LREAL); }
+	bool addSTR  (STRID val);
 
 	rEvent& operator << (const SINT  &val) { addSINT (val); return *this; }
 	rEvent& operator << (const USINT &val) { addUSINT(val); return *this; }

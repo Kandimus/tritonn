@@ -33,7 +33,7 @@ public:
 
 	 T   Get(void)
 	 {
-		 T result;
+		 T result = T();
 
 		 int retVal = pthread_mutex_lock(&mutex);
 		 if(!retVal)

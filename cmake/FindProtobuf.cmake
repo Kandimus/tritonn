@@ -36,45 +36,22 @@ else()
 	)
 endif(PROTOBUF_FULL_LIB)
 
-message(STATUS "=========== REAL")
-message(STATUS "NAMES_: ${NAMES_}")
-message(STATUS "Proto Name: libprotobuf-lite${BICYCLE_DEBUG_POSTFIX}")
-message(STATUS "Proto Path: ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}")
-message(STATUS "PROTOBUF_LIBRARY: ${PROTOBUF_LIBRARY}")
-message(STATUS "PROTOC: ${PROTOBUF_COMPILER}")
-
-
 find_library(PROTOBUF_LIBRARY
 	NAMES "${NAMES}"
-	PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}
+	PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}"
 	NO_DEFAULT_PATH)
 
 find_path(PROTOBUF_INCLUDE_DIR
-	google/protobuf/service.h
-	PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/src
+	"google/protobuf/service.h"
+	PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/src"
 	NO_DEFAULT_PATH)
 
-find_program(PROTOBUF_COMPILER protoc
+find_program(PROTOBUF_COMPILER "protoc"
 		PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/"
-		NO_DEFAULT_PATH
-)
-
-if(${SPEC} STREQUAL "arm")
-	set(PROTOBUF_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/redist/protobuf/src")
-	set(PROTOBUF_LIBRARY "${PROJECT_SOURCE_DIR}/redist/protobuf/lib_arm/libprotobuf-lite.a")
-	set(PROTOBUF_COMPILER "${PROJECT_SOURCE_DIR}/redist/protobuf/protoc")
-endif()
+		NO_DEFAULT_PATH)
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Protobuf DEFAULT_MSG PROTOBUF_LIBRARY PROTOBUF_INCLUDE_DIR)
-
-message(STATUS "=========== FINAL")
-message(STATUS "NAMES_: ${NAMES_}")
-message(STATUS "Proto Name: libprotobuf-lite${BICYCLE_DEBUG_POSTFIX}")
-message(STATUS "Proto Path: ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}")
-message(STATUS "PROTOBUF_LIBRARY: ${PROTOBUF_LIBRARY}")
-message(STATUS "PROTOBUF_INCLUDE_DIR: ${PROTOBUF_INCLUDE_DIR}")
-message(STATUS "PROTOC: ${PROTOBUF_COMPILER}")
 
 MARK_AS_ADVANCED(
 	PROTOBUF_INCLUDE_DIR

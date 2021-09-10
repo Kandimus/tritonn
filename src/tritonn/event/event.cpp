@@ -113,6 +113,19 @@ std::string rEvent::toString() const
 	return result;
 }
 
+bool rEvent::addSTR(STRID val)
+{
+	if (m_size + getTypeSize(TYPE::STRID) >= DATA_SIZE) {
+		return false;
+	}
+
+	m_data[m_size++] = static_cast<unsigned char>(TYPE::STRID);
+	UDINT vv = val.toUDINT();
+	memcpy(m_data + m_size, &vv, getTypeSize(TYPE::STRID));
+	m_size += getTypeSize(TYPE::STRID);
+	return true;
+}
+
 Container& operator << (Container& cnt, const rEvent& event)
 {
 	return event.toContainer(cnt);

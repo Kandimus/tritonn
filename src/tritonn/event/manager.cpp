@@ -113,9 +113,6 @@ rThreadStatus rEventManager::Proccesing()
 	return rThreadStatus::UNDEF;
 }
 
-
-//-------------------------------------------------------------------------------------------------
-// Основная функция добавления события
 void rEventManager::add(const rEvent& event)
 {
 	UDINT type    = event.getType();
@@ -128,7 +125,6 @@ void rEventManager::add(const rEvent& event)
 		return;
 	}
 
-	// Добавляем событие в кольцевой массив
 	{
 		rLocker lock(&m_mutexList); lock.Nop();
 
@@ -140,7 +136,6 @@ void rEventManager::add(const rEvent& event)
 		m_list.push_back(event);
 	}
 
-	// Проверка на аварийное сообщение
 	if (type == EMT_ERROR) {
 		UDINT curalarm = m_alarm.Get();
 		
@@ -148,7 +143,7 @@ void rEventManager::add(const rEvent& event)
 			m_alarm.Set(++curalarm);
 		}
 	}
-	
+
 	switch(type)
 	{
 		case EMT_INFO:    mask |= LOG::I; break;
@@ -156,13 +151,12 @@ void rEventManager::add(const rEvent& event)
 		case EMT_WARNING: mask |= LOG::W; break;
 		case EMT_ERROR:   mask |= LOG::A; break;
 	}
-	
+
 	log_obj = event.getObject();
 	if (log_obj > EVENT_OBJ_MAX) {
 		log_obj = EVENT_OBJ__END;
 	}
-	
-	//Выдаем расшифровку сообщения
+
 	std::string descr = getDescr(event);
 
 	rLogManager::instance().add(mask, event.getTime(), descr.c_str());
@@ -274,7 +268,6 @@ std::string rEventManager::parseParameter(const rEvent& event, const char* str, 
 		}
 	}
 
-	// форматируем результат
 	switch(type)
 	{
 		case TYPE::UNDEF:
