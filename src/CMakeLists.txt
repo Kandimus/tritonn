@@ -2,7 +2,7 @@
 
 compile_submodule("simpleargs" "" "" "" "")
 compile_proto("proto")
-compile_submodule("proto" "${protos_out_all}" "" "" "${PROTOBUF_LIB_NAME}")
+compile_submodule("proto" "${protos_out_all}" "" "" "${PROTOBUF_LIBRARY}")
 
 add_subdirectory(shared)
 add_subdirectory(xml)

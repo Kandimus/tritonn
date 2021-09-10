@@ -21,7 +21,7 @@ add_lib(xml)
 add_lib(simpleargs)
 add_lib(open62541)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread protobuf-lite)
+target_link_libraries(${PROJECT_NAME} PRIVATE crypto ssl pthread ${PROTOBUF_LIBRARY})
 
 # YOCTO build
 if (DEFINED CMAKE_TRITONN_YOCTO)

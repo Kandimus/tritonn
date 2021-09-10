@@ -32,21 +32,23 @@ else()
 			libprotobuf-lite${BICYCLE_DEBUG_POSTFIX}
 			libprotobuf-lite${BICYCLE_DEBUG_POSTFIX}.lib
 		PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}
-		NO_DEFAULT_PATH)
+		NO_DEFAULT_PATH
+	)
 endif(PROTOBUF_FULL_LIB)
 
 find_library(PROTOBUF_LIBRARY
 	NAMES "${NAMES}"
-	PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}
+	PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/lib_${SPEC}"
 	NO_DEFAULT_PATH)
 
 find_path(PROTOBUF_INCLUDE_DIR
-	google/protobuf/service.h
-	PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf/src
-)
+	"google/protobuf/service.h"
+	PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/src"
+	NO_DEFAULT_PATH)
 
-find_program(PROTOBUF_COMPILER protoc
-		PATHS ${PROJECT_SOURCE_DIR}/redist/protobuf)
+find_program(PROTOBUF_COMPILER "protoc"
+		PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/"
+		NO_DEFAULT_PATH)
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Protobuf DEFAULT_MSG PROTOBUF_LIBRARY PROTOBUF_INCLUDE_DIR)

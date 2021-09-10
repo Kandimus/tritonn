@@ -32,7 +32,6 @@ int main(int argc, char* argv[])
 
 	rLogManager::instance().setDir(DIR_LOG);
 
-	// Разбираем командную строку
 #ifdef TRITONN_TEST
 
 	rTestThread::instance().setArgs(argc, argv);
@@ -63,7 +62,6 @@ int main(int argc, char* argv[])
 	rSystemVariable::instance().setSimulate(rSimpleArgs::instance().isSet(rArg::Simulate));
 
 
-	// Таблицы конвертации единиц измерения
 	rUnits::Init();
 
 	// Пользователи
@@ -130,7 +128,6 @@ int main(int argc, char* argv[])
 
 	rThreadMaster::instance().add(&rDataManager::instance(), TMF_NONE, "metrology");
 
-
 	TRACEI(LOG::MAIN, "Log storage:   %3u / %3u", rLogManager::instance().COMPRESS_DAYS, rLogManager::instance().DELETE_DAYS);
 	TRACEI(LOG::MAIN, "Event storage: %3u / %3u", rEventManager::instance().getStorage(), rEventManager::instance().DELETE_DAYS);
 
@@ -158,8 +155,6 @@ int main(int argc, char* argv[])
 	rDataManager::instance().startInterfaces();
 	rDataManager::instance().startReports();
 
-
-	//
 	// Событие о запуске
 	event.reinit(EID_SYSTEM_RUNNING);
 	rEventManager::instance().add(event);
@@ -167,7 +162,6 @@ int main(int argc, char* argv[])
 	event.reinit(EID_TEST_SUCCESS) << STRID(16) << 12.34 << 45.6 << STRID(33) << 9.87654;
 	rEventManager::instance().add(event);
 	
-
 #ifdef TRITONN_TEST
 	rThreadStatus oldteststatus = rThreadStatus::UNDEF;
 	rTestThread::instance().Run(0);
