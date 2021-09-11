@@ -31,7 +31,7 @@ struct rBaseTotal
 	LREAL Volume;
 	LREAL Volume15;
 	LREAL Volume20;
-	UDINT Count;
+	UDINT m_count;
 };
 
 
@@ -41,12 +41,14 @@ public:
 	rTotal(rEvent& mass, rEvent& volume, rEvent& volume15, rEvent& volume20);
 	virtual ~rTotal() = default;
 
-	void Calculate(const rObjUnit& unit);
+	void calculate(const rObjUnit& unit);
+	void reset();
+	void inc(UDINT impulse);
 
 	std::string toXml(const std::string& name) const;
 	bool        fromXml(tinyxml2::XMLElement* root, const std::string& name);
 
-	static LREAL Sub(LREAL sub1, LREAL sub2);
+	static LREAL sub(LREAL sub1, LREAL sub2);
 	static void  clear(rBaseTotal &total);
 
 protected:

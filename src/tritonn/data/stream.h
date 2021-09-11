@@ -1,25 +1,20 @@
-﻿//=================================================================================================
-//===
-//=== data_stream.h
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс измерительной линии
-//===
-//=================================================================================================
+﻿/*
+ *
+ * data/stream.h
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
-#include "total.h"
-#include "compared_values.h"
-#include "data_source.h"
-#include "data_link.h"
 #include "bits_array.h"
+#include "../total.h"
+#include "../compared_values.h"
+#include "../data_link.h"
 
 class rVariable;
 
@@ -109,12 +104,11 @@ public:
 	rLink m_flowVolume15;
 	rLink m_flowVolume20;
 
-
-//	UDINT       Unit; //
 	rCmpUINT    m_setup;
 	Type        m_flowmeter;     // Тип расходомера
 	USINT       m_maintenance;   // 1 - Линия в ремонте
 	USINT       m_linearization; // Флаг использования кусочно-линейной апроксимации, а не одного К-фактора
+	USINT       m_resetTotals = 0;
 	rFlowFactor m_curFactor;
 	rFlowFactor m_setFactor;
 	LREAL       m_curKF;

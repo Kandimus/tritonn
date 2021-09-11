@@ -14,7 +14,7 @@
 TEST_CASE("testing densitometer.", "[DensSol]")
 {
 	SECTION("Set factor value") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		ss.add("sikn1.obj.dens1.factor.set.k0"  , 1.1);
 		ss.add("sikn1.obj.dens1.factor.set.k1"  , 2.2);
@@ -66,7 +66,7 @@ TEST_CASE("testing densitometer.", "[DensSol]")
 	}
 
 	SECTION("Set fi value. Calculating density") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 		LREAL density_freq = 730;
 		LREAL density_val  = 855.68901907;
 

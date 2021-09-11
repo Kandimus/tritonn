@@ -10,7 +10,7 @@
 TEST_CASE("testing cinematic and dynamic viscosity.", "[CinVisc]")
 {
 	SECTION("Check calculating cinviscosity and dynviscosity") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		LREAL visc = 600;
 

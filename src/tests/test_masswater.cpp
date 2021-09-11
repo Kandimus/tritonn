@@ -10,7 +10,7 @@
 TEST_CASE("testing masswater and volwater.", "[MassWater]")
 {
 	SECTION("Check calculating masswater and volwater") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		ss.add("var.test_dens.value"        , 880.0);
 		ss.add("sikn1.bik.io.water1.mode"  ,  static_cast<UINT>(rAI::Mode::MKEYPAD));

@@ -258,11 +258,11 @@ UDINT rReport::calculate()
 		LREAL inc     = 0.0;
 
 		// Прирост нарастающих за этот цикл
-		inc     = ::rTotal::Sub(avr->m_source->m_present.Mass, avr->m_finalTotal.Mass);
+		inc     = ::rTotal::sub(avr->m_source->m_present.Mass, avr->m_finalTotal.Mass);
 		// Общая масса на прошлом цикле (сколько прокачали до этого цикла)
-		oldmass = ::rTotal::Sub(avr->m_finalTotal.Mass     , avr->m_startTotal.Mass);
+		oldmass = ::rTotal::sub(avr->m_finalTotal.Mass     , avr->m_startTotal.Mass);
 		// Общая масса на текущем цикле (сколько прокачали на этом цикле)
-		curmass = ::rTotal::Sub(avr->m_source->m_present.Mass, avr->m_startTotal.Mass);
+		curmass = ::rTotal::sub(avr->m_source->m_present.Mass, avr->m_startTotal.Mass);
 
 		// Сохраняем нарастающие
 		avr->m_finalTotal = avr->m_source->m_present;

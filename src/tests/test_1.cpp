@@ -10,7 +10,7 @@
 TEST_CASE("live check", "[Live]")
 {
 	SECTION("Check const") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		ss.add("system.state.live");
 		ss.get();

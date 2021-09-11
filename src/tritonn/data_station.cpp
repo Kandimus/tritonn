@@ -23,7 +23,7 @@
 #include "data_config.h"
 #include "data_manager.h"
 #include "variable_list.h"
-#include "data_stream.h"
+#include "data/stream.h"
 #include "xml_util.h"
 #include "error.h"
 #include "generator_md.h"
@@ -132,13 +132,13 @@ UDINT rStation::calculate()
 		m_flowVolume15.m_value += str->m_flowVolume15.m_value;
 		m_flowVolume20.m_value += str->m_flowVolume20.m_value;
 
-		m_total.m_inc.Count     = 0;
+		m_total.m_inc.m_count  += str->m_total.m_inc.m_count;
 		m_total.m_inc.Mass     += str->m_total.m_inc.Mass;
 		m_total.m_inc.Volume   += str->m_total.m_inc.Volume;
 		m_total.m_inc.Volume15 += str->m_total.m_inc.Volume15;
 		m_total.m_inc.Volume20 += str->m_total.m_inc.Volume20;
 
-		m_total.Calculate(m_unit);
+		m_total.calculate(m_unit);
 	}
 
 	// Расчет параметров станции

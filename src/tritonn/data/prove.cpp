@@ -25,7 +25,7 @@
 #include "../data_config.h"
 #include "../data_manager.h"
 #include "../data_station.h"
-#include "../data_stream.h"
+#include "stream.h"
 #include "ai.h"
 #include "../error.h"
 #include "../variable_item.h"
