@@ -1,7 +1,7 @@
 <p align='right'><a href='index.html'>[Оглавление]</a></p>
 
 # config
-> 0.19.172.60e8d27e
+> 0.19.193.e68c0512
 ## XML
 ````xml
 <tritonn cfgver="configurator's version" kernel="kernel's version" development="text" name="text" hash="config's hash">

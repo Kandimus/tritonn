@@ -2,20 +2,20 @@
 <tritonn cfgver="1.0" kernel="0.18" development="VeduN (C) Ozna" name="Тестовая конфигурация" hash="0123456789abcdefghijklmnoABCDEFGHIJKLMNO"
 			xmlns="http://tritonn.ru" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://tritonn.ru ../../xsd/tritonn.xsd">
 	<hardware>
-		<module name="cpu" type="cpu" />
-		<module type="AI6" name="ai6_1" ver="1.0">
+		<module type="cpu" name="cpu" />
+		<module type="ai6p" name="ai6_1">         <!-- 1 -->
 			<channel number="0" setup=""/>
 			<channel number="1" setup="AVERAGE"/>
 		</module>
-		<module type="di8do8" name="di8do8_1">
+		<module type="di8do8" name="di8do8_1">   <!-- 2 -->
 			<channel number="0" setup=""/>
 			<channel number="1" setup="INVERSED"/>
 			<channel number="8" setup=""/>
 			<channel number="9" setup="INVERSED"/>
 		</module>
-		<module type="fi4" name="fi4_1" />
-		<module type="fi4" name="fi4_2" />
-		<module type="crm" name="crm_1" />
+		<module type="fi4" name="fi4_1" />       <!-- 3 -->
+		<module type="fi4" name="fi4_2" />       <!-- 4 -->
+		<module type="crm" name="crm_1" />       <!-- 5 -->
 	</hardware>
 	<config>
 		<settings>
@@ -115,7 +115,7 @@
 					<stream name="line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4002">
 						<impulse><link alias="sikn1.line1.io.counter:impulse"/></impulse>
 						<temperature><link alias="sikn1.line1.io.temp"/></temperature>
-						<pressure><link alias="sikn1.line1.IO.Pres"/></pressure>
+						<pressure><link alias="sikn1.line1.io.Pres"/></pressure>
 						<density><link alias="sikn1.line1.obj.StnDens:density"/></density>
 						<factors>
 							<keypad_mf>1</keypad_mf>
@@ -169,18 +169,9 @@
 						</io>
 						<calculate>
 							<reduceddens name="StnDens" description="4006">
-								<temperature><link alias="sikn1.Line1.io.Temp"/></temperature>
-								<pressure>   <link alias="sikn1.Line1.io.Pres"/></pressure>
+								<temperature><link alias="sikn1.line1.io.temp"/></temperature>
+								<pressure>   <link alias="sikn1.line1.io.pres"/></pressure>
 								<density15>  <link alias="sikn1.Obj.StnDensTemp:dens15"/></density15>
-								<limits>
-									<limit name="density" setup="hihi | hi | lo | lolo">
-										<hihi>900</hihi>
-										<hi>880</hi>
-										<lo>810</lo>
-										<lolo>800</lolo>
-										<hysteresis>0.5</hysteresis>
-									</limit>
-								</limits>
 							</reduceddens>
 							<sampler name="Sampler1" method="PERIOD" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
 								<totals>sikn1.line1</totals>
@@ -233,11 +224,12 @@
 							</limit>
 						</limits>
 					</stream>
-					<stream name="Line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
-						<impulse>    <link alias="sikn1.Line2.IO.Counter:impulse"/></impulse>
-						<temperature><link alias="sikn1.Line2.IO.Temp"/>   </temperature>
-						<pressure>   <link alias="sikn1.Line2.IO.Pres"/>   </pressure>
-						<density>    <link alias="sikn1.Line2.Obj.StnDens:density"/></density>
+					<stream name="line2" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4007">
+						<impulse><link alias="io.fi00:impulse"/></impulse>
+						<temperature><link alias="var.test_temp"/></temperature>
+						<pressure><link alias="var.test_pres"/></pressure>
+						<density><link alias="sikn1.line2.obj.stn_dens:density"/></density>
+						<!-- <density><link alias="var.test_dens"/></density> -->
 						<factors>
 							<keypad_mf>1</keypad_mf>
 							<keypad_kf>36000</keypad_kf>
@@ -257,15 +249,6 @@
 									<low>-10</low>
 									<high>100</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI | LO | LOLO">
-										<hihi>35</hihi>
-										<hi>25</hi>
-										<lo>10</lo>
-										<lolo>5</lolo>
-										<hysteresis>0.1</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<ai name="Pres"    mode="PHIS" setup="NOICE | LASTGOOD" description="4009">
 								<unit>32</unit>
@@ -274,34 +257,14 @@
 									<low>0</low>
 									<high>6.3</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI | LO | LOLO">
-										<hihi>4</hihi>
-										<hi>3.5</hi>
-										<lo>0.5</lo>
-										<lolo>0.1</lolo>
-										<hysteresis>0.01</hysteresis>
-									</limit>
-								</limits>
 							</ai>
-							<counter name="Counter" setup="" description="4010">
-								<io_link module="3" channel="2" />
-							</counter>
 						</io>
 						<calculate>
-							<reduceddens name="StnDens" description="4011">
-								<temperature><link alias="sikn1.Obj.StnDensTemp:temp"/></temperature>
-								<pressure>   <link alias="sikn1.BIK.IO.Pres"/></pressure>
-								<density15>  <link alias="sikn1.Obj.StnDensTemp:dens15"/></density15>
-								<limits>
-									<limit name="density" setup="hihi | hi | lo | lolo">
-										<hihi>900</hihi>
-										<hi>880</hi>
-										<lo>810</lo>
-										<lolo>800</lolo>
-										<hysteresis>0.5</hysteresis>
-									</limit>
-								</limits>
+							<reduceddens name="stn_dens" description="4011">
+								<temperature><link alias="var.test_temp"/></temperature>
+								<pressure>   <link alias="var.test_pres"/></pressure>
+								<density15>  <link alias="var.test_dens15"/></density15>
+								<b15>        <link alias="var.test_b15"/></b15>
 							</reduceddens>
 						</calculate>
 						<limits>
@@ -331,15 +294,6 @@
 									<low>-10</low>
 									<high>100</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI | LO | LOLO">
-										<hihi>5</hihi>
-										<hi>10</hi>
-										<lo>25</lo>
-										<lolo>35</lolo>
-										<hysteresis>0.1</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<ai name="temp2"  mode="PHIS" setup="NOICE | LASTGOOD" description="4014">
 								<unit>16</unit>
@@ -348,15 +302,6 @@
 									<low>-10</low>
 									<high>100</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI | LO | LOLO">
-										<hihi>5</hihi>
-										<hi>10</hi>
-										<lo>25</lo>
-										<lolo>35</lolo>
-										<hysteresis>0.1</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<ai name="Water1" mode="PHIS" setup="NOICE | LASTGOOD" description="4015">
 								<unit>520</unit>
@@ -365,15 +310,6 @@
 									<low>0</low>
 									<high>2.0</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI">
-										<hihi>1.0</hihi>
-										<hi>0.5</hi>
-										<lo>0</lo>
-										<lolo>0</lolo>
-										<hysteresis>0.01</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<ai name="Water2" mode="PHIS" setup="NOICE | LASTGOOD" description="4016">
 								<unit>520</unit>
@@ -382,15 +318,6 @@
 									<low>0</low>
 									<high>2.0</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI">
-										<hihi>1.0</hihi>
-										<hi>0.5</hi>
-										<lo>0</lo>
-										<lolo>0</lolo>
-										<hysteresis>0.01</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<ai name="Visc"   mode="PHIS" setup="NOICE | LASTGOOD" description="4017">
 								<unit>64</unit>
@@ -399,15 +326,6 @@
 									<low>0</low>
 									<high>100</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI">
-										<hihi>40</hihi>
-										<hi>30</hi>
-										<lo>10</lo>
-										<lolo>5</lolo>
-										<hysteresis>0.01</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<ai name="pres"   mode="PHIS" setup="NOICE | KEYPAD"   description="4018">
 								<unit>32</unit>
@@ -416,15 +334,6 @@
 									<low>0</low>
 									<high>6.3</high>
 								</scale>
-								<limits>
-									<limit name="present" setup="HIHI | HI | LO | LOLO">
-										<hihi>4</hihi>
-										<hi>3.5</hi>
-										<lo>0.5</lo>
-										<lolo>0.1</lolo>
-										<hysteresis>0.01</hysteresis>
-									</limit>
-								</limits>
 							</ai>
 							<counter name="Counter" setup="" description="4019">
 								<io_link module="3" channel="3" />
@@ -447,20 +356,20 @@
 				<calculate>
 					<kinviscosity name="kinvisc" description="">
 						<dynviscosity><link alias="sikn1.bik.io.visc"/></dynviscosity>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 					</kinviscosity>
 					<dynviscosity name="dynvisc" description="">
 						<kinviscosity><link alias="sikn1.obj.kinvisc:result"/></kinviscosity>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 					</dynviscosity>
 					<masswater name="masswater" description="4000" setup="">
 						<volwater><link alias="sikn1.bik.io.water1"/></volwater>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
 					</masswater>
 					<volwater name="volwater" description="4000" setup="">
 						<masswater><link alias="sikn1.obj.masswater:result"/></masswater>
-						<density><link alias="var.testdens"/></density>
+						<density><link alias="var.test_dens"/></density>
 						<temperature><link alias="sikn1.bik.io.temp1"/></temperature>
 					</volwater>
 					<average name="avr_temp" description="0">
@@ -511,15 +420,6 @@
 							<k21a>1.98986000E-01</k21a>
 							<k21b>-3.19623000E-03</k21b>
 						</factors>
-						<limits>
-							<limit name="density" setup="hihi | hi | lo | lolo">
-								<hihi>900</hihi>
-								<hi>880</hi>
-								<lo>810</lo>
-								<lolo>800</lolo>
-								<hysteresis>0.5</hysteresis>
-							</limit>
-						</limits>
 					</densitometer>
 					<multiselector name="StnDensTemp" setup="" mode="NEXT" select="0" description="4024">
 						<names>
@@ -631,9 +531,25 @@
 				<default>33.33</default>
 				<unit>512</unit>
 			</variable>
-			<variable name="testdens" setup="" description="0">
+			<variable name="test_dens" setup="" description="0">
 				<default>880.0</default>
 				<unit>48</unit>
+			</variable>
+			<variable name="test_dens15" setup="" description="0">
+				<default>880.0</default>
+				<unit>48</unit>
+			</variable>
+			<variable name="test_b15" setup="" description="0">
+				<default>880.0</default>
+				<unit>517</unit>
+			</variable>
+			<variable name="test_temp" setup="" description="0">
+				<default>880.0</default>
+				<unit>16</unit>
+			</variable>
+			<variable name="test_pres" setup="" description="0">
+				<default>880.0</default>
+				<unit>32</unit>
 			</variable>
 			<variable name="linkvar2" setup="LINK" description="0">
 				<value><link alias="var.var2"/></value>

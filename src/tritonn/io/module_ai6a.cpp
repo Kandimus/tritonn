@@ -30,7 +30,6 @@ rModuleAI6a::rModuleAI6a(UDINT id) : rIOBaseModule(id)
 
 	m_type    = Type::AI6a;
 	m_comment = "Module 6 current/voltage active channels";
-	m_name    = "ai6a";
 
 	while (m_channel.size() < CHANNEL_COUNT) {
 		auto ch_ai = new rIOAIChannel(static_cast<USINT>(m_channel.size()), true);

@@ -19,7 +19,6 @@ rModuleDO16::rModuleDO16(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::DO16;
 	m_comment = "Module 16 discrete outputs";
-	m_name    = "do16";
 
 	while(m_channel.size() < CHANNEL_COUNT) {
 		auto ch_do = new rIODOChannel(static_cast<USINT>(m_channel.size()));

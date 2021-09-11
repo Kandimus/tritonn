@@ -75,7 +75,7 @@ void rTotal::checkMax()
 
 
 
-void rTotal::Calculate(const rObjUnit& unit)
+void rTotal::calculate(const rObjUnit& unit)
 {
 	m_past = m_present;
 
@@ -83,7 +83,7 @@ void rTotal::Calculate(const rObjUnit& unit)
 	m_raw.Volume   = Round(m_raw.Volume   + m_inc.Volume  , 5);
 	m_raw.Volume15 = Round(m_raw.Volume15 + m_inc.Volume15, 5);
 	m_raw.Volume20 = Round(m_raw.Volume20 + m_inc.Volume20, 5);
-	m_raw.Count   += m_inc.Count;
+	m_raw.m_count += m_inc.m_count;
 
 	checkMax();
 
@@ -91,17 +91,31 @@ void rTotal::Calculate(const rObjUnit& unit)
 	m_present.Volume   = Round(m_raw.Volume  , rPrecision::instance().get(unit.getVolume()));
 	m_present.Volume15 = Round(m_raw.Volume15, rPrecision::instance().get(unit.getVolume()));
 	m_present.Volume20 = Round(m_raw.Volume20, rPrecision::instance().get(unit.getVolume()));
+	m_present.m_count  = m_raw.m_count;
 
-	m_inc.Mass         = 0.0;
-	m_inc.Volume       = 0.0;
-	m_inc.Volume15     = 0.0;
-	m_inc.Volume20     = 0.0;
-	m_inc.Count        = 0;
+//	m_inc.Mass         = 0.0;
+//	m_inc.Volume       = 0.0;
+//	m_inc.Volume15     = 0.0;
+//	m_inc.Volume20     = 0.0;
+//	m_inc.Count        = 0;
 }
 
+void rTotal::reset()
+{
+	clear(m_past);
+	clear(m_raw);
+	clear(m_inc);
+	clear(m_present);
+}
+
+void rTotal::inc(UDINT impulse)
+{
+	clear(m_inc);
+	m_inc.m_count = impulse;
+}
 
 // Корректная разница нарастающих, с учетом сброса по пределу MAX_TOTAL_LIMIT
-LREAL rTotal::Sub(LREAL sub1, LREAL sub2)
+LREAL rTotal::sub(LREAL sub1, LREAL sub2)
 {
 	LREAL result = sub1 - sub2;
 
@@ -113,7 +127,7 @@ LREAL rTotal::Sub(LREAL sub1, LREAL sub2)
 
 void rTotal::clear(rBaseTotal &total)
 {
-	total.Count    = 0;
+	total.m_count  = 0;
 	total.Mass     = 0.0;
 	total.Volume   = 0.0;
 	total.Volume15 = 0.0;
@@ -129,7 +143,7 @@ std::string rTotal::toXmlBase(const char* name, const rBaseTotal& total) const
 	text += String_format("<%s>%.15f</%s>", XmlName::VOLUME  , total.Volume  , XmlName::VOLUME);
 	text += String_format("<%s>%.15f</%s>", XmlName::VOLUME15, total.Volume15, XmlName::VOLUME15);
 	text += String_format("<%s>%.15f</%s>", XmlName::VOLUME20, total.Volume20, XmlName::VOLUME20);
-	text += String_format("<%s>%u</%s>"   , XmlName::COUNT   , total.Count   , XmlName::COUNT);
+	text += String_format("<%s>%u</%s>"   , XmlName::COUNT   , total.m_count , XmlName::COUNT);
 	text += String_format("</%s>", name);
 
 	return text;
@@ -163,7 +177,7 @@ bool rTotal::fromXmlBase(tinyxml2::XMLElement* root, rBaseTotal& total)
 	bt.Volume   = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::VOLUME)  , 0, err);
 	bt.Volume15 = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::VOLUME15), 0, err);
 	bt.Volume20 = XmlUtils::getTextLREAL(root->FirstChildElement(XmlName::VOLUME20), 0, err);
-	bt.Count    = XmlUtils::getTextUDINT(root->FirstChildElement(XmlName::COUNT)   , 0, err);
+	bt.m_count  = XmlUtils::getTextUDINT(root->FirstChildElement(XmlName::COUNT)   , 0, err);
 
 	if (err) {
 		return false;

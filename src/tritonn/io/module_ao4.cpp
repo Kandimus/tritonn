@@ -21,7 +21,6 @@ rModuleAO4::rModuleAO4(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::AO4;
 	m_comment = "Module 4 output current active/passive channels";
-	m_name    = "ao4";
 
 	while (m_channel.size() < CHANNEL_COUNT) {
 		auto ch_ao = new rIOAOChannel(static_cast<USINT>(m_channel.size()));

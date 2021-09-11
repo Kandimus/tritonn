@@ -19,7 +19,6 @@ rModuleDI16::rModuleDI16(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::DI16;
 	m_comment = "Module 16 discrete input";
-	m_name    = "di16";
 
 	while(m_channel.size() < CHANNEL_COUNT) {
 		auto ch_di = new rIODIChannel(static_cast<USINT>(m_channel.size()));

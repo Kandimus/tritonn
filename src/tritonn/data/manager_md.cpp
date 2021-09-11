@@ -20,7 +20,7 @@
 #include "../system_variable.h"
 #include "../generator_md.h"
 #include "../data_station.h"
-#include "../data_stream.h"
+#include "stream.h"
 #include "../data_selector.h"
 #include "../data_denssol.h"
 #include "../data_reduceddensity.h"

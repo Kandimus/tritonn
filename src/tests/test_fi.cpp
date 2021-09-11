@@ -2,18 +2,18 @@
 #include <cmath>
 #include "../catchtest/catch.hpp"
 #include "test.h"
-#include "data_counter.h"
-#include "data_manager.h"
-#include "data_snapshot_item.h"
-#include "data_snapshot.h"
 #include "io/fi_channel.h"
+#include "data/counter.h"
+#include "data_manager.h"
+#include "data_snapshot.h"
+#include "data_snapshot_item.h"
 
 // Set mode
 
 TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 {
 	SECTION("Virtual counter. Set present values") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 		LREAL test_freq   = 2222.22;
 		LREAL test_period = 3.123456;
 		UDINT test_count  = 54321;
@@ -37,7 +37,7 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 	}
 
 	SECTION("Set simulate IO (const)") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 		UDINT freq = 1000;
 
 		ss.add("hardware.fi4_1.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));
@@ -58,7 +58,7 @@ TEST_CASE("testing frequency input. IO simulate", "[FIInput]")
 	}
 
 	SECTION("Set simulate IO (const) 2") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 		LREAL freq = 5432.0;
 
 		ss.add("hardware.fi4_1.ch_00.simulate.type" , static_cast<USINT>(rIOFIChannel::SimType::CONST));

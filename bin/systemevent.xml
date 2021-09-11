@@ -185,9 +185,9 @@
 		<!-- EID_DENSSOL_GOOD_PERIOD - $1 ID, $2 Descr -->
 		<str id="537395215">$2. Значение периода в допустимом диапазоне</str>
 		<!-- EID_DENSSOL_FAULT_VALUE -->
-		<str id="-536346608"/>
+		<str id="-536346608">$2. Значение плотности при 15 гр.С ($3 $4) вышло за границы типа продукта.</str>
 		<!-- EID_DENSSOL_GOOD_VALUE -->
-		<str id="537395217"/>
+		<str id="537395217">$2. Значение плотности при 15 гр.С ($3 $4) находится в границах типа продукта.</str>
 		<!-- EID_DENSSOL_FAULT_ITERATION -->
 		<str id="-536346606"/>
 		<!-- EID_DENSSOL_GOOD_ITERATION -->
@@ -263,17 +263,17 @@
 		<!-- EID_STREAM_KEYPADKF_ON - $1 ID, $2 Descr -->
 		<str id="-1609957371">$2. Установлен режим постоянного значения К-фактора.</str>
 		<!-- EID_STREAM_KEYPADKF_OFF - $1 ID, $2 Descr -->
-		<str id="-1609957370">$2. Установлен режим расчета значения К-фактора в виде кусочно-линейной аппроксимации.</str>
-		<!-- EID_STREAM_ACCEPT -->
-		<str id="-1609957369"/>
-		<!-- EID_STREAM_KEYPADKF -->
-		<str id="-1609957368"/>
-		<!-- EID_STREAM_KEYPADMF -->
-		<str id="-1609957367"/>
-		<!-- EID_STREAM_POINT_HZ -->
-		<str id="-1609957366"/>
-		<!-- EID_STREAM_POINT_KF -->
-		<str id="-1609957365"/>
+		<str id="-1609957370">$2. Установлен режим расчета значения К-фактора в виде КЛА.</str>
+		<!-- EID_STREAM_ACCEPT - $1 ID, $2 Descr -->
+		<str id="-1609957369">$2. Применены введенные коэффициенты КЛА.</str>
+		<!-- EID_STREAM_KEYPADKF - $1 ID, $2 Descr, $3 Unit, $4 value, $5 saved -->
+		<str id="-1609957368">$2. Установлено новое значение ($4 $3) постоянного коэффициента KF. Прежнее значение: $5 $3.</str>
+		<!-- EID_STREAM_KEYPADMF - $1 ID, $2 Descr, $3 value, $4 saved -->
+		<str id="-1609957367">$2. Установлено новое значение ($3) единого коэффициента MF. Прежнее значение: $4.</str>
+		<!-- EID_STREAM_POINT_HZ - $1 ID, $2 Descr, $3 Unit, $4 point, $5 value, $6 saved -->
+		<str id="-1609957366">$2. КЛА. Установлено новое значение ($5 $3) частоты в точке $4. Прежнее значение: $6 $3.</str>
+		<!-- EID_STREAM_POINT_KF - $1 ID, $2 Descr, $3 Unit, $4 point, $5 value, $6 saved -->
+		<str id="-1609957365">$2. КЛА. Установлено новое значение ($5 $3) коэффициента KF в точке $4. Прежнее значение: $6 $3.</str>
 		<!-- EID_STREAM_TOTAL_MASS -->
 		<str id="-1609957364"/>
 		<!-- EID_STREAM_TOTAL_VOLUME -->
@@ -282,6 +282,8 @@
 		<str id="-1609957362"/>
 		<!-- EID_STREAM_TOTAL_VOLUME20 -->
 		<str id="-1609957361"/>
+		<!-- EID_STREAM_RESET_TOTALS - $1 ID, $2 Descr -->
+		<str id="-1609957360">$2. Нарастающие сброшены.</str>
 		<!-- EID_STREAM_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="537526372">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
 		<!-- EID_STREAM_NEW_WMIN -->

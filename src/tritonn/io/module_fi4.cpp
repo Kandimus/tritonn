@@ -28,7 +28,6 @@ rModuleFI4::rModuleFI4(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::FI4;
 	m_comment = "Module with 4 frequency input";
-	m_name    = "fi4";
 
 	if (m_flagsOutType.empty()) {
 		m_flagsOutType

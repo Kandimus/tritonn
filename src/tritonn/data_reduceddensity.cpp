@@ -37,17 +37,17 @@ const UDINT REDUCEDDENS_LE_DENSITY = 0x00000002;
 //
 rReducedDens::rReducedDens(const rStation* owner) : rSource(owner)
 {
-	initLink(rLink::Setup::INOUTPUT, m_temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::INOUTPUT, m_pres  , U_MPa    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::INOUTPUT, m_dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE );
+	initLink(rLink::Setup::INOUTPUT, m_temp  , U_C      , SID::TEMPERATURE, XmlName::TEMP     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INOUTPUT, m_pres  , U_MPa    , SID::PRESSURE   , XmlName::PRES     , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::INOUTPUT, m_dens15, U_kg_m3  , SID::DENSITY15  , XmlName::DENSITY15, rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INOUTPUT, m_b15   , U_1_C    , SID::B15        , XmlName::B15      , XmlName::DENSITY15);
-	initLink(rLink::Setup::OUTPUT  , m_dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::OUTPUT  , m_dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE );
-	initLink(rLink::Setup::OUTPUT  , m_ctl   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::OUTPUT  , m_cpl   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::OUTPUT  , m_b     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::OUTPUT  , m_y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE );
-	initLink(rLink::Setup::OUTPUT  , m_y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE );
+	initLink(rLink::Setup::OUTPUT  , m_dens  , U_kg_m3  , SID::DENSITY    , XmlName::DENSITY  , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT  , m_dens20, U_kg_m3  , SID::DENSITY20  , XmlName::DENSITY20, rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT  , m_ctl   , U_DIMLESS, SID::CTL        , XmlName::CTL      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT  , m_cpl   , U_DIMLESS, SID::CPL        , XmlName::CPL      , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT  , m_b     , U_1_C    , SID::B          , XmlName::B        , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT  , m_y     , U_1_MPa  , SID::Y          , XmlName::Y        , rLink::SHADOW_NONE);
+	initLink(rLink::Setup::OUTPUT  , m_y15   , U_1_MPa  , SID::Y15        , XmlName::Y15      , rLink::SHADOW_NONE);
 }
 
 
@@ -109,6 +109,10 @@ UDINT rReducedDens::calculate()
 	m_dens20.m_value = rDensity::getDens20(m_dens15.m_value, m_b15.m_value);
 	m_y15.m_value    = rDensity::getY15(m_dens15.m_value);
 
+//if (m_alias == "sikn1.line2.obj.stn_dens") {
+//	printf("STN_DENS: b15 = %.5f, y15 = %.5f, dens15 = %.5f, dens = %.5f, b = %.5f, temp = %.5f (%.5f), pres = %.5f, ctl = %.5f, cpl = %.5f\n",
+//		   m_b15.m_value, m_y15.m_value, m_dens15.m_value, m_dens.m_value, m_b.m_value, m_temp.m_value, dTemp, m_pres.m_value, m_ctl.m_value, m_cpl.m_value);
+//}
 	postCalculate();
 	
 	return TRITONN_RESULT_OK;

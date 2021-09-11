@@ -10,7 +10,7 @@
 TEST_CASE("testing variables", "[RVar]")
 {
 	SECTION("Check const") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		ss.add("var.var1const.value", 555.0);
 		ss.set();
@@ -26,7 +26,7 @@ TEST_CASE("testing variables", "[RVar]")
 	}
 
 	SECTION("Check set variable") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		LREAL var = 555;
 		ss.add("var.var2.value", var);
@@ -43,7 +43,7 @@ TEST_CASE("testing variables", "[RVar]")
 	}
 
 	SECTION("Check set variable") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		LREAL var = 444;
 		ss.add("var.var2.value", var);

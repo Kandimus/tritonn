@@ -22,7 +22,6 @@ rModuleCPU::rModuleCPU(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::CPU;
 	m_comment = "Base CPU module";
-	m_name    = "cpu";
 }
 
 rModuleCPU::rModuleCPU(const rModuleCPU* cpu) : rIOBaseModule(cpu)

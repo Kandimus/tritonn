@@ -21,7 +21,6 @@ rModuleAI6p::rModuleAI6p(UDINT id) : rIOBaseModule(id)
 {
 	m_type    = Type::AI6p;
 	m_comment = "Module 6 current/voltage passive channels";
-	m_name    = "ai6p";
 
 	while (m_channel.size() < CHANNEL_COUNT) {
 		auto ch_ai = new rIOAIChannel(static_cast<USINT>(m_channel.size()), false);

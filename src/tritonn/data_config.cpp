@@ -43,7 +43,7 @@
 #include "data_report.h"
 #include "data_selector.h"
 #include "data_station.h"
-#include "data_stream.h"
+#include "data/stream.h"
 #include "data_rvar.h"
 #include "data_sampler.h"
 #include "data/prove.h"

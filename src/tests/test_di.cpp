@@ -2,7 +2,7 @@
 #include <cmath>
 #include "../catchtest/catch.hpp"
 #include "test.h"
-#include "data_di.h"
+#include "data/di.h"
 #include "data_manager.h"
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
@@ -13,7 +13,7 @@
 TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 {
 	SECTION("Virtual discrete. Set present value") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 		USINT test_val = 1;
 
 		ss.add("io.di_virt.present.value", test_val);
@@ -30,7 +30,7 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 	}
 
 	SECTION("Set simulate IO. set 1, set 0") {
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 		USINT sim_val = 1;
 
 		ss.add("hardware.di8do8_1.ch_00.simulate.type" , static_cast<USINT>(rIODIChannel::SimType::CONST));
@@ -38,7 +38,7 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 		ss.add("io.di00.mode"                          , static_cast<UINT>(rDI::Mode::PHIS));
 		ss.set();
 
-		mSleep(rTest::sleepValue);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.di00.present.value");
@@ -53,7 +53,7 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 		ss.add("hardware.di8do8_1.ch_00.simulate.value", sim_val);
 		ss.set();
 
-		mSleep(rTest::sleepValue);
+		mSleep(rTest::sleepValue * 2);
 
 		ss.clear();
 		ss.add("io.di00.present.value");
@@ -65,7 +65,7 @@ TEST_CASE("testing discrete input. IO simulate", "[DiscreteInput]")
 
 	SECTION("Set keypad value") {
 		USINT testvalue = 1;
-		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_ADMIN);
+		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
 
 		ss.add("io.di00.keypad", testvalue);
 		ss.add("io.di00.mode"  , static_cast<UINT>(rDI::Mode::KEYPAD));

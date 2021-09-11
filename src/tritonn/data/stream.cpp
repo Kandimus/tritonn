@@ -1,36 +1,32 @@
-//=================================================================================================
-//===
-//=== data_stream.cpp
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== Класс измерительной линии
-//===
-//=================================================================================================
+/*
+ *
+ * data/stream.cpp
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #include <vector>
 #include <limits>
 #include <string.h>
-#include "event/eid.h"
-#include "event/manager.h"
-#include "text_id.h"
-#include "xml_util.h"
-#include "precision.h"
-#include "data_manager.h"
-#include "data_config.h"
-#include "variable_list.h"
-#include "data_station.h"
-#include "data_stream.h"
-#include "data_snapshot.h"
-#include "io/defines.h"
-#include "generator_md.h"
-#include "comment_defines.h"
 #include "log_manager.h"
+#include "xml_util.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../text_id.h"
+#include "../precision.h"
+#include "../data_manager.h"
+#include "../data_config.h"
+#include "../variable_list.h"
+#include "../data_station.h"
+#include "../data_snapshot.h"
+#include "../io/defines.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
+#include "stream.h"
 
 const UDINT STREAM_LE_ACCOUNTING = 0x00000002;
 const UDINT STREAM_LE_KEYPADKF   = 0x00000004;
@@ -65,7 +61,8 @@ rStream::rStream(const rStation* owner) :
 
 	m_maintenance   = true;
 	m_linearization = false;
-//	rTotal   Total;
+	m_setFactor.m_point.resize(rFlowFactor::MAXPOINTS);
+	m_curFactor.m_point.resize(rFlowFactor::MAXPOINTS);
 
 	initLink(rLink::Setup::INPUT   , m_counter     , U_imp   , SID::IMPULSE          , XmlName::IMPULSE      , rLink::SHADOW_NONE);
 	initLink(rLink::Setup::INPUT   , m_freq        , U_Hz    , SID::FREQUENCY        , XmlName::FREQ         , XmlName::IMPULSE);
@@ -113,7 +110,7 @@ UDINT rStream::calculate()
 	}
 
 	//
-	m_setFactor.KeypadKF.Compare(reinitEvent(EID_STREAM_KEYPADKF));
+	m_setFactor.KeypadKF.Compare(reinitEvent(EID_STREAM_KEYPADKF) << getUnitKF());
 	m_setFactor.KeypadMF.Compare(reinitEvent(EID_STREAM_KEYPADMF));
 
 	for (auto& point : m_setFactor.m_point) {
@@ -140,25 +137,33 @@ UDINT rStream::calculate()
 		rEventManager::instance().add(reinitEvent(EID_STREAM_ACCEPT));
 	}
 
-	m_curKF = m_linearization ? calcualateKF() : m_curFactor.KeypadKF.Value;
+	if (m_resetTotals) {
+		m_total.reset();
+		m_resetTotals = 0;
+		rEventManager::instance().add(reinitEvent(EID_STREAM_RESET_TOTALS));
+	}
+
+	m_curKF = calcualateKF();
 
 	calcTotal();
 
 	if (m_flowmeter == Type::CORIOLIS) {
 		if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value)) {
-			m_flowMass.m_value   = m_freq.m_value     / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
-			m_flowVolume.m_value = m_flowMass.m_value / m_dens.m_value * 1000.0 * m_curFactor.KeypadMF.Value;
+			m_flowMass.m_value     = m_freq.m_value     / m_curKF          * 3600.0 * m_curFactor.KeypadMF.Value;
+			m_flowVolume.m_value   = m_flowMass.m_value / m_dens.m_value   * 1000.0 * m_curFactor.KeypadMF.Value;
+			m_flowVolume15.m_value = m_flowMass.m_value / m_dens15.m_value * 1000.0 * m_curFactor.KeypadMF.Value;
+			m_flowVolume20.m_value = m_flowMass.m_value / m_dens20.m_value * 1000.0 * m_curFactor.KeypadMF.Value;
 		}
 	} else {
 		if (isValidDelim(m_curKF)) {
-			m_flowVolume.m_value = m_freq.m_value       / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
-			m_flowMass.m_value   = m_flowVolume.m_value * m_dens.m_value / 1000.0 * m_curFactor.KeypadMF.Value;
+			m_flowVolume.m_value   = m_freq.m_value       / m_curKF        * 3600.0 * m_curFactor.KeypadMF.Value;
+			m_flowVolume15.m_value = m_flowVolume.m_value * m_dens.m_value / m_dens15.m_value / 1000.0;
+			m_flowVolume20.m_value = m_flowVolume.m_value * m_dens.m_value / m_dens20.m_value / 1000.0;
+			m_flowMass.m_value     = m_flowVolume.m_value * m_dens.m_value / 1000.0 * m_curFactor.KeypadMF.Value;
 		}
 	}
 
-	if (m_ID == 0) {
-		TRACEI(LOG::DATAMGR, "Line %i, KF %.5f, freq %.2f, dens %.2f", m_ID, m_curKF, m_freq.m_value, m_dens.m_value);
-	}
+	postCalculate();
 
 	return TRITONN_RESULT_OK;
 }
@@ -227,33 +232,33 @@ UDINT rStream::generateVars(rVariableList& list)
 	list.add(m_alias + ".flowmeter"      , rVariable::Flags::R___, reinterpret_cast<USINT*>(&m_flowmeter), U_DIMLESS       , 0                 , "Тип расходомера:<br/>" + m_flagsFlowmeter.getInfo(true));
 	list.add(m_alias + ".maintenance"    , rVariable::Flags::___D, &m_maintenance                        , U_DIMLESS       , ACCESS_MAINTENANCE, "Статус учета:<br/>0 - в учете<br/>1 - не в учете");
 	list.add(m_alias + ".linearization"  , rVariable::Flags::___D, &m_linearization                      , U_DIMLESS       , ACCESS_FACTORS    , "Тип коэффициентов:<br/>0 - единый К-фактор<br/>1 - кусочно-линейная интерполяция");
-	list.add(strtot  + "present.Volume"  , rVariable::Flags::R___, &m_total.m_present.Volume             , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
-	list.add(strtot  + "present.Volume15", rVariable::Flags::R___, &m_total.m_present.Volume15           , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
-	list.add(strtot  + "present.Volume20", rVariable::Flags::R___, &m_total.m_present.Volume20           , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
-	list.add(strtot  + "present.Mass"    , rVariable::Flags::R___, &m_total.m_present.Mass               , unit.getMass()  , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
-	list.add(strtot  + "present.impulse" , rVariable::Flags::R___, &m_total.m_present.Count              , U_imp           , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
-	list.add(strtot  + "Inc.Volume"      , rVariable::Flags::RSH_, &m_total.m_inc.Volume                 , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
-	list.add(strtot  + "Inc.Volume15"    , rVariable::Flags::RSH_, &m_total.m_inc.Volume15               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
-	list.add(strtot  + "Inc.Volume20"    , rVariable::Flags::RSH_, &m_total.m_inc.Volume20               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
-	list.add(strtot  + "Inc.Mass"        , rVariable::Flags::RSH_, &m_total.m_inc.Mass                   , unit.getMass()  , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::MASS);
-	list.add(strtot  + "Inc.inpulse"     , rVariable::Flags::RSH_, &m_total.m_inc.Count                  , U_imp           , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
-	list.add(strtot  + "raw.Volume"      , rVariable::Flags::RSH_, &m_total.m_raw.Volume                 , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
-	list.add(strtot  + "raw.Volume15"    , rVariable::Flags::RSH_, &m_total.m_raw.Volume15               , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
-	list.add(strtot  + "raw.Volume20"    , rVariable::Flags::RSH_, &m_total.m_raw.Volume20               , unit.getVolume(), 0                 , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
-	list.add(strtot  + "raw.Mass"        , rVariable::Flags::RSH_, &m_total.m_raw.Mass                   , unit.getMass()  , 0                 , COMMENT::TOTAL_RAW     + COMMENT::MASS);
-	list.add(strtot  + "raw.impulse"     , rVariable::Flags::RSH_, &m_total.m_raw.Count                  , U_imp           , 0                 , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
-	list.add(strtot  + "past.Volume"     , rVariable::Flags::RSH_, &m_total.m_past.Volume                , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
-	list.add(strtot  + "past.Volume15"   , rVariable::Flags::RSH_, &m_total.m_past.Volume15              , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
-	list.add(strtot  + "past.Volume20"   , rVariable::Flags::RSH_, &m_total.m_past.Volume20              , unit.getVolume(), 0                 , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
-	list.add(strtot  + "past.Mass"       , rVariable::Flags::RSH_, &m_total.m_past.Mass                  , unit.getMass()  , 0                 , COMMENT::TOTAL_PAST    + COMMENT::MASS);
-	list.add(strtot  + "past.impulse"    , rVariable::Flags::RSH_, &m_total.m_past.Count                 , U_imp           , 0                 , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
+	list.add(strtot  + "present.volume"  , rVariable::Flags::R___, &m_total.m_present.Volume             , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME);
+	list.add(strtot  + "present.volume15", rVariable::Flags::R___, &m_total.m_present.Volume15           , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME15);
+	list.add(strtot  + "present.volume20", rVariable::Flags::R___, &m_total.m_present.Volume20           , unit.getVolume(), 0                 , COMMENT::TOTAL_PRESENT + COMMENT::VOLUME20);
+	list.add(strtot  + "present.mass"    , rVariable::Flags::R___, &m_total.m_present.Mass               , unit.getMass()  , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::MASS);
+	list.add(strtot  + "present.impulse" , rVariable::Flags::R___, &m_total.m_present.m_count            , U_imp           , 0                 , COMMENT::TOTAL_PRESENT + COMMENT::IMP_COUNT);
+	list.add(strtot  + "inc.volume"      , rVariable::Flags::RSH_, &m_total.m_inc.Volume                 , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME);
+	list.add(strtot  + "inc.volume15"    , rVariable::Flags::RSH_, &m_total.m_inc.Volume15               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME15);
+	list.add(strtot  + "inc.volume20"    , rVariable::Flags::RSH_, &m_total.m_inc.Volume20               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::VOLUME20);
+	list.add(strtot  + "inc.mass"        , rVariable::Flags::RSH_, &m_total.m_inc.Mass                   , unit.getMass()  , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::MASS);
+	list.add(strtot  + "inc.inpulse"     , rVariable::Flags::RSH_, &m_total.m_inc.m_count                , U_imp           , ACCESS_SA         , COMMENT::TOTAL_INC     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "raw.volume"      , rVariable::Flags::RSH_, &m_total.m_raw.Volume                 , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_RAW     + COMMENT::VOLUME);
+	list.add(strtot  + "raw.volume15"    , rVariable::Flags::RSH_, &m_total.m_raw.Volume15               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_RAW     + COMMENT::VOLUME15);
+	list.add(strtot  + "raw.volume20"    , rVariable::Flags::RSH_, &m_total.m_raw.Volume20               , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_RAW     + COMMENT::VOLUME20);
+	list.add(strtot  + "raw.mass"        , rVariable::Flags::RSH_, &m_total.m_raw.Mass                   , unit.getMass()  , ACCESS_SA         , COMMENT::TOTAL_RAW     + COMMENT::MASS);
+	list.add(strtot  + "raw.impulse"     , rVariable::Flags::RSH_, &m_total.m_raw.m_count                , U_imp           , ACCESS_SA         , COMMENT::TOTAL_RAW     + COMMENT::IMP_COUNT);
+	list.add(strtot  + "past.volume"     , rVariable::Flags::RSH_, &m_total.m_past.Volume                , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_PAST    + COMMENT::VOLUME);
+	list.add(strtot  + "past.volume15"   , rVariable::Flags::RSH_, &m_total.m_past.Volume15              , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_PAST    + COMMENT::VOLUME15);
+	list.add(strtot  + "past.volume20"   , rVariable::Flags::RSH_, &m_total.m_past.Volume20              , unit.getVolume(), ACCESS_SA         , COMMENT::TOTAL_PAST    + COMMENT::VOLUME20);
+	list.add(strtot  + "past.mass"       , rVariable::Flags::RSH_, &m_total.m_past.Mass                  , unit.getMass()  , ACCESS_SA         , COMMENT::TOTAL_PAST    + COMMENT::MASS);
+	list.add(strtot  + "past.impulse"    , rVariable::Flags::RSH_, &m_total.m_past.m_count               , U_imp           , ACCESS_SA         , COMMENT::TOTAL_PAST    + COMMENT::IMP_COUNT);
+	list.add(strtot  + "reset"           , rVariable::Flags::____, &m_resetTotals                        , U_DIMLESS       , ACCESS_TOTALS     , "Обнуление всех нарастающих");
 	list.add(m_alias + ".presentkf"      , rVariable::Flags::R___, &m_curKF                              , getUnitKF()     , 0                 , "Вычисленный К-фактор");
 	list.add(strfac  + "kf"              , rVariable::Flags::R__D, &m_curFactor.KeypadKF.Value           , getUnitKF()     , 0                 , COMMENT::FACTORS     + COMMENT::KFACTOR);
 	list.add(strfac  + "mf"              , rVariable::Flags::R__D, &m_curFactor.KeypadMF.Value           , U_DIMLESS       , 0                 , COMMENT::FACTORS     + COMMENT::MFACTOR);
 	list.add(strfac  + "set.kf"          , rVariable::Flags::____, &m_setFactor.KeypadKF.Value           , getUnitKF()     , ACCESS_FACTORS    , COMMENT::FACTORS_SET + COMMENT::KFACTOR);
 	list.add(strfac  + "set.mf"          , rVariable::Flags::____, &m_setFactor.KeypadMF.Value           , U_DIMLESS       , ACCESS_FACTORS    , COMMENT::FACTORS_SET + COMMENT::MFACTOR);
 	list.add(strfac  + "set.accept"      , rVariable::Flags::____, &m_acceptKF                           , U_DIMLESS       , ACCESS_FACTORS    , COMMENT::FACTOR_ACC);
-
 
 	for (UDINT ii = 0; ii < m_curFactor.m_point.size(); ++ii) {
 		std::string name_kf     = String_format("%s.factors.point_%i.kf"    , m_alias.c_str(), ii + 1);
@@ -334,22 +339,21 @@ UDINT rStream::loadFromXML(tinyxml2::XMLElement* element, rError& err, const std
 
 	tinyxml2::XMLElement* points_xml = factors_xml->FirstChildElement(XmlName::POINTS);
 	if (points_xml) {
+		int count = 0;
 		XML_FOR(point_xml, points_xml, XmlName::POINT) {
-			rFactorPoint point;
+			auto point = &m_setFactor.m_point[count];
 
-			point.Hz.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::HERTZ), 0.0, fault));
-			point.Kf.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::KF   ), 0.0, fault));
-			point.m_id = m_setFactor.m_point.size();
+			if (count > rFlowFactor::MAXPOINTS) {
+				return err.set(DATACFGERR_STREAM_TOMANYPOINTS, points_xml->GetLineNum(), "");
+			}
+
+			point->Hz.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::HERTZ), 0.0, fault));
+			point->Kf.Init(XmlUtils::getTextLREAL(point_xml->FirstChildElement(XmlName::KF   ), 0.0, fault));
+			point->m_id = count++;
 
 			if (fault) {
 				return err.set(DATACFGERR_STREAM_FACTORS, point_xml->GetLineNum(), "fault load point");
 			}
-
-			m_setFactor.m_point.push_back(point);
-		}
-
-		if (m_setFactor.m_point.size() > rFlowFactor::MAXPOINTS) {
-			return err.set(DATACFGERR_STREAM_TOMANYPOINTS, points_xml->GetLineNum(), "");
 		}
 	}
 	m_curFactor = m_setFactor;
@@ -386,14 +390,11 @@ LREAL rStream::calcualateKF()
 		return m_curFactor.KeypadKF.Value;
 	}
 
-	// Проверка на уход частоты за минимум
 	if (m_freq.m_value < m_curFactor.m_point[0].Hz.Value) {
 		return m_curFactor.m_point[0].Kf.Value;
 	}
 
-	//TODO можно переписать в цикл for(auto), через переменные prev и present
 	for (UDINT ii = 1; ii < m_curFactor.m_point.size(); ++ii) {
-		// Проверка ухода частоты за максимум
 		if (m_curFactor.m_point[ii].Hz.Value <= 0) {
 			return m_curFactor.m_point[ii - 1].Kf.Value;
 		}
@@ -415,37 +416,29 @@ LREAL rStream::calcualateKF()
 
 void rStream::calcTotal()
 {
-	m_total.m_inc.Count    = 0;
-	m_total.m_inc.Mass     = 0;
-	m_total.m_inc.Volume   = 0;
-	m_total.m_inc.Volume15 = 0;
-	m_total.m_inc.Volume20 = 0;
+	m_total.inc(static_cast<UDINT>(m_counter.m_value));
 
 	if (!m_maintenance) {
 		if (m_flowmeter == Type::CORIOLIS) {
 			if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) &&
 				isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
-				m_total.m_inc.Mass     = m_total.m_inc.Count  / m_curKF * m_curFactor.KeypadMF.Value;
-				m_total.m_inc.Volume   = m_total.m_inc.Mass   / m_dens.m_value   * 1000.0;
-				m_total.m_inc.Volume15 = m_total.m_inc.Mass   / m_dens15.m_value * 1000.0;
-				m_total.m_inc.Volume20 = m_total.m_inc.Mass   / m_dens20.m_value * 1000.0;
+
+				m_total.m_inc.Mass     = m_total.m_inc.m_count / m_curKF * m_curFactor.KeypadMF.Value;
+				m_total.m_inc.Volume   = m_total.m_inc.Mass    / m_dens.m_value   * 1000.0;
+				m_total.m_inc.Volume15 = m_total.m_inc.Mass    / m_dens15.m_value * 1000.0;
+				m_total.m_inc.Volume20 = m_total.m_inc.Mass    / m_dens20.m_value * 1000.0;
 			}
 		} else {
 			if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) && isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
-				m_total.m_inc.Volume   = m_total.m_inc.Count  / m_curKF * m_curFactor.KeypadMF.Value;
-				m_total.m_inc.Mass     = m_total.m_inc.Volume * m_dens.m_value                    / 1000.0;
-				m_total.m_inc.Volume15 = m_total.m_inc.Volume * m_dens.m_value / m_dens15.m_value / 1000.0;
-				m_total.m_inc.Volume20 = m_total.m_inc.Volume * m_dens.m_value / m_dens20.m_value / 1000.0;
+				m_total.m_inc.Volume   = m_total.m_inc.m_count / m_curKF * m_curFactor.KeypadMF.Value;
+				m_total.m_inc.Mass     = m_total.m_inc.Volume  * m_dens.m_value                    / 1000.0;
+				m_total.m_inc.Volume15 = m_total.m_inc.Volume  * m_dens.m_value / m_dens15.m_value / 1000.0;
+				m_total.m_inc.Volume20 = m_total.m_inc.Volume  * m_dens.m_value / m_dens20.m_value / 1000.0;
 			}
 		}
-
-//		m_total.m_inc.Mass     = Round(m_total.m_inc.Mass    , 5);
-//		m_total.m_inc.Volume   = Round(m_total.m_inc.Volume  , 5);
-//		m_total.m_inc.Volume15 = Round(m_total.m_inc.Volume15, 5);
-//		m_total.m_inc.Volume20 = Round(m_total.m_inc.Volume20, 5);
 	}
 
-	m_total.Calculate(m_station->getUnit());
+	m_total.calculate(m_station->getUnit());
 }
 
 UDINT rStream::generateMarkDown(rGeneratorMD& md)
@@ -464,10 +457,6 @@ UDINT rStream::generateMarkDown(rGeneratorMD& md)
 	m_flowVolume.m_limit.m_setup.Init  (LIMIT_SETUP_ALL);
 	m_flowVolume15.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
 	m_flowVolume20.m_limit.m_setup.Init(LIMIT_SETUP_ALL);
-
-	for (auto ii = 0; ii < rFlowFactor::MAXPOINTS; ++ii) {
-		m_curFactor.m_point.push_back(rFactorPoint(ii, 0, 0));
-	}
 
 	md.add(this, true, rGeneratorMD::Type::CALCULATE)
 			.addProperty(XmlName::SETUP        , &m_flagsSetup, false)
