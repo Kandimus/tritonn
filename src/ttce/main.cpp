@@ -3,6 +3,7 @@
 #include "stringex.h"
 #include "simplefile.h"
 #include "../tritonn/event/eid.h"
+#include "../tritonn_version.h"
 #include "event_info.h"
 #include "tinyxml2.h"
 #include "tritonn_version.h"
@@ -196,7 +197,7 @@ int main(int argc, const char* argv[])
 	UNUSED(argc);
 	UNUSED(argv);
 
-	printf("ttce ver 0.3\nTritonn core ver %s\n", TRITONN_VERSION);
+	printf("ttce ver %s\n", TRITONN_VERSION);
 
 	MakeEID("", 0, 0, 0, &gList);
 
