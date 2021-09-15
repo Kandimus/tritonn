@@ -428,10 +428,45 @@
 		<str id="-1609564148">$2. Установлен режим ручного ввода значения.</str>
 		<!-- EID_DO_KEYPAD_OFF - $1 ID, $2 Descr -->
 		<str id="-1609564147">$2. Установлен режим физического значения.</str>
-		<!--EID_DO_MODULE-->
+		<!--EID_DO_MODULE - $1 ID, $2 Descr, $3 module number, $4 channel number -->
 		<str id="-535822322">$2. Ошибка получения данных с модуля $3 канал $4.</str>
 		<!--EID_DO_NEW_SETUP-->
 		<str id="537919503"/>
+
+		<!--EID_AO_NEW_MIN - $1 ID, $2 Descr, $3 unit, $4 value, $5 saved -->
+		<str id="537985025">$2. Установлено новое значение инженерного минимума ($4 $3). Прежнее значение: $5 $3.</str>
+		<!--EID_AO_NEW_MAX - $1 ID, $2 Descr, $3 unit, $4 value, $5 saved -->
+		<str id="537985026">$2. Установлено новое значение инженерного максимума ($4 $3). Прежнее значение: $5 $3.</str>
+		<!--EID_AO_SIM_ON - $1 ID, $2 Descr -->
+		<str id="-1609498621">$2. Установлен режим симуляции.</str>
+		<!--EID_AO_SIM_OFF - $1 ID, $2 Descr -->
+		<str id="-1609498620">$2. Установлен режим физического значения.</str>
+		<!--EID_AO_MODULE - $1 ID, $2 Descr, $3 module number, $4 channel number -->
+		<str id="-535756795">$2. Ошибка получения данных с модуля $3 канал $4.</str>
+		<!--EID_AO_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="537985124">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
+		<!--EID_AO_NEW_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="537985125">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного минимума. Прежнее значение: $6 $4.</str>
+		<!--EID_AO_NEW_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="537985126">$2 ($3). Установлено новое значение ($5 $4) уставки предаварийного максимума. Прежнее значение: $6 $4.</str>
+		<!--EID_AO_NEW_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="537985127">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного максимума. Прежнее значение: $6 $4.</str>
+		<!--EID_AO_NEW_HYST - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
+		<str id="537985128">$2 ($3). Установлено новое значение ($5 $4) уставки гистерезиса. Прежнее значение: $6 $4.</str>
+		<!--EID_AO_NEW_SETUP - $1 ID, $2 Descr -->
+		<str id="537985129">$2. Изменены настройки.</str>
+		<!--EID_AO_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535756690">$2 ($3). Выход за аварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_AO_WMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609498513">$2 ($3). Выход за предаварийный минимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_AO_AMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-535756688">$2 ($3). Выход за аварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_AO_WMAX - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 limit -->
+		<str id="-1609498511">$2 ($3). Выход за предаварийный максимум (значение $5 $4, уставка $6 $4).</str>
+		<!--EID_AO_NORMAL - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value -->
+		<str id="537985138">$2 ($3). Значение в рабочем диапазоне (значение $5 $4).</str>
+		<!--EID_AO_NAN - $1 ID, $2 Descr, $3 link descr, $4 link unit -->
+		<str id="-535756685">$2 ($3). Не действительное значение.</str>
 
 		<!-- EID_SAMPLER_START_PERIOD - $1 ID, $2 Descr -->
 		<str id="538050561">$2. Команда на запуск в режиме по времени.</str>
