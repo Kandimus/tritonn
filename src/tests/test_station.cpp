@@ -7,7 +7,7 @@
 #include "data_snapshot_item.h"
 #include "data_snapshot.h"
 
-TEST_CASE("testing stream calc.", "[Stream]")
+TEST_CASE("testing station calc.", "[Station]")
 {
 	SECTION("Check calculating flowrate. Linear KF") {
 		rSnapshot ss(rDataManager::instance().getVariableClass(), ACCESS_MASK_SA);
