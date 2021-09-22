@@ -26,6 +26,8 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		ss.add("var.test_temp.value"                , temp);
 		ss.add("var.test_pres.value"                , pres);
 		ss.add("sikn1.line2.total.reset"            , 1);
+		ss.add("sikn1.line2.linearization"          , 1);
+		ss.add("sikn1.line2.maintenance"            , 0);
 		ss.add("sikn1.line2.factors.set.point_1.kf" , 100);
 		ss.add("sikn1.line2.factors.set.point_1.hz" , 100);
 		ss.add("sikn1.line2.factors.set.point_2.kf" , 500);
@@ -42,7 +44,6 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		ss.clear();
 		ss.add("sikn1.line2.temperature.value");
 		ss.add("sikn1.line2.pressure.value");
-		ss.add("sikn1.line2.obj.stn_dens.density.value");
 		ss.add("sikn1.line2.total.present.mass");
 		ss.add("sikn1.line2.total.present.impulse");
 		ss.add("sikn1.line2.flowrate.mass.value");
@@ -75,7 +76,7 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		LREAL dens15 = 830.0;
 		LREAL b15    = 0.00089124;
 		LREAL y15    = 0.00076979;
-		LREAL dens   = 819.8323017886;
+		LREAL dens   = 823.3259981875;
 		LREAL temp   = 25.0;
 		LREAL pres   = 1.1;
 
@@ -86,6 +87,7 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		ss.add("sikn1.line1.io.temp.present.value"  , temp);
 		ss.add("sikn1.line1.io.pres.present.value"  , pres);
 		ss.add("sikn1.line1.linearization"          , 0);
+		ss.add("sikn1.line1.maintenance"            , 0);
 		ss.add("sikn1.line1.total.reset"            , 1);
 		ss.add("sikn1.line1.factors.set.kf"         , 100);
 		ss.add("sikn1.line1.factors.set.accept"     , 1);
@@ -116,9 +118,9 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		CHECK  (ss("sikn1.line1.temperature.value")->getValueLREAL() == temp);
 		CHECK  (ss("sikn1.line1.pressure.value")->getValueLREAL() == pres);
 		CHECK  (ss("sikn1.line1.obj.stn_dens.density.value")->getValueLREAL() == dens);
-		CHECK  (ss("sikn1.line1.total.present.mass")->getValueLREAL() == 2.0);
+		CHECK  (ss("sikn1.line1.total.present.mass")->getValueLREAL() == 6.0);
 		CHECK  (ss("sikn1.line1.total.present.impulse")->getValueUDINT() == freq * 2);
-		CHECK  (ss("sikn1.line1.flowrate.mass.value")->getValueLREAL() == 3600);
+		CHECK  (ss("sikn1.line1.flowrate.mass.value")->getValueLREAL() == 10800);
 
 		Catch::Epsilon::instance().setDouble(epsilon);
 	}
