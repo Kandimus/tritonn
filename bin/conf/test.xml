@@ -103,7 +103,7 @@
 		</io>
 		<stations>
 			<station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">
-				<temperature><link alias="sikn1.Obj.StnDensTemp:temp"/></temperature>
+				<temperature><link alias="var.test_sikn_temp"/></temperature>
 				<units>
 					<volume>112</volume>
 					<mass>96</mass>
@@ -550,6 +550,10 @@
 			<variable name="test_pres" setup="" description="0">
 				<default>880.0</default>
 				<unit>32</unit>
+			</variable>
+			<variable name="test_sikn_temp" setup="" description="0">
+				<default>10.0</default>
+				<unit>16</unit>
 			</variable>
 			<variable name="linkvar2" setup="LINK" description="0">
 				<value><link alias="var.var2"/></value>

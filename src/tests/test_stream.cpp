@@ -55,7 +55,6 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		REQUIRE(ss("sikn1.line2.temperature.value"));
 		REQUIRE(ss("sikn1.line2.pressure.value"));
 		REQUIRE(ss("sikn1.line2.obj.stn_dens.density.value"));
-		REQUIRE(ss("sikn1.line2.obj.stn_dens.density.value"));
 		REQUIRE(ss("sikn1.line2.total.present.mass"));
 		REQUIRE(ss("sikn1.line2.total.present.impulse"));
 		REQUIRE(ss("sikn1.line2.flowrate.mass.value"));
@@ -98,7 +97,6 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		ss.clear();
 		ss.add("sikn1.line1.temperature.value");
 		ss.add("sikn1.line1.pressure.value");
-		ss.add("sikn1.line1.obj.stn_dens.density.value");
 		ss.add("sikn1.line1.total.present.mass");
 		ss.add("sikn1.line1.total.present.impulse");
 		ss.add("sikn1.line1.flowrate.mass.value");
@@ -109,7 +107,6 @@ TEST_CASE("testing stream calc.", "[Stream]")
 
 		REQUIRE(ss("sikn1.line1.temperature.value"));
 		REQUIRE(ss("sikn1.line1.pressure.value"));
-		REQUIRE(ss("sikn1.line1.obj.stn_dens.density.value"));
 		REQUIRE(ss("sikn1.line1.obj.stn_dens.density.value"));
 		REQUIRE(ss("sikn1.line1.total.present.mass"));
 		REQUIRE(ss("sikn1.line1.total.present.impulse"));
