@@ -13,19 +13,17 @@
 //===
 //=================================================================================================
 
-#include "data_source.h"
+#include "source.h"
 #include <limits>
-#include "def.h"
-#include "data_link.h"
-#include "data_config.h"
-#include "event/manager.h"
-#include "variable_item.h"
-#include "variable_list.h"
-#include "text_manager.h"
 #include "xml_util.h"
-#include "text_manager.h"
-#include "error.h"
-#include "generator_md.h"
+#include "link.h"
+#include "../data_config.h"
+#include "../event/manager.h"
+#include "../variable_list.h"
+#include "../text_manager.h"
+#include "../text_manager.h"
+#include "../error.h"
+#include "../generator_md.h"
 
 
 rSource::rSource(const rStation* owner)

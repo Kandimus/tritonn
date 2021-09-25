@@ -98,6 +98,9 @@ UDINT rCounter::calculate()
 		if (!interface) {
 			rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
 			rDataManager::instance().DoHalt(HaltReason::RUNTIME, DATACFGERR_REALTIME_MODULELINK);
+
+			clear();
+
 			return DATACFGERR_REALTIME_MODULELINK;
 		}
 
@@ -111,6 +114,9 @@ UDINT rCounter::calculate()
 			if (fault != TRITONN_RESULT_OK) {
 				rEventManager::instance().add(reinitEvent(EID_COUNTER_MODULE) << m_module << m_channel);
 				rDataManager::instance().DoHalt(HaltReason::RUNTIME, fault);
+
+				clear();
+
 				return fault;
 			}
 
@@ -127,12 +133,21 @@ UDINT rCounter::calculate()
 					m_pullingCount    = curpulling;
 				}
 			}
+		} else {
+			clear();
 		}
 	}
 
 	postCalculate();
 	
 	return TRITONN_RESULT_OK;
+}
+
+void rCounter::clear()
+{
+	m_freq.m_value    = 0;
+	m_period.m_value  = 0;
+	m_impulse.m_value = 0;
 }
 
 

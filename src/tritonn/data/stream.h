@@ -12,9 +12,9 @@
 #pragma once
 
 #include "bits_array.h"
+#include "link.h"
 #include "../total.h"
 #include "../compared_values.h"
-#include "../data_link.h"
 
 class rVariable;
 

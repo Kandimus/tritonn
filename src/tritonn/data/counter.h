@@ -13,9 +13,8 @@
 
 #include <list>
 #include "bits_array.h"
-#include "../data_source.h"
+#include "link.h"
 #include "../data_module.h"
-#include "../data_link.h"
 #include "../compared_values.h"
 
 // Внутренние флаги
@@ -61,6 +60,7 @@ protected:
 
 private:
 	LREAL getPeriod();
+	void  clear();
 
 public:
 	// Inputs

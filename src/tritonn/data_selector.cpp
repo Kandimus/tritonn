@@ -17,7 +17,7 @@
 #include "error.h"
 #include "data_manager.h"
 #include "data_config.h"
-#include "data_link.h"
+#include "data/link.h"
 #include "variable_list.h"
 #include "xml_util.h"
 #include "generator_md.h"

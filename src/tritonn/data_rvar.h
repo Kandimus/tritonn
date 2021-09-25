@@ -15,8 +15,7 @@
 
 #pragma once
 
-#include "data_source.h"
-#include "data_link.h"
+#include "data/link.h"
 #include "bits_array.h"
 
 

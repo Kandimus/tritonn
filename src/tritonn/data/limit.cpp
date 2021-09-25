@@ -13,18 +13,18 @@
 //===
 //=================================================================================================
 
-#include "data_limit.h"
 #include <vector>
 #include <limits>
 #include <cmath>
 #include <string.h>
-#include "event/eid.h"
-#include "event/manager.h"
-#include "data_config.h"
-#include "variable_list.h"
 #include "xml_util.h"
-#include "generator_md.h"
-#include "comment_defines.h"
+#include "../event/eid.h"
+#include "../event/manager.h"
+#include "../data_config.h"
+#include "../variable_list.h"
+#include "../generator_md.h"
+#include "../comment_defines.h"
+#include "limit.h"
 
 rBitsArray rLimit::m_flagsSetup;
 rBitsArray rLimit::m_flagsStatus;

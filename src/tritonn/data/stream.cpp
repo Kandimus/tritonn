@@ -9,11 +9,13 @@
  *
  */
 
+#include "stream.h"
 #include <vector>
 #include <limits>
 #include <string.h>
 #include "log_manager.h"
 #include "xml_util.h"
+#include "station.h"
 #include "../event/eid.h"
 #include "../event/manager.h"
 #include "../text_id.h"
@@ -21,12 +23,10 @@
 #include "../data_manager.h"
 #include "../data_config.h"
 #include "../variable_list.h"
-#include "../data_station.h"
 #include "../data_snapshot.h"
 #include "../io/defines.h"
 #include "../generator_md.h"
 #include "../comment_defines.h"
-#include "stream.h"
 
 const UDINT STREAM_LE_ACCOUNTING = 0x00000002;
 const UDINT STREAM_LE_KEYPADKF   = 0x00000004;
@@ -416,9 +416,9 @@ LREAL rStream::calcualateKF()
 
 void rStream::calcTotal()
 {
-	m_total.inc(static_cast<UDINT>(m_counter.m_value));
-
 	if (!m_maintenance) {
+		m_total.inc(static_cast<UDINT>(m_counter.m_value));
+
 		if (m_flowmeter == Type::CORIOLIS) {
 			if (isValidDelim(m_curKF) && isValidDelim(m_dens.m_value) &&
 				isValidDelim(m_dens15.m_value) && isValidDelim(m_dens20.m_value)) {
@@ -436,6 +436,8 @@ void rStream::calcTotal()
 				m_total.m_inc.Volume20 = m_total.m_inc.Volume  * m_dens.m_value / m_dens20.m_value / 1000.0;
 			}
 		}
+	} else {
+		m_total.inc(0);
 	}
 
 	m_total.calculate(m_station->getUnit());

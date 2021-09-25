@@ -92,7 +92,7 @@ TEST_CASE("testing stream calc.", "[Stream]")
 		ss.add("sikn1.line1.factors.set.accept"     , 1);
 		ss.set();
 
-		mSleep(1900);
+		mSleep(1800);
 
 		ss.clear();
 		ss.add("sikn1.line1.temperature.value");

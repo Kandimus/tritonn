@@ -15,9 +15,8 @@
 
 #pragma once
 
-#include "data_source.h"
 #include "bits_array.h"
-#include "data_link.h"
+#include "data/link.h"
 #include "compared_values.h"
 #include "total.h"
 

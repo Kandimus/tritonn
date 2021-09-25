@@ -317,6 +317,8 @@
 		<str id="-1609891837"/>
 		<!-- EID_STATION_TOTAL_VOLUME20 -->
 		<str id="-1609891836"/>
+		<!--EID_STATION_RESET_TOTALS-->
+		<str id="-1609891835">$2. Нарастающие сброшены.</str>
 		<!-- EID_STATION_NEW_AMIN - $1 ID, $2 Descr, $3 link descr, $4 link unit, $5 value, $6 saved -->
 		<str id="537591908">$2 ($3). Установлено новое значение ($5 $4) уставки аварийного минимума. Прежнее значение: $6 $4.</str>
 		<!-- EID_STATION_NEW_WMIN -->

@@ -11,12 +11,12 @@
 
 #pragma once
 
+#include "bits_array.h"
 #include "scale.h"
-#include "../data_source.h"
 #include "../data_module.h"
 #include "../compared_values.h"
-#include "../data_link.h"
-#include "bits_array.h"
+#include "link.h"
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

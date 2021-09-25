@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "data_source.h"
 #include "bits_array.h"
-#include "compared_values.h"
+#include "../compared_values.h"
+#include "source.h"
 
 #define LIMIT_SETUP_ALL (rLimit::Setup::HIHI | rLimit::Setup::HI | rLimit::Setup::LO | rLimit::Setup::LOLO)
 
