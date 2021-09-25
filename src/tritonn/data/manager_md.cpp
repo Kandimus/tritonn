@@ -16,10 +16,11 @@
 
 #include "../data_manager.h"
 #include <string.h>
+#include "stringex.h"
 #include "xml_util.h"
 #include "../system_variable.h"
 #include "../generator_md.h"
-#include "../data_station.h"
+#include "station.h"
 #include "stream.h"
 #include "../data_selector.h"
 #include "../data_denssol.h"
@@ -50,7 +51,6 @@
 #include "../interface/modbustcpslave_manager.h"
 #include "../interface/opcua_manager.h"
 #include "../users.h"
-#include "stringex.h"
 
 
 UDINT rDataManager::saveMarkDown()

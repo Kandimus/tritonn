@@ -17,8 +17,8 @@
 
 #include <vector>
 #include "def.h"
-#include "units.h"
-#include "event/event.h"
+#include "../units.h"
+#include "../event/event.h"
 
 
 class rVariableList;

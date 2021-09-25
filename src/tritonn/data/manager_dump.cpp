@@ -13,9 +13,9 @@
 #include <string.h>
 #include "xml_util.h"
 #include "xmlfile.h"
-#include "../data_source.h"
-#include "log_manager.h"
 #include "simplefile.h"
+#include "log_manager.h"
+#include "source.h"
 #include "../total.h"
 #include "../variable_item.h"
 #include "../event/manager.h"

@@ -103,7 +103,7 @@
 		</io>
 		<stations>
 			<station name="sikn1" product="PETROLEUM" precision="0" setup="" description="4001">
-				<temperature><link alias="sikn1.Obj.StnDensTemp:temp"/></temperature>
+				<temperature><link alias="var.test_sikn_temp"/></temperature>
 				<units>
 					<volume>112</volume>
 					<mass>96</mass>
@@ -115,8 +115,8 @@
 					<stream name="line1" flowmeter="CORIOLIS" linearization="1" maintenance="0" description="4002">
 						<impulse><link alias="sikn1.line1.io.counter:impulse"/></impulse>
 						<temperature><link alias="sikn1.line1.io.temp"/></temperature>
-						<pressure><link alias="sikn1.line1.io.Pres"/></pressure>
-						<density><link alias="sikn1.line1.obj.StnDens:density"/></density>
+						<pressure><link alias="sikn1.line1.io.pres"/></pressure>
+						<density><link alias="sikn1.line1.obj.stn_dens:density"/></density>
 						<factors>
 							<keypad_mf>1</keypad_mf>
 							<keypad_kf>36000</keypad_kf>
@@ -168,10 +168,11 @@
 							</counter>
 						</io>
 						<calculate>
-							<reduceddens name="StnDens" description="4006">
+							<reduceddens name="stn_dens" description="4006">
 								<temperature><link alias="sikn1.line1.io.temp"/></temperature>
 								<pressure>   <link alias="sikn1.line1.io.pres"/></pressure>
-								<density15>  <link alias="sikn1.Obj.StnDensTemp:dens15"/></density15>
+								<density15>  <link alias="var.test_dens15"/></density15>
+								<b15>        <link alias="var.test_b15"/></b15>
 							</reduceddens>
 							<sampler name="Sampler1" method="PERIOD" setup="ERR2RESERVE | FILL2RESERVE | SINGLECAN | DUALCAN | AUTOSWITCH" description="4026">
 								<totals>sikn1.line1</totals>
@@ -229,7 +230,6 @@
 						<temperature><link alias="var.test_temp"/></temperature>
 						<pressure><link alias="var.test_pres"/></pressure>
 						<density><link alias="sikn1.line2.obj.stn_dens:density"/></density>
-						<!-- <density><link alias="var.test_dens"/></density> -->
 						<factors>
 							<keypad_mf>1</keypad_mf>
 							<keypad_kf>36000</keypad_kf>
@@ -550,6 +550,10 @@
 			<variable name="test_pres" setup="" description="0">
 				<default>880.0</default>
 				<unit>32</unit>
+			</variable>
+			<variable name="test_sikn_temp" setup="" description="0">
+				<default>10.0</default>
+				<unit>16</unit>
 			</variable>
 			<variable name="linkvar2" setup="LINK" description="0">
 				<value><link alias="var.var2"/></value>

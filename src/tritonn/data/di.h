@@ -11,10 +11,9 @@
 
 #pragma once
 
-#include "../data_source.h"
 #include "../data_module.h"
 #include "../compared_values.h"
-#include "../data_link.h"
+#include "link.h"
 #include "bits_array.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

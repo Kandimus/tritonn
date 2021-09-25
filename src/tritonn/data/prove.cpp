@@ -24,7 +24,7 @@
 #include "../text_id.h"
 #include "../data_config.h"
 #include "../data_manager.h"
-#include "../data_station.h"
+#include "station.h"
 #include "stream.h"
 #include "ai.h"
 #include "../error.h"

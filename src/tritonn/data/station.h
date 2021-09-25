@@ -1,27 +1,23 @@
-﻿//=================================================================================================
-//===
-//=== data_station.h
-//===
-//=== Copyright (c) 2019 by RangeSoft.
-//=== All rights reserved.
-//===
-//=== Litvinov "VeduN" Vitaliy O.
-//===
-//=================================================================================================
-//===
-//=== 
-//===
-//=================================================================================================
+﻿/*
+ *
+ * data/station.h
+ *
+ * Copyright (c) 2019-2021 by RangeSoft.
+ * All rights reserved.
+ *
+ * Litvinov "VeduN" Vitaliy O.
+ *
+ */
 
 #pragma once
 
 #include <vector>
-#include "density.h"
-#include "total.h"
-#include "data_link.h"
-#include "compared_values.h"
+#include "../density.h"
+#include "../total.h"
+#include "link.h"
+#include "../compared_values.h"
 #include "bits_array.h"
-#include "data_objunits.h"
+#include "../data_objunits.h"
 
 class rStream;
 
@@ -75,8 +71,9 @@ private:
 
 	std::vector<rStream*> m_stream;
 
-	rTotal       m_total;
-	rObjUnit     m_unit;
+	rTotal   m_total;
+	rObjUnit m_unit;
+	USINT    m_resetTotals = 0;
 };
 
 

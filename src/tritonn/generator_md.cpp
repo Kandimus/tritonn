@@ -14,13 +14,13 @@
 //=================================================================================================
 
 #include "tritonn_version.h"
-#include "generator_md.h"
-#include "data_source.h"
+#include "xml_util.h"
 #include "bits_array.h"
 #include "simplefile.h"
+#include "generator_md.h"
+#include "data/source.h"
 #include "io/basemodule.h"
 #include "interface/interface.h"
-#include "xml_util.h"
 
 const std::string rGeneratorMD::rItem::XML_OPTIONAL = "<!-- Optional -->";
 const std::string rGeneratorMD::rItem::XML_LINK     = "<link alias=\"object's output\"/>";

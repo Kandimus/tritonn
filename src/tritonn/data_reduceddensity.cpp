@@ -24,7 +24,7 @@
 #include "data_manager.h"
 #include "data_config.h"
 #include "variable_list.h"
-#include "data_station.h"
+#include "data/station.h"
 #include "xml_util.h"
 #include "generator_md.h"
 #include "comment_defines.h"

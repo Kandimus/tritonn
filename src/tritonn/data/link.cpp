@@ -13,18 +13,16 @@
 //===
 //=================================================================================================
 
+#include "link.h"
 #include <limits>
 #include <cmath>
 #include "tinyxml2.h"
-#include "error.h"
-#include "variable_item.h"
-#include "variable_list.h"
 #include "log_manager.h"
-#include "data_link.h"
 #include "xml_util.h"
-#include "text_manager.h"
-#include "comment_defines.h"
-
+#include "../error.h"
+#include "../variable_list.h"
+#include "../text_manager.h"
+#include "../comment_defines.h"
 
 const std::string rLink::SHADOW_NONE = "";
 
