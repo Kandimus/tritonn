@@ -1,4 +1,13 @@
+
+declare installPath="~/tritonn/arm/home/root/tritonn"
+
+
 mkdir ~/projects/build/tritonn-arm 
 cd ~/projects/build/tritonn-arm
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/tritonn/arm -DCMAKE_TOOLCHAIN_FILE=~/projects/tritonn/toolchain.cmake ~/projects/tritonn
-cmake --build . --target TT_tritonn
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${installPath} -DCMAKE_TOOLCHAIN_FILE=~/projects/tritonn/toolchain.cmake ~/projects/tritonn
+cmake --build . --target TT_tritonn || exit 1
+cmake --build . --target install || exit 1
+
+rm -fr ${installPath}/help/*
+#rm -fr ${installPath}/conf/*
+
