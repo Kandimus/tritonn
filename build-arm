@@ -1,5 +1,5 @@
 
-declare installPath="~/tritonn/arm/home/root/tritonn"
+declare installPath="~/tritonn/arm/home/root/tritonn/"
 
 
 mkdir ~/projects/build/tritonn-arm 

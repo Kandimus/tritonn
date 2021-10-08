@@ -19,7 +19,7 @@ if(NOT DEFINED PROJECT_VERSION_MAJOR)
 endif()
 
 if(NOT DEFINED PROJECT_VERSION_MINOR)
-	set(PROJECT_VERSION_MINOR 19)
+	set(PROJECT_VERSION_MINOR 20)
 	message(AUTHOR_WARNING "Set minor version: ${PROJECT_VERSION_MINOR}")
 endif()
 
@@ -52,6 +52,7 @@ endif()
 
 #generate version
 set_project_version("src/tritonn_version.h.in")
+configure_file("${CMAKE_SOURCE_DIR}/src/tritonn_version.txt.in" "${CMAKE_BINARY_DIR}/src/tritonn_version.txt")
 include_directories("${CMAKE_BINARY_DIR}/src")
 
 #
