@@ -12,6 +12,6 @@ if(TRITONN_YOCTO)
 	include(CPack)
 
 	add_custom_target(package COMMAND
-		"openssl enc -e -pdkbf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${} -out ${}")
+		"openssl enc -e -pdkbf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_PACKAGE_FILE_NAME} -out ${CPACK_PACKAGE_FILE_NAME}.bin")
 	add_dependencies(package_ssl package)
 endif()
