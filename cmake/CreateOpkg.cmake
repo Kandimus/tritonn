@@ -1,17 +1,39 @@
 # create .bin file
 
-if(TRITONN_YOCTO)
+if(CMAKE_TRITONN_YOCTO)
 	set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH}")
-	set(CPACK_GENERATOR "GZIP")
+	set(CPACK_GENERATOR "TGZ")
 	set(CPACK_SET_DESTDIR ON)
-	set(CPACK_PACKAGE_DIRECTORY "")
+	set(CPACK_PACKAGING_INSTALL_PREFIX "/home/vedun/tritonn/arm/")
+	set(CPACK_PACKAGE_DIRECTORY "~/tritonn/")
 	set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}_${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH}")
-	set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
-	set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
+#	set(CPACK_PACKAGE_INSTALL_DIRECTORY "~/tritonn/arm/") #"~/tritonn/arm") #${DCMAKE_INSTALL_PREFIX})
+	set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON)
+	set(CPACK_ARCHIVE_COMPONENT_INSTALL OFF)
 
-	include(CPack)
+#	set(CPACK_POST_BUILD_SCRIPTS "openssl enc -e -aes256 -pbkdf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in /home/vedun/projects/build/tritonn-arm/_CPack_Packages/Linux/TGZ${CPACK_PACKAGE_FILE_NAME}.tar.gz -out ${CPACK_PACKAGE_FILE_NAME}.bin")
 
-	add_custom_target(package COMMAND
-		"openssl enc -e -pdkbf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_PACKAGE_FILE_NAME} -out ${CPACK_PACKAGE_FILE_NAME}.bin")
-	add_dependencies(package_ssl package)
+#	set(CPACK_POST_BUILD_SCRIPTS "${CMAKE_SOURCE_DIR}/a.sh")
+
+include(CPack)
+
+	add_custom_command(
+#		COMMAND "openssl enc -e -aes256 -pbkdf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.tar.gz -out ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.bin"
+#		COMMAND "cp ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.tar.gz ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.bin"
+		COMMAND "gedit ${CMAKE_SOURCE_DIR}/a.sh"
+		OUTPUT "${CMAKE_SOURCE_DIR}/a.sh"
+#		OUTPUT ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.bin
+#		DEPENDS ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.tar.gz
+		DEPENDS package
+	)
+
+	add_custom_target(package_ssl COMMAND
+#		"openssl enc -e -aes256 -pbkdf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.tar.gz -out ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.bin"
+#		"openssl enc -e -aes256 -pbkdf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.tar.gz"
+	"gedit sdfasdfasdfasdfasdfasdfasdfasdfas"
+		DEPENDS package
+	)
+#	add_dependencies(package_ssl package)
+
+#	execute_process(COMMAND "openssl enc -e -aes256 -pbkdf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.tar.gz -out ${CPACK_PACKAGE_DIRECTORY}${CPACK_PACKAGE_FILE_NAME}.bin")
 endif()

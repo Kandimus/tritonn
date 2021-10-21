@@ -82,6 +82,7 @@ endif()
 
 add_subdirectory(src)
 
+include(CreateOpkg)
 
 message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Host:      ${HOST}")
