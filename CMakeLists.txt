@@ -55,6 +55,8 @@ set_project_version("src/tritonn_version.h.in")
 configure_file("${CMAKE_SOURCE_DIR}/src/tritonn_version.txt.in" "${CMAKE_BINARY_DIR}/src/tritonn_version.txt")
 include_directories("${CMAKE_BINARY_DIR}/src")
 
+set(PROJECT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH}")
+
 #
 find_package(Protobuf REQUIRED)
 
@@ -82,13 +84,11 @@ endif()
 
 add_subdirectory(src)
 
-include(CreateOpkg)
-
 message(STATUS "Processor: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Host:      ${HOST}")
 message(STATUS "Spec:      ${SPEC}")
 message(STATUS "Yocto:     ${CMAKE_TRITONN_YOCTO}")
-message(STATUS "Version:   ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_BUILD}.${PROJECT_VERSION_HASH} ${PROJECT_VERSION_DATE} ${PROJECT_VERSION_TIME} (${PROJECT_VERSION_UNIXTIME})")
+message(STATUS "Version:   ${PROJECT_VERSION_STRING} ${PROJECT_VERSION_DATE} ${PROJECT_VERSION_TIME} (${PROJECT_VERSION_UNIXTIME})")
 message(STATUS "----------------------")
 message(STATUS "C compiler:           ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler:         ${CMAKE_CXX_COMPILER}")
@@ -101,3 +101,5 @@ message(STATUS "----------------------")
 message(STATUS "OPENSSL_INCLUDE_DIR:  ${OPENSSL_INCLUDE_DIR}")
 message(STATUS "PROTOBUF_INCLUDE_DIR: ${PROTOBUF_INCLUDE_DIR}")
 message(STATUS "PROTOBUF_LIBRARY:     ${PROTOBUF_LIBRARY}")
+
+include(CreateOpkg)
