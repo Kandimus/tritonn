@@ -18,6 +18,7 @@
 #include "safity.h"
 #include "locker.h"
 #include "tickcount.h"
+#include "crc32.h"
 #include "simplefile.h"
 #include "tritonn_version.h"
 #include "display_manager.h"
@@ -38,6 +39,7 @@ UDINT rDisplayManager::RunCmd(vector<string> &args)
 	if(ARGS_TEXT_EQUAL("d" , "dump")      ) { cmdDump(args);       return 0; }
 	if(ARGS_TEXT_EQUAL("l" , "load")      ) { cmdLoad(args);       return 0; }
 	if(ARGS_TEXT_EQUAL("w" , "wait")      ) { cmdWait(args);       return 0; }
+	if(ARGS_TEXT_EQUAL("i" , "install")   ) { cmdInstall(args);    return 0; }
 
 //			PacketRcvd.Set(!gCmdList[ii].NeedAnswe);
 
@@ -419,14 +421,11 @@ void rDisplayManager::cmdLoad(vector<string> &args)
 
 	Auto = 1;
 
-	if(!Hide)
-	{
+	if(!Hide) {
 		AddLog(String_format("load '%s', found %i command", args[1].c_str(), AutoCommands.size()));
 	}
 
 }
-
-
 
 void rDisplayManager::cmdWait(vector<string> &args)
 {
@@ -439,4 +438,37 @@ void rDisplayManager::cmdWait(vector<string> &args)
 	if(!Auto) return;
 
 	mSleep(atoi(args[1].c_str()));
+}
+
+void rDisplayManager::cmdInstall(vector<string> &args)
+{
+	if(2 != args.size())
+	{
+		AddLog("using: install <filename.bin>");
+		return;
+	}
+
+	std::vector<char> buff;
+	UDINT result = simpleFileLoad(args[1], buff);
+
+	if (result != TRITONN_RESULT_OK) {
+		if(!Hide) {
+			AddLog(String_format("File '%s' load error #%i", args[1].c_str(), result));
+			return;
+		}
+	}
+
+	rCRC32 crc;
+	UDINT  calccrc32;
+	TT::DataMsg msg;
+
+	msg.mutable_package()->set_filename(args[1]);
+	msg.mutable_package()->set_data(buff.data(), buff.size());
+	msg.mutable_package()->set_crc32(calccrc32 = crc.get(buff.data(), buff.size()));
+
+	gTritonnManager.sendDataMsg(msg);
+
+	if(!Hide) {
+		AddLog(String_format("Transfer file '%s (crc32 %08X)' ...", args[1].c_str(), calccrc32));
+	}
 }

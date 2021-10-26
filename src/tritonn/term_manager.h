@@ -44,6 +44,7 @@ protected:
 	void addConfInfo(TT::DataMsg& msg);
 	void addVersion(TT::DataMsg& msg);
 	void addDateTime(TT::DataMsg& msg);
+	void installPackage(TT::DataMsg& msg);
 };
 
 

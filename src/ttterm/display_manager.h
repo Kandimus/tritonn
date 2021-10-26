@@ -95,7 +95,7 @@ protected:
 	void  cmdDump      (vector<string> &args);
 	void  cmdLoad      (vector<string> &args);
 	void  cmdWait      (vector<string> &args);
-
+	void  cmdInstall   (vector<string> &args);
 
 public:
 

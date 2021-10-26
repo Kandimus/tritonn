@@ -16,6 +16,5 @@ if(CMAKE_TRITONN_YOCTO)
 		openssl enc -e -aes256 -pbkdf2 -k Kx48dHnZ@o3nE8L%pfNu3V9rM8g@n7 -in ${CPACK_TRITONN_FILENAME}.zip -out ${CPACK_TRITONN_FILENAME}.bin
 		DEPENDS package
 	)
-#	add_dependencies(package_ssl package)
-
+	add_dependencies(package_ssl package)
 endif()

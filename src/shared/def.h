@@ -220,6 +220,7 @@ const std::string DIR_REPORT           = DIR_FTP  + "reports/";
 const std::string DIR_TIMEINFO         = DIR_HOME + "diag/";
 const std::string DIR_MARKDOWN         = DIR_HOME + "help/";
 const std::string FILE_CONF            = DIR_HOME + "tritonn.conf";
+const std::string FILE_UPDATE          = DIR_HOME + "update.txt";
 const std::string FILE_RESTART         = DIR_HOME + "tritonn.restart";
 const std::string FILE_MODBUS          = DIR_HOME + "modbus.xml";
 const std::string FILE_SYSTEMTEXT      = DIR_HOME + "systemtext.xml";

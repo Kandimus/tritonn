@@ -81,8 +81,7 @@ unsigned int simpleFileDelete(const std::string& filename)
 }
 
 
-//
-unsigned int simpleFileLoad(const std::string& filename, std::string& text)
+unsigned int simpleFileLoad(const std::string& filename, std::vector<char>& data)
 {
 	FILE* file = fopen(filename.c_str(), "rt");
 
@@ -98,21 +97,35 @@ unsigned int simpleFileLoad(const std::string& filename, std::string& text)
 		return FILE_RESULT_ISEMPTY;
 	}
 
-	char* buff = new char[size + 1];
+	data.clear();
+	data.resize(size);
+
 	fseek(file, 0, SEEK_SET);
 
-	unsigned int fr = fread(buff, 1, size, file);
-	buff[size] = 0;
+	unsigned int fr = fread(data.data(), 1, size, file);
+
 	fclose(file);
 
 	if (fr != size) {
-		delete[] buff;
-		text = "";
+		data.clear();
 		return FILE_RESULT_IOERROR;
 	}
 
-	text = buff;
-	delete[] buff;
+	return TRITONN_RESULT_OK;
+}
+
+//
+unsigned int simpleFileLoad(const std::string& filename, std::string& text)
+{
+	std::vector<char> tmpdata;
+	unsigned int result = simpleFileLoad(filename, tmpdata);
+
+	if (result != TRITONN_RESULT_OK) {
+		text = "";
+		return result;
+	}
+
+	text = tmpdata.data();
 
 	return TRITONN_RESULT_OK;
 }

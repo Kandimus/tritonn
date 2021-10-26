@@ -25,6 +25,7 @@
 #include "term_client.h"
 #include "term_manager.h"
 #include "stringex.h"
+#include "simplefile.h"
 
 
 rTermManager::rTermManager()
@@ -261,6 +262,10 @@ bool rTermManager::packetData(rTermClient* client)
 		TRACEI(LOG::PACKET, "Upload config is not implemented!");
 	}
 
+	if (isInstallPackageMsg(msg)) {
+		installPackage(msg);
+	}
+
 	addState(answe);
 
 	client->send(answe);
@@ -327,4 +332,34 @@ void rTermManager::addDateTime(TT::DataMsg& msg)
 	msg.mutable_datetime()->set_hour (sdt.tm_hour);
 	msg.mutable_datetime()->set_min  (sdt.tm_min);
 	msg.mutable_datetime()->set_sec  (sdt.tm_sec);
+}
+
+void rTermManager::installPackage(TT::DataMsg& msg)
+{
+	rCRC32 crc_;
+	UDINT crc32;
+	std::string filename;
+
+	filename = msg.package().filename();
+	crc32    = crc_.get(msg.package().data().data(), msg.package().data().size());
+
+	if (msg.package().crc32() != crc32) {
+		TRACEI(LOG::PACKET, "Wrong CRC on received packet (%s)!", filename.c_str());
+		return;
+	}
+
+	UDINT result = simpleFileSave(filename, msg.package().data());
+	if (result != TRITONN_RESULT_OK) {
+		TRACEI(LOG::PACKET, "File '%s' save error (%i)!", filename.c_str(), result);
+		return;
+	}
+
+	result = simpleFileSave(FILE_UPDATE, filename);
+	if (result != TRITONN_RESULT_OK) {
+		TRACEI(LOG::PACKET, "File '%s' save error (%i)!", FILE_UPDATE.c_str(), result);
+		return;
+	}
+
+	// TODO Do Close app
+	TRACEI(LOG::PACKET, "Installing package '%s'...", filename.c_str());
 }

@@ -41,9 +41,9 @@ public:
 		return crc32_table[(crc & 0xFF) ^ byte] ^ (crc >> 8);
 	}
 
-	unsigned long get(void* buf, unsigned long size)
+	unsigned long get(const void* buf, unsigned long size)
 	{
-		unsigned char* cbuff = static_cast<unsigned char*>(buf);
+		auto cbuff = static_cast<const unsigned char*>(buf);
 		unsigned long crc = 0xffffffff;
 
 		while (size--) {

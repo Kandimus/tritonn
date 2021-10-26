@@ -7,9 +7,8 @@ cd ~/projects/build/tritonn-arm
 
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/home/root/tritonn" -DCMAKE_TOOLCHAIN_FILE=~/projects/tritonn/toolchain.cmake ~/projects/tritonn
 #cmake --build . --target TT_tritonn || exit 1
+cmake --build . --target package || exit 1
 cmake --build . --target package_ssl || exit 1
-
-#rm -fr ${installPath}/help/*
 
 
 
