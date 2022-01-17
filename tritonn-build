@@ -1,7 +1,7 @@
 rm -rf ../build-tritonn
 mkdir ../build-tritonn
 
-cmake -S . -B ../build-tritonn
+cmake -DCMAKE_INSTALL_PREFIX="~/tritonn" -DCMAKE_BUILD_TYPE=Release -S . -B ../build-tritonn
 cmake -G Ninja ../build-tritonn
 cmake --build ../build-tritonn --target all
 cmake -DCMAKE_INSTALL_PREFIX="~/tritonn" ../build-tritonn

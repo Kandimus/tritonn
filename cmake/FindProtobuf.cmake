@@ -47,7 +47,7 @@ find_path(PROTOBUF_INCLUDE_DIR
 	NO_DEFAULT_PATH)
 
 find_program(PROTOBUF_COMPILER "protoc"
-		PATHS "${PROJECT_SOURCE_DIR}/redist/protobuf/"
+		PATHS "/usr/bin" "${PROJECT_SOURCE_DIR}/redist/protobuf/"
 		NO_DEFAULT_PATH)
 
 INCLUDE(FindPackageHandleStandardArgs)
